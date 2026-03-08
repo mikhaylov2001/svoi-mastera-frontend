@@ -2,31 +2,39 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
+  padding: 0 24px;
   height: 60px;
-  background: #1a1a2e;
-  color: #fff;
+  background: #0f172a;
+  color: #f9fafb;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.6);
 }
 
 .logo {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #e94560;
+  color: #f97316;
   text-decoration: none;
 }
 
 .nav-links {
   display: flex;
-  gap: 24px;
+  gap: 20px;
 }
 
 .nav-links a {
-  color: #ccc;
+  color: #e5e7eb;
   text-decoration: none;
   font-size: 0.95rem;
-  transition: color 0.2s;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
 }
 
 .nav-links a:hover {
-  color: #fff;
+  color: #ffffff;
+}
+
+.nav-links a.active {
+  border-color: #f97316;
+  color: #ffffff;
 }

@@ -14,17 +14,29 @@ function CategoriesPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="status">Загрузка...</p>;
+  if (loading) return <p className="status">Загрузка категорий...</p>;
   if (error) return <p className="status error">Ошибка: {error}</p>;
 
   return (
     <div>
-      <h2>Категории</h2>
-      <ul className="card-list">
-        {categories.map((c) => (
-          <li key={c.id} className="card">{c.name}</li>
-        ))}
-      </ul>
+      <h2>Категории услуг</h2>
+      {categories.length === 0 ? (
+        <p className="status">Категории пока не созданы.</p>
+      ) : (
+        <ul className="card-list grid">
+          {categories.map((c) => (
+            <li key={c.id} className="card">
+              <div className="card-icon">{c.name[0]}</div>
+              <div>
+                <div className="card-title">{c.name}</div>
+                {c.description && (
+                  <div className="card-sub">{c.description}</div>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
