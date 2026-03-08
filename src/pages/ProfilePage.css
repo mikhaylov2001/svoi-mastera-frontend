@@ -1,0 +1,127 @@
+.profile {
+  max-width: 640px;
+  margin: 32px auto 0;
+}
+
+.profile-status {
+  margin-top: 40px;
+  text-align: center;
+  color: #4b5563;
+}
+
+.profile-status.error {
+  color: #dc2626;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 0%, #f97316, #4f46e5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #ffffff;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.9),
+    0 14px 30px rgba(15, 23, 42, 0.25);
+}
+
+.profile-name {
+  font-size: 1.6rem;
+  color: #111827;
+}
+
+.profile-role {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* Основная карточка */
+
+.profile-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px 18px 14px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 20px;
+}
+
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.profile-row + .profile-row {
+  border-top: 1px solid #f3f4f6;
+}
+
+.label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.value {
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.value.badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Блок активности */
+
+.profile-secondary {
+  margin-top: 16px;
+}
+
+.profile-secondary h3 {
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.profile-secondary p {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+/* Мобильный */
+
+@media (max-width: 600px) {
+  .profile {
+    margin-top: 24px;
+  }
+
+  .profile-header {
+    gap: 12px;
+  }
+
+  .profile-avatar {
+    width: 54px;
+    height: 54px;
+    font-size: 1.1rem;
+  }
+
+  .profile-name {
+    font-size: 1.3rem;
+  }
+}

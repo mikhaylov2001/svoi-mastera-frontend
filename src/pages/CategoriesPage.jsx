@@ -26,7 +26,9 @@ function CategoriesPage() {
         <ul className="card-list grid">
           {categories.map((c) => (
             <li key={c.id} className="card">
-              <div className="card-icon">{c.name[0]}</div>
+              <div className="card-icon">
+                {c.name && c.name.length > 0 ? c.name[0].toUpperCase() : '?'}
+              </div>
               <div>
                 <div className="card-title">{c.name}</div>
                 {c.description && (

@@ -36,7 +36,7 @@ h2 {
   padding: 14px 18px;
   background: #ffffff;
   border-radius: 14px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
   border: 1px solid #e5e7eb;
 }
 
@@ -69,12 +69,48 @@ h2 {
   display: inline-block;
   padding: 2px 10px;
   border-radius: 999px;
-  background: #fee2e2;
-  color: #b91c1c;
   font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.status-badge.NEW {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-badge.IN_PROGRESS {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.COMPLETED {
+  background: #dcfce7;
+  color: #166534;
 }
 
 .btn.small {
   padding: 6px 14px;
   font-size: 0.8rem;
+}
+
+/* Мобильный вид */
+
+@media (max-width: 600px) {
+  .card {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .card-title {
+    font-size: 0.9rem;
+  }
+
+  .card-sub {
+    font-size: 0.8rem;
+  }
+
+  .btn.small {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
 }

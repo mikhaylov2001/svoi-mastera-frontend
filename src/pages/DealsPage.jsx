@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { getMyDeals, completeDeal } from '../api';
 import './ListPage.css';
 
-// сюда подставь реальный UUID клиента из таблицы users
 const TEST_USER_ID = '6fe3e907-c518-489d-95c6-9bf6f2988648';
 
 function DealsPage() {
@@ -51,7 +50,10 @@ function DealsPage() {
               <div>
                 <div className="card-title">Сделка {d.id}</div>
                 <div className="card-sub">
-                  Статус: <span className="status-badge">{d.status}</span>
+                  Статус:{' '}
+                  <span className={`status-badge ${d.status}`}>
+                    {d.status}
+                  </span>
                 </div>
               </div>
               {d.status !== 'COMPLETED' && (

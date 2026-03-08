@@ -55,3 +55,15 @@ export async function completeDeal(userId, dealId) {
   }
   return res.json();
 }
+
+export async function getMyProfile(userId) {
+  const res = await fetch(`${API_URL}/api/v1/customer-profiles/me`, {
+    headers: {
+      'X-User-Id': userId,
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`Ошибка загрузки профиля: ${res.status}`);
+  }
+  return res.json();
+}
