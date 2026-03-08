@@ -82,7 +82,7 @@
 .hero-live-sub { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 2px; }
 
 /* ── STRIP ── */
-.home-strip-wrap { background: #fff; border-bottom: 1px solid var(--gray-200); padding: 14px 0; overflow-x: auto; }
+.home-strip-wrap { background: #fff; border-bottom: 1px solid var(--gray-200); padding: 14px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .home-strip { display: flex; gap: 8px; white-space: nowrap; }
 .strip-chip {
   display: inline-flex; align-items: center; gap: 8px;
@@ -90,6 +90,7 @@
   background: var(--gray-50); border: 1.5px solid var(--gray-200); border-radius: 999px;
   font-size: 13px; font-weight: 600; color: var(--gray-700);
   text-decoration: none; transition: all .15s; white-space: nowrap;
+  flex-shrink: 0;
 }
 .strip-chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
 
@@ -112,20 +113,22 @@
 .how-card h3 { font-size: 15px; font-weight: 700; color: var(--gray-800); margin-bottom: 8px; }
 .how-card p  { font-size: 13px; color: var(--gray-500); line-height: 1.6; }
 
-/* ── POPULAR ── */
+/* ── POPULAR / SECTIONS ── */
 .home-popular { padding: 0 0 56px; }
-.home-popular-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; gap: 16px; }
-.popular-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+.home-popular-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+.popular-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
 .popular-card {
   background: #fff; border: 1.5px solid var(--gray-200);
-  border-radius: var(--r-lg); padding: 18px;
+  border-radius: var(--r-lg); padding: 20px;
   display: flex; flex-direction: column; gap: 10px;
   text-decoration: none;
   transition: all .2s;
 }
 .popular-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.popular-card:active { transform: translateY(0); }
 .popular-card-icon { width: 48px; height: 48px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; font-size: 26px; }
-.popular-card h3 { font-size: 14px; font-weight: 700; color: var(--gray-800); }
+.popular-card h3 { font-size: 15px; font-weight: 700; color: var(--gray-800); }
+.popular-card-desc { font-size: 12px; color: var(--gray-400); line-height: 1.4; }
 
 /* ── CTA ── */
 .home-cta-section { padding-bottom: 60px; }
@@ -143,24 +146,6 @@
 .cta-text h2 { font-family: var(--font-display); font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 6px; }
 .cta-text p  { font-size: 15px; color: rgba(255,255,255,.75); }
 
-/* ── ANIMATIONS ── */
-.fade-up { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.fade-up-1 { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
-.fade-up-2 { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both; }
-.fade-up-3 { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both; }
-.fade-up-4 { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both; }
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* ── RESPONSIVE ── */
 @media (max-width: 960px) {
   .hero-grid { grid-template-columns: 1fr; }
@@ -169,7 +154,15 @@
   .popular-grid { grid-template-columns: repeat(2,1fr); }
 }
 @media (max-width: 640px) {
-  .hero-title { font-size: 36px; }
+  .home-hero { padding: 40px 0 48px; }
+  .hero-title { font-size: 32px; letter-spacing: -.8px; }
+  .hero-subtitle { font-size: 15px; }
+  .hero-actions { flex-direction: column; }
+  .hero-actions .btn { width: 100%; justify-content: center; }
   .home-cta { flex-direction: column; padding: 28px 24px; text-align: center; }
-  .popular-grid { grid-template-columns: repeat(2,1fr); }
+  .home-cta .btn { width: 100%; justify-content: center; }
+  .popular-grid { grid-template-columns: 1fr; }
+  .how-card { padding: 20px 18px; }
+  .home-strip { gap: 6px; }
+  .strip-chip { padding: 6px 12px; font-size: 12px; }
 }

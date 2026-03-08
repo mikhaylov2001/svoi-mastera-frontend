@@ -47,7 +47,7 @@ function AuthLeft({ title, subtitle, points, stats }) {
       <div className="auth-left-content">
         <Link to="/" className="auth-brand">
           <span className="auth-brand-icon">🔨</span>
-          <span className="auth-brand-text">СвоиМастера</span>
+          <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
         </Link>
         <h2 className="auth-left-title">{title}</h2>
         <p  className="auth-left-desc">{subtitle}</p>
@@ -110,9 +110,9 @@ export function LoginPage() {
       const resp = await loginUser({ ...form, email });
 
       const user = resp.user || {};
-      const userId = user._id || user.id || resp.userId || resp.id;
-      const userName = user.displayName || user.name || '';
-      const userRole = user.role || resp.role || 'CUSTOMER';
+      const userId = user.id || resp.userId;
+      const userName = user.displayName || '';
+      const userRole = user.hasWorkerProfile ? 'WORKER' : 'CUSTOMER';
 
       if (!userId) {
         throw new Error('Не удалось войти. Попробуйте ещё раз.');
@@ -130,7 +130,7 @@ export function LoginPage() {
     <div className="auth-root">
       <AuthLeft
         title={<>Всё для мастеров —<br /><span>в одном месте</span></>}
-        subtitle="Маркетплейс для поиска мастеров по домашним задачам. Быстро, удобно, безопасно."
+        subtitle="Маркетплейс для поиска мастеров в Йошкар-Оле. Быстро, удобно, безопасно."
         points={[
           ['⚡','Мгновенные уведомления о новых заказах'],
           ['📊','Аналитика и статистика в реальном времени'],
@@ -244,9 +244,9 @@ export function RegisterPage() {
       const resp = await registerUser({ ...form, name, email });
 
       const user = resp.user || {};
-      const userId = user._id || user.id || resp.userId || resp.id;
-      const userName = user.displayName || user.name || name;
-      const userRole = user.role || resp.role || form.role;
+      const userId = user.id || resp.userId;
+      const userName = user.displayName || name;
+      const userRole = user.hasWorkerProfile ? 'WORKER' : 'CUSTOMER';
 
       if (!userId) {
         throw new Error('Не удалось создать аккаунт. Попробуйте ещё раз.');

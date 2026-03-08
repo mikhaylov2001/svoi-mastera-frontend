@@ -1,95 +1,79 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { getCategories } from '../api';
+import React from 'react';
+import { Link, useParams, Navigate } from 'react-router-dom';
 import './CategoriesPage.css';
 
-const CAT_META = {
-  'remont':      { emoji: '🏠', color: '#fff3e0', desc: 'Отделка, штукатурка, покраска, обои, полы' },
-  'santehnika':  { emoji: '🔧', color: '#e3f2fd', desc: 'Трубы, ванна, унитаз, смесители' },
-  'elektrika':   { emoji: '⚡', color: '#fffde7', desc: 'Проводка, розетки, щитки, освещение' },
-  'mebel':       { emoji: '🛋️', color: '#f3e5f5', desc: 'Сборка, разборка, подъём мебели' },
-  'tehnika':     { emoji: '📺', color: '#e8f5e9', desc: 'Кондиционеры, стиралки, холодильники, ТВ' },
-  'uborka':      { emoji: '🧹', color: '#fce4ec', desc: 'Генеральная, после ремонта, окна' },
-  'dveri':       { emoji: '🚪', color: '#e0f7fa', desc: 'Установка, замена, врезка замков' },
-  'pokraska':    { emoji: '🎨', color: '#f1f8e9', desc: 'Покраска стен, потолков, фасадов' },
-  'parikhmaher': { emoji: '💇', color: '#fce4ec', desc: 'Стрижки, укладки, окрашивание на дому' },
-  'manikur':     { emoji: '💅', color: '#fce4ec', desc: 'Маникюр, педикюр, дизайн ногтей' },
-  'kosmetolog':  { emoji: '✨', color: '#f3e5f5', desc: 'Чистка лица, массаж, уход на дому' },
-  'massazh':     { emoji: '💆', color: '#e8f5e9', desc: 'Расслабляющий, лечебный, спортивный' },
-  'sadovnik':    { emoji: '🌱', color: '#e8f5e9', desc: 'Стрижка газона, посадка, уход за садом' },
-  'perevozka':   { emoji: '🚚', color: '#e3f2fd', desc: 'Перевозка мебели, вещей, грузчики' },
-  'repetitor':   { emoji: '📚', color: '#fff3e0', desc: 'Школьные предметы, языки, подготовка к экзаменам' },
+const CATEGORIES_BY_SECTION = {
+  remont: [
+    { slug: 'remont-kvartir', name: 'Ремонт квартир', emoji: '🏠', color: '#fff3e0', desc: 'Отделка, штукатурка, покраска, обои, полы' },
+    { slug: 'santehnika',     name: 'Сантехника',     emoji: '🔧', color: '#e3f2fd', desc: 'Трубы, ванна, унитаз, смесители, канализация' },
+    { slug: 'elektrika',      name: 'Электрика',      emoji: '⚡', color: '#fffde7', desc: 'Проводка, розетки, щитки, освещение' },
+  ],
+  uborka: [
+    { slug: 'uborka', name: 'Уборка', emoji: '🧹', color: '#fce4ec', desc: 'Генеральная, после ремонта, мытьё окон' },
+  ],
+  krasota: [
+    { slug: 'parikhmaher',       name: 'Парикмахер',          emoji: '💇', color: '#fce4ec', desc: 'Стрижки, укладки, окрашивание на дому' },
+    { slug: 'manikur',           name: 'Маникюр и педикюр',   emoji: '💅', color: '#fce4ec', desc: 'Маникюр, педикюр, наращивание, дизайн ногтей' },
+    { slug: 'krasota-i-zdorovie', name: 'Красота и здоровье', emoji: '✨', color: '#f3e5f5', desc: 'Косметолог, массаж, уходовые процедуры' },
+  ],
+  obrazovanie: [
+    { slug: 'repetitorstvo', name: 'Репетиторство', emoji: '📚', color: '#e3f2fd', desc: 'Школьные предметы, языки, подготовка к экзаменам' },
+  ],
+  tehpomosh: [
+    { slug: 'kompyuternaya-pomosh', name: 'Компьютерная помощь', emoji: '💻', color: '#e8f5e9', desc: 'Ремонт ПК, настройка, установка ПО, удаление вирусов' },
+  ],
 };
 
-function getMeta(slug) {
-  return CAT_META[slug] || { emoji: '🔨', color: '#f1f3f4', desc: 'Профессиональные услуги' };
-}
+const SECTION_NAMES = {
+  remont: 'Ремонт',
+  uborka: 'Уборка',
+  krasota: 'Красота',
+  obrazovanie: 'Образование',
+  tehpomosh: 'Техпомощь',
+};
+
+export { CATEGORIES_BY_SECTION };
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState([]);
-  const [status, setStatus] = useState('loading'); // loading | success | error
+  const { sectionSlug } = useParams();
 
-  useEffect(() => {
-    setStatus('loading');
-    getCategories()
-      .then(data => { setCategories(data); setStatus('success'); })
-      .catch(() => setStatus('error'));
-  }, []);
+  const categories = CATEGORIES_BY_SECTION[sectionSlug];
+  const sectionName = SECTION_NAMES[sectionSlug];
+
+  if (!categories) {
+    return <Navigate to="/sections" replace />;
+  }
 
   return (
     <div>
       <div className="page-header-bar">
         <div className="container">
-          <h1>Категории услуг</h1>
-          <p>Выберите раздел — мастера откликнутся на вашу задачу</p>
+          <Link to="/sections" className="cats-back-link">← Все разделы</Link>
+          <h1>{sectionName}</h1>
+          <p>Выберите категорию — мастера откликнутся на вашу задачу</p>
         </div>
       </div>
 
       <div className="container">
-        {status === 'loading' && (
-          <div className="cats-grid" style={{paddingTop:32}}>
-            {Array.from({length:12}).map((_,i) => (
-              <div key={i} className="cat-skeleton">
-                <div className="skeleton" style={{width:52,height:52,borderRadius:12,flexShrink:0}} />
-                <div style={{flex:1}}>
-                  <div className="skeleton" style={{width:'60%',height:16,marginBottom:8}} />
-                  <div className="skeleton" style={{width:'90%',height:13}} />
-                </div>
+        <div className="cats-grid">
+          {categories.map((cat, i) => (
+            <Link
+              key={cat.slug}
+              to={`/categories/${cat.slug}`}
+              className="cat-card fade-up"
+              style={{ animationDelay: `${i * 0.05}s` }}
+            >
+              <div className="cat-card-icon" style={{ background: cat.color }}>
+                {cat.emoji}
               </div>
-            ))}
-          </div>
-        )}
-
-        {status === 'error' && (
-          <div className="cats-error">
-            <span>😕</span>
-            <p>Не удалось загрузить категории</p>
-            <button className="btn btn-primary btn-sm" onClick={() => window.location.reload()}>Повторить</button>
-          </div>
-        )}
-
-        {status === 'success' && (
-          <div className="cats-grid">
-            {categories.map((cat, i) => {
-              const m = getMeta(cat.slug);
-              return (
-                <Link
-                  key={cat.id}
-                  to={`/categories/${cat.slug}`}
-                  className="cat-card fade-up"
-                  style={{animationDelay:`${i*0.04}s`}}
-                >
-                  <div className="cat-card-icon" style={{background:m.color}}>{m.emoji}</div>
-                  <div className="cat-card-body">
-                    <h2>{cat.name}</h2>
-                    <p>{m.desc}</p>
-                  </div>
-                  <div className="cat-card-arrow">›</div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+              <div className="cat-card-body">
+                <h2>{cat.name}</h2>
+                <p>{cat.desc}</p>
+              </div>
+              <div className="cat-card-arrow">›</div>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

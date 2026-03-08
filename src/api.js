@@ -1,28 +1,37 @@
-// API Base URL - используем прямой URL бэкенда
+// API Base URL
 const API_BASE = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
-// Понятные сообщения для пользователя по статус-кодам
+// Понятные сообщения для пользователя
 function getFriendlyMessage(status, endpoint, serverMessage) {
   const msg = (serverMessage || '').toLowerCase();
 
-  // Специфичные ошибки по endpoint
   if (endpoint.includes('/auth/register')) {
     if (status === 400) return 'Проверьте правильность заполнения всех полей.';
     if (status === 409 || msg.includes('exist') || msg.includes('duplicate') || msg.includes('already'))
       return 'Аккаунт с таким email уже существует. Попробуйте войти.';
-    if (status === 500) return 'Не удалось создать аккаунт. Возможно, этот email уже зарегистрирован. Попробуйте войти.';
+    if (status === 500 && (msg.includes('exist') || msg.includes('duplicate')))
+      return 'Аккаунт с таким email уже существует. Попробуйте войти.';
+    if (status === 500) return 'Не удалось создать аккаунт. Возможно, этот email уже зарегистрирован.';
   }
 
   if (endpoint.includes('/auth/login')) {
     if (status === 400) return 'Введите email и пароль.';
     if (status === 401 || status === 403) return 'Неверный email или пароль.';
-    if (status === 404) return 'Аккаунт с таким email не найден. Проверьте email или зарегистрируйтесь.';
+    if (status === 404) return 'Аккаунт не найден. Проверьте email или зарегистрируйтесь.';
+    if (status === 500 && msg.includes('invalid')) return 'Неверный email или пароль.';
     if (status === 500) return 'Ошибка при входе. Попробуйте ещё раз через минуту.';
   }
 
   if (endpoint.includes('/job-requests')) {
     if (status === 400) return 'Проверьте правильность заполнения заявки.';
     if (status === 404) return 'Заявка не найдена.';
+    if (status === 500 && msg.includes('not found')) return 'Категория или профиль не найдены. Попробуйте перезайти.';
+    if (status === 500) return 'Не удалось создать заявку. Попробуйте ещё раз.';
+  }
+
+  if (endpoint.includes('/offers')) {
+    if (status === 500 && msg.includes('worker profile')) return 'Профиль мастера не найден. Попробуйте перезайти в аккаунт.';
+    if (status === 500) return 'Не удалось отправить отклик. Попробуйте ещё раз.';
   }
 
   if (endpoint.includes('/deals')) {
@@ -32,20 +41,19 @@ function getFriendlyMessage(status, endpoint, serverMessage) {
 
   if (endpoint.includes('/reviews')) {
     if (status === 400) return 'Проверьте правильность заполнения отзыва.';
+    if (status === 500 && msg.includes('worker profile')) return 'Профиль мастера не найден.';
   }
 
-  // Общие ошибки по статус-коду
   if (status === 400) return 'Некорректный запрос. Проверьте введённые данные.';
   if (status === 401) return 'Необходима авторизация. Войдите в аккаунт.';
   if (status === 403) return 'Доступ запрещён.';
   if (status === 404) return 'Данные не найдены.';
-  if (status === 429) return 'Слишком много запросов. Подождите немного и попробуйте снова.';
+  if (status === 429) return 'Слишком много запросов. Подождите немного.';
   if (status >= 500) return 'Ошибка сервера. Попробуйте ещё раз через минуту.';
 
   return 'Что-то пошло не так. Попробуйте ещё раз.';
 }
 
-// Helper function for API calls
 async function apiCall(endpoint, options = {}) {
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -56,10 +64,8 @@ async function apiCall(endpoint, options = {}) {
       ...options,
     });
 
-    // Получаем текст ответа
     const responseText = await response.text();
 
-    // Пытаемся распарсить JSON
     let data;
     try {
       data = responseText ? JSON.parse(responseText) : {};
@@ -75,7 +81,6 @@ async function apiCall(endpoint, options = {}) {
 
     return data;
   } catch (error) {
-    // Сетевые ошибки (нет интернета, сервер недоступен)
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
       throw new Error('Нет соединения с сервером. Проверьте интернет и попробуйте снова.');
     }
@@ -89,14 +94,17 @@ export async function getCategories() {
 }
 
 // ── AUTH ──
+// Бэкенд ожидает: { email, password, displayName, asWorker, asCustomer }
 export async function registerUser({ name, email, password, role }) {
+  const isWorker = role === 'WORKER';
   return apiCall('/auth/register', {
     method: 'POST',
     body: JSON.stringify({
       displayName: name,
       email,
       password,
-      role
+      asWorker: isWorker,
+      asCustomer: !isWorker,
     }),
   });
 }
@@ -109,20 +117,22 @@ export async function loginUser({ email, password }) {
 }
 
 // ── JOB REQUESTS ──
+// Бэкенд CreateJobRequestDto: { categoryId (UUID), title, description, city, addressText, scheduledAt, budgetFrom, budgetTo }
 export async function createJobRequest(userId, data) {
+  const body = {
+    categoryId: data.categoryId,
+    title: data.title,
+    description: data.description || 'Без описания',
+  };
+  if (data.address) body.addressText = data.address;
+  if (data.budget) body.budgetTo = data.budget;
+
   return apiCall('/job-requests', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
       'X-User-Id': userId,
     },
-    body: JSON.stringify({
-      categoryId: data.categoryId,
-      title: data.title,
-      description: data.description,
-      address: data.address,
-      budget: data.budget,
-    }),
+    body: JSON.stringify(body),
   });
 }
 
@@ -135,16 +145,17 @@ export async function getOpenJobRequestsForWorker(workerId) {
 }
 
 // ── JOB OFFERS ──
+// Бэкенд CreateJobOfferDto: { message, price, estimatedDays }
 export async function createJobOffer(workerId, requestId, data) {
   return apiCall(`/worker/job-requests/${requestId}/offers`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
       'X-User-Id': workerId,
     },
     body: JSON.stringify({
+      message: data.comment || 'Готов выполнить',
       price: data.price,
-      comment: data.comment,
+      estimatedDays: data.estimatedDays || null,
     }),
   });
 }
@@ -162,7 +173,6 @@ export async function completeDeal(userId, dealId) {
   return apiCall(`/deals/${dealId}/complete`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
       'X-User-Id': userId,
     },
     body: JSON.stringify({}),
@@ -173,7 +183,6 @@ export async function initiatePayment(userId, dealId) {
   return apiCall(`/initiate?dealId=${dealId}`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
       'X-User-Id': userId,
     },
     body: JSON.stringify({}),
@@ -190,16 +199,16 @@ export async function getCustomerProfile(userId) {
 }
 
 // ── REVIEWS ──
+// Бэкенд ReviewCreateDto: { rating, text }
 export async function createReview(userId, dealId, data) {
   return apiCall(`/deals/${dealId}/reviews`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
       'X-User-Id': userId,
     },
     body: JSON.stringify({
       rating: data.rating,
-      comment: data.comment,
+      text: data.comment || '',
     }),
   });
 }
