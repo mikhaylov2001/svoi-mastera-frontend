@@ -1,3 +1,4 @@
+// src/api.js
 const API_URL = process.env.REACT_APP_API_URL;
 
 export async function getCategories() {
@@ -9,7 +10,7 @@ export async function getCategories() {
 export async function getMyDeals(userId) {
   const res = await fetch(`${API_URL}/api/v1/deals`, {
     headers: {
-      'X-User-Id': userId, // строка UUID
+      'X-User-Id': userId, // сюда подставишь реальный UUID
     },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
