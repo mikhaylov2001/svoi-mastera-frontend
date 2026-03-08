@@ -1,127 +1,114 @@
-.profile {
-  max-width: 640px;
-  margin: 32px auto 0;
+.profile-layout {
+  display: grid; grid-template-columns: 280px 1fr;
+  gap: 24px; padding: 28px 0 60px;
 }
 
-.profile-status {
-  margin-top: 40px;
-  text-align: center;
-  color: #4b5563;
-}
-
-.profile-status.error {
-  color: #dc2626;
-}
-
-.profile-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.profile-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 30% 0%, #f97316, #4f46e5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #ffffff;
-  box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.9),
-    0 14px 30px rgba(15, 23, 42, 0.25);
-}
-
-.profile-name {
-  font-size: 1.6rem;
-  color: #111827;
-}
-
-.profile-role {
-  font-size: 0.9rem;
-  color: #6b7280;
-}
-
-/* Основная карточка */
-
+/* sidebar card */
 .profile-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 18px 18px 14px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-  border: 1px solid #e5e7eb;
+  background: #fff; border: 1.5px solid var(--gray-200);
+  border-radius: var(--r-xl); padding: 28px;
+  text-align: center;
+  position: sticky; top: 80px; height: fit-content;
+}
+.profile-avatar {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary) 0%, #ff8f00 100%);
+  color: #fff; font-family: var(--font-display);
+  font-size: 30px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+}
+.profile-name { font-size: 18px; font-weight: 800; color: var(--gray-800); margin-bottom: 4px; }
+.profile-role-badge {
+  display: inline-block;
+  background: var(--primary-light); color: var(--primary);
+  font-size: 12px; font-weight: 700;
+  padding: 3px 12px; border-radius: 999px;
   margin-bottom: 20px;
 }
+.profile-info-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 20px; }
+.profile-info-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--gray-600);
+  padding: 8px 0; border-top: 1px solid var(--gray-100);
+}
+.profile-logout-btn { color: var(--red); border-color: #fecaca; }
+.profile-logout-btn:hover { background: var(--red-light); }
 
-.profile-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
+/* main */
+.profile-main { display: flex; flex-direction: column; gap: 16px; }
+.profile-section {
+  background: #fff; border: 1.5px solid var(--gray-200);
+  border-radius: var(--r-xl); padding: 24px 24px 20px;
+}
+.profile-section-title { font-family: var(--font-display); font-size: 16px; font-weight: 900; color: var(--gray-800); margin-bottom: 16px; }
+.profile-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.profile-section-header .profile-section-title { margin-bottom: 0; }
+
+/* stats */
+.profile-stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.profile-stat {
+  background: var(--gray-50); border-radius: var(--r-md);
+  padding: 16px; text-align: center;
+}
+.profile-stat-num { font-family: var(--font-display); font-size: 26px; font-weight: 900; color: var(--gray-800); }
+.profile-stat-lbl { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+
+/* deal rows */
+.profile-deal-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; border-top: 1px solid var(--gray-100);
+  flex-wrap: wrap;
+}
+.profile-deal-info { flex: 1; min-width: 0; }
+.profile-deal-title { font-size: 14px; font-weight: 600; color: var(--gray-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-deal-worker { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+
+/* empty */
+.profile-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px 0; }
+.profile-empty span { font-size: 36px; }
+.profile-empty p { font-size: 14px; color: var(--gray-400); }
+
+/* note */
+.profile-note {
+  background: var(--gray-50); border-radius: var(--r-md);
+  padding: 16px; font-size: 13px; color: var(--gray-500); line-height: 1.65;
 }
 
-.profile-row + .profile-row {
-  border-top: 1px solid #f3f4f6;
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
 }
-
-.label {
-  font-size: 0.85rem;
-  color: #6b7280;
+.modal-card {
+  background: #fff; border-radius: var(--r-xl); padding: 32px;
+  width: 100%; max-width: 440px;
+  box-shadow: var(--shadow-xl);
+  animation: fadeUp .3s cubic-bezier(.16,1,.3,1) both;
 }
+.modal-title { font-family: var(--font-display); font-size: 20px; font-weight: 900; color: var(--gray-800); margin-bottom: 4px; }
+.modal-sub { font-size: 13px; color: var(--gray-400); margin-bottom: 20px; }
+.modal-success { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.modal-success span { font-size: 48px; }
+.modal-success h3 { font-size: 20px; font-weight: 700; color: var(--gray-800); }
 
-.value {
-  font-size: 0.95rem;
-  color: #111827;
+/* stars */
+.rating-row { display: flex; gap: 6px; }
+.rating-star {
+  font-size: 28px; color: var(--gray-300);
+  background: none; border: none; cursor: pointer; padding: 0;
+  transition: color .15s, transform .1s;
 }
+.rating-star:hover,
+.rating-star.active { color: #f59e0b; }
+.rating-star:hover { transform: scale(1.15); }
 
-.value.badge {
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: #dcfce7;
-  color: #166534;
-  font-size: 0.8rem;
-  font-weight: 500;
+@media (max-width: 860px) {
+  .profile-layout { grid-template-columns: 1fr; }
+  .profile-card { position: static; text-align: left; }
+  .profile-avatar { margin: 0 0 14px; }
 }
-
-/* Блок активности */
-
-.profile-secondary {
-  margin-top: 16px;
-}
-
-.profile-secondary h3 {
-  font-size: 1.1rem;
-  margin-bottom: 6px;
-  color: #111827;
-}
-
-.profile-secondary p {
-  font-size: 0.9rem;
-  color: #4b5563;
-}
-
-/* Мобильный */
-
-@media (max-width: 600px) {
-  .profile {
-    margin-top: 24px;
-  }
-
-  .profile-header {
-    gap: 12px;
-  }
-
-  .profile-avatar {
-    width: 54px;
-    height: 54px;
-    font-size: 1.1rem;
-  }
-
-  .profile-name {
-    font-size: 1.3rem;
-  }
+@media (max-width: 480px) {
+  .profile-stats-grid { grid-template-columns: 1fr 1fr; }
 }
