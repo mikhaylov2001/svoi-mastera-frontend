@@ -144,6 +144,30 @@ export async function getOpenJobRequestsForWorker(workerId) {
   });
 }
 
+// Мои заявки (для заказчика)
+export async function getMyJobRequests(userId) {
+  return apiCall('/job-requests/my', {
+    headers: {
+      'X-User-Id': userId,
+    },
+  });
+}
+
+// Отклики на конкретную заявку
+export async function getOffersForRequest(requestId) {
+  return apiCall(`/job-requests/${requestId}/offers`);
+}
+
+// Принять отклик → создать сделку
+export async function acceptOffer(userId, jobRequestId, offerId) {
+  return apiCall(`/deals/accept?jobRequestId=${jobRequestId}&offerId=${offerId}`, {
+    method: 'POST',
+    headers: {
+      'X-User-Id': userId,
+    },
+  });
+}
+
 // ── JOB OFFERS ──
 // Бэкенд CreateJobOfferDto: { message, price, estimatedDays }
 export async function createJobOffer(workerId, requestId, data) {

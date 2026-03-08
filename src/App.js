@@ -9,6 +9,8 @@ import { LoginPage, RegisterPage } from './pages/AuthPages';
 import ProfilePage from './pages/ProfilePage';
 import WorkerProfilePage from './pages/WorkerProfilePage';
 import DealsPage from './pages/DealsPage';
+import MyOrdersPage from './pages/MyOrdersPage';
+import FindWorkPage from './pages/FindWorkPage';
 import './App.css';
 
 function ProtectedRoute({ children, workerOnly = false }) {
@@ -55,10 +57,14 @@ function Header() {
           {userId ? (
             <>
               {userRole === 'WORKER' ? (
-                <Link to="/worker" className="app-nav-link">Кабинет мастера</Link>
+                <>
+                  <Link to="/find-work" className="app-nav-link">Найти работу</Link>
+                  <Link to="/worker" className="app-nav-link">Кабинет</Link>
+                </>
               ) : (
                 <>
-                  <Link to="/deals" className="app-nav-link">Мои сделки</Link>
+                  <Link to="/my-orders" className="app-nav-link">Мои заказы</Link>
+                  <Link to="/deals" className="app-nav-link">Сделки</Link>
                   <Link to="/profile" className="app-nav-link">Профиль</Link>
                 </>
               )}
@@ -88,10 +94,14 @@ function Header() {
             {userId ? (
               <>
                 {userRole === 'WORKER' ? (
-                  <Link to="/worker" className="app-mobile-link">Кабинет мастера</Link>
+                  <>
+                    <Link to="/find-work" className="app-mobile-link">Найти работу</Link>
+                    <Link to="/worker" className="app-mobile-link">Кабинет мастера</Link>
+                  </>
                 ) : (
                   <>
-                    <Link to="/deals" className="app-mobile-link">Мои сделки</Link>
+                    <Link to="/my-orders" className="app-mobile-link">Мои заказы</Link>
+                    <Link to="/deals" className="app-mobile-link">Сделки</Link>
                     <Link to="/profile" className="app-mobile-link">Профиль</Link>
                   </>
                 )}
@@ -153,6 +163,8 @@ function AppContent() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/deals" element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
+          <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
+          <Route path="/find-work" element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
           <Route path="/worker" element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
         </Routes>
       </main>
