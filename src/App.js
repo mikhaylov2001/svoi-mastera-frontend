@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { getUnreadCount } from './api';
 import HomePage from './pages/HomePage';
 import SectionsPage from './pages/SectionsPage';
 import CategoriesPage from './pages/CategoriesPage';
@@ -11,6 +12,7 @@ import WorkerProfilePage from './pages/WorkerProfilePage';
 import DealsPage from './pages/DealsPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import FindWorkPage from './pages/FindWorkPage';
+import ChatPage from './pages/ChatPage';
 import './App.css';
 
 function ProtectedRoute({ children, workerOnly = false }) {
@@ -23,6 +25,7 @@ function ProtectedRoute({ children, workerOnly = false }) {
 function Header() {
   const { userId, userRole, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
   const ref = useRef(null);
   const loc = useLocation();
 
@@ -34,14 +37,27 @@ function Header() {
     document.addEventListener('touchstart', h);
     return () => { document.removeEventListener('mousedown', h); document.removeEventListener('touchstart', h); };
   }, [open]);
-
-  // Prevent body scroll when menu open
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
+  // Poll unread messages
+  useEffect(() => {
+    if (!userId) return;
+    const poll = () => getUnreadCount(userId).then(r => setUnread(r.count || 0)).catch(() => {});
+    poll();
+    const iv = setInterval(poll, 10000);
+    return () => clearInterval(iv);
+  }, [userId]);
+
   const handleLogout = () => { logout(); setOpen(false); };
+
+  const chatLink = (
+    <Link to="/chat" className="hd-link hd-chat-link">
+      💬{unread > 0 && <span className="hd-chat-badge">{unread}</span>}
+    </Link>
+  );
 
   const navLinks = () => {
     if (!userId) return (
@@ -53,6 +69,7 @@ function Header() {
     if (userRole === 'WORKER') return (
       <>
         <Link to="/find-work" className="hd-link">Найти работу</Link>
+        {chatLink}
         <Link to="/worker" className="hd-link">Кабинет</Link>
       </>
     );
@@ -60,6 +77,7 @@ function Header() {
       <>
         <Link to="/my-orders" className="hd-link">Мои заказы</Link>
         <Link to="/deals" className="hd-link">Сделки</Link>
+        {chatLink}
         <Link to="/profile" className="hd-link">Профиль</Link>
       </>
     );
@@ -71,9 +89,9 @@ function Header() {
       ['/sections','Услуги'],
     ];
     if (userId && userRole === 'WORKER') {
-      links.push(['/find-work','Найти работу'], ['/worker','Кабинет мастера']);
+      links.push(['/find-work','Найти работу'], ['/chat','Сообщения'], ['/worker','Кабинет мастера']);
     } else if (userId) {
-      links.push(['/my-orders','Мои заказы'], ['/deals','Сделки'], ['/profile','Профиль']);
+      links.push(['/my-orders','Мои заказы'], ['/deals','Сделки'], ['/chat','Сообщения'], ['/profile','Профиль']);
     }
     return (
       <>
@@ -163,6 +181,8 @@ function AppContent() {
           <Route path="/deals" element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
           <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
           <Route path="/find-work" element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
+          <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+          <Route path="/chat/:partnerId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/worker" element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
         </Routes>
       </main>

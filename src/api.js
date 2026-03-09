@@ -117,3 +117,28 @@ export async function createReview(userId, dealId, data) {
 export async function getReviewsByWorker(workerId) {
   return apiCall(`/workers/${workerId}/reviews`);
 }
+
+// ── MESSAGES ──
+export async function sendMessage(userId, receiverId, text, jobRequestId) {
+  return apiCall('/messages', {
+    method: 'POST', headers: { 'X-User-Id': userId },
+    body: JSON.stringify({ receiverId, text, jobRequestId: jobRequestId || null }),
+  });
+}
+export async function getConversation(userId, partnerId) {
+  return apiCall(`/messages/with/${partnerId}`, { headers: { 'X-User-Id': userId } });
+}
+export async function getConversations(userId) {
+  return apiCall('/messages/conversations', { headers: { 'X-User-Id': userId } });
+}
+export async function getUnreadCount(userId) {
+  return apiCall('/messages/unread-count', { headers: { 'X-User-Id': userId } });
+}
+
+// ── AVATAR ──
+export async function uploadAvatar(userId, base64Image) {
+  return apiCall('/avatar/upload', {
+    method: 'POST', headers: { 'X-User-Id': userId },
+    body: JSON.stringify({ image: base64Image }),
+  });
+}
