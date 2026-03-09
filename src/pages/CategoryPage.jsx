@@ -241,7 +241,7 @@ export default function CategoryPage() {
                     value={form.address} onChange={handleChange} />
                 </div>
                 <div className="form-field">
-                  <label className="form-label">Бюджет, ₽</label>
+                  <label className="form-label">Предварительная цена, ₽</label>
                   <input className="form-input" name="budget" type="number"
                     placeholder="Не обязательно"
                     value={form.budget} onChange={handleChange} />

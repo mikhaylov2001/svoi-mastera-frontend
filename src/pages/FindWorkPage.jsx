@@ -5,8 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import './FindWorkPage.css';
 
 const DEAL_ST = {
-  NEW: { l: 'Новая', c: 'st-new' }, IN_PROGRESS: { l: 'В работе', c: 'st-prog' },
-  COMPLETED: { l: 'Выполнена', c: 'st-done' }, CANCELLED: { l: 'Отменена', c: 'st-fail' },
+  NEW:{l:'Новая',c:'st-new'}, IN_PROGRESS:{l:'В работе',c:'st-prog'},
+  COMPLETED:{l:'Выполнена',c:'st-done'}, CANCELLED:{l:'Отменена',c:'st-fail'},
 };
 
 export default function FindWorkPage() {
@@ -19,7 +19,12 @@ export default function FindWorkPage() {
   const [loading, setLoading] = useState(true);
   const [catFilter, setCatFilter] = useState('ALL');
   const [detail, setDetail] = useState(null);
-  const [offerForm, setOfferForm] = useState({ price: '', comment: '', days: '' });
+
+  // Offer form
+  const [useClientPrice, setUseClientPrice] = useState(true);
+  const [customPrice, setCustomPrice] = useState('');
+  const [comment, setComment] = useState('');
+  const [days, setDays] = useState('');
   const [offerStatus, setOfferStatus] = useState('idle');
 
   const load = useCallback(async () => {
@@ -43,107 +48,167 @@ export default function FindWorkPage() {
 
   const openDetail = (req) => {
     setDetail(req);
-    setOfferForm({ price: req.budgetTo ? String(req.budgetTo) : '', comment: '', days: '' });
+    setUseClientPrice(!!req.budgetTo);
+    setCustomPrice(req.budgetTo ? String(req.budgetTo) : '');
+    setComment('');
+    setDays('');
     setOfferStatus('idle');
   };
 
+  const getFinalPrice = () => {
+    if (useClientPrice && detail?.budgetTo) return Number(detail.budgetTo);
+    return customPrice ? Number(customPrice) : 0;
+  };
+
   const handleSend = async () => {
-    if (!offerForm.price || !detail) return;
+    const price = getFinalPrice();
+    if (!price || !detail) return;
     setOfferStatus('sending');
     try {
       await createJobOffer(userId, detail.id, {
-        price: Number(offerForm.price),
-        comment: offerForm.comment,
-        estimatedDays: offerForm.days ? Number(offerForm.days) : null,
+        price,
+        comment: comment || (useClientPrice ? 'Согласен на вашу цену. Готов выполнить!' : 'Предлагаю свою цену. Готов обсудить.'),
+        estimatedDays: days ? Number(days) : null,
       });
       setOfferStatus('done');
       setRequests(prev => prev.filter(r => r.id !== detail.id));
     } catch { setOfferStatus('error'); }
   };
 
-  // Send first message and navigate to chat
-  const handleChat = async (req) => {
-    // We need the customer's userId — it's not in the jobRequest DTO from backend.
-    // For now, navigate to chat and let user send from there.
-    // TODO: backend should include customerId in JobRequestDto
-    navigate('/chat');
-  };
-
-  const timeAgo = (dateStr) => {
-    if (!dateStr) return '';
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins} мин. назад`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs} ч. назад`;
-    const days = Math.floor(hrs / 24);
-    return days === 1 ? 'вчера' : `${days} дн. назад`;
+  const timeAgo = (d) => {
+    if (!d) return '';
+    const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+    if (m < 60) return `${m} мин. назад`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h} ч. назад`;
+    const dd = Math.floor(h / 24);
+    return dd === 1 ? 'вчера' : `${dd} дн. назад`;
   };
 
   // ═══ DETAIL VIEW ═══
   if (detail) {
+    const clientPrice = detail.budgetTo ? Number(detail.budgetTo) : 0;
+
     return (
-      <div className="fw-detail-page">
+      <div className="fw-dp">
         <div className="container">
           <button className="fw-back" onClick={() => setDetail(null)}>← Назад к заявкам</button>
 
-          <div className="fw-detail-layout">
-            <div className="fw-detail-main">
-              <div className="fw-detail-card">
-                <div className="fw-detail-cat">{catName(detail.categoryId)}</div>
-                <h1 className="fw-detail-title">{detail.title}</h1>
-                {detail.budgetTo ? (
-                  <div className="fw-detail-price">{Number(detail.budgetTo).toLocaleString('ru-RU')} ₽</div>
-                ) : (
-                  <div className="fw-detail-price fw-detail-price-dog">Цена договорная</div>
+          <div className="fw-dl">
+            {/* Left: request info */}
+            <div className="fw-dm">
+              <div className="fw-dc">
+                <div className="fw-dc-cat">{catName(detail.categoryId)}</div>
+                <h1 className="fw-dc-title">{detail.title}</h1>
+
+                {clientPrice > 0 && (
+                  <div className="fw-dc-price-block">
+                    <div className="fw-dc-price-label">Предварительная цена клиента</div>
+                    <div className="fw-dc-price">{clientPrice.toLocaleString('ru-RU')} ₽</div>
+                  </div>
                 )}
-                <div className="fw-detail-meta">
+                {!clientPrice && (
+                  <div className="fw-dc-price-block">
+                    <div className="fw-dc-price-label">Цена</div>
+                    <div className="fw-dc-price fw-dc-price-dog">Договорная</div>
+                  </div>
+                )}
+
+                <div className="fw-dc-meta">
                   {detail.addressText && <div>📍 {detail.addressText}</div>}
                   {detail.city && <div>🏙 {detail.city}</div>}
                   {detail.createdAt && <div>🕐 {timeAgo(detail.createdAt)}</div>}
                 </div>
+
                 {detail.description && detail.description !== 'Без описания' && (
                   <>
-                    <div className="fw-detail-sep" />
-                    <h3 className="fw-detail-subtitle">Описание</h3>
-                    <p className="fw-detail-desc">{detail.description}</p>
+                    <div className="fw-dc-sep" />
+                    <h3 className="fw-dc-sub">Описание</h3>
+                    <p className="fw-dc-desc">{detail.description}</p>
                   </>
                 )}
               </div>
             </div>
 
-            <div className="fw-detail-side">
+            {/* Right: action panel */}
+            <div className="fw-ds">
               {offerStatus === 'done' ? (
-                <div className="fw-side-card fw-side-success">
+                <div className="fw-sc fw-sc-ok">
                   <span>✅</span>
                   <h3>Отклик отправлен!</h3>
-                  <p>Заказчик увидит ваше предложение</p>
-                  <button className="fw-btn fw-btn-primary" onClick={() => setDetail(null)}>Вернуться</button>
+                  <p>Заказчик увидит ваше предложение и решит</p>
+                  <button className="fw-b fw-b-p" onClick={() => setDetail(null)}>Вернуться к ленте</button>
                 </div>
               ) : (
-                <div className="fw-side-card">
-                  <h3 className="fw-side-title">Откликнуться</h3>
-                  <div className="fw-field">
-                    <label>Ваша цена, ₽</label>
-                    <input type="number" placeholder="0" value={offerForm.price}
-                      onChange={e => setOfferForm({...offerForm, price: e.target.value})} />
+                <div className="fw-sc">
+                  <h3 className="fw-sc-t">Взять заказ</h3>
+
+                  {/* Price choice */}
+                  {clientPrice > 0 && (
+                    <div className="fw-price-choice">
+                      <button className={`fw-pc-btn ${useClientPrice ? 'active' : ''}`}
+                        onClick={() => setUseClientPrice(true)}>
+                        ✅ Согласен — {clientPrice.toLocaleString('ru-RU')} ₽
+                      </button>
+                      <button className={`fw-pc-btn ${!useClientPrice ? 'active' : ''}`}
+                        onClick={() => setUseClientPrice(false)}>
+                        ✏️ Предложить свою цену
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Custom price input */}
+                  {(!useClientPrice || !clientPrice) && (
+                    <div className="fw-f">
+                      <label>Ваша цена, ₽</label>
+                      <input type="number" placeholder="Сколько возьмёте за работу"
+                        value={customPrice} onChange={e => setCustomPrice(e.target.value)} />
+                    </div>
+                  )}
+
+                  <div className="fw-f">
+                    <label>Срок выполнения (дней)</label>
+                    <input type="number" placeholder="Не обязательно"
+                      value={days} onChange={e => setDays(e.target.value)} />
                   </div>
-                  <div className="fw-field">
-                    <label>Срок (дней)</label>
-                    <input type="number" placeholder="—" value={offerForm.days}
-                      onChange={e => setOfferForm({...offerForm, days: e.target.value})} />
+
+                  <div className="fw-f">
+                    <label>Сообщение заказчику</label>
+                    <textarea placeholder={useClientPrice && clientPrice
+                      ? 'Здравствуйте! Согласен на вашу цену, готов приступить…'
+                      : 'Здравствуйте! Предлагаю свою цену, потому что…'}
+                      value={comment} onChange={e => setComment(e.target.value)} />
                   </div>
-                  <div className="fw-field">
-                    <label>Сообщение</label>
-                    <textarea placeholder="Здравствуйте! Готов выполнить…" value={offerForm.comment}
-                      onChange={e => setOfferForm({...offerForm, comment: e.target.value})} />
+
+                  {/* Summary */}
+                  <div className="fw-summary">
+                    <div className="fw-summary-label">Итого ваш отклик:</div>
+                    <div className="fw-summary-price">
+                      {getFinalPrice() > 0 ? `${getFinalPrice().toLocaleString('ru-RU')} ₽` : 'Укажите цену'}
+                    </div>
+                    {useClientPrice && clientPrice > 0 && (
+                      <div className="fw-summary-note">Вы соглашаетесь на цену клиента</div>
+                    )}
+                    {!useClientPrice && customPrice && clientPrice > 0 && Number(customPrice) !== clientPrice && (
+                      <div className="fw-summary-note fw-summary-diff">
+                        {Number(customPrice) < clientPrice
+                          ? `Дешевле на ${(clientPrice - Number(customPrice)).toLocaleString('ru-RU')} ₽`
+                          : `Дороже на ${(Number(customPrice) - clientPrice).toLocaleString('ru-RU')} ₽`
+                        }
+                      </div>
+                    )}
                   </div>
-                  {offerStatus === 'error' && <div className="fw-side-error">Не удалось отправить</div>}
-                  <button className="fw-btn fw-btn-primary" disabled={!offerForm.price || offerStatus === 'sending'}
+
+                  {offerStatus === 'error' && <div className="fw-err">Не удалось отправить. Попробуйте ещё раз.</div>}
+
+                  <button className="fw-b fw-b-p" disabled={getFinalPrice() <= 0 || offerStatus === 'sending'}
                     onClick={handleSend}>
-                    {offerStatus === 'sending' ? 'Отправляем…' : '📤 Откликнуться'}
+                    {offerStatus === 'sending' ? 'Отправляем…'
+                      : useClientPrice && clientPrice ? '✅ Взять за ' + clientPrice.toLocaleString('ru-RU') + ' ₽'
+                      : '📤 Отправить предложение'}
                   </button>
-                  <button className="fw-btn fw-btn-chat" onClick={() => handleChat(detail)}>
+
+                  <button className="fw-b fw-b-chat" onClick={() => navigate('/chat')}>
                     💬 Написать заказчику
                   </button>
                 </div>
@@ -187,29 +252,37 @@ export default function FindWorkPage() {
               </div>
             )}
             {loading ? (
-              <div className="fw-grid">{[1,2,3,4].map(i => <div key={i} className="fw-card-skel skeleton" />)}</div>
+              <div className="fw-grid">{[1,2,3,4].map(i => <div key={i} className="fw-skel skeleton" />)}</div>
             ) : filtered.length === 0 ? (
               <div className="card empty-state"><span className="empty-state-icon">🔍</span><h3>Заявок нет</h3><p>Новые появятся здесь</p></div>
             ) : (
               <div className="fw-grid">
-                {filtered.map((req, i) => (
-                  <div key={req.id} className="fw-card fade-up" style={{animationDelay:`${i*0.04}s`}} onClick={() => openDetail(req)}>
-                    <div className="fw-card-cat">{catName(req.categoryId)}</div>
-                    <h3 className="fw-card-title">{req.title}</h3>
-                    {req.budgetTo ? (
-                      <div className="fw-card-price">{Number(req.budgetTo).toLocaleString('ru-RU')} ₽</div>
-                    ) : (
-                      <div className="fw-card-price fw-card-price-dog">Договорная</div>
-                    )}
-                    {req.description && req.description !== 'Без описания' && (
-                      <p className="fw-card-desc">{req.description}</p>
-                    )}
-                    <div className="fw-card-bottom">
-                      {req.addressText && <span>📍 {req.addressText}</span>}
-                      <span>{timeAgo(req.createdAt)}</span>
+                {filtered.map((req, i) => {
+                  const price = req.budgetTo ? Number(req.budgetTo) : 0;
+                  return (
+                    <div key={req.id} className="fw-card fade-up" style={{animationDelay:`${i*0.04}s`}} onClick={() => openDetail(req)}>
+                      <div className="fw-card-cat">{catName(req.categoryId)}</div>
+                      <h3 className="fw-card-title">{req.title}</h3>
+                      <div className="fw-card-price-row">
+                        {price > 0 ? (
+                          <>
+                            <div className="fw-card-price">{price.toLocaleString('ru-RU')} ₽</div>
+                            <div className="fw-card-price-hint">предв. цена</div>
+                          </>
+                        ) : (
+                          <div className="fw-card-price fw-card-price-dog">Договорная</div>
+                        )}
+                      </div>
+                      {req.description && req.description !== 'Без описания' && (
+                        <p className="fw-card-desc">{req.description}</p>
+                      )}
+                      <div className="fw-card-bottom">
+                        {req.addressText && <span>📍 {req.addressText}</span>}
+                        <span>{timeAgo(req.createdAt)}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -220,20 +293,18 @@ export default function FindWorkPage() {
             {deals.length === 0 ? (
               <div className="card empty-state"><span className="empty-state-icon">🤝</span><h3>Сделок нет</h3><p>Откликайтесь на заявки</p></div>
             ) : (
-              <div className="fw-deals-list">
-                {deals.map((d, i) => {
-                  const st = DEAL_ST[d.status] || { l: d.status, c: 'st-new' };
-                  return (
-                    <div key={d.id} className="fw-deal fade-up" style={{animationDelay:`${i*0.04}s`}}>
-                      <div className="fw-deal-row">
-                        <div className="fw-deal-price">{d.agreedPrice ? `${Number(d.agreedPrice).toLocaleString('ru-RU')} ₽` : '—'}</div>
-                        <span className={`fw-deal-st ${st.c}`}>{st.l}</span>
-                      </div>
-                      <div className="fw-deal-date">{d.createdAt ? new Date(d.createdAt).toLocaleDateString('ru-RU') : ''}</div>
+              <div className="fw-deals">{deals.map((d,i) => {
+                const st = DEAL_ST[d.status]||{l:d.status,c:'st-new'};
+                return (
+                  <div key={d.id} className="fw-deal fade-up" style={{animationDelay:`${i*0.04}s`}}>
+                    <div className="fw-deal-row">
+                      <div className="fw-deal-price">{d.agreedPrice?`${Number(d.agreedPrice).toLocaleString('ru-RU')} ₽`:'—'}</div>
+                      <span className={`fw-deal-st ${st.c}`}>{st.l}</span>
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="fw-deal-date">{d.createdAt?new Date(d.createdAt).toLocaleDateString('ru-RU'):''}</div>
+                  </div>
+                );
+              })}</div>
             )}
           </div>
         )}

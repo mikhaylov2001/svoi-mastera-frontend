@@ -4,205 +4,288 @@ import { getMyJobRequests, getOffersForRequest, acceptOffer, getCategories } fro
 import { useAuth } from '../context/AuthContext';
 import './MyOrdersPage.css';
 
-const ST = {
-  DRAFT:'Черновик', OPEN:'Открыта', IN_NEGOTIATION:'Переговоры', ASSIGNED:'Назначена',
-  IN_PROGRESS:'В работе', COMPLETED:'Выполнена', CANCELLED:'Отменена', EXPIRED:'Истекла',
+const STATUS_LABELS = {
+  DRAFT: 'Черновик',
+  OPEN: 'Открыта',
+  IN_NEGOTIATION: 'Обсуждение',
+  ASSIGNED: 'Назначена',
+  IN_PROGRESS: 'В работе',
+  COMPLETED: 'Выполнена',
+  CANCELLED: 'Отменена',
+  EXPIRED: 'Истекла',
 };
-const ST_CLS = { OPEN:'badge-new', IN_PROGRESS:'badge-progress', COMPLETED:'badge-done', CANCELLED:'badge-failed' };
+const STATUS_CLS = {
+  OPEN: 'badge-new',
+  IN_PROGRESS: 'badge-progress',
+  COMPLETED: 'badge-done',
+  CANCELLED: 'badge-failed',
+  EXPIRED: 'badge-failed',
+};
 
 export default function MyOrdersPage() {
   const { userId } = useAuth();
+
   const [requests, setRequests] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState('loading');
   const [filter, setFilter] = useState('ALL');
 
-  // Detail panel
-  const [selected, setSelected] = useState(null);
+  // Expanded request (show offers)
+  const [expandedId, setExpandedId] = useState(null);
   const [offers, setOffers] = useState([]);
   const [offersLoading, setOffersLoading] = useState(false);
-  const [actionId, setActionId] = useState(null);
+
+  // Action loading
+  const [actionLoading, setActionLoading] = useState(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    setStatus('loading');
     try {
-      const [reqs, cats] = await Promise.all([getMyJobRequests(userId), getCategories()]);
-      setRequests(reqs); setCategories(cats);
-    } catch {}
-    setLoading(false);
+      const [reqs, cats] = await Promise.all([
+        getMyJobRequests(userId),
+        getCategories(),
+      ]);
+      setRequests(reqs);
+      setCategories(cats);
+      setStatus('success');
+    } catch {
+      setStatus('error');
+    }
   }, [userId]);
 
   useEffect(() => { load(); }, [load]);
 
-  const catName = (id) => categories.find(c => c.id === id)?.name || '';
+  const getCategoryName = (catId) => {
+    const cat = categories.find(c => c.id === catId);
+    return cat ? cat.name : '';
+  };
 
-  const openDetail = async (req) => {
-    setSelected(req);
+  const toggleOffers = async (reqId) => {
+    if (expandedId === reqId) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(reqId);
     setOffersLoading(true);
-    try { setOffers(await getOffersForRequest(req.id)); } catch { setOffers([]); }
+    try {
+      const data = await getOffersForRequest(reqId);
+      setOffers(data);
+    } catch {
+      setOffers([]);
+    }
     setOffersLoading(false);
   };
 
-  const handleAccept = async (offer) => {
-    if (!selected) return;
-    setActionId(offer.id);
-    try { await acceptOffer(userId, selected.id, offer.id); await load(); setSelected(null); } catch {}
-    setActionId(null);
+  const handleAccept = async (req, offer) => {
+    setActionLoading(offer.id);
+    try {
+      await acceptOffer(userId, req.id, offer.id);
+      await load();
+      setExpandedId(null);
+    } catch { /* handled by api.js */ }
+    setActionLoading(null);
   };
 
   const counts = {
     ALL: requests.length,
     OPEN: requests.filter(r => r.status === 'OPEN').length,
-    ACTIVE: requests.filter(r => ['IN_PROGRESS','ASSIGNED','IN_NEGOTIATION'].includes(r.status)).length,
-    DONE: requests.filter(r => r.status === 'COMPLETED').length,
+    IN_PROGRESS: requests.filter(r => ['IN_PROGRESS', 'ASSIGNED', 'IN_NEGOTIATION'].includes(r.status)).length,
+    COMPLETED: requests.filter(r => r.status === 'COMPLETED').length,
   };
 
-  const filtered = filter === 'ALL' ? requests
-    : filter === 'ACTIVE' ? requests.filter(r => ['IN_PROGRESS','ASSIGNED','IN_NEGOTIATION'].includes(r.status))
-    : filter === 'DONE' ? requests.filter(r => r.status === 'COMPLETED')
-    : requests.filter(r => r.status === filter);
+  const filtered = filter === 'ALL'
+    ? requests
+    : filter === 'IN_PROGRESS'
+      ? requests.filter(r => ['IN_PROGRESS', 'ASSIGNED', 'IN_NEGOTIATION'].includes(r.status))
+      : requests.filter(r => r.status === filter);
 
   return (
     <div>
       <div className="page-header-bar">
         <div className="container">
           <h1>Мои заказы</h1>
-          <p>Управляйте заявками и выбирайте мастеров</p>
+          <p>Ваши заявки и отклики мастеров</p>
         </div>
       </div>
 
       <div className="container">
-        {/* Mobile filter chips */}
-        <div className="mo-chips">
-          {[['ALL','Все',counts.ALL],['OPEN','Открытые',counts.OPEN],['ACTIVE','В работе',counts.ACTIVE],['DONE','Готово',counts.DONE]].map(([k,l,c]) => (
-            <button key={k} className={`mo-chip ${filter===k?'active':''}`} onClick={() => setFilter(k)}>
-              {l} <span>{c}</span>
-            </button>
-          ))}
-        </div>
+        <div className="orders-layout">
 
-        <div className="mo-layout">
-          {/* Sidebar */}
-          <aside className="mo-sidebar">
-            <div className="mo-sidebar-title">Фильтр</div>
-            {[['ALL','Все заявки',counts.ALL],['OPEN','Открытые',counts.OPEN],['ACTIVE','В работе',counts.ACTIVE],['DONE','Выполнены',counts.DONE]].map(([k,l,c]) => (
-              <button key={k} className={`mo-filter ${filter===k?'active':''}`} onClick={() => setFilter(k)}>
-                {l}<span className="mo-filter-count">{c}</span>
+          {/* Sidebar filters */}
+          <aside className="orders-sidebar">
+            <div className="orders-sidebar-title">Статус</div>
+            {[
+              ['ALL', 'Все заявки'],
+              ['OPEN', 'Открытые'],
+              ['IN_PROGRESS', 'В работе'],
+              ['COMPLETED', 'Выполнены'],
+            ].map(([key, label]) => (
+              <button
+                key={key}
+                className={`orders-filter-btn ${filter === key ? 'active' : ''}`}
+                onClick={() => setFilter(key)}
+              >
+                {label}
+                <span className="orders-filter-count">{counts[key] ?? 0}</span>
               </button>
             ))}
-            <div className="mo-sidebar-sep" />
-            <Link to="/sections" className="btn btn-primary btn-full">+ Создать заявку</Link>
+            <div className="orders-sidebar-divider" />
+            <Link to="/sections" className="btn btn-primary btn-full">+ Новая заявка</Link>
           </aside>
 
-          {/* List */}
-          <div className="mo-main">
-            {loading ? (
-              <div className="mo-list">{[1,2,3].map(i => <div key={i} className="mo-skel skeleton" />)}</div>
-            ) : filtered.length === 0 ? (
-              <div className="card empty-state">
-                <span className="empty-state-icon">📋</span>
-                <h3>Заявок нет</h3>
-                <p>Создайте заявку — мастера увидят её и предложат цену</p>
-                <Link to="/sections" className="btn btn-primary">Создать заявку</Link>
-              </div>
-            ) : (
-              <div className="mo-list">
-                {filtered.map((req, i) => (
-                  <div key={req.id} className={`mo-card fade-up ${selected?.id === req.id ? 'selected' : ''}`}
-                    style={{animationDelay:`${i*0.03}s`}} onClick={() => openDetail(req)}>
-                    <div className="mo-card-row">
-                      <h3 className="mo-card-title">{req.title}</h3>
-                      <span className={`badge ${ST_CLS[req.status]||'badge-new'}`}>{ST[req.status]||req.status}</span>
-                    </div>
-                    {req.description && req.description !== 'Без описания' && (
-                      <p className="mo-card-desc">{req.description}</p>
-                    )}
-                    <div className="mo-card-meta">
-                      {catName(req.categoryId) && <span>🏷 {catName(req.categoryId)}</span>}
-                      {req.addressText && <span>📍 {req.addressText}</span>}
-                      {req.createdAt && <span>🕐 {new Date(req.createdAt).toLocaleDateString('ru-RU')}</span>}
-                    </div>
-                    {req.budgetTo && <div className="mo-card-price">до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽</div>}
-                    <div className="mo-card-tap">Нажмите чтобы посмотреть отклики →</div>
+          {/* Main */}
+          <div className="orders-main">
+
+            {/* Mobile filters */}
+            <div className="orders-mobile-filters">
+              {['ALL', 'OPEN', 'IN_PROGRESS', 'COMPLETED'].map(key => (
+                <button
+                  key={key}
+                  className={`orders-mobile-filter ${filter === key ? 'active' : ''}`}
+                  onClick={() => setFilter(key)}
+                >
+                  {key === 'ALL' ? 'Все' : key === 'OPEN' ? 'Открытые' : key === 'IN_PROGRESS' ? 'В работе' : 'Выполнены'}
+                  <span>{counts[key] ?? 0}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="orders-list-header">
+              <span className="orders-list-count">{filtered.length} заявок</span>
+              <Link to="/sections" className="btn btn-primary btn-sm orders-new-btn-mobile">+ Новая</Link>
+            </div>
+
+            {status === 'loading' && (
+              <div className="orders-list">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="order-skeleton">
+                    <div className="skeleton" style={{ width: '55%', height: 18, marginBottom: 10 }} />
+                    <div className="skeleton" style={{ width: '90%', height: 14, marginBottom: 6 }} />
+                    <div className="skeleton" style={{ width: '40%', height: 14 }} />
                   </div>
                 ))}
+              </div>
+            )}
+
+            {status === 'error' && (
+              <div className="orders-error">
+                <p>Не удалось загрузить заявки</p>
+                <button className="btn btn-primary btn-sm" onClick={load}>Повторить</button>
+              </div>
+            )}
+
+            {status === 'success' && filtered.length === 0 && (
+              <div className="card empty-state">
+                <span className="empty-state-icon">📋</span>
+                <h3>Заявок пока нет</h3>
+                <p>Создайте первую заявку — мастера откликнутся</p>
+                <Link to="/sections" className="btn btn-primary">Найти мастера</Link>
+              </div>
+            )}
+
+            {status === 'success' && filtered.length > 0 && (
+              <div className="orders-list">
+                {filtered.map((req, i) => {
+                  const stLabel = STATUS_LABELS[req.status] || req.status;
+                  const stCls = STATUS_CLS[req.status] || 'badge-new';
+                  const isExpanded = expandedId === req.id;
+                  const catName = getCategoryName(req.categoryId);
+
+                  return (
+                    <div className={`order-card fade-up ${isExpanded ? 'expanded' : ''}`} key={req.id} style={{ animationDelay: `${i * 0.04}s` }}>
+                      <div className="order-card-top">
+                        <div className="order-card-info">
+                          <h3 className="order-card-title">{req.title}</h3>
+                          <div className="order-card-meta">
+                            {catName && <span>🏷️ {catName}</span>}
+                            {req.addressText && <span>📍 {req.addressText}</span>}
+                            {req.createdAt && <span>🕐 {new Date(req.createdAt).toLocaleDateString('ru-RU')}</span>}
+                          </div>
+                        </div>
+                        <div className="order-card-right">
+                          <span className={`badge ${stCls}`}>{stLabel}</span>
+                          {req.budgetTo && (
+                            <span className="order-card-price">до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {req.description && req.description !== 'Без описания' && (
+                        <p className="order-card-desc">{req.description}</p>
+                      )}
+
+                      <div className="order-card-actions">
+                        {req.status === 'OPEN' && (
+                          <button
+                            className="btn btn-outline btn-sm"
+                            onClick={() => toggleOffers(req.id)}
+                          >
+                            {isExpanded ? '▲ Скрыть отклики' : '📩 Смотреть отклики'}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Offers panel */}
+                      {isExpanded && (
+                        <div className="order-offers-panel">
+                          <div className="order-offers-title">Отклики мастеров</div>
+
+                          {offersLoading && (
+                            <div className="skeleton" style={{ height: 60, borderRadius: 12 }} />
+                          )}
+
+                          {!offersLoading && offers.length === 0 && (
+                            <p className="order-offers-empty">Откликов пока нет. Мастера увидят вашу заявку и предложат цену.</p>
+                          )}
+
+                          {!offersLoading && offers.map(offer => (
+                            <div className="offer-card" key={offer.id}>
+                              <div className="offer-card-top">
+                                <div>
+                                  <span className="offer-card-price">{Number(offer.price).toLocaleString('ru-RU')} ₽</span>
+                                  {offer.estimatedDays && (
+                                    <span className="offer-card-days"> · {offer.estimatedDays} дн.</span>
+                                  )}
+                                  {req.budgetTo && Number(offer.price) !== Number(req.budgetTo) && (
+                                    <span className="offer-card-diff">
+                                      {Number(offer.price) <= Number(req.budgetTo) ? ' ✓ дешевле' : ' ↑ дороже'}
+                                    </span>
+                                  )}
+                                  {req.budgetTo && Number(offer.price) === Number(req.budgetTo) && (
+                                    <span className="offer-card-match"> ✓ ваша цена</span>
+                                  )}
+                                </div>
+                                <span className={`badge ${offer.status === 'ACCEPTED' ? 'badge-done' : 'badge-new'}`}>
+                                  {offer.status === 'ACCEPTED' ? 'Принят' : offer.status === 'REJECTED' ? 'Отклонён' : 'Новый'}
+                                </span>
+                              </div>
+                              {offer.message && <p className="offer-card-msg">{offer.message}</p>}
+                              <div className="offer-card-date">
+                                {offer.createdAt && new Date(offer.createdAt).toLocaleDateString('ru-RU')}
+                              </div>
+                              {offer.status === 'CREATED' && (
+                                <div className="offer-card-actions">
+                                  <button
+                                    className="btn btn-primary btn-sm"
+                                    disabled={actionLoading === offer.id}
+                                    onClick={() => handleAccept(req, offer)}
+                                  >
+                                    {actionLoading === offer.id ? 'Принимаем…' : '✅ Принять'}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
         </div>
       </div>
-
-      {/* ═══ Detail / Offers Panel (modal on mobile, side panel on desktop) ═══ */}
-      {selected && (
-        <div className="mo-detail-overlay" onClick={() => setSelected(null)}>
-          <div className="mo-detail" onClick={e => e.stopPropagation()}>
-            <button className="mo-detail-close" onClick={() => setSelected(null)}>✕</button>
-
-            <div className="mo-detail-header">
-              <h2>{selected.title}</h2>
-              <span className={`badge ${ST_CLS[selected.status]||'badge-new'}`}>{ST[selected.status]||selected.status}</span>
-            </div>
-
-            {selected.description && selected.description !== 'Без описания' && (
-              <p className="mo-detail-desc">{selected.description}</p>
-            )}
-
-            <div className="mo-detail-info">
-              {catName(selected.categoryId) && <div>🏷 {catName(selected.categoryId)}</div>}
-              {selected.addressText && <div>📍 {selected.addressText}</div>}
-              {selected.budgetTo && <div>💰 до {Number(selected.budgetTo).toLocaleString('ru-RU')} ₽</div>}
-              {selected.createdAt && <div>📅 {new Date(selected.createdAt).toLocaleDateString('ru-RU')}</div>}
-            </div>
-
-            <div className="mo-detail-divider" />
-
-            <h3 className="mo-detail-section-title">
-              📩 Отклики мастеров {!offersLoading && <span className="mo-offers-count">{offers.length}</span>}
-            </h3>
-
-            {offersLoading ? (
-              <div className="skeleton" style={{height:80, borderRadius:12}} />
-            ) : offers.length === 0 ? (
-              <div className="mo-offers-empty">
-                <span>🔍</span>
-                <p>Откликов пока нет</p>
-                <p className="mo-offers-hint">Мастера увидят вашу заявку и предложат свою цену. Обычно первый отклик приходит в течение 10–30 минут.</p>
-              </div>
-            ) : (
-              <div className="mo-offers-list">
-                {offers.map(offer => (
-                  <div key={offer.id} className="mo-offer">
-                    <div className="mo-offer-top">
-                      <div className="mo-offer-price">{Number(offer.price).toLocaleString('ru-RU')} ₽</div>
-                      <div className="mo-offer-status">
-                        {offer.estimatedDays && <span className="mo-offer-days">{offer.estimatedDays} дн.</span>}
-                        <span className={`badge ${offer.status==='ACCEPTED'?'badge-done':'badge-new'}`}>
-                          {offer.status==='ACCEPTED'?'Принят':offer.status==='REJECTED'?'Отклонён':'Новый'}
-                        </span>
-                      </div>
-                    </div>
-                    {offer.message && <p className="mo-offer-msg">{offer.message}</p>}
-                    <div className="mo-offer-date">{offer.createdAt && new Date(offer.createdAt).toLocaleDateString('ru-RU')}</div>
-
-                    {offer.status === 'CREATED' && (
-                      <div className="mo-offer-actions">
-                        <button className="btn btn-primary btn-sm" disabled={actionId===offer.id}
-                          onClick={() => handleAccept(offer)}>
-                          {actionId===offer.id ? 'Принимаем…' : '✅ Принять и создать сделку'}
-                        </button>
-                        <a href={`https://wa.me/?text=${encodeURIComponent('Здравствуйте! Пишу вам по заявке «' + selected.title + '» на СвоиМастера.')}`}
-                          target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
-                          💬 Написать
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
