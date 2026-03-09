@@ -72,6 +72,15 @@ export default function DealsPage() {
       </div>
 
       <div className="container">
+        {/* Mobile filter chips */}
+        <div className="deals-mob-chips">
+          {[['ALL','Все'],['NEW','Новые'],['IN_PROGRESS','В работе'],['COMPLETED','Готово']].map(([k,l]) => (
+            <button key={k} className={`deals-mob-chip ${filter===k?'active':''}`} onClick={() => setFilter(k)}>
+              {l} <span>{counts[k]??0}</span>
+            </button>
+          ))}
+        </div>
+
         <div className="deals-layout">
 
           {/* SIDEBAR */}

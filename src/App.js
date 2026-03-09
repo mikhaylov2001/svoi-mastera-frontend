@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import HomePage from './pages/HomePage';
 import SectionsPage from './pages/SectionsPage';
@@ -13,181 +13,143 @@ import MyOrdersPage from './pages/MyOrdersPage';
 import FindWorkPage from './pages/FindWorkPage';
 import './App.css';
 
-// Protected route wrapper
 function ProtectedRoute({ children, workerOnly = false }) {
   const { userId, userRole } = useAuth();
-
   if (!userId) return <Navigate to="/login" replace />;
   if (workerOnly && userRole !== 'WORKER') return <Navigate to="/profile" replace />;
-
   return children;
 }
 
-// Header component
 function Header() {
-const { userId, userRole } = useAuth();
+  const { userId, userRole, logout } = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const loc = useLocation();
+
+  useEffect(() => { setOpen(false); }, [loc.pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    document.addEventListener('touchstart', h);
+    return () => { document.removeEventListener('mousedown', h); document.removeEventListener('touchstart', h); };
+  }, [open]);
+
+  // Prevent body scroll when menu open
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  const handleLogout = () => { logout(); setOpen(false); };
+
+  const navLinks = () => {
+    if (!userId) return (
+      <>
+        <Link to="/login" className="hd-link">Войти</Link>
+        <Link to="/register" className="btn btn-primary btn-sm">Регистрация</Link>
+      </>
+    );
+    if (userRole === 'WORKER') return (
+      <>
+        <Link to="/find-work" className="hd-link">Найти работу</Link>
+        <Link to="/worker" className="hd-link">Кабинет</Link>
+      </>
+    );
+    return (
+      <>
+        <Link to="/my-orders" className="hd-link">Мои заказы</Link>
+        <Link to="/deals" className="hd-link">Сделки</Link>
+        <Link to="/profile" className="hd-link">Профиль</Link>
+      </>
+    );
+  };
+
+  const mobileLinks = () => {
+    const links = [
+      ['/','Главная'],
+      ['/sections','Услуги'],
+    ];
+    if (userId && userRole === 'WORKER') {
+      links.push(['/find-work','Найти работу'], ['/worker','Кабинет мастера']);
+    } else if (userId) {
+      links.push(['/my-orders','Мои заказы'], ['/deals','Сделки'], ['/profile','Профиль']);
+    }
+    return (
+      <>
+        {links.map(([to, label]) => (
+          <Link key={to} to={to} className="hd-mob-link">{label}</Link>
+        ))}
+        {userId ? (
+          <>
+            <div className="hd-mob-sep" />
+            <button className="hd-mob-link hd-mob-logout" onClick={handleLogout}>Выйти</button>
+          </>
+        ) : (
+          <>
+            <div className="hd-mob-sep" />
+            <Link to="/login" className="hd-mob-link">Войти</Link>
+            <Link to="/register" className="hd-mob-link hd-mob-accent">Регистрация</Link>
+          </>
+        )}
+      </>
+    );
+  };
 
   return (
-    <header style={{
-      background: '#fff',
-      borderBottom: '1px solid var(--gray-200)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-    }}>
-      <div className="container" style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '14px 24px',
-      }}>
-        <Link to="/" style={{
-          fontSize: 20,
-          fontWeight: 900,
-          fontFamily: 'var(--font-display)',
-          color: 'var(--primary)',
-          textDecoration: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-        }}>
-          🔨 СвоиМастера
-        </Link>
-
-        <nav style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-          <Link to="/" style={navLinkStyle}>Главная</Link>
-          <Link to="/sections" style={navLinkStyle}>Услуги</Link>
-
-          {userId ? (
-            <>
-              {userRole === 'WORKER' ? (
-                <>
-                  <Link to="/find-work" style={navLinkStyle}>Найти работу</Link>
-                  <Link to="/worker" style={navLinkStyle}>Кабинет</Link>
-                </>
-              ) : (
-                <>
-                  <Link to="/my-orders" style={navLinkStyle}>Мои заказы</Link>
-                  <Link to="/deals" style={navLinkStyle}>Сделки</Link>
-                  <Link to="/profile" style={navLinkStyle}>Профиль</Link>
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              <Link to="/login" style={navLinkStyle}>Войти</Link>
-              <Link to="/register" className="btn btn-primary btn-sm">
-                Регистрация
-              </Link>
-            </>
-          )}
+    <header className="hd">
+      <div className="container hd-inner">
+        <Link to="/" className="hd-logo">🔨 <span>СвоиМастера</span></Link>
+        <nav className="hd-nav">
+          <Link to="/" className="hd-link">Главная</Link>
+          <Link to="/sections" className="hd-link">Услуги</Link>
+          {navLinks()}
         </nav>
+        <button className={`hd-burger ${open ? 'open' : ''}`} onClick={() => setOpen(!open)} aria-label="Меню">
+          <span /><span /><span />
+        </button>
       </div>
+      {open && (
+        <div className="hd-mob-overlay" onClick={() => setOpen(false)}>
+          <nav className="hd-mob-menu" ref={ref} onClick={e => e.stopPropagation()}>
+            {mobileLinks()}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
 
-const navLinkStyle = {
-  fontSize: 14,
-  fontWeight: 600,
-  color: 'var(--gray-600)',
-  textDecoration: 'none',
-  transition: 'color 0.15s',
-};
-
-// Footer component
 function Footer() {
   return (
-    <footer style={{
-      background: 'var(--gray-900)',
-      color: 'rgba(255,255,255,0.6)',
-      padding: '48px 0 32px',
-      marginTop: 60,
-    }}>
+    <footer className="ft">
       <div className="container">
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 32,
-          marginBottom: 32,
-        }}>
+        <div className="ft-grid">
           <div>
-            <h3 style={{
-              fontSize: 18,
-              fontWeight: 900,
-              color: '#fff',
-              marginBottom: 12,
-              fontFamily: 'var(--font-display)',
-            }}>
-              СвоиМастера
-            </h3>
-            <p style={{ fontSize: 14, lineHeight: 1.6 }}>
-              Маркетплейс для поиска мастеров<br />
-              по домашним задачам
-            </p>
+            <div className="ft-brand">🔨 СвоиМастера в Йошкар-Оле</div>
+            <p className="ft-tag">Маркетплейс для поиска мастеров</p>
           </div>
-
-          <div>
-            <h4 style={{
-              fontSize: 13,
-              fontWeight: 700,
-              color: '#fff',
-              marginBottom: 12,
-              textTransform: 'uppercase',
-              letterSpacing: 0.5,
-            }}>
-              Для заказчиков
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <Link to="/categories" style={footerLinkStyle}>Найти мастера</Link>
-              <Link to="/deals" style={footerLinkStyle}>Мои сделки</Link>
-            </div>
+          <div className="ft-col">
+            <div className="ft-col-title">Заказчикам</div>
+            <Link to="/sections" className="ft-link">Найти мастера</Link>
+            <Link to="/my-orders" className="ft-link">Мои заказы</Link>
           </div>
-
-          <div>
-            <h4 style={{
-              fontSize: 13,
-              fontWeight: 700,
-              color: '#fff',
-              marginBottom: 12,
-              textTransform: 'uppercase',
-              letterSpacing: 0.5,
-            }}>
-              Для мастеров
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <Link to="/register" style={footerLinkStyle}>Стать мастером</Link>
-              <Link to="/worker" style={footerLinkStyle}>Кабинет мастера</Link>
-            </div>
+          <div className="ft-col">
+            <div className="ft-col-title">Мастерам</div>
+            <Link to="/register" className="ft-link">Стать мастером</Link>
+            <Link to="/find-work" className="ft-link">Найти работу</Link>
           </div>
         </div>
-
-        <div style={{
-          paddingTop: 24,
-          borderTop: '1px solid rgba(255,255,255,0.1)',
-          textAlign: 'center',
-          fontSize: 13,
-        }}>
-          © 2026 СвоиМастера. Все права защищены.
-        </div>
+        <div className="ft-bottom">© 2026 СвоиМастера в Йошкар-Оле</div>
       </div>
     </footer>
   );
 }
 
-const footerLinkStyle = {
-  fontSize: 14,
-  color: 'rgba(255,255,255,0.6)',
-  textDecoration: 'none',
-  transition: 'color 0.15s',
-};
-
-// Main App component
 function AppContent() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
-
       <main style={{ flex: 1 }}>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -197,25 +159,13 @@ function AppContent() {
           <Route path="/categories/:slug" element={<CategoryPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-
-          <Route path="/profile" element={
-            <ProtectedRoute><ProfilePage /></ProtectedRoute>
-          } />
-          <Route path="/deals" element={
-            <ProtectedRoute><DealsPage /></ProtectedRoute>
-          } />
-          <Route path="/my-orders" element={
-            <ProtectedRoute><MyOrdersPage /></ProtectedRoute>
-          } />
-          <Route path="/find-work" element={
-            <ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>
-          } />
-          <Route path="/worker" element={
-            <ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>
-          } />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/deals" element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
+          <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
+          <Route path="/find-work" element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
+          <Route path="/worker" element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
         </Routes>
       </main>
-
       <Footer />
     </div>
   );
