@@ -26,9 +26,10 @@ function getFriendlyMessage(status, endpoint, serverMessage) {
 
 async function apiCall(endpoint, options = {}) {
   try {
+    const { headers: extraHeaders, ...restOptions } = options;
     const response = await fetch(`${API_BASE}${endpoint}`, {
-      headers: { 'Content-Type': 'application/json', ...options.headers },
-      ...options,
+      ...restOptions,
+      headers: { 'Content-Type': 'application/json', ...extraHeaders },
     });
     const text = await response.text();
     let data;
