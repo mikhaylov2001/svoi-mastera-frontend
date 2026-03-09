@@ -4,28 +4,22 @@ import { getConversations, getConversation, sendMessage } from '../api';
 import { useAuth } from '../context/AuthContext';
 import './ChatPage.css';
 
-function Avatar({ name, url, size = 40 }) {
-  if (url) return <img src={url} alt="" className="ch-avatar" style={{ width: size, height: size }} />;
-  const initials = (name || '?').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
-  const colors = ['#e8410a','#1565c0','#2e7d32','#f57f17','#7b1fa2','#00838f'];
-  const color = colors[initials.charCodeAt(0) % colors.length];
-  return (
-    <div className="ch-avatar" style={{ width: size, height: size, background: color, fontSize: size * 0.38 }}>
-      {initials}
-    </div>
-  );
+function Avatar({ name, url, size = 44 }) {
+  if (url) return <img src={url} alt="" className="cht-ava" style={{ width: size, height: size }} />;
+  const ini = (name || '?').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
+  const cols = ['#e8410a','#1565c0','#2e7d32','#f57f17','#7b1fa2','#00838f','#d81b60','#3949ab'];
+  const col = cols[(ini.charCodeAt(0) || 0) % cols.length];
+  return <div className="cht-ava" style={{ width: size, height: size, background: col, fontSize: size * 0.36 }}>{ini}</div>;
 }
 
-function timeStr(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
+function timeStr(d) {
+  if (!d) return '';
+  const dt = new Date(d);
   const now = new Date();
-  const diff = now - d;
-  if (diff < 86400000 && d.getDate() === now.getDate()) {
-    return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-  }
-  if (diff < 172800000) return 'вчера';
-  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  if (dt.toDateString() === now.toDateString()) return dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  const y = new Date(now); y.setDate(y.getDate() - 1);
+  if (dt.toDateString() === y.toDateString()) return 'вчера';
+  return dt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
 export default function ChatPage() {
@@ -34,92 +28,81 @@ export default function ChatPage() {
   const navigate = useNavigate();
 
   const [convos, setConvos] = useState([]);
-  const [messages, setMessages] = useState([]);
+  const [msgs, setMsgs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
-  const bottomRef = useRef(null);
-  const pollRef = useRef(null);
+  const endRef = useRef(null);
 
-  // Load conversations list
   const loadConvos = useCallback(async () => {
     try { setConvos(await getConversations(userId)); } catch {}
   }, [userId]);
 
-  // Load messages for active chat
-  const loadMessages = useCallback(async () => {
+  const loadMsgs = useCallback(async () => {
     if (!partnerId) return;
-    try {
-      const msgs = await getConversation(userId, partnerId);
-      setMessages(msgs);
-    } catch {}
+    try { setMsgs(await getConversation(userId, partnerId)); } catch {}
   }, [userId, partnerId]);
 
   useEffect(() => { loadConvos(); }, [loadConvos]);
   useEffect(() => {
-    if (partnerId) {
-      setLoading(true);
-      loadMessages().then(() => setLoading(false));
-    }
-  }, [partnerId, loadMessages]);
+    if (partnerId) { setLoading(true); loadMsgs().then(() => setLoading(false)); }
+  }, [partnerId, loadMsgs]);
 
-  // Scroll to bottom on new messages
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
 
-  // Poll for new messages every 5s
+  // Poll
   useEffect(() => {
     if (!partnerId) return;
-    pollRef.current = setInterval(() => { loadMessages(); loadConvos(); }, 5000);
-    return () => clearInterval(pollRef.current);
-  }, [partnerId, loadMessages, loadConvos]);
+    const iv = setInterval(() => { loadMsgs(); loadConvos(); }, 5000);
+    return () => clearInterval(iv);
+  }, [partnerId, loadMsgs, loadConvos]);
 
-  const handleSend = async () => {
+  const send = async () => {
     if (!text.trim() || !partnerId) return;
     setSending(true);
     try {
       await sendMessage(userId, partnerId, text.trim());
       setText('');
-      await loadMessages();
+      await loadMsgs();
       await loadConvos();
     } catch {}
     setSending(false);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
-  };
+  const onKey = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
 
-  const activeConvo = convos.find(c => c.partnerId === partnerId);
+  const activePartner = convos.find(c => c.partnerId === partnerId);
 
   return (
-    <div className="ch-root">
-      {/* Sidebar: conversations list */}
-      <div className={`ch-sidebar ${partnerId ? 'ch-sidebar-hidden' : ''}`}>
-        <div className="ch-sidebar-header">
+    <div className="cht">
+      {/* ═══ SIDEBAR ═══ */}
+      <div className={`cht-side ${partnerId ? 'cht-side-hide' : ''}`}>
+        <div className="cht-side-hd">
           <h2>Сообщения</h2>
         </div>
+
         {convos.length === 0 ? (
-          <div className="ch-empty">
-            <span>💬</span>
-            <p>Нет сообщений</p>
-            <p className="ch-empty-hint">Напишите мастеру или заказчику со страницы заявки</p>
+          <div className="cht-side-empty">
+            <div className="cht-side-empty-icon">💬</div>
+            <h3>Нет диалогов</h3>
+            <p>Напишите мастеру или заказчику со страницы заявки или сделки</p>
           </div>
         ) : (
-          <div className="ch-convo-list">
+          <div className="cht-side-list">
             {convos.map(c => (
               <div key={c.partnerId}
-                className={`ch-convo ${c.partnerId === partnerId ? 'active' : ''}`}
+                className={`cht-conv ${c.partnerId === partnerId ? 'active' : ''}`}
                 onClick={() => navigate(`/chat/${c.partnerId}`)}>
-                <Avatar name={c.partnerName} url={c.partnerAvatarUrl} size={44} />
-                <div className="ch-convo-info">
-                  <div className="ch-convo-name">{c.partnerName}</div>
-                  <div className="ch-convo-last">{c.lastMessage}</div>
-                </div>
-                <div className="ch-convo-right">
-                  <div className="ch-convo-time">{timeStr(c.lastMessageAt)}</div>
-                  {c.unreadCount > 0 && <div className="ch-convo-badge">{c.unreadCount}</div>}
+                <Avatar name={c.partnerName} url={c.partnerAvatarUrl} size={48} />
+                <div className="cht-conv-body">
+                  <div className="cht-conv-top">
+                    <span className="cht-conv-name">{c.partnerName}</span>
+                    <span className="cht-conv-time">{timeStr(c.lastMessageAt)}</span>
+                  </div>
+                  <div className="cht-conv-bottom">
+                    <span className="cht-conv-msg">{c.lastMessage}</span>
+                    {c.unreadCount > 0 && <span className="cht-conv-badge">{c.unreadCount}</span>}
+                  </div>
                 </div>
               </div>
             ))}
@@ -127,53 +110,84 @@ export default function ChatPage() {
         )}
       </div>
 
-      {/* Chat area */}
-      <div className={`ch-main ${!partnerId ? 'ch-main-empty' : ''}`}>
+      {/* ═══ CHAT AREA ═══ */}
+      <div className={`cht-main ${!partnerId ? 'cht-main-placeholder' : ''}`}>
         {!partnerId ? (
-          <div className="ch-pick">
-            <span>💬</span>
-            <p>Выберите диалог</p>
+          <div className="cht-placeholder">
+            <div className="cht-placeholder-icon">💬</div>
+            <h3>Выберите диалог</h3>
+            <p>или начните новый со страницы заявки</p>
           </div>
         ) : (
           <>
-            {/* Chat header */}
-            <div className="ch-header">
-              <button className="ch-back-btn" onClick={() => navigate('/chat')}>←</button>
-              <Avatar name={activeConvo?.partnerName || ''} url={activeConvo?.partnerAvatarUrl} size={36} />
-              <div className="ch-header-name">{activeConvo?.partnerName || 'Чат'}</div>
+            {/* Header */}
+            <div className="cht-hd">
+              <button className="cht-hd-back" onClick={() => navigate('/chat')}>
+                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </button>
+              <Avatar name={activePartner?.partnerName} url={activePartner?.partnerAvatarUrl} size={38} />
+              <div className="cht-hd-info">
+                <div className="cht-hd-name">{activePartner?.partnerName || 'Чат'}</div>
+                <div className="cht-hd-status">онлайн</div>
+              </div>
             </div>
 
             {/* Messages */}
-            <div className="ch-messages">
+            <div className="cht-msgs">
               {loading ? (
-                <div className="ch-loading">Загрузка...</div>
-              ) : messages.length === 0 ? (
-                <div className="ch-no-msgs">Напишите первое сообщение</div>
+                <div className="cht-msgs-loading">Загрузка сообщений...</div>
+              ) : msgs.length === 0 ? (
+                <div className="cht-msgs-empty">
+                  <div className="cht-msgs-empty-icon">👋</div>
+                  <p>Напишите первое сообщение</p>
+                </div>
               ) : (
-                messages.map(m => (
-                  <div key={m.id} className={`ch-msg ${m.senderId === userId ? 'ch-msg-mine' : 'ch-msg-their'}`}>
-                    <div className="ch-msg-bubble">
-                      <div className="ch-msg-text">{m.text}</div>
-                      <div className="ch-msg-time">
-                        {new Date(m.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
-                        {m.senderId === userId && (
-                          <span className="ch-msg-read">{m.isRead ? ' ✓✓' : ' ✓'}</span>
+                <>
+                  {msgs.map((m, i) => {
+                    const mine = m.senderId === userId;
+                    const showDate = i === 0 || new Date(msgs[i-1].createdAt).toDateString() !== new Date(m.createdAt).toDateString();
+                    return (
+                      <React.Fragment key={m.id}>
+                        {showDate && (
+                          <div className="cht-date-sep">
+                            <span>{new Date(m.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}</span>
+                          </div>
                         )}
-                      </div>
-                    </div>
-                  </div>
-                ))
+                        <div className={`cht-msg ${mine ? 'cht-msg-my' : 'cht-msg-their'}`}>
+                          {!mine && <Avatar name={m.senderName} url={m.senderAvatarUrl} size={32} />}
+                          <div className="cht-bubble">
+                            {!mine && <div className="cht-bubble-name">{m.senderName}</div>}
+                            <div className="cht-bubble-text">{m.text}</div>
+                            <div className="cht-bubble-time">
+                              {new Date(m.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                              {mine && <span className="cht-bubble-read">{m.isRead ? ' ✓✓' : ' ✓'}</span>}
+                            </div>
+                          </div>
+                        </div>
+                      </React.Fragment>
+                    );
+                  })}
+                </>
               )}
-              <div ref={bottomRef} />
+              <div ref={endRef} />
             </div>
 
             {/* Input */}
-            <div className="ch-input-bar">
-              <textarea className="ch-input" placeholder="Напишите сообщение…"
-                value={text} onChange={e => setText(e.target.value)}
-                onKeyDown={handleKeyDown} rows={1} />
-              <button className="ch-send" disabled={!text.trim() || sending} onClick={handleSend}>
-                {sending ? '...' : '➤'}
+            <div className="cht-input">
+              <textarea
+                className="cht-input-field"
+                placeholder="Написать сообщение…"
+                value={text}
+                onChange={e => setText(e.target.value)}
+                onKeyDown={onKey}
+                rows={1}
+              />
+              <button className="cht-input-send" disabled={!text.trim() || sending} onClick={send}>
+                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
               </button>
             </div>
           </>
