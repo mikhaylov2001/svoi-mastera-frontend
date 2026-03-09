@@ -296,12 +296,32 @@ export default function FindWorkPage() {
               <div className="fw-deals">{deals.map((d,i) => {
                 const st = DEAL_ST[d.status]||{l:d.status,c:'st-new'};
                 return (
-                  <div key={d.id} className="fw-deal fade-up" style={{animationDelay:`${i*0.04}s`}}>
+                  <div key={d.id} className="fw-deal fade-up" style={{animationDelay:`${i*0.04}s`}}
+                    onClick={() => navigate('/deals')}>
                     <div className="fw-deal-row">
-                      <div className="fw-deal-price">{d.agreedPrice?`${Number(d.agreedPrice).toLocaleString('ru-RU')} ₽`:'—'}</div>
-                      <span className={`fw-deal-st ${st.c}`}>{st.l}</span>
+                      <div className="fw-deal-info">
+                        <h3 className="fw-deal-title">{d.title || 'Задача'}</h3>
+                        <div className="fw-deal-meta">
+                          {d.category && <span>🏷 {d.category}</span>}
+                          <span>👤 {d.customerName || 'Заказчик'}</span>
+                          <span>{timeAgo(d.createdAt)}</span>
+                        </div>
+                      </div>
+                      <div className="fw-deal-right">
+                        <span className={`fw-deal-st ${st.c}`}>{st.l}</span>
+                        <div className="fw-deal-price">{d.agreedPrice?`${Number(d.agreedPrice).toLocaleString('ru-RU')} ₽`:'—'}</div>
+                      </div>
                     </div>
-                    <div className="fw-deal-date">{d.createdAt?new Date(d.createdAt).toLocaleDateString('ru-RU'):''}</div>
+                    {d.status === 'IN_PROGRESS' && (
+                      <div className="fw-deal-prog">
+                        <span className={d.customerConfirmed ? 'fw-chk-ok' : 'fw-chk-wait'}>
+                          {d.customerConfirmed ? '✅' : '⏳'} Заказчик
+                        </span>
+                        <span className={d.workerConfirmed ? 'fw-chk-ok' : 'fw-chk-wait'}>
+                          {d.workerConfirmed ? '✅' : '⏳'} Мастер
+                        </span>
+                      </div>
+                    )}
                   </div>
                 );
               })}</div>
