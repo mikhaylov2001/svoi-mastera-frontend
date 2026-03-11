@@ -147,71 +147,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="home-cta-section">
-        <div className="container">
-          <div className="home-cta">
-            {userId ? (
-              <form onSubmit={handleMiniTaskSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 540, width: '100%' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  <input
-                    required
-                    value={miniTask.title}
-                    onChange={(e) => setMiniTask(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Название задачи"
-                    className="form-input"
-                  />
-                  <input
-                    required
-                    value={miniTask.city}
-                    onChange={(e) => setMiniTask(prev => ({ ...prev, city: e.target.value }))}
-                    placeholder="Район/город"
-                    className="form-input"
-                    list="citySuggestions"
-                  />
-                  <datalist id="citySuggestions">
-                    {['Центр', 'Лесозавод', 'Московский', 'Семёновский'].map(a => <option key={a} value={a} />)}
-                  </datalist>
-                </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <input
-                    value={miniTask.address}
-                    onChange={(e) => setMiniTask(prev => ({ ...prev, address: e.target.value }))}
-                    placeholder="Адрес (опционально)"
-                    className="form-input"
-                    style={{ flex: 1 }}
-                  />
-                  <input
-                    type="number"
-                    value={miniTask.budget}
-                    onChange={(e) => setMiniTask(prev => ({ ...prev, budget: e.target.value }))}
-                    placeholder="Бюджет"
-                    className="form-input"
-                    style={{ width: 120 }}
-                  />
-                </div>
-                <button type="submit" className="btn btn-primary btn-lg" style={{ width: 'fit-content' }}>
-                  Создать задачу
-                </button>
-                <p style={{ color: '#777', fontSize: 13 }}>Нажимая, вы переходите на страницу разделов (категорий), где можно уточнить задачу.</p>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowQuickCta(true)}>
-                  Добавить задачу в 1 клик
-                </button>
-              </form>
-            ) : (
-              <>
-                <div className="cta-text">
-                  <h2>Готовы разместить задачу?</h2>
-                  <p>Зарегистрируйтесь бесплатно и получите первые отклики уже через 10 минут</p>
-                </div>
-                <button className="btn btn-lg" style={{ background: '#fff', color: '#e8410a', fontWeight: 800, flexShrink: 0, position: 'relative', zIndex: 10 }} onClick={() => setShowGuestModal(true)}>
-                  Начать бесплатно →
-                </button>
-              </>
-            )}
+      {/* CTA - только для незарегистрированных пользователей */}
+      {!userId && (
+        <section className="home-cta-section">
+          <div className="container">
+            <div className="home-cta">
+              <div className="cta-text">
+                <h2>Готовы разместить задачу?</h2>
+                <p>Зарегистрируйтесь бесплатно и получите первые отклики уже через 10 минут</p>
+              </div>
+              <button className="btn btn-lg" style={{ background: '#fff', color: '#e8410a', fontWeight: 800, flexShrink: 0, position: 'relative', zIndex: 10 }} onClick={() => setShowGuestModal(true)}>
+                Начать бесплатно →
+              </button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {showGuestModal && (
         <div className="modal-overlay" onClick={() => setShowGuestModal(false)}>
