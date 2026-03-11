@@ -24,49 +24,6 @@ export default function HomePage() {
     navigate(`/sections?${params}`);
   };
 
-  const [currentArea, setCurrentArea] = useState('');
-  const [geoError, setGeoError] = useState('');
-
-  const pickupArea = (area) => {
-    setMiniTask((prev) => ({ ...prev, city: area }));
-  };
-
-  const detectArea = () => {
-    if (!navigator.geolocation) {
-      setGeoError('Геолокация не поддерживается');
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        try {
-          const apiKey = 'YOUR_YANDEX_API_KEY'; // <-- поставь свой ключ
-          const url = `https://geocode-maps.yandex.ru/1.x/?format=json&apikey=${apiKey}&geocode=${longitude},${latitude}`;
-          const response = await fetch(url);
-          const data = await response.json();
-          const geoObject = data?.response?.GeoObjectCollection?.featureMember?.[0]?.GeoObject;
-          const areaName = geoObject?.metaDataProperty?.GeocoderMetaData?.AddressDetails?.Country?.AdministrativeArea?.SubAdministrativeArea?.Locality?.DependentLocality?.DependentLocalityName
-            || geoObject?.name
-            || `Округ ${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
-
-          setCurrentArea(areaName);
-          setMiniTask((prev) => ({ ...prev, city: areaName }));
-          setGeoError('');
-        } catch (e) {
-          setGeoError('Не удалось определить район через Яндекс');
-          const area = `Округ ${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
-          setCurrentArea(area);
-          setMiniTask((prev) => ({ ...prev, city: area }));
-        }
-      },
-      () => {
-        setGeoError('Не удалось получить ваш район');
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  };
-
   return (
     <div>
       {/* HERO */}
@@ -139,20 +96,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* GEO CTA */}
-      <section className="home-geo">
-        <div className="container">
-          <div className="home-geo-box">
-            <strong>Район рядом</strong>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-              <span>{currentArea || 'Не определён'}</span>
-              <button className="btn btn-outline btn-sm" onClick={detectArea}>Определить район</button>
-              {geoError && <span style={{ color: '#b91c1c' }}>{geoError}</span>}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* HOW IT WORKS */}
       <section className="home-how">
         <div className="container">
@@ -208,10 +151,6 @@ export default function HomePage() {
       <section className="home-cta-section">
         <div className="container">
           <div className="home-cta">
-            <div className="cta-text">
-              <h2>Готовы разместить задачу?</h2>
-              <p>Зарегистрируйтесь бесплатно и получите первые отклики уже через 10 минут</p>
-            </div>
             {userId ? (
               <form onSubmit={handleMiniTaskSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 540, width: '100%' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -260,9 +199,15 @@ export default function HomePage() {
                 </button>
               </form>
             ) : (
-              <button className="btn btn-lg" style={{ background: '#fff', color: '#e8410a', fontWeight: 800, flexShrink: 0 }} onClick={() => setShowGuestModal(true)}>
-                Начать бесплатно →
-              </button>
+              <>
+                <div className="cta-text">
+                  <h2>Готовы разместить задачу?</h2>
+                  <p>Зарегистрируйтесь бесплатно и получите первые отклики уже через 10 минут</p>
+                </div>
+                <button className="btn btn-lg" style={{ background: '#fff', color: '#e8410a', fontWeight: 800, flexShrink: 0, position: 'relative', zIndex: 10 }} onClick={() => setShowGuestModal(true)}>
+                  Начать бесплатно →
+                </button>
+              </>
             )}
           </div>
         </div>

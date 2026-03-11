@@ -69,106 +69,115 @@ export default function ProfilePage() {
       <div className="page-header-bar">
         <div className="container">
           <h1>Мой профиль</h1>
-          <p>Личный кабинет заказчика</p>
         </div>
       </div>
 
       <div className="container">
-        <div className="profile-layout">
-
-          {/* ─── Sidebar ─── */}
-          <aside>
-            <div className="profile-card">
-              <div className="profile-avatar">{initials}</div>
-              <div className="profile-name">{profile?.displayName || userName || 'Загрузка…'}</div>
-              <div className="profile-role-badge">Заказчик</div>
-
-              <div className="profile-info-list">
-                {profile?.city && (
-                  <div className="profile-info-row">
-                    <span>📍</span> {profile.city}
-                  </div>
-                )}
-                {profile?.createdAt && (
-                  <div className="profile-info-row">
-                    <span>📅</span> На сервисе с {new Date(profile.createdAt).toLocaleDateString('ru-RU', {year:'numeric', month:'long'})}
-                  </div>
-                )}
-              </div>
-
-              <button className="btn btn-outline btn-full profile-logout-btn" onClick={handleLogout}>
-                Выйти из аккаунта
-              </button>
-            </div>
-          </aside>
-
-          {/* ─── Main ─── */}
-          <div className="profile-main">
-            {error && <div className="profile-error" style={{ padding: '12px 16px', background: '#fee2e2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 10, marginBottom: 16 }}>{error}</div>}
-
-            {/* Stats */}
-            <div className="profile-section fade-up">
-              <h2 className="profile-section-title">Статистика</h2>
-              <div className="profile-stats-grid">
-                {[
-                  [stats.total,     'Всего сделок'],
-                  [stats.completed, 'Выполнено'],
-                  [stats.active,    'В работе'],
-                ].map(([n, l]) => (
-                  <div className="profile-stat" key={l}>
-                    <div className="profile-stat-num">{n}</div>
-                    <div className="profile-stat-lbl">{l}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Recent deals */}
-            <div className="profile-section fade-up-1">
-              <div className="profile-section-header">
-                <h2 className="profile-section-title">Последние сделки</h2>
-                <Link to="/deals" className="btn btn-ghost btn-sm">Все сделки →</Link>
-              </div>
-
-              {loading && (
-                <div style={{display:'flex',flexDirection:'column',gap:8}}>
-                  {[1,2,3].map(i => <div key={i} className="skeleton" style={{height:60,borderRadius:12}} />)}
-                </div>
+        {/* Profile Header */}
+        <div className="profile-header">
+          <div className="profile-avatar-large">{initials}</div>
+          <div className="profile-info">
+            <div className="profile-name-large">{profile?.displayName || userName || 'Загрузка…'}</div>
+            <div className="profile-role">Заказчик</div>
+            <div className="profile-meta">
+              {profile?.city && <span className="profile-meta-item">📍 {profile.city}</span>}
+              {profile?.createdAt && (
+                <span className="profile-meta-item">
+                  На сервисе с {new Date(profile.createdAt).toLocaleDateString('ru-RU', {year:'numeric', month:'long'})}
+                </span>
               )}
-
-              {!loading && deals.length === 0 && (
-                <div className="profile-empty">
-                  <span>📋</span>
-                  <p>Сделок пока нет</p>
-                  <Link to="/categories" className="btn btn-primary btn-sm">Найти мастера</Link>
-                </div>
-              )}
-
-              {!loading && deals.slice(0, 5).map(deal => {
-                const st = STATUS_MAP[deal.status] || { label: deal.status, cls: 'badge-new' };
-                const canReview = deal.status === 'COMPLETED' && deal.workerName;
-                return (
-                  <div className="profile-deal-row" key={deal.id}>
-                    <div className="profile-deal-info">
-                      <div className="profile-deal-title">{deal.title || 'Задача'}</div>
-                      {deal.workerName && <div className="profile-deal-worker">👤 {deal.workerName}</div>}
-                    </div>
-                    <span className={`badge ${st.cls}`}>{st.label}</span>
-                    {canReview && (
-                      <button className="btn btn-outline btn-sm" onClick={() => { setReviewDeal(deal); setReviewForm({rating:5,comment:''}); setReviewStatus('idle'); }}>
-                        ✍️ Отзыв
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
             </div>
+          </div>
+          <div className="profile-actions">
+            <button className="btn btn-outline" onClick={handleLogout}>
+              Выйти
+            </button>
+          </div>
+        </div>
 
-            {/* Settings placeholder */}
-            <div className="profile-section fade-up-2">
-              <h2 className="profile-section-title">Настройки</h2>
-              <div className="profile-note">
-                🔔 Уведомления, данные профиля и история платежей появятся здесь в следующем обновлении.
+        {/* Stats Bar */}
+        <div className="profile-stats-bar">
+          {[
+            [stats.total, 'Всего сделок', '📋'],
+            [stats.completed, 'Выполнено', '✅'],
+            [stats.active, 'В работе', '⏳'],
+          ].map(([n, l, icon]) => (
+            <div className="profile-stat-bar-item" key={l}>
+              <span className="profile-stat-bar-icon">{icon}</span>
+              <div>
+                <div className="profile-stat-bar-num">{n}</div>
+                <div className="profile-stat-bar-label">{l}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {error && <div className="profile-error" style={{ padding: '12px 16px', background: '#fee2e2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 10, marginBottom: 16 }}>{error}</div>}
+
+        {/* Recent deals */}
+        <div className="profile-section">
+          <div className="profile-section-header">
+            <h2 className="profile-section-title">Последние сделки</h2>
+            <Link to="/deals" className="btn btn-ghost btn-sm">Все сделки →</Link>
+          </div>
+
+          {loading && (
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {[1,2,3].map(i => <div key={i} className="skeleton" style={{height:60,borderRadius:12}} />)}
+            </div>
+          )}
+
+          {!loading && deals.length === 0 && (
+            <div className="profile-empty">
+              <span>📋</span>
+              <p>Сделок пока нет</p>
+              <Link to="/categories" className="btn btn-primary btn-sm">Найти мастера</Link>
+            </div>
+          )}
+
+          {!loading && deals.slice(0, 5).map(deal => {
+            const st = STATUS_MAP[deal.status] || { label: deal.status, cls: 'badge-new' };
+            const canReview = deal.status === 'COMPLETED' && deal.workerName;
+            return (
+              <div className="profile-deal-row" key={deal.id}>
+                <div className="profile-deal-info">
+                  <div className="profile-deal-title">{deal.title || 'Задача'}</div>
+                  {deal.workerName && <div className="profile-deal-worker">👤 {deal.workerName}</div>}
+                </div>
+                <span className={`badge ${st.cls}`}>{st.label}</span>
+                {canReview && (
+                  <button className="btn btn-outline btn-sm" onClick={() => { setReviewDeal(deal); setReviewForm({rating:5,comment:''}); setReviewStatus('idle'); }}>
+                    ✍️ Отзыв
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Settings placeholder */}
+        <div className="profile-section">
+          <h2 className="profile-section-title">Настройки</h2>
+          <div className="profile-settings-grid">
+            <div className="profile-settings-item">
+              <span className="profile-settings-icon">🔔</span>
+              <div>
+                <div className="profile-settings-title">Уведомления</div>
+                <div className="profile-settings-desc">Настройте получение уведомлений о сделках</div>
+              </div>
+            </div>
+            <div className="profile-settings-item">
+              <span className="profile-settings-icon">👤</span>
+              <div>
+                <div className="profile-settings-title">Личные данные</div>
+                <div className="profile-settings-desc">Измените имя, контактную информацию</div>
+              </div>
+            </div>
+            <div className="profile-settings-item">
+              <span className="profile-settings-icon">💳</span>
+              <div>
+                <div className="profile-settings-title">Платежные данные</div>
+                <div className="profile-settings-desc">Управляйте способами оплаты</div>
               </div>
             </div>
           </div>

@@ -11,6 +11,18 @@ function SearchIcon() {
   );
 }
 
+function LogoIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L6 8L8 10L14 4L12 2Z" fill="#e8410a"/>
+      <path d="M20 6L18 8L24 14L26 12L20 6Z" fill="#e8410a"/>
+      <path d="M10 10L2 18L6 22L14 14L10 10Z" fill="#e8410a"/>
+      <circle cx="24" cy="24" r="6" stroke="#e8410a" strokeWidth="2" fill="none"/>
+      <path d="M20 24L28 24" stroke="#e8410a" strokeWidth="2"/>
+    </svg>
+  );
+}
+
 function Header() {
   const { userId, role, userName, logout } = useAuth();
   const navigate = useNavigate();
@@ -32,7 +44,7 @@ function Header() {
 
           {/* LOGO */}
           <Link to="/" className="header-logo">
-            <span className="header-logo-icon">🔨</span>
+            <span className="header-logo-icon"><LogoIcon /></span>
             <span className="header-logo-text">СвоиМастера</span>
           </Link>
 
