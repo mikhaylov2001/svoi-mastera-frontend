@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaTools, FaUser, FaBolt, FaChartBar, FaShieldAlt, FaRocket, FaBullseye, FaCreditCard } from 'react-icons/fa';
 import { loginUser, registerUser } from '../api';
 import { useAuth } from '../context/AuthContext';
 import './AuthPages.css';
@@ -46,7 +47,7 @@ function AuthLeft({ title, subtitle, points, stats }) {
     <div className="auth-left">
       <div className="auth-left-content">
         <Link to="/" className="auth-brand">
-          <span className="auth-brand-icon">🔨</span>
+          <span className="auth-brand-icon"><FaTools /></span>
           <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
         </Link>
         <h2 className="auth-left-title">{title}</h2>
@@ -132,9 +133,9 @@ export function LoginPage() {
         title={<>Всё для мастеров —<br /><span>в одном месте</span></>}
         subtitle="Маркетплейс для поиска мастеров в Йошкар-Оле. Быстро, удобно, безопасно."
         points={[
-          ['⚡','Мгновенные уведомления о новых заказах'],
-          ['📊','Аналитика и статистика в реальном времени'],
-          ['🔒','Безопасные сделки с гарантией оплаты'],
+          [<FaBolt />,'Мгновенные уведомления о новых заказах'],
+          [<FaChartBar />,'Аналитика и статистика в реальном времени'],
+          [<FaShieldAlt />,'Безопасные сделки с гарантией оплаты'],
         ]}
         stats={[['24/7','Приём заявок'],['15+','Категорий'],['5.0★','Рейтинг']]}
       />
@@ -241,12 +242,13 @@ export function RegisterPage() {
 
     setLoading(true);
     try {
-      const resp = await registerUser({ ...form, name, email });
+      const resp = await registerUser({ name, email, password, role: form.role });
 
       const user = resp.user || {};
       const userId = user.id || resp.userId;
       const userName = user.displayName || name;
-      const userRole = user.hasWorkerProfile ? 'WORKER' : 'CUSTOMER';
+      // Используем выбранную роль, а не ту что возвращает API
+      const userRole = form.role;
 
       if (!userId) {
         throw new Error('Не удалось создать аккаунт. Попробуйте ещё раз.');
@@ -266,9 +268,9 @@ export function RegisterPage() {
         title={<>Начните зарабатывать<br /><span>уже сегодня</span></>}
         subtitle="Регистрация займёт меньше минуты. Создайте аккаунт заказчика или мастера."
         points={[
-          ['🚀','Быстрый старт — анкета за 2 минуты'],
-          ['🎯','Умное распределение заказов по категориям'],
-          ['💳','Безопасные выплаты с гарантией'],
+          [<FaRocket />,'Быстрый старт — анкета за 2 минуты'],
+          [<FaBullseye />,'Умное распределение заказов по категориям'],
+          [<FaCreditCard />,'Безопасные выплаты с гарантией'],
         ]}
         stats={[['24/7','Приём заявок'],['15+','Категорий'],['5.0★','Рейтинг']]}
       />
@@ -287,7 +289,7 @@ export function RegisterPage() {
               className={`auth-role-btn ${form.role === 'CUSTOMER' ? 'active' : ''}`}
               onClick={() => setForm({...form, role:'CUSTOMER'})}
             >
-              <span className="auth-role-icon">🏠</span>
+              <span className="auth-role-icon"><FaUser /></span>
               <div>
                 <div className="auth-role-title">Заказчик</div>
                 <div className="auth-role-sub">Ищу мастера</div>
@@ -298,7 +300,7 @@ export function RegisterPage() {
               className={`auth-role-btn ${form.role === 'WORKER' ? 'active' : ''}`}
               onClick={() => setForm({...form, role:'WORKER'})}
             >
-              <span className="auth-role-icon">🔧</span>
+              <span className="auth-role-icon"><FaTools /></span>
               <div>
                 <div className="auth-role-title">Мастер</div>
                 <div className="auth-role-sub">Выполняю работы</div>

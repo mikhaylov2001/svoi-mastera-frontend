@@ -62,9 +62,15 @@ function Header() {
             {userId ? (
               <>
                 {role === 'WORKER' ? (
-                  <NavLink to="/worker" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Мои заявки</NavLink>
+                  <>
+                    <NavLink to="/find-work" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Найти работу</NavLink>
+                    <NavLink to="/active-clients" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Активные клиенты</NavLink>
+                    <NavLink to="/manage-services" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Мои услуги</NavLink>
+                  </>
                 ) : (
-                  <NavLink to="/deals"  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Мои сделки</NavLink>
+                  <>
+                    <NavLink to="/deals"  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Мои сделки</NavLink>
+                  </>
                 )}
 
                 {/* Avatar dropdown */}
