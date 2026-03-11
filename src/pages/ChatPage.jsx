@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getConversations, getConversation, sendMessage } from '../api';
 import { useAuth } from '../context/AuthContext';
 import './ChatPage.css';
@@ -26,57 +26,70 @@ export default function ChatPage() {
   const { partnerId } = useParams();
   const { userId } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const partnerIdStr = useMemo(() => (partnerId == null ? null : String(partnerId)), [partnerId]);
+  const jobRequestId = useMemo(() => {
+    const qp = new URLSearchParams(location.search || '');
+    const v = qp.get('jobRequestId');
+    return v ? String(v) : null;
+  }, [location.search]);
 
   const [convos, setConvos] = useState([]);
   const [msgs, setMsgs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
   const endRef = useRef(null);
 
   const loadConvos = useCallback(async () => {
+    if (!userId) return;
     try { setConvos(await getConversations(userId)); } catch {}
   }, [userId]);
 
   const loadMsgs = useCallback(async () => {
-    if (!partnerId) return;
-    try { setMsgs(await getConversation(userId, partnerId)); } catch {}
-  }, [userId, partnerId]);
+    if (!userId || !partnerIdStr) return;
+    try { setMsgs(await getConversation(userId, partnerIdStr)); } catch {}
+  }, [userId, partnerIdStr]);
 
   useEffect(() => { loadConvos(); }, [loadConvos]);
   useEffect(() => {
-    if (partnerId) { setLoading(true); loadMsgs().then(() => setLoading(false)); }
-  }, [partnerId, loadMsgs]);
+    if (partnerIdStr) { setLoading(true); loadMsgs().then(() => setLoading(false)); }
+  }, [partnerIdStr, loadMsgs]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
 
   // Poll
   useEffect(() => {
-    if (!partnerId) return;
+    if (!partnerIdStr) return;
     const iv = setInterval(() => { loadMsgs(); loadConvos(); }, 5000);
     return () => clearInterval(iv);
-  }, [partnerId, loadMsgs, loadConvos]);
+  }, [partnerIdStr, loadMsgs, loadConvos]);
 
   const send = async () => {
-    if (!text.trim() || !partnerId) return;
+    if (!text.trim() || !partnerIdStr || !userId) return;
     setSending(true);
+    setError('');
     try {
-      await sendMessage(userId, partnerId, text.trim());
+      await sendMessage(userId, partnerIdStr, text.trim(), jobRequestId);
       setText('');
       await loadMsgs();
       await loadConvos();
-    } catch {}
+    } catch (e) {
+      setError(e?.message || 'Не удалось отправить сообщение.');
+    }
     setSending(false);
   };
 
   const onKey = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
 
-  const activePartner = convos.find(c => c.partnerId === partnerId);
+  const activePartner = convos.find(c => String(c.partnerId) === partnerIdStr);
 
   return (
     <div className="cht">
       {/* ═══ SIDEBAR ═══ */}
-      <div className={`cht-side ${partnerId ? 'cht-side-hide' : ''}`}>
+      <div className={`cht-side ${partnerIdStr ? 'cht-side-hide' : ''}`}>
         <div className="cht-side-hd">
           <h2>Сообщения</h2>
         </div>
@@ -111,8 +124,8 @@ export default function ChatPage() {
       </div>
 
       {/* ═══ CHAT AREA ═══ */}
-      <div className={`cht-main ${!partnerId ? 'cht-main-placeholder' : ''}`}>
-        {!partnerId ? (
+      <div className={`cht-main ${!partnerIdStr ? 'cht-main-placeholder' : ''}`}>
+        {!partnerIdStr ? (
           <div className="cht-placeholder">
             <div className="cht-placeholder-icon">💬</div>
             <h3>Выберите диалог</h3>
@@ -136,6 +149,11 @@ export default function ChatPage() {
 
             {/* Messages */}
             <div className="cht-msgs">
+              {error && (
+                <div className="cht-msgs-loading" style={{ color: '#b91c1c' }}>
+                  {error}
+                </div>
+              )}
               {loading ? (
                 <div className="cht-msgs-loading">Загрузка сообщений...</div>
               ) : msgs.length === 0 ? (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getMyJobRequests, getOffersForRequest, acceptOffer, getCategories } from '../api';
 import { useAuth } from '../context/AuthContext';
 import './MyOrdersPage.css';
@@ -24,6 +24,7 @@ const STATUS_CLS = {
 
 export default function MyOrdersPage() {
   const { userId } = useAuth();
+  const navigate = useNavigate();
 
   const [requests, setRequests] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -272,6 +273,14 @@ export default function MyOrdersPage() {
                                   >
                                     {actionLoading === offer.id ? 'Принимаем…' : '✅ Принять'}
                                   </button>
+                                  {(offer.workerId || offer.workerUserId) && (
+                                    <button
+                                      className="btn btn-outline btn-sm"
+                                      onClick={() => navigate(`/chat/${offer.workerId || offer.workerUserId}?jobRequestId=${req.id}`)}
+                                    >
+                                      💬 Написать
+                                    </button>
+                                  )}
                                 </div>
                               )}
                             </div>

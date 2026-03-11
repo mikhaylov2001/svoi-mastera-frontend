@@ -88,6 +88,12 @@ export default function FindWorkPage() {
   // ═══ DETAIL VIEW ═══
   if (detail) {
     const clientPrice = detail.budgetTo ? Number(detail.budgetTo) : 0;
+    const customerId =
+      detail.customerId ||
+      detail.customerUserId ||
+      detail.ownerId ||
+      detail.userId ||
+      null;
 
     return (
       <div className="fw-dp">
@@ -208,7 +214,13 @@ export default function FindWorkPage() {
                       : '📤 Отправить предложение'}
                   </button>
 
-                  <button className="fw-b fw-b-chat" onClick={() => navigate('/chat')}>
+                  <button
+                    className="fw-b fw-b-chat"
+                    onClick={() => {
+                      if (customerId) navigate(`/chat/${customerId}?jobRequestId=${detail.id}`);
+                      else navigate('/chat');
+                    }}
+                  >
                     💬 Написать заказчику
                   </button>
                 </div>
