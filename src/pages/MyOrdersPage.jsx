@@ -273,10 +273,10 @@ export default function MyOrdersPage() {
                                   >
                                     {actionLoading === offer.id ? 'Принимаем…' : '✅ Принять'}
                                   </button>
-                                  {(offer.workerId || offer.workerUserId) && (
+                                  {(offer.workerUserId || offer.workerId) && (
                                     <button
                                       className="btn btn-outline btn-sm"
-                                      onClick={() => navigate(`/chat/${offer.workerId || offer.workerUserId}?jobRequestId=${req.id}`)}
+                                      onClick={() => navigate(`/chat/${offer.workerUserId || offer.workerId}?jobRequestId=${req.id}`)}
                                     >
                                       💬 Написать
                                     </button>

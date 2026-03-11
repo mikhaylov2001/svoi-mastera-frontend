@@ -119,6 +119,40 @@ export async function getReviewsByWorker(workerId) {
   return apiCall(`/workers/${workerId}/reviews`);
 }
 
+// ── WORKER SERVICES ──
+export async function getWorkerServices(workerUserId) {
+  return apiCall(`/workers/${workerUserId}/services`);
+}
+export async function getMyWorkerServices(userId) {
+  return apiCall('/worker/services', { headers: { 'X-User-Id': userId } });
+}
+export async function createWorkerService(userId, data) {
+  return apiCall('/worker/services', {
+    method: 'POST',
+    headers: { 'X-User-Id': userId },
+    body: JSON.stringify({
+      title: data.title,
+      description: data.description || null,
+      priceFrom: data.priceFrom ?? null,
+      priceTo: data.priceTo ?? null,
+      active: data.active ?? true,
+    }),
+  });
+}
+export async function updateWorkerService(userId, id, patch) {
+  return apiCall(`/worker/services/${id}`, {
+    method: 'PATCH',
+    headers: { 'X-User-Id': userId },
+    body: JSON.stringify(patch),
+  });
+}
+export async function deleteWorkerService(userId, id) {
+  return apiCall(`/worker/services/${id}`, {
+    method: 'DELETE',
+    headers: { 'X-User-Id': userId },
+  });
+}
+
 // ── MESSAGES ──
 export async function sendMessage(userId, receiverId, text, jobRequestId) {
   return apiCall('/messages', {
@@ -134,6 +168,28 @@ export async function getConversations(userId) {
 }
 export async function getUnreadCount(userId) {
   return apiCall('/messages/unread-count', { headers: { 'X-User-Id': userId } });
+}
+
+export async function updateMessage(userId, messageId, text) {
+  return apiCall(`/messages/${messageId}`, {
+    method: 'PATCH',
+    headers: { 'X-User-Id': userId },
+    body: JSON.stringify({ text }),
+  });
+}
+
+export async function deleteMessage(userId, messageId) {
+  return apiCall(`/messages/${messageId}`, {
+    method: 'DELETE',
+    headers: { 'X-User-Id': userId },
+  });
+}
+
+export async function deleteConversation(userId, partnerId) {
+  return apiCall(`/messages/with/${partnerId}`, {
+    method: 'DELETE',
+    headers: { 'X-User-Id': userId },
+  });
 }
 
 // ── AVATAR ──

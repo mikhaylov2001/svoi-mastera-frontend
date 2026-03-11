@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getOpenJobRequestsForWorker, createJobOffer, getReviewsByWorker } from '../api';
+import { getOpenJobRequestsForWorker, createJobOffer, getReviewsByWorker, getMyWorkerServices, createWorkerService, updateWorkerService, deleteWorkerService } from '../api';
 import { useAuth } from '../context/AuthContext';
 import './WorkerProfilePage.css';
 
@@ -10,13 +10,19 @@ export default function WorkerProfilePage() {
 
   const [requests, setRequests] = useState([]);
   const [reviews,  setReviews]  = useState([]);
+  const [services, setServices] = useState([]);
   const [status,   setStatus]   = useState('loading');
-  const [tab, setTab] = useState('requests'); // requests | reviews
+  const [tab, setTab] = useState('requests'); // requests | reviews | services
 
   // Offer modal
   const [offerRequest, setOfferRequest] = useState(null);
   const [offerForm,    setOfferForm]    = useState({ price: '', comment: '' });
   const [offerStatus,  setOfferStatus]  = useState('idle');
+
+  // Services
+  const [svcForm, setSvcForm] = useState({ title: '', description: '', priceFrom: '', priceTo: '', active: true });
+  const [svcStatus, setSvcStatus] = useState('idle'); // idle | sending | error
+  const [svcEditId, setSvcEditId] = useState(null);
 
   const initials = (userName || 'Мастер').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0,2);
 
@@ -24,9 +30,11 @@ export default function WorkerProfilePage() {
     Promise.allSettled([
       getOpenJobRequestsForWorker(userId),
       getReviewsByWorker(userId),
-    ]).then(([reqRes, revRes]) => {
+      getMyWorkerServices(userId),
+    ]).then(([reqRes, revRes, svcRes]) => {
       if (reqRes.status === 'fulfilled') setRequests(reqRes.value);
       if (revRes.status === 'fulfilled') setReviews(revRes.value);
+      if (svcRes.status === 'fulfilled') setServices(svcRes.value);
       setStatus('success');
     });
   }, [userId]);
@@ -51,6 +59,62 @@ export default function WorkerProfilePage() {
   const avgRating = reviews.length
     ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1)
     : '—';
+
+  const resetSvcForm = () => {
+    setSvcForm({ title: '', description: '', priceFrom: '', priceTo: '', active: true });
+    setSvcEditId(null);
+    setSvcStatus('idle');
+  };
+
+  const submitSvc = async () => {
+    if (!svcForm.title.trim()) return;
+    setSvcStatus('sending');
+    try {
+      const payload = {
+        title: svcForm.title.trim(),
+        description: svcForm.description.trim() ? svcForm.description.trim() : null,
+        priceFrom: svcForm.priceFrom ? Number(svcForm.priceFrom) : null,
+        priceTo: svcForm.priceTo ? Number(svcForm.priceTo) : null,
+        active: !!svcForm.active,
+      };
+      if (svcEditId) {
+        await updateWorkerService(userId, svcEditId, payload);
+      } else {
+        await createWorkerService(userId, payload);
+      }
+      const fresh = await getMyWorkerServices(userId);
+      setServices(fresh);
+      resetSvcForm();
+    } catch {
+      setSvcStatus('error');
+    }
+  };
+
+  const startEditSvc = (s) => {
+    setSvcEditId(s.id);
+    setSvcForm({
+      title: s.title || '',
+      description: s.description || '',
+      priceFrom: s.priceFrom != null ? String(s.priceFrom) : '',
+      priceTo: s.priceTo != null ? String(s.priceTo) : '',
+      active: s.active !== false,
+    });
+    setSvcStatus('idle');
+  };
+
+  const removeSvc = async (id) => {
+    if (!window.confirm('Удалить услугу?')) return;
+    setSvcStatus('sending');
+    try {
+      await deleteWorkerService(userId, id);
+      const fresh = await getMyWorkerServices(userId);
+      setServices(fresh);
+      if (svcEditId === id) resetSvcForm();
+    } catch {
+      setSvcStatus('error');
+    }
+    setSvcStatus('idle');
+  };
 
   return (
     <div>
@@ -103,6 +167,10 @@ export default function WorkerProfilePage() {
               <button className={`worker-tab ${tab === 'reviews' ? 'active' : ''}`} onClick={() => setTab('reviews')}>
                 ⭐ Мои отзывы
                 {reviews.length > 0 && <span className="worker-tab-badge">{reviews.length}</span>}
+              </button>
+              <button className={`worker-tab ${tab === 'services' ? 'active' : ''}`} onClick={() => setTab('services')}>
+                🧰 Мои услуги
+                {services.length > 0 && <span className="worker-tab-badge">{services.length}</span>}
               </button>
             </div>
 
@@ -172,6 +240,87 @@ export default function WorkerProfilePage() {
                     {rev.customerName && <div className="worker-review-author">— {rev.customerName}</div>}
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* ── Services tab ── */}
+            {tab === 'services' && (
+              <div>
+                <div className="card" style={{ padding: 16, marginBottom: 14 }}>
+                  <h3 style={{ marginTop: 0, marginBottom: 10 }}>{svcEditId ? 'Редактировать услугу' : 'Добавить услугу'}</h3>
+                  <div className="form-field">
+                    <label className="form-label">Название *</label>
+                    <input className="form-input" value={svcForm.title} onChange={e => setSvcForm({ ...svcForm, title: e.target.value })} />
+                  </div>
+                  <div className="form-field">
+                    <label className="form-label">Описание</label>
+                    <textarea className="form-input form-textarea" value={svcForm.description} onChange={e => setSvcForm({ ...svcForm, description: e.target.value })} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <div className="form-field">
+                      <label className="form-label">Цена от, ₽</label>
+                      <input className="form-input" type="number" value={svcForm.priceFrom} onChange={e => setSvcForm({ ...svcForm, priceFrom: e.target.value })} />
+                    </div>
+                    <div className="form-field">
+                      <label className="form-label">Цена до, ₽</label>
+                      <input className="form-input" type="number" value={svcForm.priceTo} onChange={e => setSvcForm({ ...svcForm, priceTo: e.target.value })} />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6, marginBottom: 8 }}>
+                    <input
+                      id="svc-active"
+                      type="checkbox"
+                      checked={!!svcForm.active}
+                      onChange={e => setSvcForm({ ...svcForm, active: e.target.checked })}
+                    />
+                    <label htmlFor="svc-active" style={{ fontSize: 13, color: 'var(--gray-600)' }}>Показывать клиентам</label>
+                  </div>
+                  {svcStatus === 'error' && <div className="cat-form-error">Не удалось сохранить</div>}
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button className="btn btn-primary" onClick={submitSvc} disabled={!svcForm.title.trim() || svcStatus === 'sending'}>
+                      {svcStatus === 'sending' ? 'Сохраняем…' : (svcEditId ? 'Сохранить' : 'Добавить')}
+                    </button>
+                    {(svcEditId || svcForm.title || svcForm.description || svcForm.priceFrom || svcForm.priceTo) && (
+                      <button className="btn btn-outline" onClick={resetSvcForm}>Сбросить</button>
+                    )}
+                  </div>
+                </div>
+
+                {services.length === 0 ? (
+                  <div className="card empty-state">
+                    <span className="empty-state-icon">🧰</span>
+                    <h3>Услуг пока нет</h3>
+                    <p>Добавьте 2–3 услуги — клиентам будет проще написать вам и понять цены</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {services.map(s => (
+                      <div className="card" key={s.id} style={{ padding: 14, display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'flex-start' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 800, color: 'var(--gray-800)', marginBottom: 4 }}>
+                            {s.title} {!s.active && <span style={{ fontWeight: 700, color: 'var(--gray-400)' }}>(скрыто)</span>}
+                          </div>
+                          {s.description && <div style={{ color: 'var(--gray-600)', fontSize: 13, marginBottom: 6 }}>{s.description}</div>}
+                          <div style={{ display: 'flex', gap: 10, fontSize: 12, color: 'var(--gray-500)' }}>
+                            {(s.priceFrom != null || s.priceTo != null) ? (
+                              <span>
+                                💰 {s.priceFrom != null ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : ''}
+                                {s.priceFrom != null && s.priceTo != null ? ' ' : ''}
+                                {s.priceTo != null ? `до ${Number(s.priceTo).toLocaleString('ru-RU')} ₽` : ''}
+                              </span>
+                            ) : (
+                              <span>💰 Цена договорная</span>
+                            )}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 10 }}>
+                          <button className="btn btn-outline btn-sm" onClick={() => startEditSvc(s)}>Редактировать</button>
+                          <button className="btn btn-outline btn-sm" onClick={() => removeSvc(s.id)}>Удалить</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { getConversations, getConversation, sendMessage } from '../api';
+import { getConversations, getConversation, sendMessage, updateMessage, deleteMessage, deleteConversation } from '../api';
 import { useAuth } from '../context/AuthContext';
 import './ChatPage.css';
 
@@ -41,6 +41,9 @@ export default function ChatPage() {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [editingText, setEditingText] = useState('');
+  const [menuId, setMenuId] = useState(null);
   const endRef = useRef(null);
 
   const loadConvos = useCallback(async () => {
@@ -85,6 +88,67 @@ export default function ChatPage() {
   const onKey = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
 
   const activePartner = convos.find(c => String(c.partnerId) === partnerIdStr);
+  const closeMenu = () => setMenuId(null);
+
+  const startEdit = (m) => {
+    setEditingId(m.id);
+    setEditingText(m.text || '');
+    closeMenu();
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingText('');
+  };
+
+  const saveEdit = async () => {
+    if (!userId || !editingId) return;
+    const next = (editingText || '').trim();
+    if (!next) return;
+    setSending(true);
+    setError('');
+    try {
+      await updateMessage(userId, editingId, next);
+      cancelEdit();
+      await loadMsgs();
+      await loadConvos();
+    } catch (e) {
+      setError(e?.message || 'Не удалось изменить сообщение.');
+    }
+    setSending(false);
+  };
+
+  const removeMsg = async (messageId) => {
+    if (!userId || !messageId) return;
+    closeMenu();
+    setSending(true);
+    setError('');
+    try {
+      await deleteMessage(userId, messageId);
+      await loadMsgs();
+      await loadConvos();
+    } catch (e) {
+      setError(e?.message || 'Не удалось удалить сообщение.');
+    }
+    setSending(false);
+  };
+
+  const removeChat = async () => {
+    if (!userId || !partnerIdStr) return;
+    closeMenu();
+    if (!window.confirm('Удалить весь чат?')) return;
+    setSending(true);
+    setError('');
+    try {
+      await deleteConversation(userId, partnerIdStr);
+      setMsgs([]);
+      await loadConvos();
+      navigate('/chat');
+    } catch (e) {
+      setError(e?.message || 'Не удалось удалить чат.');
+    }
+    setSending(false);
+  };
 
   return (
     <div className="cht">
@@ -134,7 +198,7 @@ export default function ChatPage() {
         ) : (
           <>
             {/* Header */}
-            <div className="cht-hd">
+            <div className="cht-hd" onClick={closeMenu}>
               <button className="cht-hd-back" onClick={() => navigate('/chat')}>
                 <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path d="M15 18l-6-6 6-6"/>
@@ -145,6 +209,13 @@ export default function ChatPage() {
                 <div className="cht-hd-name">{activePartner?.partnerName || 'Чат'}</div>
                 <div className="cht-hd-status">онлайн</div>
               </div>
+              <button
+                className="btn btn-ghost btn-sm"
+                style={{ marginLeft: 'auto' }}
+                onClick={(e) => { e.stopPropagation(); removeChat(); }}
+              >
+                Удалить чат
+              </button>
             </div>
 
             {/* Messages */}
@@ -177,11 +248,40 @@ export default function ChatPage() {
                           {!mine && <Avatar name={m.senderName} url={m.senderAvatarUrl} size={32} />}
                           <div className="cht-bubble">
                             {!mine && <div className="cht-bubble-name">{m.senderName}</div>}
-                            <div className="cht-bubble-text">{m.text}</div>
+                            {mine && editingId === m.id ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                <textarea
+                                  className="cht-input-field"
+                                  style={{ minHeight: 70 }}
+                                  value={editingText}
+                                  onChange={(e) => setEditingText(e.target.value)}
+                                />
+                                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                                  <button className="btn btn-outline btn-sm" onClick={cancelEdit} disabled={sending}>Отмена</button>
+                                  <button className="btn btn-primary btn-sm" onClick={saveEdit} disabled={sending || !editingText.trim()}>
+                                    Сохранить
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="cht-bubble-text" onClick={() => mine && setMenuId(menuId === m.id ? null : m.id)}>
+                                {m.text}
+                              </div>
+                            )}
                             <div className="cht-bubble-time">
                               {new Date(m.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
                               {mine && <span className="cht-bubble-read">{m.isRead ? ' ✓✓' : ' ✓'}</span>}
                             </div>
+                            {mine && menuId === m.id && editingId !== m.id && (
+                              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
+                                <button className="btn btn-outline btn-sm" onClick={() => startEdit(m)} disabled={sending}>
+                                  Редактировать
+                                </button>
+                                <button className="btn btn-outline btn-sm" onClick={() => removeMsg(m.id)} disabled={sending}>
+                                  Удалить
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </React.Fragment>
