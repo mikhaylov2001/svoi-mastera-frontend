@@ -1,22 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-
-// --- MOCK DEPENDENCIES ---
-// Replacing missing external imports to ensure the file compiles in a self-contained environment.
-const useAuth = () => ({ userId: 'mock-user-id' });
-
-const getMyDeals = async (userId) => {
-  return [
-    { id: '1', title: 'Example Task 1', status: 'IN_PROGRESS', customerId: 'mock-user-id', workerName: 'Alex', agreedPrice: 1500, createdAt: Date.now() },
-    { id: '2', title: 'Example Task 2', status: 'COMPLETED', customerId: 'other-user', workerName: 'mock-user-id', agreedPrice: 5000, createdAt: Date.now() - 86400000 },
-  ];
-};
-
-const completeDeal = async (userId, dealId) => {
-  return new Promise(resolve => setTimeout(resolve, 500));
-};
-
-const Link = ({ to, className, children }) => <a href={to} className={className}>{children}</a>;
-// -------------------------
+import { Link } from 'react-router-dom';
+import { getMyDeals, completeDeal } from '../api';
+import { useAuth } from '../context/AuthContext';
 
 const ST = {
   NEW: { l: 'Новая', c: 'badge-new' },

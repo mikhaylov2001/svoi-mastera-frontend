@@ -18,6 +18,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
   const [deals,   setDeals]   = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   // review modal
   const [reviewDeal, setReviewDeal] = useState(null);
@@ -25,12 +26,18 @@ export default function ProfilePage() {
   const [reviewStatus, setReviewStatus] = useState('idle');
 
   useEffect(() => {
+    setLoading(true);
+    setError('');
     Promise.allSettled([
       getCustomerProfile(userId),
       getMyDeals(userId),
     ]).then(([profRes, dealsRes]) => {
       if (profRes.status === 'fulfilled') setProfile(profRes.value);
+      if (profRes.status === 'rejected') setError('Не удалось загрузить профиль.');
+
       if (dealsRes.status === 'fulfilled') setDeals(dealsRes.value);
+      if (dealsRes.status === 'rejected') setError(prev => prev ? `${prev} Сделки не загружены.` : 'Не удалось загрузить сделки.');
+
       setLoading(false);
     });
   }, [userId]);
@@ -97,6 +104,7 @@ export default function ProfilePage() {
 
           {/* ─── Main ─── */}
           <div className="profile-main">
+            {error && <div className="profile-error" style={{ padding: '12px 16px', background: '#fee2e2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 10, marginBottom: 16 }}>{error}</div>}
 
             {/* Stats */}
             <div className="profile-section fade-up">

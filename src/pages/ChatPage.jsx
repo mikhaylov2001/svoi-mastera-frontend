@@ -44,6 +44,9 @@ export default function ChatPage() {
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState('');
   const [menuId, setMenuId] = useState(null);
+  const [convoDrafts, setConvoDrafts] = useState({});
+  const [convoSending, setConvoSending] = useState({});
+  const [convoError, setConvoError] = useState({});
   const endRef = useRef(null);
 
   const loadConvos = useCallback(async () => {
@@ -86,6 +89,24 @@ export default function ChatPage() {
   };
 
   const onKey = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+
+  const sendFromSidebar = async (partnerId) => {
+    const draft = (convoDrafts[partnerId] || '').trim();
+    if (!draft || !userId) return;
+    setConvoSending(prev => ({ ...prev, [partnerId]: true }));
+    setConvoError(prev => ({ ...prev, [partnerId]: '' }));
+    try {
+      await sendMessage(userId, partnerId, draft, null);
+      setConvoDrafts(prev => ({ ...prev, [partnerId]: '' }));
+      await loadConvos();
+      if (partnerIdStr === partnerId) {
+        await loadMsgs();
+      }
+    } catch (e) {
+      setConvoError(prev => ({ ...prev, [partnerId]: e?.message || 'Не удалось отправить сообщение.' }));
+    }
+    setConvoSending(prev => ({ ...prev, [partnerId]: false }));
+  };
 
   const activePartner = convos.find(c => String(c.partnerId) === partnerIdStr);
   const closeMenu = () => setMenuId(null);
@@ -180,6 +201,30 @@ export default function ChatPage() {
                     <span className="cht-conv-msg">{c.lastMessage}</span>
                     {c.unreadCount > 0 && <span className="cht-conv-badge">{c.unreadCount}</span>}
                   </div>
+                  <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      value={convoDrafts[c.partnerId] || ''}
+                      placeholder="Быстрый ответ"
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => setConvoDrafts(prev => ({ ...prev, [c.partnerId]: e.target.value }))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          sendFromSidebar(c.partnerId);
+                        }
+                      }}
+                      style={{ width: '100%', borderRadius: 8, border: '1px solid var(--gray-200)', padding: '6px 8px', fontSize: 12 }}
+                    />
+                    <button
+                      onClick={(e) => { e.stopPropagation(); sendFromSidebar(c.partnerId); }}
+                      className="btn btn-sm"
+                      disabled={convoSending[c.partnerId] || !(convoDrafts[c.partnerId] || '').trim()}
+                    >
+                      {convoSending[c.partnerId] ? '...' : '↵'}
+                    </button>
+                  </div>
+                  {convoError[c.partnerId] && <div style={{ color: '#b91c1c', fontSize: 12 }}>{convoError[c.partnerId]}</div>}
                 </div>
               </div>
             ))}
