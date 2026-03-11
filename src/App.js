@@ -55,7 +55,7 @@ function Header() {
 
   const chatLink = (
     <Link to="/chat" className="hd-link hd-chat-link">
-      💬{unread > 0 && <span className="hd-chat-badge">{unread}</span>}
+      �{unread > 0 && <span className="hd-chat-badge">{unread}</span>}
     </Link>
   );
 
@@ -117,7 +117,7 @@ function Header() {
   return (
     <header className="hd">
       <div className="container hd-inner">
-        <Link to="/" className="hd-logo">🔨 <span>СвоиМастера</span></Link>
+        <Link to="/" className="hd-logo">�️ <span>СвоиМастера</span></Link>
         <nav className="hd-nav">
           <Link to="/" className="hd-link">Главная</Link>
           <Link to="/sections" className="hd-link">Услуги</Link>
@@ -192,6 +192,17 @@ function AppContent() {
 }
 
 export default function App() {
+  useEffect(() => {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+    if (Notification.permission === 'default') {
+      Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+          console.log('Push permission granted');
+        }
+      });
+    }
+  }, []);
+
   return (
     <Router>
       <AuthProvider>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getMyJobRequests, getOffersForRequest, acceptOffer, getCategories, sendMessage } from '../api';
+import { getMyJobRequests, getOffersForRequest, acceptOffer, getCategories, getMyDeals, sendMessage } from '../api';
 import { useAuth } from '../context/AuthContext';
 import './MyOrdersPage.css';
 
@@ -27,9 +27,14 @@ export default function MyOrdersPage() {
   const navigate = useNavigate();
 
   const [requests, setRequests] = useState([]);
+  const [deals, setDeals] = useState([]);
   const [categories, setCategories] = useState([]);
   const [status, setStatus] = useState('loading');
   const [filter, setFilter] = useState('ALL');
+  const [search, setSearch] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
 
   // Expanded request (show offers)
   const [expandedId, setExpandedId] = useState(null);
@@ -61,12 +66,14 @@ export default function MyOrdersPage() {
   const load = useCallback(async () => {
     setStatus('loading');
     try {
-      const [reqs, cats] = await Promise.all([
+      const [reqs, cats, deals] = await Promise.all([
         getMyJobRequests(userId),
         getCategories(),
+        getMyDeals(userId),
       ]);
       setRequests(reqs);
       setCategories(cats);
+      setDeals(deals);
       setStatus('success');
     } catch {
       setStatus('error');
@@ -78,6 +85,16 @@ export default function MyOrdersPage() {
   const getCategoryName = (catId) => {
     const cat = categories.find(c => c.id === catId);
     return cat ? cat.name : '';
+  };
+
+  const getRequestFinalStatus = (req) => {
+    const relatedDeal = deals.find(d => d.jobRequestId === req.id);
+    if (relatedDeal) {
+      if (relatedDeal.status === 'COMPLETED') return 'COMPLETED';
+      if (relatedDeal.status === 'IN_PROGRESS') return 'IN_PROGRESS';
+      return relatedDeal.status;
+    }
+    return req.status;
   };
 
   const toggleOffers = async (reqId) => {
@@ -108,16 +125,25 @@ export default function MyOrdersPage() {
 
   const counts = {
     ALL: requests.length,
-    OPEN: requests.filter(r => r.status === 'OPEN').length,
-    IN_PROGRESS: requests.filter(r => ['IN_PROGRESS', 'ASSIGNED', 'IN_NEGOTIATION'].includes(r.status)).length,
-    COMPLETED: requests.filter(r => r.status === 'COMPLETED').length,
+    OPEN: requests.filter(r => getRequestFinalStatus(r) === 'OPEN').length,
+    IN_PROGRESS: requests.filter(r => ['IN_PROGRESS', 'ASSIGNED', 'IN_NEGOTIATION'].includes(getRequestFinalStatus(r))).length,
+    COMPLETED: requests.filter(r => getRequestFinalStatus(r) === 'COMPLETED').length,
   };
 
-  const filtered = filter === 'ALL'
+  const filtered = (filter === 'ALL'
     ? requests
     : filter === 'IN_PROGRESS'
-      ? requests.filter(r => ['IN_PROGRESS', 'ASSIGNED', 'IN_NEGOTIATION'].includes(r.status))
-      : requests.filter(r => r.status === filter);
+      ? requests.filter(r => ['IN_PROGRESS', 'ASSIGNED', 'IN_NEGOTIATION'].includes(getRequestFinalStatus(r)))
+      : requests.filter(r => getRequestFinalStatus(r) === filter))
+    .filter(r => {
+      const text = `${r.title || ''} ${r.description || ''} ${r.city || ''} ${r.addressText || ''}`.toLowerCase();
+      if (search && !text.includes(search.toLowerCase())) return false;
+      if (categoryFilter && r.categoryId !== categoryFilter) return false;
+      const price = Number(r.budgetTo || 0);
+      if (minPrice && price < Number(minPrice)) return false;
+      if (maxPrice && price > Number(maxPrice)) return false;
+      return true;
+    });
 
   return (
     <div>
@@ -171,7 +197,37 @@ export default function MyOrdersPage() {
             </div>
 
             <div className="orders-list-header">
-              <span className="orders-list-count">{filtered.length} заявок</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+                <span className="orders-list-count">{filtered.length} заявок</span>
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Поиск по названию, мастеру, городу"
+                  style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--gray-200)', minWidth: 200 }}
+                />
+                <input
+                  type="number"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  placeholder="Цена от"
+                  style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--gray-200)', width: 90 }}
+                />
+                <input
+                  type="number"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  placeholder="Цена до"
+                  style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--gray-200)', width: 90 }}
+                />
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--gray-200)' }}
+                >
+                  <option value="">Все категории</option>
+                  {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
               <Link to="/sections" className="btn btn-primary btn-sm orders-new-btn-mobile">+ Новая</Link>
             </div>
 
@@ -206,8 +262,9 @@ export default function MyOrdersPage() {
             {status === 'success' && filtered.length > 0 && (
               <div className="orders-list">
                 {filtered.map((req, i) => {
-                  const stLabel = STATUS_LABELS[req.status] || req.status;
-                  const stCls = STATUS_CLS[req.status] || 'badge-new';
+                  const finalStatus = getRequestFinalStatus(req);
+                  const stLabel = STATUS_LABELS[finalStatus] || finalStatus;
+                  const stCls = STATUS_CLS[finalStatus] || 'badge-new';
                   const isExpanded = expandedId === req.id;
                   const catName = getCategoryName(req.categoryId);
 
@@ -235,7 +292,7 @@ export default function MyOrdersPage() {
                       )}
 
                       <div className="order-card-actions">
-                        {req.status === 'OPEN' && (
+                        {getRequestFinalStatus(req) === 'OPEN' && (
                           <button
                             className="btn btn-outline btn-sm"
                             onClick={() => toggleOffers(req.id)}

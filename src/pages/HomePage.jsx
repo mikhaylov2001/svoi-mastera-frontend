@@ -1,5 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { SECTIONS } from './SectionsPage';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import './HomePage.css';
@@ -8,6 +9,64 @@ import './HomePage.css';
 const ALL_CATS = Object.values(CATEGORIES_BY_SECTION).flat();
 
 export default function HomePage() {
+  const { userId } = useAuth();
+  const navigate = useNavigate();
+  const [showGuestModal, setShowGuestModal] = useState(false);
+  const [showQuickCta, setShowQuickCta] = useState(false);
+  const [quickCategory, setQuickCategory] = useState('');
+  const [miniTask, setMiniTask] = useState({ title: '', description: '', city: '', address: '', budget: '' });
+
+  const handleMiniTaskSubmit = (e) => {
+    e.preventDefault();
+    if (!miniTask.title.trim() || !miniTask.city.trim()) return;
+    // Переход к разделам, можно передать параметры в query
+    const params = new URLSearchParams({ q: miniTask.title.trim(), city: miniTask.city.trim() }).toString();
+    navigate(`/sections?${params}`);
+  };
+
+  const [currentArea, setCurrentArea] = useState('');
+  const [geoError, setGeoError] = useState('');
+
+  const pickupArea = (area) => {
+    setMiniTask((prev) => ({ ...prev, city: area }));
+  };
+
+  const detectArea = () => {
+    if (!navigator.geolocation) {
+      setGeoError('Геолокация не поддерживается');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const apiKey = 'YOUR_YANDEX_API_KEY'; // <-- поставь свой ключ
+          const url = `https://geocode-maps.yandex.ru/1.x/?format=json&apikey=${apiKey}&geocode=${longitude},${latitude}`;
+          const response = await fetch(url);
+          const data = await response.json();
+          const geoObject = data?.response?.GeoObjectCollection?.featureMember?.[0]?.GeoObject;
+          const areaName = geoObject?.metaDataProperty?.GeocoderMetaData?.AddressDetails?.Country?.AdministrativeArea?.SubAdministrativeArea?.Locality?.DependentLocality?.DependentLocalityName
+            || geoObject?.name
+            || `Округ ${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+
+          setCurrentArea(areaName);
+          setMiniTask((prev) => ({ ...prev, city: areaName }));
+          setGeoError('');
+        } catch (e) {
+          setGeoError('Не удалось определить район через Яндекс');
+          const area = `Округ ${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+          setCurrentArea(area);
+          setMiniTask((prev) => ({ ...prev, city: area }));
+        }
+      },
+      () => {
+        setGeoError('Не удалось получить ваш район');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
   return (
     <div>
       {/* HERO */}
@@ -30,7 +89,7 @@ export default function HomePage() {
                 <Link to="/sections" className="btn btn-primary btn-lg">
                   🔍 Найти мастера
                 </Link>
-                <Link to="/register" className="btn btn-lg hero-btn-register">
+                <Link to={userId ? '/profile' : '/register'} className="btn btn-lg hero-btn-register">
                   Стать мастером
                 </Link>
               </div>
@@ -79,6 +138,20 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* GEO CTA */}
+      <section className="home-geo">
+        <div className="container">
+          <div className="home-geo-box">
+            <strong>Район рядом</strong>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+              <span>{currentArea || 'Не определён'}</span>
+              <button className="btn btn-outline btn-sm" onClick={detectArea}>Определить район</button>
+              {geoError && <span style={{ color: '#b91c1c' }}>{geoError}</span>}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* HOW IT WORKS */}
       <section className="home-how">
@@ -139,16 +212,102 @@ export default function HomePage() {
               <h2>Готовы разместить задачу?</h2>
               <p>Зарегистрируйтесь бесплатно и получите первые отклики уже через 10 минут</p>
             </div>
-            <Link
-              to="/register"
-              className="btn btn-lg"
-              style={{ background: '#fff', color: '#e8410a', fontWeight: 800, flexShrink: 0 }}
-            >
-              Начать бесплатно →
-            </Link>
+            {userId ? (
+              <form onSubmit={handleMiniTaskSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 540, width: '100%' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <input
+                    required
+                    value={miniTask.title}
+                    onChange={(e) => setMiniTask(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Название задачи"
+                    className="form-input"
+                  />
+                  <input
+                    required
+                    value={miniTask.city}
+                    onChange={(e) => setMiniTask(prev => ({ ...prev, city: e.target.value }))}
+                    placeholder="Район/город"
+                    className="form-input"
+                    list="citySuggestions"
+                  />
+                  <datalist id="citySuggestions">
+                    {['Центр', 'Лесозавод', 'Московский', 'Семёновский'].map(a => <option key={a} value={a} />)}
+                  </datalist>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <input
+                    value={miniTask.address}
+                    onChange={(e) => setMiniTask(prev => ({ ...prev, address: e.target.value }))}
+                    placeholder="Адрес (опционально)"
+                    className="form-input"
+                    style={{ flex: 1 }}
+                  />
+                  <input
+                    type="number"
+                    value={miniTask.budget}
+                    onChange={(e) => setMiniTask(prev => ({ ...prev, budget: e.target.value }))}
+                    placeholder="Бюджет"
+                    className="form-input"
+                    style={{ width: 120 }}
+                  />
+                </div>
+                <button type="submit" className="btn btn-primary btn-lg" style={{ width: 'fit-content' }}>
+                  Создать задачу
+                </button>
+                <p style={{ color: '#777', fontSize: 13 }}>Нажимая, вы переходите на страницу разделов (категорий), где можно уточнить задачу.</p>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowQuickCta(true)}>
+                  Добавить задачу в 1 клик
+                </button>
+              </form>
+            ) : (
+              <button className="btn btn-lg" style={{ background: '#fff', color: '#e8410a', fontWeight: 800, flexShrink: 0 }} onClick={() => setShowGuestModal(true)}>
+                Начать бесплатно →
+              </button>
+            )}
           </div>
         </div>
       </section>
+
+      {showGuestModal && (
+        <div className="modal-overlay" onClick={() => setShowGuestModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 420 }}>
+            <h3>Чтобы создать задачу, войдите или зарегистрируйтесь</h3>
+            <p>Вам будет доступно быстрее и удобнее: предложения мастеров, чат, безопасные сделки.</p>
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <Link to="/login" className="btn btn-primary btn-sm" onClick={() => setShowGuestModal(false)}>Войти</Link>
+              <Link to="/register" className="btn btn-outline btn-sm" onClick={() => setShowGuestModal(false)}>Зарегистрироваться</Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showQuickCta && (
+        <div className="modal-overlay" onClick={() => setShowQuickCta(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
+            <h3>Быстрое размещение задачи</h3>
+            <p>Выберите категорию и перейдите к заполнению.</p>
+            <select value={quickCategory} onChange={(e) => setQuickCategory(e.target.value)} className="form-input">
+              <option value="">Выберите категорию</option>
+              {ALL_CATS.slice(0, 10).map((cat) => (
+                <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+              ))}
+            </select>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => {
+                if (!quickCategory) return;
+                setShowQuickCta(false);
+                navigate(`/sections/${quickCategory}`);
+              }}
+              disabled={!quickCategory}
+            >
+              Перейти
+            </button>
+            <button className="btn btn-outline btn-sm" onClick={() => setShowQuickCta(false)}>Отмена</button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

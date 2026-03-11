@@ -41,6 +41,8 @@ export default function ChatPage() {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const [ws, setWs] = useState(null);
+  const [wsStatus, setWsStatus] = useState('disconnected');
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState('');
   const [menuId, setMenuId] = useState(null);
@@ -64,6 +66,34 @@ export default function ChatPage() {
     if (partnerIdStr) { setLoading(true); loadMsgs().then(() => setLoading(false)); }
   }, [partnerIdStr, loadMsgs]);
 
+  useEffect(() => {
+    if (!userId) return;
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const socketUrl = `${protocol}://${window.location.host}/ws/chat?userId=${userId}`;
+    try {
+      const socket = new WebSocket(socketUrl);
+      setWs(socket);
+      setWsStatus('connecting');
+
+      socket.onopen = () => {
+        setWsStatus('connected');
+      };
+      socket.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'new_message') {
+          loadConvos();
+          if (partnerIdStr && msg.partnerId === partnerIdStr) loadMsgs();
+        }
+      };
+      socket.onclose = () => setWsStatus('disconnected');
+      socket.onerror = () => setWsStatus('error');
+
+      return () => socket.close();
+    } catch (e) {
+      setWsStatus('error');
+    }
+  }, [userId, partnerIdStr, loadConvos, loadMsgs]);
+
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
 
   // Poll
@@ -78,7 +108,12 @@ export default function ChatPage() {
     setSending(true);
     setError('');
     try {
-      await sendMessage(userId, partnerIdStr, text.trim(), jobRequestId);
+      const payload = { type: 'send_message', receiverId: partnerIdStr, text: text.trim(), jobRequestId };
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(payload));
+      } else {
+        await sendMessage(userId, partnerIdStr, text.trim(), jobRequestId);
+      }
       setText('');
       await loadMsgs();
       await loadConvos();
@@ -244,6 +279,9 @@ export default function ChatPage() {
           <>
             {/* Header */}
             <div className="cht-hd" onClick={closeMenu}>
+              <div style={{ position: 'absolute', right: 12, top: 14, fontSize: 12, color: wsStatus === 'connected' ? '#16a34a' : '#be123c' }}>
+                WS: {wsStatus}
+              </div>
               <button className="cht-hd-back" onClick={() => navigate('/chat')}>
                 <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path d="M15 18l-6-6 6-6"/>
