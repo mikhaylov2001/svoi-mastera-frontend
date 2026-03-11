@@ -6,6 +6,8 @@ import HomePage from './pages/HomePage';
 import SectionsPage from './pages/SectionsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import CategoryPage from './pages/CategoryPage';
+import ServicesPage from './pages/ServicesPage';
+import ManageServicesPage from './pages/ManageServicesPage';
 import { LoginPage, RegisterPage } from './pages/AuthPages';
 import ProfilePage from './pages/ProfilePage';
 import WorkerProfilePage from './pages/WorkerProfilePage';
@@ -69,6 +71,7 @@ function Header() {
     if (userRole === 'WORKER') return (
       <>
         <Link to="/find-work" className="hd-link">Найти работу</Link>
+        <Link to="/manage-services" className="hd-link">Мои услуги</Link>
         {chatLink}
         <Link to="/worker" className="hd-link">Кабинет</Link>
       </>
@@ -86,10 +89,11 @@ function Header() {
   const mobileLinks = () => {
     const links = [
       ['/','Главная'],
-      ['/sections','Услуги'],
+      ['/sections','Разделы'],
+      ['/services','Услуги мастеров'],
     ];
     if (userId && userRole === 'WORKER') {
-      links.push(['/find-work','Найти работу'], ['/chat','Сообщения'], ['/worker','Кабинет мастера']);
+      links.push(['/find-work','Найти работу'], ['/manage-services','Мои услуги'], ['/chat','Сообщения'], ['/worker','Кабинет мастера']);
     } else if (userId) {
       links.push(['/my-orders','Мои заказы'], ['/deals','Сделки'], ['/chat','Сообщения'], ['/profile','Профиль']);
     }
@@ -120,7 +124,8 @@ function Header() {
         <Link to="/" className="hd-logo">�️ <span>СвоиМастера</span></Link>
         <nav className="hd-nav">
           <Link to="/" className="hd-link">Главная</Link>
-          <Link to="/sections" className="hd-link">Услуги</Link>
+          <Link to="/sections" className="hd-link">Разделы</Link>
+          <Link to="/services" className="hd-link">Услуги мастеров</Link>
           {navLinks()}
         </nav>
         <button className={`hd-burger ${open ? 'open' : ''}`} onClick={() => setOpen(!open)} aria-label="Меню">
@@ -172,6 +177,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/sections" element={<SectionsPage />} />
+          <Route path="/services" element={<ServicesPage />} />
           <Route path="/categories" element={<SectionsPage />} />
           <Route path="/sections/:sectionSlug" element={<CategoriesPage />} />
           <Route path="/categories/:slug" element={<CategoryPage />} />
@@ -181,6 +187,7 @@ function AppContent() {
           <Route path="/deals" element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
           <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
           <Route path="/find-work" element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
+          <Route path="/manage-services" element={<ProtectedRoute workerOnly><ManageServicesPage /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/chat/:partnerId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/worker" element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />

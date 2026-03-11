@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { FaTools, FaSearch, FaHandshake, FaEdit, FaEnvelope, FaBriefcase, FaHome, FaCar, FaLaptop, FaHammer, FaPaintRoller, FaWrench, FaBolt } from 'react-icons/fa';
 import { SECTIONS } from './SectionsPage';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import './HomePage.css';
@@ -103,9 +104,9 @@ export default function HomePage() {
           <h2 className="section-title">Как это работает</h2>
           <div className="how-grid">
             {[
-              ['1', '✍️', 'Создайте задачу', 'Опишите что нужно, укажите адрес и удобное время'],
-              ['2', '📩', 'Получите отклики', 'Мастера предложат цену — смотрите рейтинг и отзывы'],
-              ['3', '🤝', 'Заключите сделку', 'Выберите мастера и оформите безопасную сделку'],
+              ['1', <FaEdit />, 'Создайте задачу', 'Опишите что нужно, укажите адрес и удобное время'],
+              ['2', <FaEnvelope />, 'Получите отклики', 'Мастера предложат цену — смотрите рейтинг и отзывы'],
+              ['3', <FaHandshake />, 'Заключите сделку', 'Выберите мастера и оформите безопасную сделку'],
             ].map(([n, e, h, p], i) => (
               <div className="how-card fade-up" key={n} style={{ animationDelay: `${i * 0.08}s` }}>
                 <div className="how-num-row">

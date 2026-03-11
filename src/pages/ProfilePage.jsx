@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaMapMarkerAlt, FaCalendarAlt, FaBell, FaUser, FaCreditCard, FaTools, FaClipboardList, FaCheckCircle, FaClock } from 'react-icons/fa';
 import { getCustomerProfile, getMyDeals, createReview } from '../api';
 import { useAuth } from '../context/AuthContext';
 import './ProfilePage.css';
@@ -80,10 +81,10 @@ export default function ProfilePage() {
             <div className="profile-name-large">{profile?.displayName || userName || 'Загрузка…'}</div>
             <div className="profile-role">Заказчик</div>
             <div className="profile-meta">
-              {profile?.city && <span className="profile-meta-item">📍 {profile.city}</span>}
+              {profile?.city && <span className="profile-meta-item"><FaMapMarkerAlt /> {profile.city}</span>}
               {profile?.createdAt && (
                 <span className="profile-meta-item">
-                  На сервисе с {new Date(profile.createdAt).toLocaleDateString('ru-RU', {year:'numeric', month:'long'})}
+                  <FaCalendarAlt /> На сервисе с {new Date(profile.createdAt).toLocaleDateString('ru-RU', {year:'numeric', month:'long'})}
                 </span>
               )}
             </div>
@@ -98,9 +99,9 @@ export default function ProfilePage() {
         {/* Stats Bar */}
         <div className="profile-stats-bar">
           {[
-            [stats.total, 'Всего сделок', '📋'],
-            [stats.completed, 'Выполнено', '✅'],
-            [stats.active, 'В работе', '⏳'],
+            [stats.total, 'Всего сделок', <FaClipboardList />],
+            [stats.completed, 'Выполнено', <FaCheckCircle />],
+            [stats.active, 'В работе', <FaClock />],
           ].map(([n, l, icon]) => (
             <div className="profile-stat-bar-item" key={l}>
               <span className="profile-stat-bar-icon">{icon}</span>
@@ -129,7 +130,7 @@ export default function ProfilePage() {
 
           {!loading && deals.length === 0 && (
             <div className="profile-empty">
-              <span>📋</span>
+              <FaClipboardList style={{ fontSize: '32px', color: 'var(--gray-300)' }} />
               <p>Сделок пока нет</p>
               <Link to="/categories" className="btn btn-primary btn-sm">Найти мастера</Link>
             </div>
@@ -142,12 +143,12 @@ export default function ProfilePage() {
               <div className="profile-deal-row" key={deal.id}>
                 <div className="profile-deal-info">
                   <div className="profile-deal-title">{deal.title || 'Задача'}</div>
-                  {deal.workerName && <div className="profile-deal-worker">👤 {deal.workerName}</div>}
+                  {deal.workerName && <div className="profile-deal-worker"><FaUser /> {deal.workerName}</div>}
                 </div>
                 <span className={`badge ${st.cls}`}>{st.label}</span>
                 {canReview && (
                   <button className="btn btn-outline btn-sm" onClick={() => { setReviewDeal(deal); setReviewForm({rating:5,comment:''}); setReviewStatus('idle'); }}>
-                    ✍️ Отзыв
+                    <FaBell /> Отзыв
                   </button>
                 )}
               </div>
@@ -160,21 +161,21 @@ export default function ProfilePage() {
           <h2 className="profile-section-title">Настройки</h2>
           <div className="profile-settings-grid">
             <div className="profile-settings-item">
-              <span className="profile-settings-icon">🔔</span>
+              <FaBell className="profile-settings-icon" />
               <div>
                 <div className="profile-settings-title">Уведомления</div>
                 <div className="profile-settings-desc">Настройте получение уведомлений о сделках</div>
               </div>
             </div>
             <div className="profile-settings-item">
-              <span className="profile-settings-icon">👤</span>
+              <FaUser className="profile-settings-icon" />
               <div>
                 <div className="profile-settings-title">Личные данные</div>
                 <div className="profile-settings-desc">Измените имя, контактную информацию</div>
               </div>
             </div>
             <div className="profile-settings-item">
-              <span className="profile-settings-icon">💳</span>
+              <FaCreditCard className="profile-settings-icon" />
               <div>
                 <div className="profile-settings-title">Платежные данные</div>
                 <div className="profile-settings-desc">Управляйте способами оплаты</div>
