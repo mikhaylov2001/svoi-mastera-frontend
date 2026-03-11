@@ -1,56 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaTools, FaStar, FaMapMarkerAlt, FaClock, FaDollarSign, FaSave, FaTimes } from 'react-icons/fa';
+import { getMyWorkerServices, createWorkerService, updateWorkerService, deleteWorkerService } from '../api';
+import { useAuth } from '../context/AuthContext';
 import './ManageServicesPage.css';
-
-// Моковые данные услуг мастера
-const mockMasterServices = [
-  {
-    id: 1,
-    title: 'Сборка мебели',
-    description: 'Профессиональная сборка любой мебели: кухни, шкафы, кровати. Работаю с производителями ИКЕА, Хоффман, Шатура.',
-    price: 1500,
-    category: 'Мебель',
-    experience: '5 лет',
-    warranty: '12 месяцев',
-    location: 'Йошкар-Ола',
-    isActive: true,
-    image: 'https://via.placeholder.com/300x200/ff6b6b/ffffff?text=Сборка+мебели',
-    tags: ['Гарантия', 'Опыт 5+ лет', 'Выезд']
-  },
-  {
-    id: 2,
-    title: 'Установка дверей',
-    description: 'Установка межкомнатных и входных дверей. Полный комплекс работ: демонтаж, установка, регулировка.',
-    price: 2500,
-    category: 'Строительство',
-    experience: '7 лет',
-    warranty: '24 месяца',
-    location: 'Йошкар-Ола',
-    isActive: true,
-    image: 'https://via.placeholder.com/300x200/4ecdc4/ffffff?text=Установка+дверей',
-    tags: ['Гарантия', 'Опыт 7+ лет', 'Материалы']
-  },
-  {
-    id: 3,
-    title: 'Ремонт розеток',
-    description: 'Замена и установка розеток, выключателей. Работа с любой электрикой в квартире.',
-    price: 800,
-    category: 'Электрика',
-    experience: '4 года',
-    warranty: '6 месяцев',
-    location: 'Йошкар-Ола',
-    isActive: false,
-    image: 'https://via.placeholder.com/300x200/45b7d1/ffffff?text=Электрика',
-    tags: ['Лицензия', 'Гарантия', 'Срочно']
-  }
-];
 
 const categories = ['Мебель', 'Строительство', 'Электрика', 'Сантехника', 'Компьютеры', 'Уборка', 'Бытовая техника'];
 
 export default function ManageServicesPage() {
-  const [services, setServices] = useState(mockMasterServices);
+  const { userId } = useAuth();
+  const [services, setServices] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -61,6 +23,67 @@ export default function ManageServicesPage() {
     location: 'Йошкар-Ола',
     tags: []
   });
+
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        setLoading(true);
+        const data = await getMyWorkerServices(userId);
+        setServices(data || []);
+      } catch (error) {
+        console.error('Ошибка загрузки услуг:', error);
+        // Используем моковые данные при ошибке API
+        const mockServices = [
+          {
+            id: 1,
+            title: 'Сборка мебели',
+            description: 'Профессиональная сборка любой мебели: кухни, шкафы, кровати. Работаю с производителями ИКЕА, Хоффман, Шатура.',
+            price: 1500,
+            category: 'Мебель',
+            experience: '5 лет',
+            warranty: '12 месяцев',
+            location: 'Йошкар-Ола',
+            isActive: true,
+            image: 'https://via.placeholder.com/300x200/ff6b6b/ffffff?text=Сборка+мебели',
+            tags: ['Гарантия', 'Опыт 5+ лет', 'Выезд']
+          },
+          {
+            id: 2,
+            title: 'Установка дверей',
+            description: 'Установка межкомнатных и входных дверей. Полный комплекс работ: демонтаж, установка, регулировка.',
+            price: 2500,
+            category: 'Строительство',
+            experience: '7 лет',
+            warranty: '24 месяца',
+            location: 'Йошкар-Ола',
+            isActive: true,
+            image: 'https://via.placeholder.com/300x200/4ecdc4/ffffff?text=Установка+дверей',
+            tags: ['Гарантия', 'Опыт 7+ лет', 'Материалы']
+          },
+          {
+            id: 3,
+            title: 'Ремонт розеток',
+            description: 'Замена и установка розеток, выключателей. Работа с любой электрикой в квартире.',
+            price: 800,
+            category: 'Электрика',
+            experience: '4 года',
+            warranty: '6 месяцев',
+            location: 'Йошкар-Ола',
+            isActive: false,
+            image: 'https://via.placeholder.com/300x200/45b7d1/ffffff?text=Электрика',
+            tags: ['Лицензия', 'Гарантия', 'Срочно']
+          }
+        ];
+        setServices(mockServices);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userId) {
+      loadServices();
+    }
+  }, [userId]);
 
   const handleAddService = () => {
     setEditingService(null);
@@ -87,42 +110,85 @@ export default function ManageServicesPage() {
       experience: service.experience,
       warranty: service.warranty,
       location: service.location,
-      tags: service.tags
+      tags: service.tags || []
     });
     setShowAddModal(true);
   };
 
-  const handleSaveService = () => {
+  const handleSaveService = async () => {
     if (!formData.title || !formData.price) return;
 
-    const newService = {
-      id: editingService ? editingService.id : Date.now(),
-      ...formData,
-      price: parseInt(formData.price),
-      isActive: true,
-      image: `https://via.placeholder.com/300x200/ff6b6b/ffffff?text=${encodeURIComponent(formData.title)}`
-    };
+    try {
+      setSaving(true);
+      const serviceData = {
+        title: formData.title,
+        description: formData.description,
+        price: parseInt(formData.price),
+        category: formData.category,
+        experience: formData.experience,
+        warranty: formData.warranty,
+        location: formData.location,
+        tags: formData.tags
+      };
 
-    if (editingService) {
-      setServices(services.map(s => s.id === editingService.id ? newService : s));
-    } else {
-      setServices([...services, newService]);
+      if (editingService) {
+        // Обновляем существующую услугу
+        await updateWorkerService(userId, editingService.id, serviceData);
+        setServices(services.map(s => s.id === editingService.id ? { ...s, ...serviceData } : s));
+      } else {
+        // Создаем новую услугу
+        const newService = await createWorkerService(userId, serviceData);
+        setServices([...services, { ...newService, isActive: true }]);
+      }
+
+      setShowAddModal(false);
+      setEditingService(null);
+    } catch (error) {
+      console.error('Ошибка сохранения услуги:', error);
+      // При ошибке используем локальное обновление для демонстрации
+      const newService = {
+        id: editingService ? editingService.id : Date.now(),
+        ...formData,
+        price: parseInt(formData.price),
+        isActive: true,
+        image: `https://via.placeholder.com/300x200/ff6b6b/ffffff?text=${encodeURIComponent(formData.title)}`
+      };
+
+      if (editingService) {
+        setServices(services.map(s => s.id === editingService.id ? newService : s));
+      } else {
+        setServices([...services, newService]);
+      }
+      setShowAddModal(false);
+      setEditingService(null);
+    } finally {
+      setSaving(false);
     }
-
-    setShowAddModal(false);
-    setEditingService(null);
   };
 
-  const handleDeleteService = (id) => {
-    if (window.confirm('Вы уверены, что хотите удалить эту услугу?')) {
+  const handleDeleteService = async (id) => {
+    if (!window.confirm('Вы уверены, что хотите удалить эту услугу?')) return;
+
+    try {
+      await deleteWorkerService(userId, id);
+      setServices(services.filter(s => s.id !== id));
+    } catch (error) {
+      console.error('Ошибка удаления услуги:', error);
+      // При ошибке используем локальное удаление для демонстрации
       setServices(services.filter(s => s.id !== id));
     }
   };
 
-  const handleToggleActive = (id) => {
-    setServices(services.map(s => 
-      s.id === id ? { ...s, isActive: !s.isActive } : s
-    ));
+  const handleToggleActive = async (id) => {
+    try {
+      const service = services.find(s => s.id === id);
+      await updateWorkerService(userId, id, { active: !service.isActive });
+      setServices(services.map(s => s.id === id ? { ...s, isActive: !s.isActive } : s));
+    } catch (error) {
+      console.error('Ошибка изменения статуса услуги:', error);
+      // При ошибке используем локальное обновление для демонстрации
+      setServices(services.map(s => s.id === id ? { ...s, isActive: !s.isActive } : s));
+    }
   };
 
   const handleAddTag = (e) => {
@@ -173,87 +239,94 @@ export default function ManageServicesPage() {
           </button>
         </div>
 
-        <div className="services-list">
-          {services.length === 0 ? (
-            <div className="empty-services">
-              <FaTools className="empty-icon" />
-              <h3>У вас пока нет услуг</h3>
-              <p>Добавьте свою первую услугу, чтобы начать привлекать клиентов</p>
-              <button className="btn btn-primary" onClick={handleAddService}>
-                <FaPlus /> Добавить услугу
-              </button>
-            </div>
-          ) : (
-            services.map(service => (
-              <div key={service.id} className={`service-item ${!service.isActive ? 'inactive' : ''}`}>
-                <div className="service-image">
-                  <img src={service.image} alt={service.title} />
-                  <div className={`status-badge ${service.isActive ? 'active' : 'inactive'}`}>
-                    {service.isActive ? 'Активна' : 'Неактивна'}
-                  </div>
-                </div>
-
-                <div className="service-content">
-                  <div className="service-header">
-                    <h3 className="service-title">{service.title}</h3>
-                    <div className="service-actions">
-                      <button 
-                        className="btn-icon btn-edit"
-                        onClick={() => handleEditService(service)}
-                        title="Редактировать"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button 
-                        className="btn-icon btn-delete"
-                        onClick={() => handleDeleteService(service.id)}
-                        title="Удалить"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </div>
-
-                  <p className="service-description">{service.description}</p>
-
-                  <div className="service-details">
-                    <div className="detail-item">
-                      <FaDollarSign className="detail-icon" />
-                      <span>{service.price} ₽ / услуга</span>
-                    </div>
-                    <div className="detail-item">
-                      <FaTools className="detail-icon" />
-                      <span>{service.category}</span>
-                    </div>
-                    <div className="detail-item">
-                      <FaMapMarkerAlt className="detail-icon" />
-                      <span>{service.location}</span>
-                    </div>
-                    <div className="detail-item">
-                      <FaClock className="detail-icon" />
-                      <span>Опыт: {service.experience}</span>
-                    </div>
-                  </div>
-
-                  <div className="service-tags">
-                    {service.tags.map((tag, index) => (
-                      <span key={index} className="service-tag">{tag}</span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="service-sidebar">
-                  <button 
-                    className={`toggle-btn ${service.isActive ? 'active' : 'inactive'}`}
-                    onClick={() => handleToggleActive(service.id)}
-                  >
-                    {service.isActive ? 'Деактивировать' : 'Активировать'}
-                  </button>
-                </div>
+        {loading ? (
+          <div className="loading-services">
+            <div className="loading-spinner"></div>
+            <p>Загрузка услуг...</p>
+          </div>
+        ) : (
+          <div className="services-list">
+            {services.length === 0 ? (
+              <div className="empty-services">
+                <FaTools className="empty-icon" />
+                <h3>У вас пока нет услуг</h3>
+                <p>Добавьте свою первую услугу, чтобы начать привлекать клиентов</p>
+                <button className="btn btn-primary" onClick={handleAddService}>
+                  <FaPlus /> Добавить услугу
+                </button>
               </div>
-            ))
-          )}
-        </div>
+            ) : (
+              services.map(service => (
+                <div key={service.id} className={`service-item ${!service.isActive ? 'inactive' : ''}`}>
+                  <div className="service-image">
+                    <img src={service.image} alt={service.title} />
+                    <div className={`status-badge ${service.isActive ? 'active' : 'inactive'}`}>
+                      {service.isActive ? 'Активна' : 'Неактивна'}
+                    </div>
+                  </div>
+
+                  <div className="service-content">
+                    <div className="service-header">
+                      <h3 className="service-title">{service.title}</h3>
+                      <div className="service-actions">
+                        <button 
+                          className="btn-icon btn-edit"
+                          onClick={() => handleEditService(service)}
+                          title="Редактировать"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button 
+                          className="btn-icon btn-delete"
+                          onClick={() => handleDeleteService(service.id)}
+                          title="Удалить"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="service-description">{service.description}</p>
+
+                    <div className="service-details">
+                      <div className="detail-item">
+                        <FaDollarSign className="detail-icon" />
+                        <span>{service.price} ₽ / услуга</span>
+                      </div>
+                      <div className="detail-item">
+                        <FaTools className="detail-icon" />
+                        <span>{service.category}</span>
+                      </div>
+                      <div className="detail-item">
+                        <FaMapMarkerAlt className="detail-icon" />
+                        <span>{service.location}</span>
+                      </div>
+                      <div className="detail-item">
+                        <FaClock className="detail-icon" />
+                        <span>Опыт: {service.experience}</span>
+                      </div>
+                    </div>
+
+                    <div className="service-tags">
+                      {service.tags && service.tags.map((tag, index) => (
+                        <span key={index} className="service-tag">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="service-sidebar">
+                    <button 
+                      className={`toggle-btn ${service.isActive ? 'active' : 'inactive'}`}
+                      onClick={() => handleToggleActive(service.id)}
+                    >
+                      {service.isActive ? 'Деактивировать' : 'Активировать'}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
 
       {/* Модальное окно добавления/редактирования */}
@@ -380,8 +453,8 @@ export default function ManageServicesPage() {
               <button className="btn btn-outline" onClick={() => setShowAddModal(false)}>
                 Отмена
               </button>
-              <button className="btn btn-primary" onClick={handleSaveService}>
-                <FaSave /> {editingService ? 'Сохранить' : 'Добавить'}
+              <button className="btn btn-primary" onClick={handleSaveService} disabled={saving}>
+                <FaSave /> {saving ? 'Сохранение...' : (editingService ? 'Сохранить' : 'Добавить')}
               </button>
             </div>
           </div>

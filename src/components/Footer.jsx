@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { FaTools, FaQuestionCircle, FaBook } from 'react-icons/fa';
 import './Footer.css';
 
 function Footer() {
@@ -8,7 +9,7 @@ function Footer() {
       <div className="container">
         <div className="footer-inner">
           <div className="footer-brand">
-            <span className="footer-logo">🔨 СвоиМастера</span>
+            <span className="footer-logo"><FaTools /> СвоиМастера</span>
             <p className="footer-tagline">Маркетплейс мастеров для дома и ремонта</p>
           </div>
           <div className="footer-links">
@@ -19,8 +20,8 @@ function Footer() {
             </div>
             <div className="footer-col">
               <div className="footer-col-title">Помощь</div>
-              <button className="footer-link">Поддержка</button>
-              <button className="footer-link">Правила</button>
+              <button className="footer-link"><FaQuestionCircle /> Поддержка</button>
+              <button className="footer-link"><FaBook /> Правила</button>
             </div>
           </div>
         </div>
