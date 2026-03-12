@@ -64,10 +64,13 @@ export default function FindMasterPage() {
 
   return (
     <div>
-      <div className="page-header-bar">
-        <div className="container">
-          <h1>Найти мастера</h1>
-          <p>Найдите исполнителя и свяжитесь с ним напрямую через чат</p>
+      <div className="page-header-bar page-header-bar-creative">
+        <div className="container page-header-flex">
+          <h1 className="page-header-title">Найти мастера</h1>
+          <span className="page-header-badge">Мгновенно</span>
+        </div>
+        <div className="container page-header-subtitle">
+          <p>Подбор мастеров теперь ещё проще: стильная лента, размашистая подача и удобный фильтр.</p>
         </div>
       </div>
 
