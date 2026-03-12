@@ -71,6 +71,10 @@ export async function createJobRequest(userId, data) {
 export async function getMyJobRequests(userId) {
   return apiCall('/job-requests/my', { headers: { 'X-User-Id': userId } });
 }
+export async function getOpenJobRequests() {
+  return apiCall('/job-requests/open');
+}
+
 export async function getOpenJobRequestsForWorker(workerId) {
   return apiCall('/worker/job-requests', { headers: { 'X-User-Id': workerId } });
 }
