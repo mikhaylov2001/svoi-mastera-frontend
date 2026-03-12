@@ -1,56 +1,55 @@
-import React, { useEffect, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { ToastProvider } from './context/ToastContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import ProtectedRoute from './components/ProtectedRoute';
+import HomePage from './pages/HomePage';
+import SectionsPage from './pages/SectionsPage';
+import CategoriesPage from './pages/CategoriesPage';
+import CategoryPage from './pages/CategoryPage';
+import ServicesPage from './pages/ServicesPage';
+import ManageServicesPage from './pages/ManageServicesPage';
+import ActiveClientsPage from './pages/ActiveClientsPage';
+import { LoginPage, RegisterPage } from './pages/AuthPages';
+import ProfilePage from './pages/ProfilePage';
+import WorkerProfilePage from './pages/WorkerProfilePage';
+import DealsPage from './pages/DealsPage';
+import MyOrdersPage from './pages/MyOrdersPage';
+import FindWorkPage from './pages/FindWorkPage';
+import ChatPage from './pages/ChatPage';
+import './App.css';
 
-const HomePage = React.lazy(() => import('./pages/HomePage'));
-const SectionsPage = React.lazy(() => import('./pages/SectionsPage'));
-const CategoriesPage = React.lazy(() => import('./pages/CategoriesPage'));
-const CategoryPage = React.lazy(() => import('./pages/CategoryPage'));
-const ServicesPage = React.lazy(() => import('./pages/ServicesPage'));
-const ManageServicesPage = React.lazy(() => import('./pages/ManageServicesPage'));
-const ActiveClientsPage = React.lazy(() => import('./pages/ActiveClientsPage'));
-const LoginPage = React.lazy(() => import('./pages/AuthPages').then(m => ({ default: m.LoginPage })));
-const RegisterPage = React.lazy(() => import('./pages/AuthPages').then(m => ({ default: m.RegisterPage })));
-const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
-const WorkerProfilePage = React.lazy(() => import('./pages/WorkerProfilePage'));
-const DealsPage = React.lazy(() => import('./pages/DealsPage'));
-const MyOrdersPage = React.lazy(() => import('./pages/MyOrdersPage'));
-const FindWorkPage = React.lazy(() => import('./pages/FindWorkPage'));
-const ChatPage = React.lazy(() => import('./pages/ChatPage'));
-const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage'));
-
+function ProtectedRoute({ children, workerOnly = false }) {
+  const { userId, userRole } = useAuth();
+  if (!userId) return <Navigate to="/login" replace />;
+  if (workerOnly && userRole !== 'WORKER') return <Navigate to="/profile" replace />;
+  return children;
+}
 
 function AppContent() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
       <main style={{ flex: 1 }}>
-        <Suspense fallback={<div className="page-loading">Загрузка...</div>}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/sections" element={<SectionsPage />} />
-            <Route path="/services" element={<ServicesPage />} />
-            <Route path="/categories" element={<CategoriesPage />} />
-            <Route path="/sections/:sectionSlug" element={<CategoriesPage />} />
-            <Route path="/categories/:slug" element={<CategoryPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/deals" element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
-            <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
-            <Route path="/find-work" element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
-            <Route path="/manage-services" element={<ProtectedRoute workerOnly><ManageServicesPage /></ProtectedRoute>} />
-            <Route path="/active-clients" element={<ProtectedRoute workerOnly><ActiveClientsPage /></ProtectedRoute>} />
-            <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-            <Route path="/chat/:partnerId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-            <Route path="/worker" element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/sections" element={<SectionsPage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/sections/:sectionSlug" element={<CategoriesPage />} />
+          <Route path="/categories/:slug" element={<CategoryPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/deals" element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
+          <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
+          <Route path="/find-work" element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
+          <Route path="/manage-services" element={<ProtectedRoute workerOnly><ManageServicesPage /></ProtectedRoute>} />
+          <Route path="/active-clients" element={<ProtectedRoute workerOnly><ActiveClientsPage /></ProtectedRoute>} />
+          <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+          <Route path="/chat/:partnerId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+          <Route path="/worker" element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
+        </Routes>
       </main>
       <Footer />
     </div>
@@ -63,6 +62,7 @@ export default function App() {
     if (Notification.permission === 'default') {
       Notification.requestPermission().then((permission) => {
         if (permission === 'granted') {
+          // eslint-disable-next-line no-console
           console.log('Push permission granted');
         }
       });
@@ -72,9 +72,7 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <ToastProvider>
-          <AppContent />
-        </ToastProvider>
+        <AppContent />
       </AuthProvider>
     </Router>
   );
