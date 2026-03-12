@@ -124,11 +124,15 @@ export async function getReviewsByWorker(workerId) {
 }
 
 // ── WORKER SERVICES ──
-export async function getWorkerServices(workerUserId) {
+export async function getWorkerServicesByWorker(workerUserId) {
   return apiCall(`/workers/${workerUserId}/services`);
 }
 export async function getMyWorkerServices(userId) {
   return apiCall('/worker/services', { headers: { 'X-User-Id': userId } });
+}
+export async function getWorkerServices(query = '') {
+  const qs = query ? `?q=${encodeURIComponent(query)}` : '';
+  return apiCall(`/worker-services${qs}`);
 }
 export async function createWorkerService(userId, data) {
   return apiCall('/worker/services', {

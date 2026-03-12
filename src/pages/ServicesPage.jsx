@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FaSearch, FaTools, FaStar, FaMapMarkerAlt, FaFilter, FaCalendar, FaUser, FaClock, FaDollarSign } from 'react-icons/fa';
-import { getCategories } from '../api';
+import { getCategories, getWorkerServices } from '../api';
 import './ServicesPage.css';
 
 export default function ServicesPage() {
@@ -23,109 +23,30 @@ export default function ServicesPage() {
     const loadData = async () => {
       try {
         setLoading(true);
-        // Загружаем услуги мастеров (пока используем моковые данные, так как API для всех услуг может не существовать)
-        // В реальном приложении здесь будет вызов API для получения всех услуг мастеров
-        
-        // Моковые данные для демонстрации
-        const mockServices = [
-          {
-            id: 1,
-            title: 'Сборка мебели',
-            description: 'Профессиональная сборка любой мебели: кухни, шкафы, кровати. Гарантия качества.',
-            price: 1500,
-            category: 'Мебель',
-            categorySlug: 'remont-kvartir',
-            masterName: 'Александр Иванов',
-            masterRating: 4.8,
-            masterReviews: 127,
-            location: 'Йошкар-Ола, Центр',
-            responseTime: '15 мин',
-            image: 'https://via.placeholder.com/300x200/ff6b6b/ffffff?text=Сборка+мебели',
-            tags: ['Гарантия', 'Опыт 5+ лет', 'Выезд']
-          },
-          {
-            id: 2,
-            title: 'Ремонт сантехники',
-            description: 'Установка и ремонт сантехники: трубы, смесители, унитазы. Круглосуточно.',
-            price: 2000,
-            category: 'Сантехника',
-            categorySlug: 'santehnika',
-            masterName: 'Михаил Петров',
-            masterRating: 4.9,
-            masterReviews: 89,
-            location: 'Йошкар-Ола, Ленинский',
-            responseTime: '30 мин',
-            image: 'https://via.placeholder.com/300x200/4ecdc4/ffffff?text=Сантехника',
-            tags: ['Круглосуточно', 'Гарантия', 'Опыт 10+ лет']
-          },
-          {
-            id: 3,
-            title: 'Электромонтажные работы',
-            description: 'Полный комплекс электромонтажных работ: проводка, розетки, освещение.',
-            price: 1800,
-            category: 'Электрика',
-            categorySlug: 'elektrika',
-            masterName: 'Дмитрий Сидоров',
-            masterRating: 4.7,
-            masterReviews: 156,
-            location: 'Йошкар-Ола, Московский',
-            responseTime: '45 мин',
-            image: 'https://via.placeholder.com/300x200/45b7d1/ffffff?text=Электрика',
-            tags: ['Лицензия', 'Гарантия', 'Материалы']
-          },
-          {
-            id: 4,
-            title: 'Ремонт компьютеров',
-            description: 'Диагностика и ремонт компьютеров и ноутбуков. Выезд на дом.',
-            price: 1200,
-            category: 'Компьютеры',
-            categorySlug: 'kompyuternaya-pomosh',
-            masterName: 'Елена Козлова',
-            masterRating: 4.9,
-            masterReviews: 203,
-            location: 'Йошкар-Ола, Семёновский',
-            responseTime: '20 мин',
-            image: 'https://via.placeholder.com/300x200/9b59b6/ffffff?text=Компьютеры',
-            tags: ['Выезд', 'Гарантия', 'Срочно']
-          },
-          {
-            id: 5,
-            title: 'Клининг помещений',
-            description: 'Профессиональная уборка квартир и офисов. Качественная химия.',
-            price: 1000,
-            category: 'Уборка',
-            categorySlug: 'uborka',
-            masterName: 'Ольга Новикова',
-            masterRating: 4.6,
-            masterReviews: 94,
-            location: 'Йошкар-Ола, Лесозавод',
-            responseTime: '1 час',
-            image: 'https://via.placeholder.com/300x200/1abc9c/ffffff?text=Уборка',
-            tags: ['Экология', 'Качество', 'Инвентарь']
-          },
-          {
-            id: 6,
-            title: 'Ремонт стиральных машин',
-            description: 'Диагностика и ремонт стиральных машин всех марок. Гарантия на работы.',
-            price: 1700,
-            category: 'Бытовая техника',
-            categorySlug: 'kompyuternaya-pomosh',
-            masterName: 'Игорь Смирнов',
-            masterRating: 4.8,
-            masterReviews: 178,
-            location: 'Йошкар-Ола, Центр',
-            responseTime: '25 мин',
-            image: 'https://via.placeholder.com/300x200/e67e22/ffffff?text=Стиральные+машины',
-            tags: ['Гарантия', 'Запчасти', 'Выезд']
-          }
-        ];
 
-        // Получаем уникальные категории из услуг
-        const uniqueCategories = ['Все категории', ...new Set(mockServices.map(s => s.category))];
-        
-        setServices(mockServices);
+        const [cats, servicesData] = await Promise.all([getCategories(), getWorkerServices()]);
+
+        const adaptedServices = (servicesData || []).map((item) => ({
+          id: item.id,
+          title: item.title || 'Услуга мастера',
+          description: item.description || 'Описание услуги не указано',
+          price: item.priceFrom || item.priceTo || 0,
+          category: 'Услуги',
+          categorySlug: 'remont-kvartir',
+          masterName: `Мастер`,
+          masterRating: 4.7,
+          masterReviews: item.createdAt ? 5 : 0,
+          location: 'Йошкар-Ола',
+          responseTime: '30 мин',
+          image: 'https://via.placeholder.com/300x200/74b9ff/ffffff?text=Услуга',
+          workerUserId: item.workerUserId,
+        }));
+
+        const uniqueCategories = ['Все категории', ...new Set(adaptedServices.map(s => s.category))];
+
+        setServices(adaptedServices);
         setCategories(uniqueCategories);
-        setFilteredServices(mockServices);
+        setFilteredServices(adaptedServices);
       } catch (error) {
         console.error('Ошибка загрузки услуг:', error);
       } finally {

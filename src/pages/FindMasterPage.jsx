@@ -1,37 +1,51 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CATEGORIES_BY_SECTION } from './CategoriesPage';
+import { getCategories, getWorkerServices } from '../api';
 import './FindMasterPage.css';
-
-const MOCK_MASTERS = [
-  { id: '201', name: 'Алексей Соколов', rating: 4.8, reviews: 62, city: 'Йошкар-Ола', category: 'remont-kvartir' },
-  { id: '202', name: 'Наталья Кузнецова', rating: 4.9, reviews: 39, city: 'Йошкар-Ола', category: 'uborka' },
-  { id: '203', name: 'Илья Орлов', rating: 4.6, reviews: 48, city: 'Йошкар-Ола', category: 'elektrika' },
-  { id: '204', name: 'Ольга Семёнова', rating: 4.8, reviews: 109, city: 'Йошкар-Ола', category: 'parikhmaher' },
-  { id: '205', name: 'Сергей Романов', rating: 4.7, reviews: 28, city: 'Йошкар-Ола', category: 'kompyuternaya-pomosh' },
-];
-
-function flattenCategories() {
-  return Object.values(CATEGORIES_BY_SECTION).flat();
-}
 
 export default function FindMasterPage() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [categories, setCategories] = useState([]);
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const categories = useMemo(() => flattenCategories(), []);
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([getCategories(), getWorkerServices()])
+      .then(([cats, services]) => {
+        setCategories(cats);
+        setServices(services);
+      })
+      .catch((e) => {
+        console.error(e);
+        setError(e?.message || 'Ошибка загрузки данных');
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  const masters = useMemo(() => {
-    if (selectedCategory === 'all') return MOCK_MASTERS;
-    return MOCK_MASTERS.filter((m) => m.category === selectedCategory);
-  }, [selectedCategory]);
+  const selectedCategoryObj = categories.find((c) => c.slug === selectedCategory);
+
+  const visibleServices = services.filter((item) => {
+    if (selectedCategory === 'all') return true;
+
+    if (item.categoryId) {
+      const itemCat = categories.find((c) => c.id === item.categoryId);
+      if (itemCat && itemCat.slug === selectedCategory) return true;
+    }
+
+    if (!selectedCategoryObj) return true;
+    const keyword = selectedCategoryObj.name.toLowerCase();
+    return (item.title?.toLowerCase().includes(keyword) || item.description?.toLowerCase().includes(keyword));
+  });
 
   return (
     <div>
       <div className="page-header-bar">
         <div className="container">
           <h1>Найти мастера</h1>
-          <p>Выберите категорию и свяжитесь с подходящим мастером</p>
+          <p>Найдите исполнителя и свяжитесь с ним напрямую через чат</p>
         </div>
       </div>
 
@@ -41,37 +55,49 @@ export default function FindMasterPage() {
           <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
             <option value="all">Все</option>
             {categories.map((cat) => (
-              <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+              <option key={cat.id} value={cat.slug}>{cat.name}</option>
             ))}
           </select>
           <Link to="/sections" className="btn btn-outline">Выбрать раздел</Link>
         </div>
 
-        <div className="masters-grid">
-          {masters.map((master) => {
-            const category = categories.find((c) => c.slug === master.category);
-            return (
-              <div key={master.id} className="master-card">
-                <div className="master-card-avatar">{master.name.split(' ').map((n) => n[0]).join('').toUpperCase()}</div>
-                <h3>{master.name}</h3>
-                <p>{category?.name || 'Услуга'} • {master.city}</p>
-                <div className="master-stars">{'★'.repeat(Math.round(master.rating))}{'☆'.repeat(5 - Math.round(master.rating))} <span>({master.reviews} отзывов)</span></div>
-                <div className="master-actions">
-                  <button className="btn btn-primary" onClick={() => navigate(`/chat/${master.id}`)}>Написать</button>
-                  <button className="btn btn-outline" onClick={() => navigate(`/categories/${master.category}`)}>Заказать работу</button>
-                </div>
+        {loading ? (
+          <div className="loading-services">Загрузка мастеров...</div>
+        ) : error ? (
+          <div className="no-results" style={{ color: 'red' }}>{error}</div>
+        ) : (
+          <div className="masters-grid">
+            {visibleServices.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">🔍</div>
+                <h3>Мастера не найдены</h3>
+                <p>Попробуйте другую категорию или фильтр</p>
               </div>
-            );
-          })}
-          {masters.length === 0 && (
-            <div className="empty-state">
-              <div className="empty-state-icon">🔍</div>
-              <h3>Мастера не найдены</h3>
-              <p>Попробуйте другую категорию или регион</p>
-            </div>
-          )}
-        </div>
+            ) : visibleServices.map((service) => {
+              const category = categories.find((c) => c.id === service.categoryId);
+              const fallbackCategory = category || selectedCategoryObj;
+              const categoryName = fallbackCategory?.name || 'Услуга';
+              const categorySlug = fallbackCategory?.slug || 'remont-kvartir';
+
+              return (
+                <div key={service.id} className="master-card">
+                  <div className="master-card-avatar">{(service.title || 'Мастер').split(' ').map((x) => x[0] || '').join('').toUpperCase()}</div>
+                  <h3>{service.title || 'Услуга мастера'}</h3>
+                  <p>{categoryName} • Йошкар-Ола</p>
+                  <div className="master-text">{service.description || 'Описание услуги не указано'}</div>
+                  <div className="master-stars">★★★★☆ <span>({service.createdAt ? 25 : 0} отзывов)</span></div>
+                  <div className="master-meta">{service.priceFrom || service.priceTo ? `от ${service.priceFrom ?? '-'} до ${service.priceTo ?? '-'} ₽` : 'цена по договоренности'}</div>
+                  <div className="master-actions">
+                    <button className="btn btn-primary" onClick={() => navigate(`/chat/${service.workerUserId}`)}>Написать</button>
+                    <button className="btn btn-outline" onClick={() => navigate(`/categories/${categorySlug}`)}>Заказать работу</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
