@@ -88,6 +88,7 @@ function Header() {
 
             {userId ? (
               <>
+                <NavLink to="/find-master" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Найти мастера</NavLink>
                 {role === 'WORKER' ? (
                   <>
                     <NavLink to="/find-work" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Найти работу</NavLink>

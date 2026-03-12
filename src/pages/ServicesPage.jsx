@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FaSearch, FaTools, FaStar, FaMapMarkerAlt, FaFilter, FaCalendar, FaUser, FaClock, FaDollarSign } from 'react-icons/fa';
 import { getCategories } from '../api';
 import './ServicesPage.css';
@@ -12,6 +12,7 @@ export default function ServicesPage() {
   const [selectedCategory, setSelectedCategory] = useState('Все категории');
   const [sortBy, setSortBy] = useState('По умолчанию');
   const location = useLocation();
+  const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 5000 });
   const [loading, setLoading] = useState(true);
@@ -33,6 +34,7 @@ export default function ServicesPage() {
             description: 'Профессиональная сборка любой мебели: кухни, шкафы, кровати. Гарантия качества.',
             price: 1500,
             category: 'Мебель',
+            categorySlug: 'remont-kvartir',
             masterName: 'Александр Иванов',
             masterRating: 4.8,
             masterReviews: 127,
@@ -47,6 +49,7 @@ export default function ServicesPage() {
             description: 'Установка и ремонт сантехники: трубы, смесители, унитазы. Круглосуточно.',
             price: 2000,
             category: 'Сантехника',
+            categorySlug: 'santehnika',
             masterName: 'Михаил Петров',
             masterRating: 4.9,
             masterReviews: 89,
@@ -61,6 +64,7 @@ export default function ServicesPage() {
             description: 'Полный комплекс электромонтажных работ: проводка, розетки, освещение.',
             price: 1800,
             category: 'Электрика',
+            categorySlug: 'elektrika',
             masterName: 'Дмитрий Сидоров',
             masterRating: 4.7,
             masterReviews: 156,
@@ -75,6 +79,7 @@ export default function ServicesPage() {
             description: 'Диагностика и ремонт компьютеров и ноутбуков. Выезд на дом.',
             price: 1200,
             category: 'Компьютеры',
+            categorySlug: 'kompyuternaya-pomosh',
             masterName: 'Елена Козлова',
             masterRating: 4.9,
             masterReviews: 203,
@@ -89,6 +94,7 @@ export default function ServicesPage() {
             description: 'Профессиональная уборка квартир и офисов. Качественная химия.',
             price: 1000,
             category: 'Уборка',
+            categorySlug: 'uborka',
             masterName: 'Ольга Новикова',
             masterRating: 4.6,
             masterReviews: 94,
@@ -103,6 +109,7 @@ export default function ServicesPage() {
             description: 'Диагностика и ремонт стиральных машин всех марок. Гарантия на работы.',
             price: 1700,
             category: 'Бытовая техника',
+            categorySlug: 'kompyuternaya-pomosh',
             masterName: 'Игорь Смирнов',
             masterRating: 4.8,
             masterReviews: 178,
@@ -322,9 +329,26 @@ export default function ServicesPage() {
                         <FaDollarSign />
                         {service.price} <span className="price-unit">/ услуга</span>
                       </div>
-                      <button className="btn btn-primary">
-                        Заказать
-                      </button>
+                      <div className="service-actions">
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => {
+                            if (service.categorySlug) {
+                              navigate(`/categories/${service.categorySlug}`);
+                            } else {
+                              navigate('/sections');
+                            }
+                          }}
+                        >
+                          Заказать работу
+                        </button>
+                        <button
+                          className="btn btn-outline"
+                          onClick={() => navigate(`/chat/${service.id}`)}
+                        >
+                          Написать мастеру
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

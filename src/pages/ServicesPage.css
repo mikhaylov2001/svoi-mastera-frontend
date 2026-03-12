@@ -305,6 +305,16 @@
   padding-top: 16px;
 }
 
+.service-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.service-actions .btn {
+  height: 36px;
+  font-size: 13px;
+}
+
 .service-price {
   display: flex;
   align-items: baseline;

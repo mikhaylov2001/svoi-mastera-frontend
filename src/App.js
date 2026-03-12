@@ -16,6 +16,7 @@ import WorkerProfilePage from './pages/WorkerProfilePage';
 import DealsPage from './pages/DealsPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import FindWorkPage from './pages/FindWorkPage';
+import FindMasterPage from './pages/FindMasterPage';
 import ChatPage from './pages/ChatPage';
 import './App.css';
 
@@ -44,6 +45,7 @@ function AppContent() {
           <Route path="/deals" element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
           <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
           <Route path="/find-work" element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
+          <Route path="/find-master" element={<FindMasterPage />} />
           <Route path="/manage-services" element={<ProtectedRoute workerOnly><ManageServicesPage /></ProtectedRoute>} />
           <Route path="/active-clients" element={<ProtectedRoute workerOnly><ActiveClientsPage /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
