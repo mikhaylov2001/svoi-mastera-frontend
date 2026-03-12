@@ -14,14 +14,8 @@ function SearchIcon() {
 
 function LogoIcon() {
   return (
-    <div style={{
-      width: 32, height: 32, borderRadius: 10,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'linear-gradient(135deg, #f64f59 0%, #c471ed 50%, #12c2e9 100%)',
-      color: '#fff', fontSize: 18,
-      boxShadow: '0 0 12px rgba(0,0,0,0.16)',
-    }}>
-      🪄
+    <div className="header-logo-icon-new">
+      <span>См</span>
     </div>
   );
 }

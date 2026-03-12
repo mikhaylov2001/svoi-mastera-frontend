@@ -15,12 +15,18 @@
   display: flex; align-items: center; gap: 8px;
   flex-shrink: 0; text-decoration: none;
 }
-.header-logo-icon {
-  width: 32px; height: 32px;
-  background: var(--primary); color: #fff;
-  border-radius: 9px;
+.header-logo-icon-new {
+  width: 36px; height: 36px;
+  border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 17px;
+  font-size: 15px; font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #ff6a00 0%, #ff2f7d 45%, #6640ff 100%);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.header-logo-icon-new span {
+  line-height: 1;
 }
 .header-logo-text {
   font-family: var(--font-display);

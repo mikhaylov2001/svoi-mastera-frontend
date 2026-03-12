@@ -29,42 +29,23 @@
   color: #f4f6ff;
 }
 
-.page-header-bar-creative {
-  background: linear-gradient(150deg, #232f4b 0%, #1d2b45 40%, #16253c 100%);
-  color: #e8efff;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.1);
+.page-header-bar-clean {
+  background: #fff;
+  color: #2d3850;
+  border-bottom: 1px solid #e8ecf4;
+  padding: 15px 0 14px;
 }
 
-.page-header-flex {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 18px 0;
-}
-
-.page-header-title {
+.page-header-bar-clean .page-header-title {
   margin: 0;
-  font-size: clamp(26px, 4vw, 38px);
+  font-size: clamp(26px, 4vw, 36px);
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
+  color: #1f2f4f;
 }
 
-.page-header-badge {
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #2d2f4b;
-  background: #f6b220;
-  padding: 6px 12px;
-  text-transform: uppercase;
-}
-
-.page-header-subtitle p {
-  margin: 0 0 16px;
-  color: #cdd7ff;
+.page-header-bar-clean .page-header-subtitle {
+  margin: 8px 0 0;
+  color: #556b8f;
   font-size: 14px;
 }
 
