@@ -27,6 +27,17 @@ function Header() {
   const { userId, role, userName, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    const query = searchTerm.trim();
+    if (!query) return;
+    navigate(`/services?q=${encodeURIComponent(query)}`);
+    setSearchTerm('');
+    setMobileMenuOpen(false);
+  };
 
   const handleLogout = () => {
     logout();
@@ -48,11 +59,27 @@ function Header() {
             <span className="header-logo-text">СвоиМастера</span>
           </Link>
 
+          <button
+            className={`header-burger ${mobileMenuOpen ? 'open' : ''}`}
+            onClick={() => setMobileMenuOpen(prev => !prev)}
+            aria-label="Открыть/закрыть мобильное меню"
+            type="button"
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+
           {/* SEARCH */}
-          <div className="header-search">
+          <form onSubmit={handleSearchSubmit} className="header-search">
             <span className="header-search-icon"><SearchIcon /></span>
-            <input placeholder="Найти мастера или услугу…" />
-          </div>
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Найти мастера или услугу…"
+              aria-label="Поиск"
+            />
+          </form>
 
           {/* NAV */}
           <nav className="header-nav">
@@ -94,6 +121,36 @@ function Header() {
               </>
             )}
           </nav>
+
+          {mobileMenuOpen && (
+            <>
+              <div className="header-mobile-backdrop" onClick={() => setMobileMenuOpen(false)} />
+              <div className="header-mobile-menu">
+                <NavLink onClick={() => setMobileMenuOpen(false)} to="/" className="header-mobile-link">Главная</NavLink>
+                <NavLink onClick={() => setMobileMenuOpen(false)} to="/categories" className="header-mobile-link">Категории</NavLink>
+                {userId && role === 'WORKER' && (
+                  <>
+                    <NavLink onClick={() => setMobileMenuOpen(false)} to="/find-work" className="header-mobile-link">Найти работу</NavLink>
+                    <NavLink onClick={() => setMobileMenuOpen(false)} to="/active-clients" className="header-mobile-link">Активные клиенты</NavLink>
+                    <NavLink onClick={() => setMobileMenuOpen(false)} to="/manage-services" className="header-mobile-link">Мои услуги</NavLink>
+                  </>
+                )}
+                {userId && role !== 'WORKER' && (
+                  <NavLink onClick={() => setMobileMenuOpen(false)} to="/deals" className="header-mobile-link">Мои сделки</NavLink>
+                )}
+                {userId ? (
+                  <>
+                    <button type="button" className="header-mobile-link header-mobile-logout" onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>Выйти</button>
+                  </>
+                ) : (
+                  <>
+                    <Link className="header-mobile-link" to="/login" onClick={() => setMobileMenuOpen(false)}>Войти</Link>
+                    <Link className="header-mobile-link btn btn-primary btn-sm" to="/register" onClick={() => setMobileMenuOpen(false)}>Регистрация</Link>
+                  </>
+                )}
+              </div>
+            </>
+          )}
 
         </div>
       </div>

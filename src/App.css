@@ -212,6 +212,27 @@ body {
   .btn-lg { padding: 14px 20px; }
 }
 
+.page-loading {
+  padding: 32px 20px; text-align: center; color: var(--gray-500);
+}
+
+.toast-holder {
+  position: fixed; right: 16px; bottom: 16px; z-index: 400;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.toast {
+  min-width: 220px; border-radius: var(--r-sm); padding: 10px 14px;
+  background: rgba(30,30,30,.92); color: #fff; box-shadow: var(--shadow-lg);
+  font-size: 13px; line-height: 1.4; backdrop-filter: blur(4px);
+}
+
+.toast-info { background: rgba(24, 126, 241, 0.9); }
+.toast-success { background: rgba(37, 161, 77, 0.9); }
+.toast-error { background: rgba(215, 32, 43, 0.9); }
+.toast-warning { background: rgba(235, 117, 24, 0.9); }
+
+
 .text-center { text-align: center; }
 .mt-1 { margin-top: 8px; }
 .mt-2 { margin-top: 16px; }

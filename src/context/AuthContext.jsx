@@ -24,6 +24,13 @@ export function AuthProvider({ children }) {
   const [userId, setUserId]     = useState(() => getStoredValue('userId', null));
   const [userName, setUserName] = useState(() => getStoredValue('userName', ''));
   const [userRole, setUserRole] = useState(() => getStoredValue('userRole', 'CUSTOMER'));
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    // Имитация инициализации при загрузке, например проверка токена
+    const timer = setTimeout(() => setLoading(false), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const login = (id, role = 'CUSTOMER', name = '') => {
     const userIdStr = String(id);
@@ -54,6 +61,8 @@ export function AuthProvider({ children }) {
     login,
     logout,
     isAuthenticated: !!userId,
+    isWorker: userRole === 'WORKER',
+    loading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getOpenJobRequestsForWorker, createJobOffer, getMyDeals, getCategories } from '../api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import './FindWorkPage.css';
 
 const DEAL_ST = {
@@ -11,6 +12,7 @@ const DEAL_ST = {
 
 export default function FindWorkPage() {
   const { userId } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [tab, setTab] = useState('feed');
   const [requests, setRequests] = useState([]);
@@ -72,7 +74,11 @@ export default function FindWorkPage() {
       });
       setOfferStatus('done');
       setRequests(prev => prev.filter(r => r.id !== detail.id));
-    } catch { setOfferStatus('error'); }
+      showToast('Отклик успешно отправлен', { variant: 'success' });
+    } catch (error) {
+      setOfferStatus('error');
+      showToast(error?.message || 'Ошибка отправки отклика', { variant: 'error' });
+    }
   };
 
   const timeAgo = (d) => {

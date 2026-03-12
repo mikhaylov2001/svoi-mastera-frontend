@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { FaSearch, FaTools, FaStar, FaMapMarkerAlt, FaFilter, FaCalendar, FaUser, FaClock, FaDollarSign } from 'react-icons/fa';
 import { getCategories } from '../api';
 import './ServicesPage.css';
@@ -10,6 +11,7 @@ export default function ServicesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Все категории');
   const [sortBy, setSortBy] = useState('По умолчанию');
+  const location = useLocation();
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 5000 });
   const [loading, setLoading] = useState(true);
@@ -126,6 +128,13 @@ export default function ServicesPage() {
 
     loadData();
   }, []);
+
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get('q') || '';
+    if (q && q !== searchTerm) {
+      setSearchTerm(q);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     let filtered = services;
