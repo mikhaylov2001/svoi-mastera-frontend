@@ -18,6 +18,7 @@ import MyOrdersPage from './pages/MyOrdersPage';
 import FindWorkPage from './pages/FindWorkPage';
 import FindMasterPage from './pages/FindMasterPage';
 import ChatPage from './pages/ChatPage';
+import NotFoundPage from './pages/NotFoundPage';
 import './App.css';
 
 function ProtectedRoute({ children, workerOnly = false }) {
@@ -51,6 +52,7 @@ function AppContent() {
           <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/chat/:partnerId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/worker" element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
       <Footer />

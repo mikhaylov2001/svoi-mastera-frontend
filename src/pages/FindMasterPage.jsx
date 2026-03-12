@@ -10,13 +10,24 @@ export default function FindMasterPage() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showActiveOnly, setShowActiveOnly] = useState(true);
+  const [sortBy, setSortBy] = useState('recency');
 
   useEffect(() => {
     setLoading(true);
     Promise.all([getCategories(), getWorkerServices()])
-      .then(([cats, services]) => {
+      .then(([cats, workersServices]) => {
         setCategories(cats);
-        setServices(services);
+        setServices((workersServices || []).map((item) => ({
+          ...item,
+          title: item.title || 'Услуга мастера',
+          description: item.description || 'Описание услуги не указано',
+          workerName: item.workerName || `Мастер ${item.workerUserId?.slice(0, 6)}`,
+          active: item.active == null ? true : item.active,
+          priceFrom: item.priceFrom || 0,
+          priceTo: item.priceTo || 0,
+        })));
       })
       .catch((e) => {
         console.error(e);
@@ -27,18 +38,29 @@ export default function FindMasterPage() {
 
   const selectedCategoryObj = categories.find((c) => c.slug === selectedCategory);
 
-  const visibleServices = services.filter((item) => {
-    if (selectedCategory === 'all') return true;
+  const visibleServices = services
+    .filter((item) => {
+      if (showActiveOnly && !item.active) return false;
 
-    if (item.categoryId) {
-      const itemCat = categories.find((c) => c.id === item.categoryId);
-      if (itemCat && itemCat.slug === selectedCategory) return true;
-    }
+      if (selectedCategory !== 'all') {
+        const itemCategory = categories.find((c) => c.id === item.categoryId);
+        if (itemCategory && itemCategory.slug !== selectedCategory) return false;
+      }
 
-    if (!selectedCategoryObj) return true;
-    const keyword = selectedCategoryObj.name.toLowerCase();
-    return (item.title?.toLowerCase().includes(keyword) || item.description?.toLowerCase().includes(keyword));
-  });
+      if (!searchTerm.trim()) return true;
+      const q = searchTerm.trim().toLowerCase();
+      return (
+        item.title.toLowerCase().includes(q) ||
+        item.description.toLowerCase().includes(q) ||
+        (item.workerName || '').toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      if (sortBy === 'priceAsc') return (a.priceFrom || 0) - (b.priceFrom || 0);
+      if (sortBy === 'priceDesc') return (b.priceFrom || 0) - (a.priceFrom || 0);
+      if (sortBy === 'name') return (a.workerName || '').localeCompare(b.workerName || '');
+      return new Date(b.createdAt || Date.now()) - new Date(a.createdAt || Date.now());
+    });
 
   return (
     <div>
@@ -58,6 +80,32 @@ export default function FindMasterPage() {
               <option key={cat.id} value={cat.slug}>{cat.name}</option>
             ))}
           </select>
+
+          <label>Поиск:</label>
+          <input
+            type="text"
+            placeholder="По названию или описанию..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+
+          <label>Сортировка:</label>
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="recency">По новизне</option>
+            <option value="priceAsc">Цена: по возрастанию</option>
+            <option value="priceDesc">Цена: по убыванию</option>
+            <option value="name">По имени мастера</option>
+          </select>
+
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={showActiveOnly}
+              onChange={(e) => setShowActiveOnly(e.target.checked)}
+            />
+            Только активные
+          </label>
+
           <Link to="/sections" className="btn btn-outline">Выбрать раздел</Link>
         </div>
 
@@ -89,7 +137,16 @@ export default function FindMasterPage() {
                   <div className="master-meta">{service.priceFrom || service.priceTo ? `от ${service.priceFrom ?? '-'} до ${service.priceTo ?? '-'} ₽` : 'цена по договоренности'}</div>
                   <div className="master-actions">
                     <button className="btn btn-primary" onClick={() => navigate(`/chat/${service.workerUserId}`)}>Написать</button>
-                    <button className="btn btn-outline" onClick={() => navigate(`/categories/${categorySlug}`)}>Заказать работу</button>
+                    <button
+                      className="btn btn-outline"
+                      onClick={() => {
+                        const titleParam = encodeURIComponent(service.title || 'Заказать работу');
+                        const descriptionParam = encodeURIComponent(service.description || '');
+                        navigate(`/categories/${categorySlug}?title=${titleParam}&description=${descriptionParam}`);
+                      }}
+                    >
+                      Заказать работу
+                    </button>
                   </div>
                 </div>
               );

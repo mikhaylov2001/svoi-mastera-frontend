@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { createJobRequest, getCategories } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
@@ -122,11 +122,21 @@ export default function CategoryPage() {
   const { userId } = useAuth();
   const navigate = useNavigate();
 
+  const location = useLocation();
   const category = ALL_CATEGORIES[slug];
   const sectionSlug = CAT_TO_SECTION[slug];
   const hints = getHints(slug);
 
   const [form, setForm] = useState({ title: '', description: '', address: '', budget: '' });
+
+  useEffect(() => {
+    const qp = new URLSearchParams(location.search);
+    const title = qp.get('title') || '';
+    const description = qp.get('description') || '';
+    if (title || description) {
+      setForm((prev) => ({ ...prev, ...(title ? { title } : {}), ...(description ? { description } : {}) }));
+    }
+  }, [location.search]);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
   const [apiCategoryId, setApiCategoryId] = useState(null);

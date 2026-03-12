@@ -6,6 +6,29 @@
   flex-wrap: wrap;
 }
 
+.find-master-controls input[type='text'] {
+  padding: 8px 10px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-sm);
+  min-width: 180px;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--gray-700);
+}
+
+.find-master-controls select {
+  padding: 8px 10px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-sm);
+  background-color: #fff;
+}
+
+
 .find-master-controls label {
   font-weight: 700;
   color: var(--gray-600);

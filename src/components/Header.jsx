@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getUnreadCount } from '../api';
 import './Header.css';
 
 function SearchIcon() {
@@ -29,6 +30,23 @@ function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    let iv;
+    async function loadUnread() {
+      if (!userId) { setUnread(0); return; }
+      try {
+        const count = await getUnreadCount(userId);
+        setUnread(count || 0);
+      } catch (err) {
+        setUnread(0);
+      }
+    }
+    loadUnread();
+    iv = setInterval(loadUnread, 10000);
+    return () => clearInterval(iv);
+  }, [userId]);
 
   const handleSearchSubmit = (event) => {
     event.preventDefault();
@@ -89,6 +107,9 @@ function Header() {
             {userId ? (
               <>
                 <NavLink to="/find-master" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Найти мастера</NavLink>
+                <NavLink to="/chat" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>
+                  Сообщения{unread > 0 ? ` • ${unread}` : ''}
+                </NavLink>
                 {role === 'WORKER' ? (
                   <>
                     <NavLink to="/find-work" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Найти работу</NavLink>
