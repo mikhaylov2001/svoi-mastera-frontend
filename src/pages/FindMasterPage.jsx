@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { getCategories, getWorkerServices } from '../api';
 import './FindMasterPage.css';
 
 export default function FindMasterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
@@ -35,6 +36,16 @@ export default function FindMasterPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const qp = new URLSearchParams(location.search);
+    const cat = qp.get('cat');
+    if (cat) {
+      setSelectedCategory(cat);
+    }
+    const q = qp.get('q');
+    if (q) setSearchTerm(q);
+  }, [location.search]);
 
   const selectedCategoryObj = categories.find((c) => c.slug === selectedCategory);
 

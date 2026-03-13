@@ -16,17 +16,22 @@
   flex-shrink: 0; text-decoration: none;
 }
 .header-logo-icon-new {
-  width: 36px; height: 36px;
-  border-radius: 10px;
+  width: 38px; height: 38px;
+  border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px; font-weight: 800;
-  color: #fff;
-  background: linear-gradient(135deg, #ff6a00 0%, #ff2f7d 45%, #6640ff 100%);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  font-size: 16px; font-weight: 900;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2c6bdf 0%, #844ff1 50%, #ed4b7a 100%);
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.25);
+}
+
+.header-logo-icon-v2 {
+  background: radial-gradient(circle at 30% 30%, #ffd04b 0%, #ff7a00 35%, #d13a99 70%, #5a33c4 100%);
 }
 
 .header-logo-icon-new span {
-  line-height: 1;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 .header-logo-text {
   font-family: var(--font-display);
