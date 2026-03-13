@@ -141,6 +141,14 @@ export function LoginPage() {
       />
 
       <div className="auth-right">
+        <div className="auth-mobile-header">
+          <Link to="/" className="auth-mobile-brand">
+            <span className="auth-mobile-brand-icon"><FaTools /></span>
+            <span className="auth-mobile-brand-text">СвоиМастера</span>
+          </Link>
+          <p className="auth-mobile-sub">Вход в личный кабинет сервиса</p>
+        </div>
+
         <div className="auth-form-card">
           <h1 className="auth-form-title">Вход в аккаунт</h1>
           <p  className="auth-form-sub">Рады видеть вас снова</p>
@@ -276,6 +284,14 @@ export function RegisterPage() {
       />
 
       <div className="auth-right">
+        <div className="auth-mobile-header">
+          <Link to="/" className="auth-mobile-brand">
+            <span className="auth-mobile-brand-icon"><FaTools /></span>
+            <span className="auth-mobile-brand-text">СвоиМастера</span>
+          </Link>
+          <p className="auth-mobile-sub">Регистрация в сервисе</p>
+        </div>
+
         <div className="auth-form-card">
           <h1 className="auth-form-title">Создать аккаунт</h1>
           <p  className="auth-form-sub">Присоединяйтесь к сервису</p>

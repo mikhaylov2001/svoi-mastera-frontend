@@ -1,10 +1,6 @@
 import { NavLink, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
-
-const MOCK_USER = {
-  name: 'Дмитрий',
-  role: 'Клиент',
-};
 
 function getInitials(name) {
   if (!name) return '?';
@@ -14,7 +10,10 @@ function getInitials(name) {
 }
 
 function Navbar() {
-  const initials = getInitials(MOCK_USER.name);
+  const { userId, userName, userRole } = useAuth();
+  const displayName = userName || 'Гость';
+  const roleLabel = !userId ? 'Не авторизован' : userRole === 'WORKER' ? 'Мастер' : 'Заказчик';
+  const initials = getInitials(displayName);
 
   return (
     <nav className="navbar">
@@ -39,8 +38,8 @@ function Navbar() {
 
       <div className="nav-user">
         <div className="user-info">
-          <div className="user-name">{MOCK_USER.name}</div>
-          <div className="user-role">{MOCK_USER.role}</div>
+          <div className="user-name">{displayName}</div>
+          <div className="user-role">{roleLabel}</div>
         </div>
         <div className="user-avatar">{initials}</div>
       </div>

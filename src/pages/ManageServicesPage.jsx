@@ -32,49 +32,7 @@ export default function ManageServicesPage() {
         setServices(data || []);
       } catch (error) {
         console.error('Ошибка загрузки услуг:', error);
-        // Используем моковые данные при ошибке API
-        const mockServices = [
-          {
-            id: 1,
-            title: 'Сборка мебели',
-            description: 'Профессиональная сборка любой мебели: кухни, шкафы, кровати. Работаю с производителями ИКЕА, Хоффман, Шатура.',
-            price: 1500,
-            category: 'Мебель',
-            experience: '5 лет',
-            warranty: '12 месяцев',
-            location: 'Йошкар-Ола',
-            isActive: true,
-            image: 'https://via.placeholder.com/300x200/ff6b6b/ffffff?text=Сборка+мебели',
-            tags: ['Гарантия', 'Опыт 5+ лет', 'Выезд']
-          },
-          {
-            id: 2,
-            title: 'Установка дверей',
-            description: 'Установка межкомнатных и входных дверей. Полный комплекс работ: демонтаж, установка, регулировка.',
-            price: 2500,
-            category: 'Строительство',
-            experience: '7 лет',
-            warranty: '24 месяца',
-            location: 'Йошкар-Ола',
-            isActive: true,
-            image: 'https://via.placeholder.com/300x200/4ecdc4/ffffff?text=Установка+дверей',
-            tags: ['Гарантия', 'Опыт 7+ лет', 'Материалы']
-          },
-          {
-            id: 3,
-            title: 'Ремонт розеток',
-            description: 'Замена и установка розеток, выключателей. Работа с любой электрикой в квартире.',
-            price: 800,
-            category: 'Электрика',
-            experience: '4 года',
-            warranty: '6 месяцев',
-            location: 'Йошкар-Ола',
-            isActive: false,
-            image: 'https://via.placeholder.com/300x200/45b7d1/ffffff?text=Электрика',
-            tags: ['Лицензия', 'Гарантия', 'Срочно']
-          }
-        ];
-        setServices(mockServices);
+        setServices([]);
       } finally {
         setLoading(false);
       }
@@ -143,24 +101,9 @@ export default function ManageServicesPage() {
 
       setShowAddModal(false);
       setEditingService(null);
-    } catch (error) {
+      } catch (error) {
       console.error('Ошибка сохранения услуги:', error);
-      // При ошибке используем локальное обновление для демонстрации
-      const newService = {
-        id: editingService ? editingService.id : Date.now(),
-        ...formData,
-        price: parseInt(formData.price),
-        isActive: true,
-        image: `https://via.placeholder.com/300x200/ff6b6b/ffffff?text=${encodeURIComponent(formData.title)}`
-      };
-
-      if (editingService) {
-        setServices(services.map(s => s.id === editingService.id ? newService : s));
-      } else {
-        setServices([...services, newService]);
-      }
-      setShowAddModal(false);
-      setEditingService(null);
+      alert('Не удалось сохранить услугу. Попробуйте ещё раз.');
     } finally {
       setSaving(false);
     }
@@ -174,8 +117,7 @@ export default function ManageServicesPage() {
       setServices(services.filter(s => s.id !== id));
     } catch (error) {
       console.error('Ошибка удаления услуги:', error);
-      // При ошибке используем локальное удаление для демонстрации
-      setServices(services.filter(s => s.id !== id));
+      alert('Не удалось удалить услугу. Попробуйте ещё раз.');
     }
   };
 
@@ -186,8 +128,7 @@ export default function ManageServicesPage() {
       setServices(services.map(s => s.id === id ? { ...s, isActive: !s.isActive } : s));
     } catch (error) {
       console.error('Ошибка изменения статуса услуги:', error);
-      // При ошибке используем локальное обновление для демонстрации
-      setServices(services.map(s => s.id === id ? { ...s, isActive: !s.isActive } : s));
+      alert('Не удалось изменить статус услуги. Попробуйте ещё раз.');
     }
   };
 
