@@ -35,48 +35,12 @@ const REVIEWS = [
 ];
 
 const BENEFITS = [
-  {
-    icon: '⚡',
-    color: '#f59e0b',
-    bg: 'rgba(245,158,11,.1)',
-    title: 'Быстрый отклик',
-    desc: 'Первые предложения от мастеров поступают в течение 10 минут после публикации задачи',
-  },
-  {
-    icon: '🔒',
-    color: '#22c55e',
-    bg: 'rgba(34,197,94,.1)',
-    title: 'Безопасная сделка',
-    desc: 'Оплата защищена — деньги переходят мастеру только после подтверждения выполненной работы',
-  },
-  {
-    icon: '⭐',
-    color: '#6366f1',
-    bg: 'rgba(99,102,241,.1)',
-    title: 'Проверенные мастера',
-    desc: 'Рейтинг, отзывы и история выполненных работ — выбирайте лучшего с полной информацией',
-  },
-  {
-    icon: '💬',
-    color: '#0ea5e9',
-    bg: 'rgba(14,165,233,.1)',
-    title: 'Чат внутри сервиса',
-    desc: 'Обсуждайте детали, отправляйте фото и уточняйте условия прямо в приложении',
-  },
-  {
-    icon: '📍',
-    color: '#e8410a',
-    bg: 'rgba(232,65,10,.1)',
-    title: 'Мастера рядом',
-    desc: 'Только мастера из Йошкар-Олы — никаких долгих ожиданий и лишних расходов на дорогу',
-  },
-  {
-    icon: '🎯',
-    color: '#d13a99',
-    bg: 'rgba(209,58,153,.1)',
-    title: 'Точная цена',
-    desc: 'Мастер называет цену до начала работы. Никаких скрытых платежей и сюрпризов',
-  },
+  { icon: '⚡', color: '#f59e0b', bg: 'rgba(245,158,11,.1)',  title: 'Быстрый отклик',       desc: 'Первые предложения от мастеров поступают в течение 10 минут после публикации задачи' },
+  { icon: '🔒', color: '#22c55e', bg: 'rgba(34,197,94,.1)',   title: 'Безопасная сделка',     desc: 'Оплата защищена — деньги переходят мастеру только после подтверждения выполненной работы' },
+  { icon: '⭐', color: '#6366f1', bg: 'rgba(99,102,241,.1)',  title: 'Проверенные мастера',   desc: 'Рейтинг, отзывы и история выполненных работ — выбирайте лучшего с полной информацией' },
+  { icon: '💬', color: '#0ea5e9', bg: 'rgba(14,165,233,.1)',  title: 'Чат внутри сервиса',    desc: 'Обсуждайте детали, отправляйте фото и уточняйте условия прямо в приложении' },
+  { icon: '📍', color: '#e8410a', bg: 'rgba(232,65,10,.1)',   title: 'Мастера рядом',         desc: 'Только мастера из Йошкар-Олы — никаких долгих ожиданий и лишних расходов на дорогу' },
+  { icon: '🎯', color: '#d13a99', bg: 'rgba(209,58,153,.1)',  title: 'Точная цена',           desc: 'Мастер называет цену до начала работы. Никаких скрытых платежей и сюрпризов' },
 ];
 
 export default function HomePage() {
@@ -86,7 +50,7 @@ export default function HomePage() {
   return (
     <div>
 
-      {/* ══ HERO ══ */}
+      {/* ══ HERO (тёмный) ══ */}
       <section className="home-hero">
         <div className="container">
           <div className="hero-grid">
@@ -144,20 +108,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ CATEGORY STRIP ══ */}
+      {/* ══ STRIP (тёмный) ══ */}
       <div className="home-strip-wrap">
-        <div className="container">
-          <div className="home-strip">
-            {ALL_CATS.map(cat => (
-              <Link key={cat.slug} to={`/categories/${cat.slug}`} className="strip-chip">
-                <span>{cat.emoji}</span>{cat.name}
-              </Link>
-            ))}
+        <div className="container" style={{ position: 'relative' }}>
+          <div className="home-strip-inner">
+            <div className="home-strip">
+              {ALL_CATS.map(cat => (
+                <Link key={cat.slug} to={`/categories/${cat.slug}`} className="strip-chip">
+                  <span>{cat.emoji}</span>{cat.name}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ══ КАК РАБОТАЕТ ══ */}
+      {/* ══ КАК РАБОТАЕТ (белый) ══ */}
       <section className="home-how">
         <div className="container">
           <div className="home-how-header">
@@ -170,9 +136,7 @@ export default function HomePage() {
             <div className="how-card fade-up" style={{ animationDelay: '0s' }}>
               <div className="how-card-illustration how-card-illus-1">
                 <div className="how-illus-circle" />
-                <div className="how-illus-lines">
-                  <span /><span /><span />
-                </div>
+                <div className="how-illus-lines"><span /><span /><span /></div>
                 <div className="how-illus-icon">📝</div>
               </div>
               <div className="how-num-row">
@@ -222,7 +186,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ РАЗДЕЛЫ УСЛУГ ══ */}
+      {/* ══ РАЗДЕЛЫ УСЛУГ (белый) ══ */}
       <section className="home-popular">
         <div className="container">
           <div className="home-popular-header">
@@ -256,23 +220,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ ПРЕИМУЩЕСТВА ══ */}
+      {/* ══ ПРЕИМУЩЕСТВА (белый) ══ */}
       <section className="home-benefits">
         <div className="container">
           <div className="benefits-header">
-            <div>
-              <p className="section-eyebrow">Почему мы</p>
-              <h2 className="section-title">Преимущества сервиса</h2>
-              <p className="section-sub">Всё что нужно для комфортного поиска мастера</p>
-            </div>
+            <p className="section-eyebrow">Почему мы</p>
+            <h2 className="section-title">Преимущества сервиса</h2>
+            <p className="section-sub">Всё что нужно для комфортного поиска мастера</p>
           </div>
           <div className="benefits-grid">
             {BENEFITS.map((b, i) => (
-              <div
-                className="benefit-card fade-up"
-                key={b.title}
-                style={{ animationDelay: `${i * 0.06}s` }}
-              >
+              <div className="benefit-card fade-up" key={b.title} style={{ animationDelay: `${i * 0.06}s` }}>
                 <div className="benefit-icon" style={{ color: b.color, background: b.bg }}>
                   {b.icon}
                 </div>
@@ -284,7 +242,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ ОТЗЫВЫ ══ */}
+      {/* ══ ОТЗЫВЫ (тёмный) ══ */}
       <section className="home-reviews">
         <div className="container">
           <div className="reviews-header">
@@ -294,22 +252,11 @@ export default function HomePage() {
           </div>
           <div className="reviews-grid">
             {REVIEWS.map((r, i) => (
-              <div
-                className="review-card fade-up"
-                key={r.name}
-                style={{ animationDelay: `${i * 0.08}s` }}
-              >
-                <div className="review-stars">
-                  {'★'.repeat(r.rating)}
-                </div>
+              <div className="review-card fade-up" key={r.name} style={{ animationDelay: `${i * 0.08}s` }}>
+                <div className="review-stars">{'★'.repeat(r.rating)}</div>
                 <p className="review-text">«{r.text}»</p>
                 <div className="review-footer">
-                  <div
-                    className="review-avatar"
-                    style={{ background: r.color }}
-                  >
-                    {r.initials}
-                  </div>
+                  <div className="review-avatar" style={{ background: r.color }}>{r.initials}</div>
                   <div>
                     <div className="review-name">{r.name}</div>
                     <div className="review-service">{r.service}</div>
@@ -321,7 +268,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ CTA ══ */}
+      {/* ══ CTA (тёмный) ══ */}
       {!userId && (
         <section className="home-cta-section">
           <div className="container">
@@ -338,59 +285,7 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* ══ FOOTER ══ */}
-      <footer className="home-footer">
-        <div className="container">
-          <div className="footer-grid">
 
-            <div className="footer-brand">
-              <div className="footer-logo">
-                <div className="footer-logo-icon">SM</div>
-                <span className="footer-logo-text">СвоиМастера</span>
-              </div>
-              <p className="footer-desc">
-                Маркетплейс мастеров для дома и ремонта в Йошкар-Оле. Быстро, надёжно, безопасно.
-              </p>
-              <div className="footer-socials">
-                <a href="#" className="footer-social-btn">ВК</a>
-                <a href="#" className="footer-social-btn">TG</a>
-                <a href="#" className="footer-social-btn">WA</a>
-              </div>
-            </div>
-
-            <div className="footer-col">
-              <div className="footer-col-title">Сервис</div>
-              <Link to="/categories"  className="footer-link">Категории</Link>
-              <Link to="/find-master" className="footer-link">Найти мастера</Link>
-              <Link to="/register"    className="footer-link">Стать мастером</Link>
-              <Link to="/deals"       className="footer-link">Мои сделки</Link>
-            </div>
-
-            <div className="footer-col">
-              <div className="footer-col-title">Помощь</div>
-              <a href="#" className="footer-link">Поддержка</a>
-              <a href="#" className="footer-link">Правила сервиса</a>
-              <a href="#" className="footer-link">Политика конфиденциальности</a>
-              <a href="#" className="footer-link">Частые вопросы</a>
-            </div>
-
-            <div className="footer-col">
-              <div className="footer-col-title">Контакты</div>
-              <div className="footer-contact-item"><span className="footer-contact-icon">📍</span>Йошкар-Ола, Россия</div>
-              <div className="footer-contact-item"><span className="footer-contact-icon">✉️</span>support@svoimastera.ru</div>
-              <div className="footer-contact-item"><span className="footer-contact-icon">⏰</span>24/7 — всегда на связи</div>
-            </div>
-
-          </div>
-          <div className="footer-bottom">
-            <div className="footer-bottom-left">© 2026 СвоиМастера. Все права защищены.</div>
-            <div className="footer-bottom-right">
-              <a href="#" className="footer-bottom-link">Правила</a>
-              <a href="#" className="footer-bottom-link">Конфиденциальность</a>
-            </div>
-          </div>
-        </div>
-      </footer>
 
       {/* ══ МОДАЛКА ══ */}
       {showGuestModal && (

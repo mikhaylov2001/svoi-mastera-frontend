@@ -14,12 +14,10 @@ function SearchIcon() {
 }
 
 function LogoIcon() {
-  return (
-    <div className="header-logo-icon-new header-logo-icon-v2">
-      <span>SM</span>
-    </div>
-  );
+  return <span style={{ fontSize: 28 }}>🔨</span>;
 }
+
+
 
 function Header() {
   const { userId, role, userName, logout } = useAuth();
