@@ -7,7 +7,8 @@ import './Header.css';
 function SearchIcon() {
   return (
     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      <circle cx="11" cy="11" r="8"/>
+      <path d="m21 21-4.35-4.35"/>
     </svg>
   );
 }
@@ -23,10 +24,10 @@ function LogoIcon() {
 function Header() {
   const { userId, role, userName, logout } = useAuth();
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen,       setMenuOpen]       = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [unread, setUnread] = useState(0);
+  const [searchTerm,     setSearchTerm]     = useState('');
+  const [unread,         setUnread]         = useState(0);
 
   useEffect(() => {
     let iv;
@@ -35,7 +36,7 @@ function Header() {
       try {
         const count = await getUnreadCount(userId);
         setUnread(count || 0);
-      } catch (err) {
+      } catch {
         setUnread(0);
       }
     }
@@ -44,11 +45,11 @@ function Header() {
     return () => clearInterval(iv);
   }, [userId]);
 
-  const handleSearchSubmit = (event) => {
-    event.preventDefault();
-    const query = searchTerm.trim();
-    if (!query) return;
-    navigate(`/services?q=${encodeURIComponent(query)}`);
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const q = searchTerm.trim();
+    if (!q) return;
+    navigate(`/services?q=${encodeURIComponent(q)}`);
     setSearchTerm('');
     setMobileMenuOpen(false);
   };
@@ -60,77 +61,137 @@ function Header() {
 
   const initials = userName
     ? userName.trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2)
-    : 'TK';
+    : 'SM';
 
   return (
     <header className="header">
       <div className="container">
         <div className="header-inner">
 
-          {/* LOGO */}
+          {/* ── LOGO ── */}
           <Link to="/" className="header-logo">
-            <span className="header-logo-icon"><LogoIcon /></span>
+            <LogoIcon />
             <span className="header-logo-text">СвоиМастера</span>
           </Link>
 
+          {/* ── BURGER ── */}
           <button
             className={`header-burger ${mobileMenuOpen ? 'open' : ''}`}
             onClick={() => setMobileMenuOpen(prev => !prev)}
-            aria-label="Открыть/закрыть мобильное меню"
+            aria-label="Меню"
             type="button"
           >
-            <span />
-            <span />
-            <span />
+            <span /><span /><span />
           </button>
 
-          {/* SEARCH */}
+          {/* ── SEARCH ── */}
           <form onSubmit={handleSearchSubmit} className="header-search">
             <span className="header-search-icon"><SearchIcon /></span>
             <input
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               placeholder="Найти мастера или услугу…"
               aria-label="Поиск"
             />
           </form>
 
-          {/* NAV */}
+          {/* ── NAV ── */}
           <nav className="header-nav">
-            <NavLink to="/"          end className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Главная</NavLink>
-            <NavLink to="/categories"    className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Категории</NavLink>
+            <NavLink
+              to="/" end
+              className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+            >
+              Главная
+            </NavLink>
+            <NavLink
+              to="/categories"
+              className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+            >
+              Категории
+            </NavLink>
 
             {userId ? (
               <>
-                <NavLink to="/find-master" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Найти мастера</NavLink>
-                <NavLink to="/chat" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>
-                  Сообщения{unread > 0 ? ` • ${unread}` : ''}
+                <NavLink
+                  to="/find-master"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Найти мастера
                 </NavLink>
+
+                <NavLink
+                  to="/chat"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Сообщения
+                  {unread > 0 && (
+                    <span className="header-unread-badge">{unread}</span>
+                  )}
+                </NavLink>
+
                 {role === 'WORKER' ? (
                   <>
-                    <NavLink to="/find-work" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Найти работу</NavLink>
-                    <NavLink to="/active-clients" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Активные клиенты</NavLink>
-                    <NavLink to="/manage-services" className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Мои услуги</NavLink>
+                    <NavLink
+                      to="/find-work"
+                      className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                    >
+                      Найти работу
+                    </NavLink>
+                    <NavLink
+                      to="/active-clients"
+                      className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                    >
+                      Клиенты
+                    </NavLink>
+                    <NavLink
+                      to="/manage-services"
+                      className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                    >
+                      Мои услуги
+                    </NavLink>
                   </>
                 ) : (
-                  <>
-                    <NavLink to="/deals"  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}>Мои сделки</NavLink>
-                  </>
+                  <NavLink
+                    to="/deals"
+                    className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                  >
+                    Мои сделки
+                  </NavLink>
                 )}
 
-                {/* Avatar dropdown */}
-                <div className="header-user" onClick={() => setMenuOpen(!menuOpen)}>
+                {/* ── AVATAR DROPDOWN ── */}
+                <div
+                  className="header-user"
+                  onClick={() => setMenuOpen(v => !v)}
+                  onBlur={() => setTimeout(() => setMenuOpen(false), 150)}
+                  tabIndex={0}
+                >
                   <div className="header-avatar">{initials}</div>
+
                   {menuOpen && (
                     <div className="header-dropdown">
                       <div className="header-dropdown-name">{userName || 'Профиль'}</div>
-                      <div className="header-dropdown-role">{role === 'WORKER' ? 'Мастер' : 'Заказчик'}</div>
+                      <div className="header-dropdown-role">
+                        {role === 'WORKER' ? 'Мастер' : 'Заказчик'}
+                      </div>
                       <div className="header-dropdown-divider" />
-                      <Link to="/profile" className="header-dropdown-item" onClick={() => setMenuOpen(false)}>Мой профиль</Link>
-                      <button className="header-dropdown-item header-dropdown-logout" onClick={handleLogout}>Выйти</button>
+                      <Link
+                        to="/profile"
+                        className="header-dropdown-item"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Мой профиль
+                      </Link>
+                      <button
+                        className="header-dropdown-item header-dropdown-logout"
+                        onClick={handleLogout}
+                      >
+                        Выйти
+                      </button>
                     </div>
                   )}
                 </div>
+
               </>
             ) : (
               <>
@@ -140,30 +201,56 @@ function Header() {
             )}
           </nav>
 
+          {/* ── MOBILE MENU ── */}
           {mobileMenuOpen && (
             <>
-              <div className="header-mobile-backdrop" onClick={() => setMobileMenuOpen(false)} />
+              <div
+                className="header-mobile-backdrop"
+                onClick={() => setMobileMenuOpen(false)}
+              />
               <div className="header-mobile-menu">
-                <NavLink onClick={() => setMobileMenuOpen(false)} to="/" className="header-mobile-link">Главная</NavLink>
-                <NavLink onClick={() => setMobileMenuOpen(false)} to="/categories" className="header-mobile-link">Категории</NavLink>
-                {userId && role === 'WORKER' && (
+                <NavLink to="/" end className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                  Главная
+                </NavLink>
+                <NavLink to="/categories" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                  Категории
+                </NavLink>
+
+                {userId && (
                   <>
-                    <NavLink onClick={() => setMobileMenuOpen(false)} to="/find-work" className="header-mobile-link">Найти работу</NavLink>
-                    <NavLink onClick={() => setMobileMenuOpen(false)} to="/active-clients" className="header-mobile-link">Активные клиенты</NavLink>
-                    <NavLink onClick={() => setMobileMenuOpen(false)} to="/manage-services" className="header-mobile-link">Мои услуги</NavLink>
+                    <NavLink to="/chat" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Сообщения {unread > 0 && `• ${unread}`}
+                    </NavLink>
+
+                    {role === 'WORKER' ? (
+                      <>
+                        <NavLink to="/find-work"       className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Найти работу</NavLink>
+                        <NavLink to="/active-clients"  className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Клиенты</NavLink>
+                        <NavLink to="/manage-services" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Мои услуги</NavLink>
+                      </>
+                    ) : (
+                      <NavLink to="/deals" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                        Мои сделки
+                      </NavLink>
+                    )}
+
+                    <NavLink to="/profile" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Профиль
+                    </NavLink>
+                    <button
+                      type="button"
+                      className="header-mobile-link header-mobile-logout"
+                      onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                    >
+                      Выйти
+                    </button>
                   </>
                 )}
-                {userId && role !== 'WORKER' && (
-                  <NavLink onClick={() => setMobileMenuOpen(false)} to="/deals" className="header-mobile-link">Мои сделки</NavLink>
-                )}
-                {userId ? (
+
+                {!userId && (
                   <>
-                    <button type="button" className="header-mobile-link header-mobile-logout" onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>Выйти</button>
-                  </>
-                ) : (
-                  <>
-                    <Link className="header-mobile-link" to="/login" onClick={() => setMobileMenuOpen(false)}>Войти</Link>
-                    <Link className="header-mobile-link btn btn-primary btn-sm" to="/register" onClick={() => setMobileMenuOpen(false)}>Регистрация</Link>
+                    <Link to="/login"    className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Войти</Link>
+                    <Link to="/register" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Регистрация</Link>
                   </>
                 )}
               </div>
