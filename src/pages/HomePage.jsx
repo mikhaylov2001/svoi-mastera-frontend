@@ -1,23 +1,86 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FaEdit, FaEnvelope, FaHandshake } from 'react-icons/fa';
 import { SECTIONS } from './SectionsPage';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import './HomePage.css';
 
 const ALL_CATS = Object.values(CATEGORIES_BY_SECTION).flat();
 
-const TRUST_ITEMS = [
-  { icon: '⚡', num: '10 мин',  label: 'среднее время\nпервого отклика' },
-  { icon: '🔒', num: '100%',    label: 'безопасных\nсделок' },
-  { icon: '📋', num: '9',       label: 'категорий\nуслуг' },
-  { icon: '⭐', num: '5.0',     label: 'средний рейтинг\nмастеров' },
+const REVIEWS = [
+  {
+    name: 'Анна К.',
+    initials: 'АК',
+    color: '#6366f1',
+    text: 'Нашла сантехника за 15 минут. Приехал вовремя, всё сделал аккуратно. Сервис огонь!',
+    rating: 5,
+    service: 'Сантехника',
+  },
+  {
+    name: 'Михаил Р.',
+    initials: 'МР',
+    color: '#0ea5e9',
+    text: 'Заказывал электрика для новой квартиры. Мастер профессиональный, цена честная.',
+    rating: 5,
+    service: 'Электрика',
+  },
+  {
+    name: 'Светлана Т.',
+    initials: 'СТ',
+    color: '#22c55e',
+    text: 'Репетитор по математике для дочки — нашла через сервис. Уже видим результат!',
+    rating: 5,
+    service: 'Образование',
+  },
+];
+
+const BENEFITS = [
+  {
+    icon: '⚡',
+    color: '#f59e0b',
+    bg: 'rgba(245,158,11,.1)',
+    title: 'Быстрый отклик',
+    desc: 'Первые предложения от мастеров поступают в течение 10 минут после публикации задачи',
+  },
+  {
+    icon: '🔒',
+    color: '#22c55e',
+    bg: 'rgba(34,197,94,.1)',
+    title: 'Безопасная сделка',
+    desc: 'Оплата защищена — деньги переходят мастеру только после подтверждения выполненной работы',
+  },
+  {
+    icon: '⭐',
+    color: '#6366f1',
+    bg: 'rgba(99,102,241,.1)',
+    title: 'Проверенные мастера',
+    desc: 'Рейтинг, отзывы и история выполненных работ — выбирайте лучшего с полной информацией',
+  },
+  {
+    icon: '💬',
+    color: '#0ea5e9',
+    bg: 'rgba(14,165,233,.1)',
+    title: 'Чат внутри сервиса',
+    desc: 'Обсуждайте детали, отправляйте фото и уточняйте условия прямо в приложении',
+  },
+  {
+    icon: '📍',
+    color: '#e8410a',
+    bg: 'rgba(232,65,10,.1)',
+    title: 'Мастера рядом',
+    desc: 'Только мастера из Йошкар-Олы — никаких долгих ожиданий и лишних расходов на дорогу',
+  },
+  {
+    icon: '🎯',
+    color: '#d13a99',
+    bg: 'rgba(209,58,153,.1)',
+    title: 'Точная цена',
+    desc: 'Мастер называет цену до начала работы. Никаких скрытых платежей и сюрпризов',
+  },
 ];
 
 export default function HomePage() {
   const { userId } = useAuth();
-  const navigate = useNavigate();
   const [showGuestModal, setShowGuestModal] = useState(false);
 
   return (
@@ -27,42 +90,30 @@ export default function HomePage() {
       <section className="home-hero">
         <div className="container">
           <div className="hero-grid">
-
             <div>
               <div className="hero-tag fade-up">
                 <span className="hero-tag-dot" />
                 Йошкар-Ола · Маркетплейс мастеров
               </div>
-
               <h1 className="hero-title fade-up-1">
                 Свои мастера<br />
                 для <span>любых задач</span><br />
                 в Йошкар-Оле
               </h1>
-
               <p className="hero-subtitle fade-up-2">
                 Опишите задачу — мастера откликнутся сами.<br />
                 Выбирайте по рейтингу, договаривайтесь внутри сервиса.
               </p>
-
               <div className="hero-actions fade-up-3">
                 <Link to="/sections" className="btn btn-lg hero-btn-primary">
                   🔍 Найти мастера
                 </Link>
-                <Link
-                  to={userId ? '/profile' : '/register'}
-                  className="btn btn-lg hero-btn-ghost"
-                >
-                  Стать мастером
+                <Link to={userId ? '/profile' : '/register'} className="btn btn-lg hero-btn-ghost">
+                  Стать мастером →
                 </Link>
               </div>
-
               <div className="hero-trust fade-up-4">
-                {[
-                  ['24/7', 'приём заявок'],
-                  ['9',    'категорий'],
-                  ['5.0★', 'рейтинг'],
-                ].map(([n, l]) => (
+                {[['24/7','приём заявок'],['9','категорий'],['5.0★','рейтинг']].map(([n,l]) => (
                   <div className="hero-trust-item" key={l}>
                     <strong>{n}</strong> {l}
                   </div>
@@ -70,7 +121,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Hero card */}
             <div className="hero-card fade-up-2">
               <div className="hero-card-label">Платформа живёт</div>
               <div className="hero-stats-row">
@@ -90,7 +140,6 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </section>
@@ -108,7 +157,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ══ КАК ЭТО РАБОТАЕТ ══ */}
+      {/* ══ КАК РАБОТАЕТ ══ */}
       <section className="home-how">
         <div className="container">
           <div className="home-how-header">
@@ -116,7 +165,6 @@ export default function HomePage() {
             <h2 className="section-title">Как это работает</h2>
             <p className="section-sub">Три шага от задачи до результата</p>
           </div>
-
           <div className="how-grid">
 
             <div className="how-card fade-up" style={{ animationDelay: '0s' }}>
@@ -183,11 +231,8 @@ export default function HomePage() {
               <h2 className="section-title">Разделы услуг</h2>
               <p className="section-sub">Выберите нужный раздел и создайте задачу</p>
             </div>
-            <Link to="/sections" className="btn btn-outline btn-sm">
-              Все разделы →
-            </Link>
+            <Link to="/sections" className="btn btn-outline btn-sm">Все разделы →</Link>
           </div>
-
           <div className="popular-grid">
             {SECTIONS.map((sec, i) => (
               <Link
@@ -211,29 +256,79 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ БЛОК ДОВЕРИЯ ══ */}
-      <section className="home-trust">
+      {/* ══ ПРЕИМУЩЕСТВА ══ */}
+      <section className="home-benefits">
         <div className="container">
-          <div className="trust-grid">
-            {TRUST_ITEMS.map(({ icon, num, label }) => (
-              <div className="trust-item" key={num}>
-                <div className="trust-item-icon">{icon}</div>
-                <div className="trust-item-num">{num}</div>
-                <div className="trust-item-label" style={{ whiteSpace: 'pre-line' }}>{label}</div>
+          <div className="benefits-header">
+            <div>
+              <p className="section-eyebrow">Почему мы</p>
+              <h2 className="section-title">Преимущества сервиса</h2>
+              <p className="section-sub">Всё что нужно для комфортного поиска мастера</p>
+            </div>
+          </div>
+          <div className="benefits-grid">
+            {BENEFITS.map((b, i) => (
+              <div
+                className="benefit-card fade-up"
+                key={b.title}
+                style={{ animationDelay: `${i * 0.06}s` }}
+              >
+                <div className="benefit-icon" style={{ color: b.color, background: b.bg }}>
+                  {b.icon}
+                </div>
+                <h3>{b.title}</h3>
+                <p>{b.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ══ CTA (только гостям) ══ */}
+      {/* ══ ОТЗЫВЫ ══ */}
+      <section className="home-reviews">
+        <div className="container">
+          <div className="reviews-header">
+            <p className="section-eyebrow">Отзывы</p>
+            <h2 className="section-title">Что говорят клиенты</h2>
+            <p className="section-sub">Реальные отзывы о мастерах из Йошкар-Олы</p>
+          </div>
+          <div className="reviews-grid">
+            {REVIEWS.map((r, i) => (
+              <div
+                className="review-card fade-up"
+                key={r.name}
+                style={{ animationDelay: `${i * 0.08}s` }}
+              >
+                <div className="review-stars">
+                  {'★'.repeat(r.rating)}
+                </div>
+                <p className="review-text">«{r.text}»</p>
+                <div className="review-footer">
+                  <div
+                    className="review-avatar"
+                    style={{ background: r.color }}
+                  >
+                    {r.initials}
+                  </div>
+                  <div>
+                    <div className="review-name">{r.name}</div>
+                    <div className="review-service">{r.service}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ CTA ══ */}
       {!userId && (
         <section className="home-cta-section">
-          <div className="container" style={{ paddingTop: 64 }}>
+          <div className="container">
             <div className="home-cta">
               <div className="cta-text">
                 <h2>Готовы разместить задачу?</h2>
-                <p>Зарегистрируйтесь бесплатно и получите первые отклики уже через 10 минут</p>
+                <p>Зарегистрируйтесь бесплатно — первые отклики уже через 10 минут</p>
               </div>
               <button className="btn btn-lg cta-btn" onClick={() => setShowGuestModal(true)}>
                 Начать бесплатно →
@@ -281,22 +376,12 @@ export default function HomePage() {
 
             <div className="footer-col">
               <div className="footer-col-title">Контакты</div>
-              <div className="footer-contact-item">
-                <span className="footer-contact-icon">📍</span>
-                Йошкар-Ола, Россия
-              </div>
-              <div className="footer-contact-item">
-                <span className="footer-contact-icon">✉️</span>
-                support@svoimastera.ru
-              </div>
-              <div className="footer-contact-item">
-                <span className="footer-contact-icon">⏰</span>
-                24/7 — всегда на связи
-              </div>
+              <div className="footer-contact-item"><span className="footer-contact-icon">📍</span>Йошкар-Ола, Россия</div>
+              <div className="footer-contact-item"><span className="footer-contact-icon">✉️</span>support@svoimastera.ru</div>
+              <div className="footer-contact-item"><span className="footer-contact-icon">⏰</span>24/7 — всегда на связи</div>
             </div>
 
           </div>
-
           <div className="footer-bottom">
             <div className="footer-bottom-left">© 2026 СвоиМастера. Все права защищены.</div>
             <div className="footer-bottom-right">
@@ -307,7 +392,7 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* ══ МОДАЛКА ГОСТЬ ══ */}
+      {/* ══ МОДАЛКА ══ */}
       {showGuestModal && (
         <div className="modal-overlay" onClick={() => setShowGuestModal(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
