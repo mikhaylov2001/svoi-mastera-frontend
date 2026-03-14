@@ -17,8 +17,6 @@ function LogoIcon() {
   return <span style={{ fontSize: 28 }}>🔨</span>;
 }
 
-
-
 function Header() {
   const { userId, role, userName, logout } = useAuth();
   const navigate = useNavigate();
@@ -105,7 +103,7 @@ function Header() {
               to="/categories"
               className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
             >
-              Категории
+              Найти мастера
             </NavLink>
 
             {userId ? (
@@ -114,7 +112,7 @@ function Header() {
                   to="/find-master"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
                 >
-                  Найти мастера
+                  Активные мастера
                 </NavLink>
 
                 <NavLink
@@ -211,11 +209,15 @@ function Header() {
                   Главная
                 </NavLink>
                 <NavLink to="/categories" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                  Категории
+                  Найти мастера
                 </NavLink>
 
                 {userId && (
                   <>
+                    <NavLink to="/find-master" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Активные мастера
+                    </NavLink>
+
                     <NavLink to="/chat" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
                       Сообщения {unread > 0 && `• ${unread}`}
                     </NavLink>
