@@ -45,6 +45,7 @@ function AppContent() {
           <Route path="/deals"           element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
           <Route path="/find-work"       element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
           <Route path="/find-master"     element={<FindMasterPage />} />
+          <Route path="/find-master/:categorySlug" element={<FindMasterPage />} />
           <Route path="/manage-services" element={<ProtectedRoute workerOnly><ManageServicesPage /></ProtectedRoute>} />
           <Route path="/active-clients"  element={<ProtectedRoute workerOnly><ActiveClientsPage /></ProtectedRoute>} />
           <Route path="/chat"            element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
