@@ -1,22 +1,29 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { getMyDeals, completeDeal } from '../api';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  getMyDeals, completeDeal,
+  getMyJobRequests, getOffersForRequest, acceptOffer, getCategories,
+} from '../api';
 import { useAuth } from '../context/AuthContext';
 import './DealsPage.css';
 
-const STATUSES = {
-  NEW:         { label: 'Новая заявка', emoji: '📋', color: '#6366f1', bg: 'rgba(99,102,241,.1)' },
-  IN_PROGRESS: { label: 'В работе',    emoji: '⚙️', color: '#f59e0b', bg: 'rgba(245,158,11,.1)' },
-  COMPLETED:   { label: 'Завершена',   emoji: '✅', color: '#22c55e', bg: 'rgba(34,197,94,.1)'  },
-  CANCELLED:   { label: 'Отменена',   emoji: '❌', color: '#ef4444', bg: 'rgba(239,68,68,.1)'  },
+const DEAL_STATUSES = {
+  NEW:         { label: 'Новая',      emoji: '📋', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
+  IN_PROGRESS: { label: 'В работе',   emoji: '⚙️',  color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
+  COMPLETED:   { label: 'Завершена',  emoji: '✅',  color: '#22c55e', bg: 'rgba(34,197,94,.12)'   },
+  CANCELLED:   { label: 'Отменена',   emoji: '❌',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'   },
 };
 
-const FILTERS = [
-  { key: 'ALL',         label: 'Все',         emoji: '📂' },
-  { key: 'NEW',         label: 'Новые',       emoji: '📋' },
-  { key: 'IN_PROGRESS', label: 'В работе',    emoji: '⚙️' },
-  { key: 'COMPLETED',   label: 'Завершены',   emoji: '✅' },
-];
+const REQ_STATUSES = {
+  DRAFT:          { label: 'Черновик',    emoji: '📝', color: '#9ca3af', bg: 'rgba(156,163,175,.12)' },
+  OPEN:           { label: 'Открыта',     emoji: '🟢', color: '#22c55e', bg: 'rgba(34,197,94,.12)'   },
+  IN_NEGOTIATION: { label: 'Обсуждение',  emoji: '💬', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
+  ASSIGNED:       { label: 'Назначена',   emoji: '👷', color: '#f59e0b', bg: 'rgba(245,158,11,.12)'  },
+  IN_PROGRESS:    { label: 'В работе',    emoji: '⚙️',  color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
+  COMPLETED:      { label: 'Выполнена',   emoji: '✅',  color: '#22c55e', bg: 'rgba(34,197,94,.12)'  },
+  CANCELLED:      { label: 'Отменена',    emoji: '❌',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
+  EXPIRED:        { label: 'Истекла',     emoji: '⏰',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
+};
 
 function timeAgo(d) {
   if (!d) return '';
@@ -30,26 +37,73 @@ function timeAgo(d) {
 
 export default function DealsPage() {
   const { userId } = useAuth();
-  const [deals,   setDeals]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter,  setFilter]  = useState('ALL');
-  const [detail,  setDetail]  = useState(null);
+  const navigate   = useNavigate();
+
+  /* ── data ── */
+  const [deals,      setDeals]      = useState([]);
+  const [requests,   setRequests]   = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading,    setLoading]    = useState(true);
+
+  /* ── ui ── */
+  const [tab,        setTab]        = useState('requests'); // 'requests' | 'deals'
+  const [reqFilter,  setReqFilter]  = useState('ALL');
+  const [dealFilter, setDealFilter] = useState('ALL');
+
+  /* ── detail ── */
+  const [dealDetail, setDealDetail] = useState(null);
+  const [reqDetail,  setReqDetail]  = useState(null);
+
+  /* ── offers ── */
+  const [offers,        setOffers]        = useState([]);
+  const [offersLoading, setOffersLoading] = useState(false);
+
+  /* ── actions ── */
   const [actionId, setActionId] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    try { setDeals(await getMyDeals(userId)); } catch {}
+    try {
+      const [d, r, c] = await Promise.all([
+        getMyDeals(userId),
+        getMyJobRequests(userId),
+        getCategories(),
+      ]);
+      setDeals(d);
+      setRequests(r);
+      setCategories(c);
+    } catch {}
     setLoading(false);
   }, [userId]);
 
   useEffect(() => { load(); }, [load]);
 
+  /* sync deal detail */
   useEffect(() => {
-    if (detail?.id) {
-      const fresh = deals.find(d => d.id === detail.id);
-      if (fresh && JSON.stringify(fresh) !== JSON.stringify(detail)) setDetail(fresh);
+    if (dealDetail?.id) {
+      const fresh = deals.find(d => d.id === dealDetail.id);
+      if (fresh && JSON.stringify(fresh) !== JSON.stringify(dealDetail)) setDealDetail(fresh);
     }
-  }, [deals, detail]);
+  }, [deals, dealDetail]);
+
+  const getCatName = (id) => categories.find(c => c.id === id)?.name || '';
+
+  const loadOffers = async (reqId) => {
+    setOffersLoading(true);
+    try { setOffers(await getOffersForRequest(reqId)); } catch { setOffers([]); }
+    setOffersLoading(false);
+  };
+
+  const handleAccept = async (req, offer) => {
+    setActionId(offer.id);
+    try {
+      await acceptOffer(userId, req.id, offer.id);
+      await load();
+      setReqDetail(null);
+      setTab('deals');
+    } catch {}
+    setActionId(null);
+  };
 
   const handleConfirm = async (dealId) => {
     setActionId(dealId);
@@ -59,155 +113,137 @@ export default function DealsPage() {
 
   const isCust = (d) => d.customerId === userId;
 
-  const counts = {
+  /* ── counts ── */
+  const reqCounts = {
+    ALL:         requests.length,
+    OPEN:        requests.filter(r => r.status === 'OPEN').length,
+    IN_PROGRESS: requests.filter(r => ['IN_PROGRESS','ASSIGNED','IN_NEGOTIATION'].includes(r.status)).length,
+    COMPLETED:   requests.filter(r => r.status === 'COMPLETED').length,
+  };
+  const dealCounts = {
     ALL:         deals.length,
-    NEW:         deals.filter(d => d.status === 'NEW').length,
     IN_PROGRESS: deals.filter(d => d.status === 'IN_PROGRESS').length,
     COMPLETED:   deals.filter(d => d.status === 'COMPLETED').length,
   };
 
-  const filtered = filter === 'ALL' ? deals : deals.filter(d => d.status === filter);
+  const filteredReqs = reqFilter === 'ALL' ? requests
+    : reqFilter === 'IN_PROGRESS'
+      ? requests.filter(r => ['IN_PROGRESS','ASSIGNED','IN_NEGOTIATION'].includes(r.status))
+      : requests.filter(r => r.status === reqFilter);
 
-  /* ══ DETAIL VIEW ══ */
-  if (detail) {
-    const st = STATUSES[detail.status] || STATUSES.NEW;
-    const im = isCust(detail);
-    const myOk    = im ? detail.customerConfirmed : detail.workerConfirmed;
-    const otherOk = im ? detail.workerConfirmed   : detail.customerConfirmed;
+  const filteredDeals = dealFilter === 'ALL' ? deals
+    : deals.filter(d => d.status === dealFilter);
+
+  /* ══════════════════════════════════
+     DEAL DETAIL
+  ══════════════════════════════════ */
+  if (dealDetail) {
+    const st   = DEAL_STATUSES[dealDetail.status] || DEAL_STATUSES.NEW;
+    const im   = isCust(dealDetail);
+    const myOk    = im ? dealDetail.customerConfirmed : dealDetail.workerConfirmed;
+    const otherOk = im ? dealDetail.workerConfirmed   : dealDetail.customerConfirmed;
 
     return (
-      <div className="deals-page">
+      <div>
+        <div className="page-header-bar dpage-header">
+          <div className="container">
+            <button className="dpage-back" onClick={() => setDealDetail(null)}>← Назад</button>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:10, flexWrap:'wrap' }}>
+              <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
+                {st.emoji} {st.label}
+              </span>
+              {dealDetail.category && <span className="dp-cat">{dealDetail.category}</span>}
+            </div>
+            <h1 style={{ marginTop:10 }}>{dealDetail.title || 'Задача'}</h1>
+            {dealDetail.agreedPrice && (
+              <p style={{ color:'rgba(255,255,255,.55)', marginTop:4 }}>
+                💰 {Number(dealDetail.agreedPrice).toLocaleString('ru-RU')} ₽
+              </p>
+            )}
+          </div>
+        </div>
+
         <div className="container">
-          <button className="deals-back" onClick={() => setDetail(null)}>
-            ← Назад к сделкам
-          </button>
-
-          <div className="deal-detail-grid">
-
-            {/* Левая часть */}
-            <div className="deal-detail-main">
-              <div className="deal-detail-card">
-                <div className="deal-detail-top">
-                  <span
-                    className="deal-status-badge"
-                    style={{ color: st.color, background: st.bg }}
-                  >
-                    {st.emoji} {st.label}
-                  </span>
-                  {detail.category && (
-                    <span className="deal-category-tag">{detail.category}</span>
-                  )}
+          <div className="dp-grid">
+            <div>
+              {dealDetail.description && dealDetail.description !== 'Без описания' && (
+                <div className="dp-card">
+                  <div className="dp-card-label">Описание</div>
+                  <p className="dp-desc">{dealDetail.description}</p>
                 </div>
-
-                <h1 className="deal-detail-title">{detail.title || 'Задача'}</h1>
-
-                {detail.agreedPrice && (
-                  <div className="deal-detail-price">
-                    {Number(detail.agreedPrice).toLocaleString('ru-RU')} ₽
-                  </div>
-                )}
-
-                {detail.description && detail.description !== 'Без описания' && (
-                  <>
-                    <div className="deal-sep" />
-                    <div className="deal-section-title">Описание</div>
-                    <p className="deal-desc">{detail.description}</p>
-                  </>
-                )}
-
-                <div className="deal-sep" />
-                <div className="deal-section-title">Участники</div>
-                <div className="deal-people">
-                  <div className="deal-person">
-                    <div className="deal-person-role">Заказчик</div>
-                    <div className="deal-person-name">
-                      {detail.customerName || '—'}
-                      {im && <span className="deal-you"> • вы</span>}
+              )}
+              <div className="dp-card">
+                <div className="dp-card-label">Участники</div>
+                <div className="dp-people">
+                  <div className="dp-person">
+                    <div className="dp-person-role">👤 Заказчик</div>
+                    <div className="dp-person-name">
+                      {dealDetail.customerName || '—'}
+                      {im && <span className="dp-you"> • вы</span>}
                     </div>
                   </div>
-                  <div className="deal-person">
-                    <div className="deal-person-role">Мастер</div>
-                    <div className="deal-person-name">
-                      {detail.workerName || '—'}
-                      {!im && <span className="deal-you"> • вы</span>}
+                  <div className="dp-person">
+                    <div className="dp-person-role">🔨 Мастер</div>
+                    <div className="dp-person-name">
+                      {dealDetail.workerName || 'Не назначен'}
+                      {!im && dealDetail.workerName && <span className="dp-you"> • вы</span>}
                     </div>
                   </div>
                 </div>
-
-                {detail.createdAt && (
-                  <>
-                    <div className="deal-sep" />
-                    <div className="deal-date">🕐 Создана: {timeAgo(detail.createdAt)}</div>
-                  </>
-                )}
               </div>
+              {dealDetail.createdAt && (
+                <div className="dp-card">
+                  <div className="dp-card-label">Информация</div>
+                  <div style={{ fontSize:13, color:'#6b7280' }}>🕐 Создана: {timeAgo(dealDetail.createdAt)}</div>
+                </div>
+              )}
             </div>
 
-            {/* Правая часть */}
-            <div className="deal-detail-side">
-              <div className="deal-side-card">
-                {detail.status === 'COMPLETED' && (
-                  <div className="deal-done">
-                    <span>✅</span>
-                    <h3>Сделка завершена</h3>
-                    <p>Обе стороны подтвердили выполнение работы</p>
-                  </div>
-                )}
-
-                {detail.status === 'NEW' && (
-                  <div className="deal-new-info">
-                    <span>📋</span>
-                    <h3>Заявка создана</h3>
-                    <p>Ожидаем когда мастер примет задачу в работу</p>
-                  </div>
-                )}
-
-                {detail.status === 'IN_PROGRESS' && (
-                  <>
-                    <div className="deal-side-title">Подтверждение</div>
-                    <p className="deal-side-hint">Сделка завершится когда обе стороны подтвердят выполнение</p>
-
-                    <div className="deal-confirm-list">
-                      <div className={`deal-ci ${detail.customerConfirmed ? 'ok' : ''}`}>
-                        <span>{detail.customerConfirmed ? '✅' : '⏳'}</span>
+            <div className="dp-side">
+              {dealDetail.status === 'NEW' && (
+                <div className="dp-state">
+                  <span>📋</span><h3>Заявка создана</h3>
+                  <p>Ожидаем когда мастер примет задачу в работу</p>
+                </div>
+              )}
+              {dealDetail.status === 'COMPLETED' && (
+                <div className="dp-state">
+                  <span>✅</span><h3>Сделка завершена</h3>
+                  <p>Обе стороны подтвердили выполнение</p>
+                </div>
+              )}
+              {dealDetail.status === 'IN_PROGRESS' && (
+                <>
+                  <div className="dp-side-title">Подтверждение</div>
+                  <p className="dp-side-hint">Завершится когда обе стороны подтвердят</p>
+                  <div className="dp-ci-list">
+                    {[
+                      { confirmed: dealDetail.customerConfirmed, name: `Заказчик${im ? ' (вы)' : ''}` },
+                      { confirmed: dealDetail.workerConfirmed,   name: `Мастер${!im ? ' (вы)' : ''}` },
+                    ].map(({ confirmed, name }) => (
+                      <div key={name} className={`dp-ci ${confirmed ? 'ok' : ''}`}>
+                        <span>{confirmed ? '✅' : '⏳'}</span>
                         <div>
-                          <div className="deal-ci-name">Заказчик{im && ' (вы)'}</div>
-                          <div className="deal-ci-status">
-                            {detail.customerConfirmed ? 'Подтвердил' : 'Ожидание'}
-                          </div>
+                          <div className="dp-ci-name">{name}</div>
+                          <div className="dp-ci-status">{confirmed ? 'Подтвердил' : 'Ожидание'}</div>
                         </div>
                       </div>
-                      <div className={`deal-ci ${detail.workerConfirmed ? 'ok' : ''}`}>
-                        <span>{detail.workerConfirmed ? '✅' : '⏳'}</span>
-                        <div>
-                          <div className="deal-ci-name">Мастер{!im && ' (вы)'}</div>
-                          <div className="deal-ci-status">
-                            {detail.workerConfirmed ? 'Подтвердил' : 'Ожидание'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {!myOk ? (
-                      <button
-                        className="deal-confirm-btn"
-                        disabled={actionId === detail.id}
-                        onClick={() => handleConfirm(detail.id)}
-                      >
-                        {actionId === detail.id ? 'Подтверждаем…' : '✅ Подтвердить выполнение'}
-                      </button>
-                    ) : (
-                      <div className="deal-wait-msg">
-                        ✓ Вы подтвердили{!otherOk && ' — ожидаем другую сторону…'}
-                      </div>
-                    )}
-
-                    <Link to="/chat" className="deal-chat-btn">
-                      💬 Написать сообщение
-                    </Link>
-                  </>
-                )}
-              </div>
+                    ))}
+                  </div>
+                  {!myOk ? (
+                    <button
+                      className="dp-confirm-btn"
+                      disabled={actionId === dealDetail.id}
+                      onClick={() => handleConfirm(dealDetail.id)}
+                    >
+                      {actionId === dealDetail.id ? 'Подтверждаем…' : '✅ Подтвердить выполнение'}
+                    </button>
+                  ) : (
+                    <div className="dp-wait">✓ Вы подтвердили{!otherOk && ' — ожидаем другую сторону…'}</div>
+                  )}
+                  <Link to="/chat" className="dp-chat-btn">💬 Написать сообщение</Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -215,110 +251,307 @@ export default function DealsPage() {
     );
   }
 
-  /* ══ LIST VIEW ══ */
-  return (
-    <div className="deals-page">
-
-      {/* Шапка */}
-      <div className="deals-hero">
-        <div className="container">
-          <h1>Мои сделки</h1>
-          <p>Все заявки, активные задачи и завершённые работы</p>
-        </div>
-      </div>
-
-      <div className="container">
-
-        {/* Фильтры */}
-        <div className="deals-filters">
-          {FILTERS.map(({ key, label, emoji }) => (
-            <button
-              key={key}
-              className={`deals-filter-btn ${filter === key ? 'active' : ''}`}
-              onClick={() => setFilter(key)}
-            >
-              <span>{emoji}</span>
-              {label}
-              <span className="deals-filter-count">{counts[key] ?? 0}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Список */}
-        <div className="deals-list">
-          {loading ? (
-            [1,2,3].map(i => <div key={i} className="deal-skeleton" />)
-          ) : filtered.length === 0 ? (
-            <div className="deals-empty">
-              <span>🤝</span>
-              <h3>Сделок нет</h3>
-              <p>Создайте заявку — мастера откликнутся в течение 10 минут</p>
-              <Link to="/sections" className="btn btn-primary btn-sm">
-                Найти мастера
-              </Link>
+  /* ══════════════════════════════════
+     REQUEST DETAIL
+  ══════════════════════════════════ */
+  if (reqDetail) {
+    const st = REQ_STATUSES[reqDetail.status] || REQ_STATUSES.OPEN;
+    return (
+      <div>
+        <div className="page-header-bar dpage-header">
+          <div className="container">
+            <button className="dpage-back" onClick={() => { setReqDetail(null); setOffers([]); }}>← Назад</button>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:10 }}>
+              <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
+                {st.emoji} {st.label}
+              </span>
+              {reqDetail.categoryId && <span className="dp-cat">{getCatName(reqDetail.categoryId)}</span>}
             </div>
-          ) : (
-            filtered.map(d => {
-              const st = STATUSES[d.status] || STATUSES.NEW;
-              const im = isCust(d);
-              return (
-                <div
-                  key={d.id}
-                  className="deal-card"
-                  onClick={() => setDetail(d)}
-                >
-                  <div className="deal-card-left">
-                    <div
-                      className="deal-card-status-dot"
-                      style={{ background: st.color }}
-                    />
-                  </div>
+            <h1 style={{ marginTop:10 }}>{reqDetail.title}</h1>
+            {reqDetail.budgetTo && (
+              <p style={{ color:'rgba(255,255,255,.55)', marginTop:4 }}>
+                💰 до {Number(reqDetail.budgetTo).toLocaleString('ru-RU')} ₽
+              </p>
+            )}
+          </div>
+        </div>
 
-                  <div className="deal-card-body">
-                    <div className="deal-card-top">
-                      <div className="deal-card-info">
-                        <h3 className="deal-card-title">{d.title || 'Задача'}</h3>
-                        <div className="deal-card-meta">
-                          {d.category && <span>🏷 {d.category}</span>}
-                          <span>👤 {im ? (d.workerName || 'Мастер не назначен') : d.customerName}</span>
-                          <span>🕐 {timeAgo(d.createdAt)}</span>
+        <div className="container">
+          <div className="dp-grid">
+            <div>
+              {reqDetail.description && reqDetail.description !== 'Без описания' && (
+                <div className="dp-card">
+                  <div className="dp-card-label">Описание</div>
+                  <p className="dp-desc">{reqDetail.description}</p>
+                </div>
+              )}
+              {reqDetail.addressText && (
+                <div className="dp-card">
+                  <div className="dp-card-label">Адрес</div>
+                  <p style={{ fontSize:14, color:'#374151' }}>📍 {reqDetail.addressText}</p>
+                </div>
+              )}
+              <div className="dp-card">
+                <div className="dp-card-label">Информация</div>
+                <div style={{ fontSize:13, color:'#6b7280' }}>🕐 Создана: {timeAgo(reqDetail.createdAt)}</div>
+              </div>
+            </div>
+
+            <div className="dp-side">
+              {reqDetail.status === 'OPEN' ? (
+                <>
+                  <div className="dp-side-title">Отклики мастеров</div>
+                  <p className="dp-side-hint">Примите подходящий отклик — и начнётся сделка</p>
+
+                  {offersLoading ? (
+                    <div className="dp-skeleton" style={{ height:60 }} />
+                  ) : offers.length === 0 ? (
+                    <div className="dp-empty-offers">
+                      <span>⏳</span>
+                      <p>Мастера ещё не откликнулись. Обычно первые отклики приходят в течение 10 минут.</p>
+                    </div>
+                  ) : (
+                    offers.map(offer => (
+                      <div key={offer.id} className="dp-offer">
+                        <div className="dp-offer-top">
+                          <span className="dp-offer-price">
+                            {Number(offer.price).toLocaleString('ru-RU')} ₽
+                          </span>
+                          {offer.estimatedDays && (
+                            <span className="dp-offer-days">· {offer.estimatedDays} дн.</span>
+                          )}
                         </div>
-                      </div>
-
-                      <div className="deal-card-right">
-                        <span
-                          className="deal-status-badge"
-                          style={{ color: st.color, background: st.bg }}
-                        >
-                          {st.emoji} {st.label}
-                        </span>
-                        {d.agreedPrice && (
-                          <div className="deal-card-price">
-                            {Number(d.agreedPrice).toLocaleString('ru-RU')} ₽
+                        {offer.message && <p className="dp-offer-msg">{offer.message}</p>}
+                        <div className="dp-offer-date">{timeAgo(offer.createdAt)}</div>
+                        {offer.status === 'CREATED' && (
+                          <div className="dp-offer-actions">
+                            <button
+                              className="dp-confirm-btn"
+                              disabled={actionId === offer.id}
+                              onClick={() => handleAccept(reqDetail, offer)}
+                            >
+                              {actionId === offer.id ? 'Принимаем…' : '✅ Принять'}
+                            </button>
+                            {(offer.workerUserId || offer.workerId) && (
+                              <button
+                                className="dp-chat-btn"
+                                onClick={() => navigate(`/chat/${offer.workerUserId || offer.workerId}?jobRequestId=${reqDetail.id}`)}
+                              >
+                                💬 Написать
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
-                    </div>
+                    ))
+                  )}
+                </>
+              ) : (
+                <div className="dp-state">
+                  <span>{st.emoji}</span>
+                  <h3>{st.label}</h3>
+                  <p>Заявка обновлена</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-                    {d.status === 'IN_PROGRESS' && (
-                      <div className="deal-card-progress">
-                        <div className={`deal-prog-item ${d.customerConfirmed ? 'ok' : ''}`}>
-                          {d.customerConfirmed ? '✅' : '⏳'} Заказчик
-                        </div>
-                        <div className="deal-prog-sep">→</div>
-                        <div className={`deal-prog-item ${d.workerConfirmed ? 'ok' : ''}`}>
-                          {d.workerConfirmed ? '✅' : '⏳'} Мастер
+  /* ══════════════════════════════════
+     LIST VIEW
+  ══════════════════════════════════ */
+  return (
+    <div>
+      <div className="page-header-bar dpage-header">
+        <div className="container">
+          <h1>Мои заказы</h1>
+          <p>Заявки, активные сделки и завершённые работы</p>
+        </div>
+      </div>
+
+      <div className="container" style={{ padding:'28px 0 60px' }}>
+
+        {/* Tabs */}
+        <div className="dpage-tabs">
+          <button
+            className={`dpage-tab ${tab === 'requests' ? 'active' : ''}`}
+            onClick={() => setTab('requests')}
+          >
+            📋 Мои заявки
+            <span className="dpage-tab-count">{requests.length}</span>
+          </button>
+          <button
+            className={`dpage-tab ${tab === 'deals' ? 'active' : ''}`}
+            onClick={() => setTab('deals')}
+          >
+            🤝 Сделки
+            <span className="dpage-tab-count">{deals.length}</span>
+          </button>
+        </div>
+
+        {/* ── REQUESTS TAB ── */}
+        {tab === 'requests' && (
+          <>
+            <div className="dpage-filters">
+              {[
+                ['ALL',         'Все',        reqCounts.ALL],
+                ['OPEN',        'Открытые',   reqCounts.OPEN],
+                ['IN_PROGRESS', 'В работе',   reqCounts.IN_PROGRESS],
+                ['COMPLETED',   'Завершены',  reqCounts.COMPLETED],
+              ].map(([key, label, count]) => (
+                <button
+                  key={key}
+                  className={`dpage-filter-btn ${reqFilter === key ? 'active' : ''}`}
+                  onClick={() => setReqFilter(key)}
+                >
+                  {label} <span>{count}</span>
+                </button>
+              ))}
+              <Link to="/sections" className="btn btn-primary btn-sm" style={{ marginLeft:'auto' }}>
+                + Новая заявка
+              </Link>
+            </div>
+
+            <div className="dpage-list">
+              {loading ? (
+                [1,2,3].map(i => <div key={i} className="dp-skeleton" style={{ height:88 }} />)
+              ) : filteredReqs.length === 0 ? (
+                <div className="dpage-empty">
+                  <span>📋</span>
+                  <h3>Заявок нет</h3>
+                  <p>Создайте заявку — мастера откликнутся в течение 10 минут</p>
+                  <Link to="/sections" className="btn btn-primary btn-sm">Найти мастера</Link>
+                </div>
+              ) : (
+                filteredReqs.map(req => {
+                  const st = REQ_STATUSES[req.status] || REQ_STATUSES.OPEN;
+                  return (
+                    <div
+                      key={req.id}
+                      className="dpage-card"
+                      onClick={() => { setReqDetail(req); loadOffers(req.id); }}
+                    >
+                      <div className="dpage-card-accent" style={{ background: st.color }} />
+                      <div className="dpage-card-body">
+                        <div className="dpage-card-top">
+                          <div className="dpage-card-info">
+                            <h3 className="dpage-card-title">{req.title}</h3>
+                            <div className="dpage-card-meta">
+                              {req.categoryId && <span>🏷 {getCatName(req.categoryId)}</span>}
+                              {req.addressText && <span>📍 {req.addressText}</span>}
+                              <span>🕐 {timeAgo(req.createdAt)}</span>
+                            </div>
+                          </div>
+                          <div className="dpage-card-right">
+                            <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
+                              {st.emoji} {st.label}
+                            </span>
+                            {req.budgetTo && (
+                              <div className="dpage-card-price">
+                                до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    )}
-                  </div>
+                      <div className="dpage-card-chevron">›</div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </>
+        )}
 
-                  <div className="deal-card-arrow">›</div>
+        {/* ── DEALS TAB ── */}
+        {tab === 'deals' && (
+          <>
+            <div className="dpage-filters">
+              {[
+                ['ALL',         'Все',       dealCounts.ALL],
+                ['IN_PROGRESS', 'В работе',  dealCounts.IN_PROGRESS],
+                ['COMPLETED',   'Завершены', dealCounts.COMPLETED],
+              ].map(([key, label, count]) => (
+                <button
+                  key={key}
+                  className={`dpage-filter-btn ${dealFilter === key ? 'active' : ''}`}
+                  onClick={() => setDealFilter(key)}
+                >
+                  {label} <span>{count}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="dpage-list">
+              {loading ? (
+                [1,2,3].map(i => <div key={i} className="dp-skeleton" style={{ height:88 }} />)
+              ) : filteredDeals.length === 0 ? (
+                <div className="dpage-empty">
+                  <span>🤝</span>
+                  <h3>Сделок пока нет</h3>
+                  <p>Сделки появятся после того как вы примете отклик мастера</p>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => setTab('requests')}
+                  >
+                    Перейти к заявкам
+                  </button>
                 </div>
-              );
-            })
-          )}
-        </div>
+              ) : (
+                filteredDeals.map(d => {
+                  const st = DEAL_STATUSES[d.status] || DEAL_STATUSES.NEW;
+                  const im = isCust(d);
+                  return (
+                    <div
+                      key={d.id}
+                      className="dpage-card"
+                      onClick={() => setDealDetail(d)}
+                    >
+                      <div className="dpage-card-accent" style={{ background: st.color }} />
+                      <div className="dpage-card-body">
+                        <div className="dpage-card-top">
+                          <div className="dpage-card-info">
+                            <h3 className="dpage-card-title">{d.title || 'Задача'}</h3>
+                            <div className="dpage-card-meta">
+                              {d.category && <span>🏷 {d.category}</span>}
+                              <span>👤 {im ? (d.workerName || 'Мастер не назначен') : d.customerName}</span>
+                              <span>🕐 {timeAgo(d.createdAt)}</span>
+                            </div>
+                          </div>
+                          <div className="dpage-card-right">
+                            <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
+                              {st.emoji} {st.label}
+                            </span>
+                            {d.agreedPrice && (
+                              <div className="dpage-card-price">
+                                {Number(d.agreedPrice).toLocaleString('ru-RU')} ₽
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {d.status === 'IN_PROGRESS' && (
+                          <div className="dpage-card-progress">
+                            <div className={`dp-prog ${d.customerConfirmed ? 'ok' : ''}`}>
+                              {d.customerConfirmed ? '✅' : '⏳'} Заказчик
+                            </div>
+                            <span className="dp-prog-arrow">→</span>
+                            <div className={`dp-prog ${d.workerConfirmed ? 'ok' : ''}`}>
+                              {d.workerConfirmed ? '✅' : '⏳'} Мастер
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="dpage-card-chevron">›</div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

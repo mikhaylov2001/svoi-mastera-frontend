@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
@@ -14,7 +14,6 @@ import { LoginPage, RegisterPage } from './pages/AuthPages';
 import ProfilePage from './pages/ProfilePage';
 import WorkerProfilePage from './pages/WorkerProfilePage';
 import DealsPage from './pages/DealsPage';
-import MyOrdersPage from './pages/MyOrdersPage';
 import FindWorkPage from './pages/FindWorkPage';
 import FindMasterPage from './pages/FindMasterPage';
 import ChatPage from './pages/ChatPage';
@@ -34,25 +33,24 @@ function AppContent() {
       <Header />
       <main style={{ flex: 1 }}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/sections" element={<SectionsPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/"                element={<HomePage />} />
+          <Route path="/sections"        element={<SectionsPage />} />
+          <Route path="/services"        element={<ServicesPage />} />
+          <Route path="/categories"      element={<CategoriesPage />} />
           <Route path="/sections/:sectionSlug" element={<CategoriesPage />} />
-          <Route path="/categories/:slug" element={<CategoryPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="/deals" element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
-          <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
-          <Route path="/find-work" element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
-          <Route path="/find-master" element={<FindMasterPage />} />
+          <Route path="/categories/:slug"      element={<CategoryPage />} />
+          <Route path="/login"           element={<LoginPage />} />
+          <Route path="/register"        element={<RegisterPage />} />
+          <Route path="/profile"         element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/deals"           element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
+          <Route path="/find-work"       element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
+          <Route path="/find-master"     element={<FindMasterPage />} />
           <Route path="/manage-services" element={<ProtectedRoute workerOnly><ManageServicesPage /></ProtectedRoute>} />
-          <Route path="/active-clients" element={<ProtectedRoute workerOnly><ActiveClientsPage /></ProtectedRoute>} />
-          <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+          <Route path="/active-clients"  element={<ProtectedRoute workerOnly><ActiveClientsPage /></ProtectedRoute>} />
+          <Route path="/chat"            element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/chat/:partnerId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-          <Route path="/worker" element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="/worker"          element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
+          <Route path="*"                element={<NotFoundPage />} />
         </Routes>
       </main>
       <Footer />
@@ -66,7 +64,6 @@ export default function App() {
     if (Notification.permission === 'default') {
       Notification.requestPermission().then((permission) => {
         if (permission === 'granted') {
-          // eslint-disable-next-line no-console
           console.log('Push permission granted');
         }
       });
