@@ -41,46 +41,60 @@ export default function FindMasterPage() {
   // Если категория не выбрана - показываем список категорий
   if (!categorySlug) {
     return (
-      <div className="find-master-page">
+      <div>
         <div className="page-header-bar">
           <div className="container">
-            <h1 className="page-header-title">Найти мастера</h1>
-            <p className="page-header-subtitle">Выберите раздел — найдите нужного мастера</p>
+            <h1>Найти мастера</h1>
+            <p>Выберите категорию — найдите нужного мастера</p>
           </div>
         </div>
 
         <div className="container">
           {loading ? (
-            <div className="loading-state">Загрузка категорий...</div>
+            <div className="cats-grid" style={{ padding: '28px 0 48px' }}>
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="cat-skeleton">
+                  <div style={{ width: 52, height: 52, background: '#e5e7eb', borderRadius: 'var(--r-md)' }}></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ height: 16, background: '#e5e7eb', borderRadius: 4, marginBottom: 8, width: '60%' }}></div>
+                    <div style={{ height: 14, background: '#e5e7eb', borderRadius: 4, width: '80%' }}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : error ? (
-            <div className="error-state">{error}</div>
+            <div className="cats-error">
+              <span>😕</span>
+              <p>{error}</p>
+            </div>
           ) : (
-            <div className="categories-grid-large">
-              {categories.map((cat) => {
-                const categoryServices = services.filter((s) => s.categoryId === cat.id);
-                const activeMasters = categoryServices.filter((s) => s.active).length;
+            <div className="cats-grid">
+              {categories.map((cat, i) => {
+                // Подсчет активных мастеров в категории
+                const activeMastersCount = services.filter(
+                  (s) => s.categoryId === cat.id && s.active === true
+                ).length;
 
                 return (
                   <div
                     key={cat.id}
-                    className="category-card-large"
+                    className="cat-card fade-up"
+                    style={{ animationDelay: `${i * 0.05}s`, cursor: 'pointer' }}
                     onClick={() => navigate(`/find-master/${cat.slug}`)}
                   >
-                    <div className="category-card-icon" style={{ background: cat.color || '#e8410a' }}>
+                    <div className="cat-card-icon" style={{ background: cat.color || '#fff3e0' }}>
                       {cat.emoji || cat.icon || '🛠️'}
                     </div>
-                    <div className="category-card-content">
-                      <h3 className="category-card-name">{cat.name}</h3>
-                      <p className="category-card-description">
-                        {cat.description || 'Профессиональные мастера в этой категории'}
-                      </p>
-                      <div className="category-card-stats">
-                        <span className="category-stat">
-                          👥 {activeMasters} {activeMasters === 1 ? 'мастер' : 'мастеров'}
-                        </span>
-                      </div>
+                    <div className="cat-card-body">
+                      <h2>{cat.name}</h2>
+                      <p>{cat.description || cat.desc || 'Профессиональные мастера'}</p>
+                      {activeMastersCount > 0 && (
+                        <div className="cat-masters-count">
+                          {activeMastersCount} {activeMastersCount === 1 ? 'мастер' : activeMastersCount < 5 ? 'мастера' : 'мастеров'}
+                        </div>
+                      )}
                     </div>
-                    <div className="category-card-arrow">→</div>
+                    <div className="cat-card-arrow">›</div>
                   </div>
                 );
               })}
@@ -128,24 +142,20 @@ export default function FindMasterPage() {
   }
 
   return (
-    <div className="find-master-page">
+    <div>
       {/* Заголовок с выбранной категорией */}
       <div className="page-header-bar">
         <div className="container">
-          <div className="cat-page-breadcrumb">
-            <Link to="/find-master" className="cat-page-back">
-              ← Назад к категориям
-            </Link>
-          </div>
+          <Link to="/find-master" className="cats-back-link">
+            ← Все категории
+          </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
-            <div className="cat-page-icon" style={{ background: selectedCategory.color || '#e8410a' }}>
+            <div className="cat-page-icon" style={{ background: selectedCategory.color || '#fff3e0' }}>
               {selectedCategory.emoji || selectedCategory.icon || '🛠️'}
             </div>
             <div>
-              <h1 className="page-header-title">{selectedCategory.name}</h1>
-              <p className="page-header-subtitle">
-                {selectedCategory.description || 'Найдите проверенного мастера'}
-              </p>
+              <h1>{selectedCategory.name}</h1>
+              <p>{selectedCategory.description || selectedCategory.desc || 'Найдите проверенного мастера'}</p>
             </div>
           </div>
         </div>
