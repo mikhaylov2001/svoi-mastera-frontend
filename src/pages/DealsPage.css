@@ -186,9 +186,11 @@
 }
 
 .dp-card {
-  background: #fff; border: 1.5px solid #e5e7eb;
-  border-radius: 18px; padding: 22px 24px;
-  margin-bottom: 14px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: 24px;
 }
 
 .dp-card-label {
@@ -216,8 +218,10 @@
 
 /* ══ SIDE ══ */
 .dp-side {
-  background: #fff; border: 1.5px solid #e5e7eb;
-  border-radius: 18px; padding: 24px;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: var(--r-lg);
+  padding: 24px;
   position: sticky; top: 72px;
 }
 
