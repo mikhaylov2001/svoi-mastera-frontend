@@ -427,7 +427,6 @@ export default function DealsPage() {
                 ['ALL',         'Все',       reqCounts.ALL],
                 ['OPEN',        'Открытые',  reqCounts.OPEN],
                 ['IN_PROGRESS', 'В работе',  reqCounts.IN_PROGRESS],
-                ['COMPLETED',   'Завершены', reqCounts.COMPLETED],
               ].map(([key, label, count]) => (
                 <button
                   key={key}
