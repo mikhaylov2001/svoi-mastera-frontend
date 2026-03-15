@@ -1,25 +1,18 @@
 /* ══ HEADER ══ */
 .dpage-header.page-header-bar {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  position: relative; overflow: hidden;
+  background: #ffffff;
+  border-bottom: 1.5px solid #e5e7eb;
+  position: relative;
 }
-.dpage-header.page-header-bar::before {
-  content: '';
-  position: absolute; inset: 0;
-  background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
-  background-size: 24px 24px; pointer-events: none;
-}
-.dpage-header.page-header-bar h1 { color: #fff; }
-.dpage-header.page-header-bar p  { color: rgba(255,255,255,.5); }
 
-.dpage-back {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 600;
-  color: rgba(255,255,255,.5);
-  background: none; border: none; cursor: pointer;
-  padding: 0; transition: color .15s;
+/* убери псевдоэлемент с точками — он больше не нужен */
+.dpage-header.page-header-bar::before {
+  display: none;
 }
-.dpage-back:hover { color: #fff; }
+
+.dpage-header.page-header-bar h1 { color: #111827; }
+.dpage-header.page-header-bar p  { color: #6b7280; }
+
 
 /* ══ TABS ══ */
 .dpage-tabs {
