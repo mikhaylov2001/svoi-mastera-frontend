@@ -310,3 +310,12 @@
   .dp-people        { grid-template-columns: 1fr; }
   .dp-card          { padding: 18px; }
 }
+
+/* ══ STATUS ICON ══ */
+.dp-status-icon {
+  width: 52px; height: 52px; flex-shrink: 0;
+  border-radius: var(--r-md);
+  display: flex; align-items: center;
+  justify-content: center; font-size: 26px;
+}
+

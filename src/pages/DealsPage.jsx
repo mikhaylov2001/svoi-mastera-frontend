@@ -8,21 +8,21 @@ import { useAuth } from '../context/AuthContext';
 import './DealsPage.css';
 
 const DEAL_STATUSES = {
-  NEW:         { label: 'Новая',      emoji: '📋', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
-  IN_PROGRESS: { label: 'В работе',   emoji: '⚙️',  color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
-  COMPLETED:   { label: 'Завершена',  emoji: '✅',  color: '#22c55e', bg: 'rgba(34,197,94,.12)'   },
-  CANCELLED:   { label: 'Отменена',   emoji: '❌',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'   },
+  NEW:         { label: 'Новая',     emoji: '📋', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
+  IN_PROGRESS: { label: 'В работе',  emoji: '⚙️',  color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
+  COMPLETED:   { label: 'Завершена', emoji: '✅',  color: '#22c55e', bg: 'rgba(34,197,94,.12)'   },
+  CANCELLED:   { label: 'Отменена',  emoji: '❌',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'   },
 };
 
 const REQ_STATUSES = {
-  DRAFT:          { label: 'Черновик',    emoji: '📝', color: '#9ca3af', bg: 'rgba(156,163,175,.12)' },
-  OPEN:           { label: 'Открыта',     emoji: '🟢', color: '#22c55e', bg: 'rgba(34,197,94,.12)'   },
-  IN_NEGOTIATION: { label: 'Обсуждение',  emoji: '💬', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
-  ASSIGNED:       { label: 'Назначена',   emoji: '👷', color: '#f59e0b', bg: 'rgba(245,158,11,.12)'  },
-  IN_PROGRESS:    { label: 'В работе',    emoji: '⚙️',  color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
-  COMPLETED:      { label: 'Выполнена',   emoji: '✅',  color: '#22c55e', bg: 'rgba(34,197,94,.12)'  },
-  CANCELLED:      { label: 'Отменена',    emoji: '❌',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
-  EXPIRED:        { label: 'Истекла',     emoji: '⏰',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
+  DRAFT:          { label: 'Черновик',   emoji: '📝', color: '#9ca3af', bg: 'rgba(156,163,175,.12)' },
+  OPEN:           { label: 'Открыта',    emoji: '🟢', color: '#22c55e', bg: 'rgba(34,197,94,.12)'   },
+  IN_NEGOTIATION: { label: 'Обсуждение', emoji: '💬', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
+  ASSIGNED:       { label: 'Назначена',  emoji: '👷', color: '#f59e0b', bg: 'rgba(245,158,11,.12)'  },
+  IN_PROGRESS:    { label: 'В работе',   emoji: '⚙️',  color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
+  COMPLETED:      { label: 'Выполнена',  emoji: '✅',  color: '#22c55e', bg: 'rgba(34,197,94,.12)'  },
+  CANCELLED:      { label: 'Отменена',   emoji: '❌',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
+  EXPIRED:        { label: 'Истекла',    emoji: '⏰',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
 };
 
 function timeAgo(d) {
@@ -39,26 +39,21 @@ export default function DealsPage() {
   const { userId } = useAuth();
   const navigate   = useNavigate();
 
-  /* ── data ── */
   const [deals,      setDeals]      = useState([]);
   const [requests,   setRequests]   = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading,    setLoading]    = useState(true);
 
-  /* ── ui ── */
-  const [tab,        setTab]        = useState('requests'); // 'requests' | 'deals'
+  const [tab,        setTab]        = useState('requests');
   const [reqFilter,  setReqFilter]  = useState('ALL');
   const [dealFilter, setDealFilter] = useState('ALL');
 
-  /* ── detail ── */
   const [dealDetail, setDealDetail] = useState(null);
   const [reqDetail,  setReqDetail]  = useState(null);
 
-  /* ── offers ── */
   const [offers,        setOffers]        = useState([]);
   const [offersLoading, setOffersLoading] = useState(false);
 
-  /* ── actions ── */
   const [actionId, setActionId] = useState(null);
 
   const load = useCallback(async () => {
@@ -78,7 +73,6 @@ export default function DealsPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  /* sync deal detail */
   useEffect(() => {
     if (dealDetail?.id) {
       const fresh = deals.find(d => d.id === dealDetail.id);
@@ -100,6 +94,7 @@ export default function DealsPage() {
       await acceptOffer(userId, req.id, offer.id);
       await load();
       setReqDetail(null);
+      setOffers([]);
       setTab('deals');
     } catch {}
     setActionId(null);
@@ -113,7 +108,6 @@ export default function DealsPage() {
 
   const isCust = (d) => d.customerId === userId;
 
-  /* ── counts ── */
   const reqCounts = {
     ALL:         requests.length,
     OPEN:        requests.filter(r => r.status === 'OPEN').length,
@@ -134,9 +128,7 @@ export default function DealsPage() {
   const filteredDeals = dealFilter === 'ALL' ? deals
     : deals.filter(d => d.status === dealFilter);
 
-  /* ══════════════════════════════════
-     DEAL DETAIL
-  ══════════════════════════════════ */
+  /* ══ DEAL DETAIL ══ */
   if (dealDetail) {
     const st   = DEAL_STATUSES[dealDetail.status] || DEAL_STATUSES.NEW;
     const im   = isCust(dealDetail);
@@ -145,21 +137,32 @@ export default function DealsPage() {
 
     return (
       <div>
-        <div className="page-header-bar dpage-header">
+        <div className="page-header-bar">
           <div className="container">
-            <button className="dpage-back" onClick={() => setDealDetail(null)}>← Назад</button>
-            <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:10, flexWrap:'wrap' }}>
-              <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
-                {st.emoji} {st.label}
-              </span>
-              {dealDetail.category && <span className="dp-cat">{dealDetail.category}</span>}
+            <button className="cats-back-link" onClick={() => setDealDetail(null)}>
+              ← Назад к заказам
+            </button>
+            <div style={{ display:'flex', alignItems:'center', gap:14, marginTop:10 }}>
+              <div className="dp-status-icon" style={{ background: st.bg }}>
+                <span>{st.emoji}</span>
+              </div>
+              <div>
+                <h1>{dealDetail.title || 'Задача'}</h1>
+                <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:4, flexWrap:'wrap' }}>
+                  <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
+                    {st.emoji} {st.label}
+                  </span>
+                  {dealDetail.category && (
+                    <span style={{ fontSize:13, color:'var(--gray-400)' }}>{dealDetail.category}</span>
+                  )}
+                  {dealDetail.agreedPrice && (
+                    <span style={{ fontSize:13, color:'var(--gray-500)', fontWeight:700 }}>
+                      💰 {Number(dealDetail.agreedPrice).toLocaleString('ru-RU')} ₽
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-            <h1 style={{ marginTop:10 }}>{dealDetail.title || 'Задача'}</h1>
-            {dealDetail.agreedPrice && (
-              <p style={{ color:'rgba(255,255,255,.55)', marginTop:4 }}>
-                💰 {Number(dealDetail.agreedPrice).toLocaleString('ru-RU')} ₽
-              </p>
-            )}
           </div>
         </div>
 
@@ -194,7 +197,9 @@ export default function DealsPage() {
               {dealDetail.createdAt && (
                 <div className="dp-card">
                   <div className="dp-card-label">Информация</div>
-                  <div style={{ fontSize:13, color:'#6b7280' }}>🕐 Создана: {timeAgo(dealDetail.createdAt)}</div>
+                  <div style={{ fontSize:13, color:'#6b7280' }}>
+                    🕐 Создана: {timeAgo(dealDetail.createdAt)}
+                  </div>
                 </div>
               )}
             </div>
@@ -202,13 +207,15 @@ export default function DealsPage() {
             <div className="dp-side">
               {dealDetail.status === 'NEW' && (
                 <div className="dp-state">
-                  <span>📋</span><h3>Заявка создана</h3>
+                  <span>📋</span>
+                  <h3>Заявка создана</h3>
                   <p>Ожидаем когда мастер примет задачу в работу</p>
                 </div>
               )}
               {dealDetail.status === 'COMPLETED' && (
                 <div className="dp-state">
-                  <span>✅</span><h3>Сделка завершена</h3>
+                  <span>✅</span>
+                  <h3>Сделка завершена</h3>
                   <p>Обе стороны подтвердили выполнение</p>
                 </div>
               )}
@@ -239,7 +246,9 @@ export default function DealsPage() {
                       {actionId === dealDetail.id ? 'Подтверждаем…' : '✅ Подтвердить выполнение'}
                     </button>
                   ) : (
-                    <div className="dp-wait">✓ Вы подтвердили{!otherOk && ' — ожидаем другую сторону…'}</div>
+                    <div className="dp-wait">
+                      ✓ Вы подтвердили{!otherOk && ' — ожидаем другую сторону…'}
+                    </div>
                   )}
                   <Link to="/chat" className="dp-chat-btn">💬 Написать сообщение</Link>
                 </>
@@ -251,28 +260,41 @@ export default function DealsPage() {
     );
   }
 
-  /* ══════════════════════════════════
-     REQUEST DETAIL
-  ══════════════════════════════════ */
+  /* ══ REQUEST DETAIL ══ */
   if (reqDetail) {
-    const st = REQ_STATUSES[reqDetail.status] || REQ_STATUSES.OPEN;
+    const st     = REQ_STATUSES[reqDetail.status] || REQ_STATUSES.OPEN;
+    const catName = getCatName(reqDetail.categoryId);
+
     return (
       <div>
-        <div className="page-header-bar dpage-header">
+        <div className="page-header-bar">
           <div className="container">
-            <button className="dpage-back" onClick={() => { setReqDetail(null); setOffers([]); }}>← Назад</button>
-            <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:10 }}>
-              <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
-                {st.emoji} {st.label}
-              </span>
-              {reqDetail.categoryId && <span className="dp-cat">{getCatName(reqDetail.categoryId)}</span>}
+            <button className="cats-back-link" onClick={() => { setReqDetail(null); setOffers([]); }}>
+              ← Назад к заказам
+            </button>
+            <div style={{ display:'flex', alignItems:'center', gap:14, marginTop:10 }}>
+              {catName && (
+                <div className="cat-page-icon" style={{ background: '#f3f4f6' }}>
+                  📋
+                </div>
+              )}
+              <div>
+                <h1>{reqDetail.title}</h1>
+                <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:4, flexWrap:'wrap' }}>
+                  <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
+                    {st.emoji} {st.label}
+                  </span>
+                  {catName && (
+                    <span style={{ fontSize:13, color:'var(--gray-400)' }}>🏷 {catName}</span>
+                  )}
+                  {reqDetail.budgetTo && (
+                    <span style={{ fontSize:13, color:'var(--gray-500)', fontWeight:700 }}>
+                      💰 до {Number(reqDetail.budgetTo).toLocaleString('ru-RU')} ₽
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-            <h1 style={{ marginTop:10 }}>{reqDetail.title}</h1>
-            {reqDetail.budgetTo && (
-              <p style={{ color:'rgba(255,255,255,.55)', marginTop:4 }}>
-                💰 до {Number(reqDetail.budgetTo).toLocaleString('ru-RU')} ₽
-              </p>
-            )}
           </div>
         </div>
 
@@ -293,7 +315,9 @@ export default function DealsPage() {
               )}
               <div className="dp-card">
                 <div className="dp-card-label">Информация</div>
-                <div style={{ fontSize:13, color:'#6b7280' }}>🕐 Создана: {timeAgo(reqDetail.createdAt)}</div>
+                <div style={{ fontSize:13, color:'#6b7280' }}>
+                  🕐 Создана: {timeAgo(reqDetail.createdAt)}
+                </div>
               </div>
             </div>
 
@@ -304,7 +328,7 @@ export default function DealsPage() {
                   <p className="dp-side-hint">Примите подходящий отклик — и начнётся сделка</p>
 
                   {offersLoading ? (
-                    <div className="dp-skeleton" style={{ height:60 }} />
+                    <div className="dp-skeleton" style={{ height:64, borderRadius:12 }} />
                   ) : offers.length === 0 ? (
                     <div className="dp-empty-offers">
                       <span>⏳</span>
@@ -335,7 +359,9 @@ export default function DealsPage() {
                             {(offer.workerUserId || offer.workerId) && (
                               <button
                                 className="dp-chat-btn"
-                                onClick={() => navigate(`/chat/${offer.workerUserId || offer.workerId}?jobRequestId=${reqDetail.id}`)}
+                                onClick={() => navigate(
+                                  `/chat/${offer.workerUserId || offer.workerId}?jobRequestId=${reqDetail.id}`
+                                )}
                               >
                                 💬 Написать
                               </button>
@@ -350,7 +376,7 @@ export default function DealsPage() {
                 <div className="dp-state">
                   <span>{st.emoji}</span>
                   <h3>{st.label}</h3>
-                  <p>Заявка обновлена</p>
+                  <p>Статус заявки обновлён</p>
                 </div>
               )}
             </div>
@@ -360,12 +386,10 @@ export default function DealsPage() {
     );
   }
 
-  /* ══════════════════════════════════
-     LIST VIEW
-  ══════════════════════════════════ */
+  /* ══ LIST ══ */
   return (
     <div>
-      <div className="page-header-bar dpage-header">
+      <div className="page-header-bar">
         <div className="container">
           <h1>Мои заказы</h1>
           <p>Заявки, активные сделки и завершённые работы</p>
@@ -397,10 +421,10 @@ export default function DealsPage() {
           <>
             <div className="dpage-filters">
               {[
-                ['ALL',         'Все',        reqCounts.ALL],
-                ['OPEN',        'Открытые',   reqCounts.OPEN],
-                ['IN_PROGRESS', 'В работе',   reqCounts.IN_PROGRESS],
-                ['COMPLETED',   'Завершены',  reqCounts.COMPLETED],
+                ['ALL',         'Все',       reqCounts.ALL],
+                ['OPEN',        'Открытые',  reqCounts.OPEN],
+                ['IN_PROGRESS', 'В работе',  reqCounts.IN_PROGRESS],
+                ['COMPLETED',   'Завершены', reqCounts.COMPLETED],
               ].map(([key, label, count]) => (
                 <button
                   key={key}
@@ -493,10 +517,7 @@ export default function DealsPage() {
                   <span>🤝</span>
                   <h3>Сделок пока нет</h3>
                   <p>Сделки появятся после того как вы примете отклик мастера</p>
-                  <button
-                    className="btn btn-primary btn-sm"
-                    onClick={() => setTab('requests')}
-                  >
+                  <button className="btn btn-primary btn-sm" onClick={() => setTab('requests')}>
                     Перейти к заявкам
                   </button>
                 </div>
@@ -505,11 +526,7 @@ export default function DealsPage() {
                   const st = DEAL_STATUSES[d.status] || DEAL_STATUSES.NEW;
                   const im = isCust(d);
                   return (
-                    <div
-                      key={d.id}
-                      className="dpage-card"
-                      onClick={() => setDealDetail(d)}
-                    >
+                    <div key={d.id} className="dpage-card" onClick={() => setDealDetail(d)}>
                       <div className="dpage-card-accent" style={{ background: st.color }} />
                       <div className="dpage-card-body">
                         <div className="dpage-card-top">

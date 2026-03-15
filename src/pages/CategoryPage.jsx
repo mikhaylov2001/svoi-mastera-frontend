@@ -20,14 +20,14 @@ export default function CategoryPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const category = ALL_CATEGORIES[slug];
+  const category   = ALL_CATEGORIES[slug];
   const sectionSlug = CAT_TO_SECTION[slug];
 
   const [form, setForm] = useState({ title: '', description: '', address: '', budget: '' });
 
   useEffect(() => {
     const qp = new URLSearchParams(location.search);
-    const title = qp.get('title') || '';
+    const title       = qp.get('title')       || '';
     const description = qp.get('description') || '';
     if (title || description) {
       setForm(prev => ({
@@ -38,8 +38,8 @@ export default function CategoryPage() {
     }
   }, [location.search]);
 
-  const [status, setStatus] = useState('idle');
-  const [error,  setError]  = useState('');
+  const [status,        setStatus]        = useState('idle');
+  const [error,         setError]         = useState('');
   const [apiCategoryId, setApiCategoryId] = useState(null);
 
   useEffect(() => {
@@ -55,17 +55,23 @@ export default function CategoryPage() {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    if (!userId) { navigate('/login'); return; }
-    if (!form.title.trim()) { setError('Укажите название задачи'); return; }
-    if (!apiCategoryId)     { setError('Категория не найдена на сервере. Попробуйте обновить страницу.'); return; }
+    if (!userId)              { navigate('/login'); return; }
+    if (!form.title.trim())   { setError('Укажите название задачи'); return; }
+    if (!form.description.trim()) { setError('Добавьте подробное описание'); return; }
+    if (!form.address.trim()) { setError('Укажите адрес выполнения работы'); return; }
+    if (!form.budget)         { setError('Укажите предварительную цену'); return; }
+    if (Number(form.budget) <= 0) { setError('Цена должна быть больше нуля'); return; }
+    if (!apiCategoryId)       { setError('Категория не найдена. Обновите страницу.'); return; }
 
     setStatus('sending'); setError('');
     try {
-      const data = { categoryId: apiCategoryId, title: form.title.trim() };
-      if (form.description.trim()) data.description = form.description.trim();
-      if (form.address.trim())     data.address     = form.address.trim();
-      if (form.budget)             data.budget      = Number(form.budget);
-
+      const data = {
+        categoryId:  apiCategoryId,
+        title:       form.title.trim(),
+        description: form.description.trim(),
+        address:     form.address.trim(),
+        budget:      Number(form.budget),
+      };
       await createJobRequest(userId, data);
       setStatus('success');
     } catch (err) {
@@ -91,12 +97,15 @@ export default function CategoryPage() {
         <div className="cat-success">
           <span className="cat-success-icon">🎉</span>
           <h2>Заявка отправлена!</h2>
-          <p>Мастера увидят вашу задачу и начнут откликаться. Следите за статусом в разделе «Мои сделки».</p>
+          <p>Мастера увидят вашу задачу и начнут откликаться. Следите за статусом в разделе «Мои заказы».</p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/deals" className="btn btn-primary">Перейти к сделкам</Link>
+            <Link to="/deals" className="btn btn-primary">Перейти к заказам</Link>
             <button
               className="btn btn-outline"
-              onClick={() => { setStatus('idle'); setForm({ title: '', description: '', address: '', budget: '' }); }}
+              onClick={() => {
+                setStatus('idle');
+                setForm({ title: '', description: '', address: '', budget: '' });
+              }}
             >
               Создать ещё одну
             </button>
@@ -112,10 +121,14 @@ export default function CategoryPage() {
       <div className="page-header-bar">
         <div className="container">
           <div className="cat-page-breadcrumb">
-            <Link to={`/sections/${sectionSlug}`} className="cat-page-back">← Назад к категориям</Link>
+            <Link to={`/sections/${sectionSlug}`} className="cat-page-back">
+              ← Назад к категориям
+            </Link>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
-            <div className="cat-page-icon" style={{ background: category.color }}>{category.emoji}</div>
+            <div className="cat-page-icon" style={{ background: category.color }}>
+              {category.emoji}
+            </div>
             <div>
               <h1>{category.name}</h1>
               <p>Создайте задачу — мастера откликнутся сами</p>
@@ -148,36 +161,40 @@ export default function CategoryPage() {
               </div>
 
               <div className="form-field">
-                <label className="form-label">Подробное описание</label>
+                <label className="form-label">Подробное описание *</label>
                 <textarea
                   className="form-input form-textarea"
                   name="description"
                   placeholder="Подробно опишите что нужно сделать…"
                   value={form.description}
                   onChange={handleChange}
+                  required
                 />
               </div>
 
               <div className="cat-form-row">
                 <div className="form-field">
-                  <label className="form-label">Адрес</label>
+                  <label className="form-label">Адрес *</label>
                   <input
                     className="form-input"
                     name="address"
                     placeholder="Улица, кв"
                     value={form.address}
                     onChange={handleChange}
+                    required
                   />
                 </div>
                 <div className="form-field">
-                  <label className="form-label">Предварительная цена, ₽</label>
+                  <label className="form-label">Предварительная цена, ₽ *</label>
                   <input
                     className="form-input"
                     name="budget"
                     type="number"
-                    placeholder="Не обязательно"
+                    min="1"
+                    placeholder="Например: 3000"
                     value={form.budget}
                     onChange={handleChange}
+                    required
                   />
                 </div>
               </div>
@@ -192,7 +209,8 @@ export default function CategoryPage() {
 
               {!userId && (
                 <p className="cat-form-auth-note">
-                  Для отправки нужно <Link to="/login" className="cat-form-link">войти в аккаунт</Link>
+                  Для отправки нужно{' '}
+                  <Link to="/login" className="cat-form-link">войти в аккаунт</Link>
                 </p>
               )}
             </form>
