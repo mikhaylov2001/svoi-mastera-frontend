@@ -59,7 +59,7 @@ export default function CategoriesPage() {
           {categories.map((cat, i) => (
             <Link
               key={cat.slug}
-              to={`/find-master?cat=${encodeURIComponent(cat.slug)}`}
+               to={`/categories/${cat.slug}`}
               className="cat-card fade-up"
               style={{ animationDelay: `${i * 0.05}s` }}
             >
