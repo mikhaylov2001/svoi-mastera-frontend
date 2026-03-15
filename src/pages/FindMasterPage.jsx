@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getCategories, getWorkerServices } from '../api';
 import './FindMasterPage.css';
 
 export default function FindMasterPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const { categorySlug } = useParams();
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,27 +36,71 @@ export default function FindMasterPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    const qp = new URLSearchParams(location.search);
-    const cat = qp.get('cat');
-    if (cat) {
-      setSelectedCategory(cat);
-    }
-    const q = qp.get('q');
-    if (q) setSearchTerm(q);
-  }, [location.search]);
+  const selectedCategory = categories.find((c) => c.slug === categorySlug);
 
-  const selectedCategoryObj = categories.find((c) => c.slug === selectedCategory);
+  // Если категория не выбрана - показываем список категорий
+  if (!categorySlug) {
+    return (
+      <div className="find-master-page">
+        <div className="page-header-bar">
+          <div className="container">
+            <h1 className="page-header-title">Найти мастера</h1>
+            <p className="page-header-subtitle">Выберите раздел — найдите нужного мастера</p>
+          </div>
+        </div>
 
+        <div className="container">
+          {loading ? (
+            <div className="loading-state">Загрузка категорий...</div>
+          ) : error ? (
+            <div className="error-state">{error}</div>
+          ) : (
+            <div className="categories-grid-large">
+              {categories.map((cat) => {
+                const categoryServices = services.filter((s) => s.categoryId === cat.id);
+                const activeMasters = categoryServices.filter((s) => s.active).length;
+
+                return (
+                  <div
+                    key={cat.id}
+                    className="category-card-large"
+                    onClick={() => navigate(`/find-master/${cat.slug}`)}
+                  >
+                    <div className="category-card-icon" style={{ background: cat.color || '#e8410a' }}>
+                      {cat.emoji || cat.icon || '🛠️'}
+                    </div>
+                    <div className="category-card-content">
+                      <h3 className="category-card-name">{cat.name}</h3>
+                      <p className="category-card-description">
+                        {cat.description || 'Профессиональные мастера в этой категории'}
+                      </p>
+                      <div className="category-card-stats">
+                        <span className="category-stat">
+                          👥 {activeMasters} {activeMasters === 1 ? 'мастер' : 'мастеров'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="category-card-arrow">→</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Если категория выбрана - показываем мастеров
   const visibleServices = services
     .filter((item) => {
+      // Фильтр по категории
+      if (item.categoryId !== selectedCategory?.id) return false;
+
+      // Фильтр активных мастеров
       if (showActiveOnly && !item.active) return false;
 
-      if (selectedCategory !== 'all') {
-        const itemCategory = categories.find((c) => c.id === item.categoryId);
-        if (itemCategory && itemCategory.slug !== selectedCategory) return false;
-      }
-
+      // Поиск
       if (!searchTerm.trim()) return true;
       const q = searchTerm.trim().toLowerCase();
       return (
@@ -73,99 +116,149 @@ export default function FindMasterPage() {
       return new Date(b.createdAt || Date.now()) - new Date(a.createdAt || Date.now());
     });
 
+  if (!selectedCategory) {
+    return (
+      <div className="container" style={{ padding: '60px 24px', textAlign: 'center' }}>
+        <p>Категория не найдена</p>
+        <Link to="/find-master" className="btn btn-primary" style={{ marginTop: 16 }}>
+          К категориям
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <div className="page-header-bar page-header-bar-clean">
+    <div className="find-master-page">
+      {/* Заголовок с выбранной категорией */}
+      <div className="page-header-bar">
         <div className="container">
-          <h1 className="page-header-title">Найти мастера</h1>
-          <p className="page-header-subtitle">Все услуги, фильтры, чат и заказ — в одном месте.</p>
+          <div className="cat-page-breadcrumb">
+            <Link to="/find-master" className="cat-page-back">
+              ← Назад к категориям
+            </Link>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
+            <div className="cat-page-icon" style={{ background: selectedCategory.color || '#e8410a' }}>
+              {selectedCategory.emoji || selectedCategory.icon || '🛠️'}
+            </div>
+            <div>
+              <h1 className="page-header-title">{selectedCategory.name}</h1>
+              <p className="page-header-subtitle">
+                {selectedCategory.description || 'Найдите проверенного мастера'}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="container">
+        {/* Панель фильтров */}
         <div className="find-master-controls">
-          <label>Категория:</label>
-          <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-            <option value="all">Все</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.slug}>{cat.name}</option>
-            ))}
-          </select>
+          <div className="controls-left">
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="Поиск по названию или описанию..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
 
-          <label>Поиск:</label>
-          <input
-            type="text"
-            placeholder="По названию или описанию..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">
+              <option value="recency">По новизне</option>
+              <option value="priceAsc">Цена: по возрастанию</option>
+              <option value="priceDesc">Цена: по убыванию</option>
+              <option value="name">По имени мастера</option>
+            </select>
+          </div>
 
-          <label>Сортировка:</label>
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="recency">По новизне</option>
-            <option value="priceAsc">Цена: по возрастанию</option>
-            <option value="priceDesc">Цена: по убыванию</option>
-            <option value="name">По имени мастера</option>
-          </select>
-
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={showActiveOnly}
-              onChange={(e) => setShowActiveOnly(e.target.checked)}
-            />
-            Только активные
-          </label>
-
-          <Link to="/sections" className="btn btn-outline">Выбрать раздел</Link>
+          <div className="controls-right">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={showActiveOnly}
+                onChange={(e) => setShowActiveOnly(e.target.checked)}
+              />
+              <span>Только активные мастера</span>
+            </label>
+          </div>
         </div>
 
+        {/* Список мастеров */}
         {loading ? (
-          <div className="loading-services">Загрузка мастеров...</div>
+          <div className="loading-state">Загрузка мастеров...</div>
         ) : error ? (
-          <div className="no-results" style={{ color: 'red' }}>{error}</div>
+          <div className="error-state">{error}</div>
         ) : (
           <div className="masters-grid">
             {visibleServices.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state-icon">🔍</div>
                 <h3>Мастера не найдены</h3>
-                <p>Попробуйте другую категорию или фильтр</p>
+                <p>
+                  {showActiveOnly
+                    ? 'В этой категории пока нет активных мастеров. Попробуйте снять фильтр.'
+                    : 'В этой категории пока нет мастеров.'}
+                </p>
+                <Link to="/find-master" className="btn btn-outline" style={{ marginTop: 16 }}>
+                  Выбрать другую категорию
+                </Link>
               </div>
-            ) : visibleServices.map((service) => {
-              const category = categories.find((c) => c.id === service.categoryId);
-              const fallbackCategory = category || selectedCategoryObj;
-              const categoryName = fallbackCategory?.name || 'Услуга';
-              const categorySlug = fallbackCategory?.slug || 'remont-kvartir';
+            ) : (
+              visibleServices.map((service) => (
+                <div key={service.id} className={`master-card ${!service.active ? 'master-card-inactive' : ''}`}>
+                  {!service.active && <div className="inactive-badge">Неактивен</div>}
 
-              return (
-                <div key={service.id} className="master-card">
-                  <div className="master-card-avatar">{(service.title || 'Мастер').split(' ').map((x) => x[0] || '').join('').toUpperCase()}</div>
-                  <h3>{service.title || 'Услуга мастера'}</h3>
-                  <p>{categoryName} • Йошкар-Ола</p>
+                  <div className="master-card-avatar">
+                    {(service.title || 'Мастер')
+                      .split(' ')
+                      .map((x) => x[0] || '')
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </div>
+
+                  <h3 className="master-card-title">{service.title || 'Услуга мастера'}</h3>
+                  <p className="master-card-meta">{selectedCategory.name} • Йошкар-Ола</p>
+
                   <div className="master-text">{service.description || 'Описание услуги не указано'}</div>
-                  <div className="master-stars">★★★★☆ <span>({service.createdAt ? 25 : 0} отзывов)</span></div>
-                  <div className="master-meta">{service.priceFrom || service.priceTo ? `от ${service.priceFrom ?? '-'} до ${service.priceTo ?? '-'} ₽` : 'цена по договоренности'}</div>
+
+                  <div className="master-stars">
+                    ★★★★☆ <span>({service.createdAt ? 25 : 0} отзывов)</span>
+                  </div>
+
+                  <div className="master-price">
+                    {service.priceFrom || service.priceTo
+                      ? `от ${service.priceFrom ?? '-'} до ${service.priceTo ?? '-'} ₽`
+                      : 'Цена по договоренности'}
+                  </div>
+
                   <div className="master-actions">
-                    <button className="btn btn-primary" onClick={() => navigate(`/chat/${service.workerUserId}`)}>Написать</button>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => navigate(`/chat/${service.workerUserId}`)}
+                    >
+                      Написать
+                    </button>
                     <button
                       className="btn btn-outline"
                       onClick={() => {
                         const titleParam = encodeURIComponent(service.title || 'Заказать работу');
                         const descriptionParam = encodeURIComponent(service.description || '');
-                        navigate(`/categories/${categorySlug}?title=${titleParam}&description=${descriptionParam}`);
+                        navigate(
+                          `/categories/${categorySlug}?title=${titleParam}&description=${descriptionParam}`
+                        );
                       }}
                     >
                       Заказать работу
                     </button>
                   </div>
                 </div>
-              );
-            })}
+              ))
+            )}
           </div>
         )}
       </div>
     </div>
   );
 }
-
