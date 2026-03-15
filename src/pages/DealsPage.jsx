@@ -269,7 +269,7 @@ export default function DealsPage() {
       <div>
         <div className="page-header-bar">
           <div className="container">
-            <button className="cats-back-link" onClick={() => { setReqDetail(null); setOffers([]); }}>
+            <button className="cats-back-link" onClick={() => setDealDetail(null)}>
               ← Назад к заказам
             </button>
             <div style={{ display:'flex', alignItems:'center', gap:14, marginTop:10 }}>
