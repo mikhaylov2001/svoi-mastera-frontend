@@ -108,11 +108,15 @@ export default function DealsPage() {
 
   const isCust = (d) => d.customerId === userId;
 
+  // Заявки у которых уже есть сделка — скрываем из таба заявок
+  const dealsJobRequestIds = new Set(deals.map(d => d.jobRequestId).filter(Boolean));
+  const activeRequests = requests.filter(r => !dealsJobRequestIds.has(r.id));
+
   const reqCounts = {
-    ALL:         requests.length,
-    OPEN:        requests.filter(r => r.status === 'OPEN').length,
-    IN_PROGRESS: requests.filter(r => ['IN_PROGRESS','ASSIGNED','IN_NEGOTIATION'].includes(r.status)).length,
-    COMPLETED:   requests.filter(r => r.status === 'COMPLETED').length,
+    ALL:         activeRequests.length,
+    OPEN:        activeRequests.filter(r => r.status === 'OPEN').length,
+    IN_PROGRESS: activeRequests.filter(r => ['IN_PROGRESS','ASSIGNED','IN_NEGOTIATION'].includes(r.status)).length,
+    COMPLETED:   activeRequests.filter(r => r.status === 'COMPLETED').length,
   };
   const dealCounts = {
     ALL:         deals.length,
@@ -120,18 +124,18 @@ export default function DealsPage() {
     COMPLETED:   deals.filter(d => d.status === 'COMPLETED').length,
   };
 
-  const filteredReqs = reqFilter === 'ALL' ? requests
+  const filteredReqs = reqFilter === 'ALL' ? activeRequests
     : reqFilter === 'IN_PROGRESS'
-      ? requests.filter(r => ['IN_PROGRESS','ASSIGNED','IN_NEGOTIATION'].includes(r.status))
-      : requests.filter(r => r.status === reqFilter);
+      ? activeRequests.filter(r => ['IN_PROGRESS','ASSIGNED','IN_NEGOTIATION'].includes(r.status))
+      : activeRequests.filter(r => r.status === reqFilter);
 
   const filteredDeals = dealFilter === 'ALL' ? deals
     : deals.filter(d => d.status === dealFilter);
 
   /* ══ DEAL DETAIL ══ */
   if (dealDetail) {
-    const st   = DEAL_STATUSES[dealDetail.status] || DEAL_STATUSES.NEW;
-    const im   = isCust(dealDetail);
+    const st      = DEAL_STATUSES[dealDetail.status] || DEAL_STATUSES.NEW;
+    const im      = isCust(dealDetail);
     const myOk    = im ? dealDetail.customerConfirmed : dealDetail.workerConfirmed;
     const otherOk = im ? dealDetail.workerConfirmed   : dealDetail.customerConfirmed;
 
@@ -262,7 +266,7 @@ export default function DealsPage() {
 
   /* ══ REQUEST DETAIL ══ */
   if (reqDetail) {
-    const st     = REQ_STATUSES[reqDetail.status] || REQ_STATUSES.OPEN;
+    const st      = REQ_STATUSES[reqDetail.status] || REQ_STATUSES.OPEN;
     const catName = getCatName(reqDetail.categoryId);
 
     return (
@@ -326,7 +330,6 @@ export default function DealsPage() {
                 <>
                   <div className="dp-side-title">Отклики мастеров</div>
                   <p className="dp-side-hint">Примите подходящий отклик — и начнётся сделка</p>
-
                   {offersLoading ? (
                     <div className="dp-skeleton" style={{ height:64, borderRadius:12 }} />
                   ) : offers.length === 0 ? (
@@ -405,7 +408,7 @@ export default function DealsPage() {
             onClick={() => setTab('requests')}
           >
             📋 Мои заявки
-            <span className="dpage-tab-count">{requests.length}</span>
+            <span className="dpage-tab-count">{activeRequests.length}</span>
           </button>
           <button
             className={`dpage-tab ${tab === 'deals' ? 'active' : ''}`}
