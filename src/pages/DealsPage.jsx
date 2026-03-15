@@ -425,7 +425,6 @@ export default function DealsPage() {
             <div className="dpage-filters">
               {[
                 ['ALL',         'Все',       reqCounts.ALL],
-                ['OPEN',        'Открытые',  reqCounts.OPEN],
                 ['IN_PROGRESS', 'В работе',  reqCounts.IN_PROGRESS],
               ].map(([key, label, count]) => (
                 <button
