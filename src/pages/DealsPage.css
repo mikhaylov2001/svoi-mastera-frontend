@@ -319,3 +319,17 @@
   justify-content: center; font-size: 26px;
 }
 
+/* ══ BACK LINK ══ */
+.cats-back-link {
+  display: inline-block;
+  font-size: 13px; font-weight: 600;
+  color: var(--gray-500);
+  text-decoration: none;
+  background: none; border: none;
+  cursor: pointer; padding: 0;
+  margin-bottom: 8px;
+  transition: color .15s;
+}
+.cats-back-link:hover { color: var(--primary); }
+
+
