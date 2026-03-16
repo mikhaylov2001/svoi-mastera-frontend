@@ -90,7 +90,7 @@ export default function FindMasterPage() {
                     style={{ animationDelay: `${i * 0.05}s` }}
                   >
                     <div className="cat-card-icon" style={{ background: cat.color || '#fff3e0' }}>
-                      {cat.emoji || cat.icon || '🛠️'}
+                      {cat.emoji || '🛠️'}
                     </div>
                     <div className="cat-card-body">
                       <h2>{cat.name}</h2>
@@ -158,7 +158,7 @@ export default function FindMasterPage() {
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
             <div className="cat-page-icon" style={{ background: selectedCategory.color || '#fff3e0' }}>
-              {selectedCategory.emoji || selectedCategory.icon || '🛠️'}
+              {selectedCategory.emoji || '🛠️'}
             </div>
             <div>
               <h1>{selectedCategory.name}</h1>
