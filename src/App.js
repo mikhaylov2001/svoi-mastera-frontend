@@ -13,6 +13,7 @@ import ActiveClientsPage from './pages/ActiveClientsPage';
 import { LoginPage, RegisterPage } from './pages/AuthPages';
 import ProfilePage from './pages/ProfilePage';
 import WorkerProfilePage from './pages/WorkerProfilePage';
+import PublicWorkerProfilePage from './pages/PublicWorkerProfilePage';
 import DealsPage from './pages/DealsPage';
 import FindWorkPage from './pages/FindWorkPage';
 import FindMasterPage from './pages/FindMasterPage';
@@ -46,6 +47,7 @@ function AppContent() {
           <Route path="/find-work"       element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
           <Route path="/find-master"     element={<FindMasterPage />} />
           <Route path="/find-master/:categorySlug" element={<FindMasterPage />} />
+          <Route path="/workers/:workerId" element={<PublicWorkerProfilePage />} />
           <Route path="/manage-services" element={<ProtectedRoute workerOnly><ManageServicesPage /></ProtectedRoute>} />
           <Route path="/active-clients"  element={<ProtectedRoute workerOnly><ActiveClientsPage /></ProtectedRoute>} />
           <Route path="/chat"            element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />

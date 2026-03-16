@@ -1,0 +1,226 @@
+/* Публичный профиль мастера */
+.public-worker-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  padding: 24px 0 60px;
+}
+
+/* Боковая карточка */
+.public-worker-card {
+  background: #fff;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--r-xl);
+  padding: 28px;
+  text-align: center;
+  position: sticky;
+  top: 80px;
+  height: fit-content;
+}
+
+.public-worker-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary) 0%, #ff8f00 100%);
+  color: #fff;
+  font-size: 32px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.public-worker-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--gray-800);
+  margin: 0 0 6px 0;
+}
+
+.public-worker-city {
+  font-size: 14px;
+  color: var(--gray-500);
+  margin: 0 0 16px 0;
+}
+
+.public-worker-rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.public-worker-rating .rating-stars {
+  color: #FFB800;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+.public-worker-rating .rating-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+.public-worker-rating .rating-count {
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+.public-worker-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.pub-badge {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-md);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+/* Основной контент */
+.public-worker-main {
+  min-width: 0;
+}
+
+.public-section {
+  background: #fff;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--r-xl);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.public-section-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--gray-800);
+  margin: 0 0 16px 0;
+}
+
+.empty-text {
+  color: var(--gray-400);
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Услуги */
+.public-services-list {
+  display: grid;
+  gap: 12px;
+}
+
+.public-service-card {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  transition: all .2s;
+}
+
+.public-service-card:hover {
+  border-color: var(--primary);
+  background: #fff;
+}
+
+.service-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin: 0 0 6px 0;
+}
+
+.service-desc {
+  font-size: 13px;
+  color: var(--gray-600);
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.service-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* Отзывы */
+.public-reviews-list {
+  display: grid;
+  gap: 12px;
+}
+
+.public-review-card {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-lg);
+  padding: 16px;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.review-stars {
+  color: #FFB800;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.review-date {
+  font-size: 12px;
+  color: var(--gray-400);
+}
+
+.review-text {
+  font-size: 14px;
+  color: var(--gray-700);
+  line-height: 1.6;
+  margin: 0 0 8px 0;
+}
+
+.review-author {
+  font-size: 12px;
+  color: var(--gray-500);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Адаптив */
+@media (max-width: 900px) {
+  .public-worker-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .public-worker-card {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .public-worker-layout {
+    padding: 16px 0 40px;
+  }
+
+  .public-section {
+    padding: 18px;
+  }
+
+  .public-worker-card {
+    padding: 20px;
+  }
+}

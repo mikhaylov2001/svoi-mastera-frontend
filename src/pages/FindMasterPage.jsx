@@ -269,7 +269,12 @@ export default function FindMasterPage() {
               </div>
             ) : (
               visibleServices.map((service) => (
-                <div key={service.id} className={`master-card ${!service.active ? 'master-card-inactive' : ''}`}>
+                <div
+                  key={service.id}
+                  className={`master-card ${!service.active ? 'master-card-inactive' : ''}`}
+                  onClick={() => navigate(`/workers/${service.workerUserId}`)}
+                  style={{ cursor: 'pointer' }}
+                >
                   {!service.active && <div className="inactive-badge">Неактивен</div>}
 
                   {/* Хедер с аватаром и именем мастера */}
@@ -327,7 +332,7 @@ export default function FindMasterPage() {
                   </div>
 
                   {/* Кнопки действий */}
-                  <div className="master-actions">
+                  <div className="master-actions" onClick={(e) => e.stopPropagation()}>
                     <button
                       className="btn btn-primary"
                       onClick={() => navigate(`/chat/${service.workerUserId}`)}
