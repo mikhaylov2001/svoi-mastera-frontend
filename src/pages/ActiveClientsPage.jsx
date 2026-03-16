@@ -37,6 +37,18 @@ export default function ActiveClientsPage() {
                 setJobRequests(requestsData || []);
                 setCategories(categoryNames);
                 setFilteredRequests(requestsData || []);
+
+                // Отладка
+                console.log('=== ОТЛАДКА ActiveClientsPage ===');
+                console.log('Загружено заявок:', requestsData?.length || 0);
+                console.log('Загружено категорий:', categoriesData?.length || 0);
+                if (requestsData && requestsData.length > 0) {
+                    console.log('Пример заявки:', requestsData[0]);
+                }
+                if (categoriesData && categoriesData.length > 0) {
+                    console.log('Пример категории:', categoriesData[0]);
+                }
+                console.log('==================================');
             } catch (error) {
                 console.error('Ошибка загрузки заказов:', error);
                 setError(error.message || 'Не удалось загрузить заказы');
@@ -58,8 +70,10 @@ export default function ActiveClientsPage() {
         // Фильтрация по категории
         if (selectedCategory !== 'Все категории') {
             filtered = filtered.filter(request => {
-                // Ищем категорию по названию
-                return request.categoryName === selectedCategory;
+                // Пробуем разные способы сопоставления категории
+                return request.categoryName === selectedCategory ||
+                       request.category === selectedCategory ||
+                       request.categoryId === selectedCategory;
             });
         }
 
@@ -138,13 +152,13 @@ export default function ActiveClientsPage() {
 
             <div className="container">
                 {error && (
-                    <div className="error-message" style={{ 
-                        background: '#fef2f2', 
-                        border: '1px solid #fecaca', 
-                        color: '#dc2626', 
-                        padding: '12px 16px', 
-                        borderRadius: '8px', 
-                        marginBottom: '16px' 
+                    <div className="error-message" style={{
+                        background: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        color: '#dc2626',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        marginBottom: '16px'
                     }}>
                         {error}
                     </div>
@@ -186,7 +200,7 @@ export default function ActiveClientsPage() {
                             ))}
                         </select>
 
-                        <button 
+                        <button
                             className="filter-toggle"
                             onClick={() => setShowFilters(!showFilters)}
                         >
@@ -226,8 +240,8 @@ export default function ActiveClientsPage() {
                                         </div>
                                         <div className="client-meta">
                                             <div className="client-category">{request.categoryName || 'Без категории'}</div>
-                                            <div 
-                                                className="client-urgency" 
+                                            <div
+                                                className="client-urgency"
                                                 style={{ backgroundColor: getUrgencyColor(request.budgetTo) }}
                                             >
                                                 {getUrgencyLabel(request.budgetTo)}
@@ -238,7 +252,7 @@ export default function ActiveClientsPage() {
                                     <div className="client-content">
                                         <h3 className="client-title">{request.title}</h3>
                                         <p className="client-description">{request.description}</p>
-                                        
+
                                         <div className="client-details">
                                             <div className="detail-item">
                                                 <FaMapMarkerAlt className="detail-icon" />
@@ -263,7 +277,7 @@ export default function ActiveClientsPage() {
                                     </div>
 
                                     <div className="client-footer">
-                                        <button 
+                                        <button
                                             className="btn btn-primary"
                                             onClick={() => handleOfferResponse(request.id)}
                                         >
