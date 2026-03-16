@@ -84,7 +84,16 @@ export default function FindMasterPage() {
             <div className="cats-grid">
               {categories.map((cat, i) => {
                 // Подсчет активных и всех мастеров в категории
-                const allMasters = services.filter((s) => s.categoryId === cat.id);
+                // Пробуем найти по categoryId (может быть число или строка) или по slug
+                const allMasters = services.filter((s) => {
+                  // Сравниваем и по id, и по slug, и по name для надежности
+                  return s.categoryId === cat.id ||
+                         s.categoryId === String(cat.id) ||
+                         s.categoryId === Number(cat.id) ||
+                         s.categorySlug === cat.slug ||
+                         s.categoryName === cat.name;
+                });
+
                 const activeMasters = allMasters.filter((s) => s.active === true);
 
                 // Средняя цена
@@ -97,6 +106,14 @@ export default function FindMasterPage() {
 
                 // Получаем стиль для категории
                 const style = CATEGORY_STYLES[cat.slug] || { emoji: '🛠️', color: '#fff3e0' };
+
+                // Отладка в консоль (можно удалить потом)
+                if (i === 0) {
+                  console.log('Категория:', cat.name, 'ID:', cat.id, 'Slug:', cat.slug);
+                  console.log('Все мастера в категории:', allMasters.length);
+                  console.log('Активные мастера:', activeMasters.length);
+                  console.log('Пример сервиса:', services[0]);
+                }
 
                 return (
                   <Link
