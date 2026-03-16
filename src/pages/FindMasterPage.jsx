@@ -272,36 +272,67 @@ export default function FindMasterPage() {
                 <div key={service.id} className={`master-card ${!service.active ? 'master-card-inactive' : ''}`}>
                   {!service.active && <div className="inactive-badge">Неактивен</div>}
 
-                  <div className="master-card-avatar">
-                    {(service.title || 'Мастер')
-                      .split(' ')
-                      .map((x) => x[0] || '')
-                      .join('')
-                      .toUpperCase()
-                      .slice(0, 2)}
+                  {/* Хедер с аватаром и именем мастера */}
+                  <div className="master-card-header">
+                    <div className="master-card-avatar">
+                      {(service.workerName || 'Мастер')
+                        .split(' ')
+                        .map((x) => x[0] || '')
+                        .join('')
+                        .toUpperCase()
+                        .slice(0, 2)}
+                    </div>
+                    <div className="master-card-header-info">
+                      <h3 className="master-card-worker-name">{service.workerName || 'Мастер'}</h3>
+                      <p className="master-card-meta">{selectedCategory.name} • Йошкар-Ола</p>
+                    </div>
                   </div>
 
-                  <h3 className="master-card-title">{service.title || 'Услуга мастера'}</h3>
-                  <p className="master-card-meta">{selectedCategory.name} • Йошкар-Ола</p>
+                  {/* Название услуги */}
+                  <h4 className="master-card-service-title">{service.title || 'Услуга мастера'}</h4>
 
+                  {/* Описание */}
                   <div className="master-text">{service.description || 'Описание услуги не указано'}</div>
 
-                  <div className="master-stars">
-                    ★★★★☆ <span>(25 отзывов)</span>
+                  {/* Бейджи с преимуществами */}
+                  <div className="master-badges">
+                    <span className="master-badge">
+                      <span className="badge-icon">✓</span>
+                      Проверен
+                    </span>
+                    <span className="master-badge">
+                      <span className="badge-icon">⚡</span>
+                      Быстрый отклик
+                    </span>
+                    <span className="master-badge">
+                      <span className="badge-icon">🛡️</span>
+                      Гарантия
+                    </span>
                   </div>
 
+                  {/* Рейтинг и отзывы */}
+                  <div className="master-stats">
+                    <div className="master-rating">
+                      <span className="rating-stars">★★★★☆</span>
+                      <span className="rating-text">4.0</span>
+                      <span className="rating-count">(25 отзывов)</span>
+                    </div>
+                  </div>
+
+                  {/* Цена */}
                   <div className="master-price">
                     {service.priceFrom || service.priceTo
                       ? `от ${service.priceFrom || '-'} до ${service.priceTo || '-'} ₽`
                       : 'Цена по договоренности'}
                   </div>
 
+                  {/* Кнопки действий */}
                   <div className="master-actions">
                     <button
                       className="btn btn-primary"
                       onClick={() => navigate(`/chat/${service.workerUserId}`)}
                     >
-                      Написать
+                      💬 Написать
                     </button>
                     <button
                       className="btn btn-outline"
