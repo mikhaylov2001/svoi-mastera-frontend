@@ -102,12 +102,12 @@ export default function FindMasterPage() {
               {categories.map((cat, i) => {
                 // Фильтрация мастеров по категории
                 const allMasters = services.filter((s) => {
-                  // Если у мастера нет categoryId - показываем везде (временно)
+                  // ✅ ИСПРАВЛЕНО: Если у мастера нет categoryId - НЕ показываем вообще
                   if (!s.categoryId || s.categoryId === null) {
-                    return true;
+                    return false;
                   }
 
-                  // Иначе проверяем совпадение по categoryId
+                  // Проверяем совпадение по categoryId
                   if (s.categoryId === cat.id) return true;
                   if (String(s.categoryId) === String(cat.id)) return true;
 
@@ -126,16 +126,6 @@ export default function FindMasterPage() {
 
                 // Получаем стиль для категории
                 const style = CATEGORY_STYLES[cat.slug] || { emoji: '🛠️', color: '#fff3e0' };
-
-                // ОТЛАДКА
-                if (i === 0) {
-                  console.log('📊 Фильтрация для:', cat.name);
-                  console.log('   Всех мастеров:', allMasters.length);
-                  console.log('   Активных:', activeMasters.length);
-                  if (allMasters.length > 0) {
-                    console.log('   Пример:', allMasters[0]);
-                  }
-                }
 
                 return (
                   <Link
@@ -171,15 +161,16 @@ export default function FindMasterPage() {
   const visibleServices = services
     .filter((item) => {
       // Фильтр по категории
-      // ✅ ИСПРАВЛЕНО: Если у мастера нет categoryId - показываем (временно)
-      if (item.categoryId && item.categoryId !== null) {
-        // Если categoryId есть - проверяем совпадение
-        if (item.categoryId !== selectedCategory?.id &&
-            String(item.categoryId) !== String(selectedCategory?.id)) {
-          return false;
-        }
+      // ✅ ИСПРАВЛЕНО: Если у мастера нет categoryId - НЕ показываем
+      if (!item.categoryId || item.categoryId === null) {
+        return false;
       }
-      // Если categoryId === null - показываем везде
+
+      // Проверяем совпадение с выбранной категорией
+      if (item.categoryId !== selectedCategory?.id &&
+          String(item.categoryId) !== String(selectedCategory?.id)) {
+        return false;
+      }
 
       // Фильтр активных мастеров
       if (showActiveOnly && !item.active) return false;
