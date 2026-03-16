@@ -171,7 +171,15 @@ export default function FindMasterPage() {
   const visibleServices = services
     .filter((item) => {
       // Фильтр по категории
-      if (item.categoryId !== selectedCategory?.id) return false;
+      // ✅ ИСПРАВЛЕНО: Если у мастера нет categoryId - показываем (временно)
+      if (item.categoryId && item.categoryId !== null) {
+        // Если categoryId есть - проверяем совпадение
+        if (item.categoryId !== selectedCategory?.id &&
+            String(item.categoryId) !== String(selectedCategory?.id)) {
+          return false;
+        }
+      }
+      // Если categoryId === null - показываем везде
 
       // Фильтр активных мастеров
       if (showActiveOnly && !item.active) return false;
