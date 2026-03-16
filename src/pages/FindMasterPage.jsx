@@ -3,6 +3,19 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getCategories, getWorkerServices } from '../api';
 import './FindMasterPage.css';
 
+// Маппинг иконок и цветов для категорий
+const CATEGORY_STYLES = {
+  'remont-kvartir': { emoji: '🏠', color: '#fff3e0' },
+  'santehnika': { emoji: '🔧', color: '#e3f2fd' },
+  'elektrika': { emoji: '⚡', color: '#fffde7' },
+  'uborka': { emoji: '🧹', color: '#fce4ec' },
+  'parikhmaher': { emoji: '💇', color: '#fce4ec' },
+  'manikur': { emoji: '💅', color: '#fce4ec' },
+  'krasota-i-zdorovie': { emoji: '✨', color: '#f3e5f5' },
+  'repetitorstvo': { emoji: '📚', color: '#e3f2fd' },
+  'kompyuternaya-pomosh': { emoji: '💻', color: '#e8f5e9' },
+};
+
 export default function FindMasterPage() {
   const navigate = useNavigate();
   const { categorySlug } = useParams();
@@ -82,6 +95,9 @@ export default function FindMasterPage() {
                   ? Math.round(pricesFrom.reduce((a, b) => a + b, 0) / pricesFrom.length)
                   : null;
 
+                // Получаем стиль для категории
+                const style = CATEGORY_STYLES[cat.slug] || { emoji: '🛠️', color: '#fff3e0' };
+
                 return (
                   <Link
                     key={cat.id}
@@ -89,8 +105,8 @@ export default function FindMasterPage() {
                     className="cat-card fade-up"
                     style={{ animationDelay: `${i * 0.05}s` }}
                   >
-                    <div className="cat-card-icon" style={{ background: cat.color || '#fff3e0' }}>
-                      {cat.emoji || '🛠️'}
+                    <div className="cat-card-icon" style={{ background: style.color }}>
+                      {style.emoji}
                     </div>
                     <div className="cat-card-body">
                       <h2>{cat.name}</h2>
@@ -157,8 +173,8 @@ export default function FindMasterPage() {
             ← Все категории
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
-            <div className="cat-page-icon" style={{ background: selectedCategory.color || '#fff3e0' }}>
-              {selectedCategory.emoji || '🛠️'}
+            <div className="cat-page-icon" style={{ background: CATEGORY_STYLES[selectedCategory.slug]?.color || '#fff3e0' }}>
+              {CATEGORY_STYLES[selectedCategory.slug]?.emoji || '🛠️'}
             </div>
             <div>
               <h1>{selectedCategory.name}</h1>
