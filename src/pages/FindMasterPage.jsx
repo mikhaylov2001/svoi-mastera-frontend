@@ -31,6 +31,23 @@ export default function FindMasterPage() {
     setLoading(true);
     Promise.all([getCategories(), getWorkerServices()])
       .then(([cats, workersServices]) => {
+        console.log('===== ЗАГРУЗКА ДАННЫХ =====');
+        console.log('Категории:', cats);
+        console.log('Количество категорий:', cats?.length || 0);
+        console.log('Сервисы (сырые ДО обработки):', workersServices);
+        console.log('Количество сервисов:', workersServices?.length || 0);
+
+        // Показываем ПЕРВЫЙ сервис полностью
+        if (workersServices && workersServices.length > 0) {
+          console.log('ПЕРВЫЙ сервис ПОЛНОСТЬЮ:', JSON.stringify(workersServices[0], null, 2));
+        }
+
+        // Показываем ПЕРВУЮ категорию полностью
+        if (cats && cats.length > 0) {
+          console.log('ПЕРВАЯ категория ПОЛНОСТЬЮ:', JSON.stringify(cats[0], null, 2));
+        }
+        console.log('============================');
+
         setCategories(cats);
         setServices((workersServices || []).map((item) => ({
           ...item,
@@ -43,7 +60,7 @@ export default function FindMasterPage() {
         })));
       })
       .catch((e) => {
-        console.error(e);
+        console.error('ОШИБКА загрузки:', e);
         setError(e?.message || 'Ошибка загрузки данных');
       })
       .finally(() => setLoading(false));
