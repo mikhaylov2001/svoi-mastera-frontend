@@ -102,12 +102,6 @@ export default function FindMasterPage() {
               {categories.map((cat, i) => {
                 // Фильтрация мастеров по категории
                 const allMasters = services.filter((s) => {
-                  // ВРЕМЕННО: Если у мастера нет categoryId - показываем везде
-                  // TODO: После установки categoryId в базе - убрать это
-                  if (!s.categoryId || s.categoryId === null) {
-                    return true;  // ← показываем везде
-                  }
-
                   // Проверяем совпадение по categoryId
                   if (s.categoryId === cat.id) return true;
                   if (String(s.categoryId) === String(cat.id)) return true;
@@ -161,17 +155,10 @@ export default function FindMasterPage() {
   // Если категория выбрана - показываем мастеров
   const visibleServices = services
     .filter((item) => {
-      // Фильтр по категории
-      // ВРЕМЕННО: Если у мастера нет categoryId - показываем везде
-      // TODO: После установки categoryId в базе - убрать это
-      if (!item.categoryId || item.categoryId === null) {
-        // Показываем везде временно
-      } else {
-        // Если categoryId есть - проверяем совпадение
-        if (item.categoryId !== selectedCategory?.id &&
-            String(item.categoryId) !== String(selectedCategory?.id)) {
-          return false;
-        }
+      // Фильтр по категории - строгое совпадение
+      if (item.categoryId !== selectedCategory?.id &&
+          String(item.categoryId) !== String(selectedCategory?.id)) {
+        return false;
       }
 
       // Фильтр активных мастеров
