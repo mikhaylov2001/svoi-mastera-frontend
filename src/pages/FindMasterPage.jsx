@@ -84,14 +84,22 @@ export default function FindMasterPage() {
             <div className="cats-grid">
               {categories.map((cat, i) => {
                 // Подсчет активных и всех мастеров в категории
-                // Пробуем найти по categoryId (может быть число или строка) или по slug
+                // Пробуем ВСЕ способы сопоставления
                 const allMasters = services.filter((s) => {
-                  // Сравниваем и по id, и по slug, и по name для надежности
-                  return s.categoryId === cat.id ||
-                         s.categoryId === String(cat.id) ||
-                         s.categoryId === Number(cat.id) ||
-                         s.categorySlug === cat.slug ||
-                         s.categoryName === cat.name;
+                  // Проверяем по ID (число и строка)
+                  if (s.categoryId === cat.id) return true;
+                  if (s.categoryId === String(cat.id)) return true;
+                  if (String(s.categoryId) === String(cat.id)) return true;
+
+                  // Проверяем по slug
+                  if (s.categorySlug === cat.slug) return true;
+                  if (s.slug === cat.slug) return true;
+
+                  // Проверяем по имени
+                  if (s.categoryName === cat.name) return true;
+                  if (s.category === cat.name) return true;
+
+                  return false;
                 });
 
                 const activeMasters = allMasters.filter((s) => s.active === true);
@@ -107,12 +115,12 @@ export default function FindMasterPage() {
                 // Получаем стиль для категории
                 const style = CATEGORY_STYLES[cat.slug] || { emoji: '🛠️', color: '#fff3e0' };
 
-                // Отладка в консоль (можно удалить потом)
-                if (i === 0) {
-                  console.log('Категория:', cat.name, 'ID:', cat.id, 'Slug:', cat.slug);
-                  console.log('Все мастера в категории:', allMasters.length);
-                  console.log('Активные мастера:', activeMasters.length);
-                  console.log('Пример сервиса:', services[0]);
+                // ОТЛАДКА - выводим для КАЖДОЙ категории
+                console.log(`Категория: ${cat.name} (ID: ${cat.id}, Slug: ${cat.slug})`);
+                console.log(`  Всего мастеров: ${allMasters.length}, Активных: ${activeMasters.length}`);
+                if (i === 0 && services.length > 0) {
+                  console.log('  Пример сервиса:', services[0]);
+                  console.log('  Все ключи сервиса:', Object.keys(services[0]));
                 }
 
                 return (
