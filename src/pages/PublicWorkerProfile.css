@@ -80,7 +80,7 @@
 }
 
 .pub-badge {
-  background: var(--gray-50);
+  background: #fff;
   border: 1px solid var(--gray-200);
   border-radius: var(--r-md);
   padding: 8px 12px;
@@ -123,7 +123,7 @@
 }
 
 .public-service-card {
-  background: var(--gray-50);
+  background: #fff;
   border: 1px solid var(--gray-200);
   border-radius: var(--r-lg);
   padding: 16px;
@@ -132,7 +132,7 @@
 
 .public-service-card:hover {
   border-color: var(--primary);
-  background: #fff;
+  box-shadow: var(--shadow-md);
 }
 
 .service-title {
@@ -162,7 +162,7 @@
 }
 
 .public-work-card {
-  background: var(--gray-50);
+  background: #fff;
   border: 1px solid var(--gray-200);
   border-radius: var(--r-lg);
   padding: 16px;
@@ -171,8 +171,7 @@
 
 .public-work-card:hover {
   border-color: var(--primary);
-  background: #fff;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .work-header {
@@ -248,7 +247,7 @@
 }
 
 .public-review-card {
-  background: var(--gray-50);
+  background: #fff;
   border: 1px solid var(--gray-200);
   border-radius: var(--r-lg);
   padding: 16px;
