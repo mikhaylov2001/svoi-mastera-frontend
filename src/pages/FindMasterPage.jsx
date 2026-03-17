@@ -16,11 +16,36 @@ const CATEGORY_STYLES = {
   'kompyuternaya-pomosh': { emoji: '💻', color: '#e8f5e9' },
 };
 
+// ✅ ДОБАВЛЕНО: Вычисление стажа работы
+function getExperience(registeredAt) {
+  if (!registeredAt) return 'Новичок';
+
+  const now = new Date();
+  const registered = new Date(registeredAt);
+  const diffMs = now - registered;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffYears >= 1) {
+    return `${diffYears} ${diffYears === 1 ? 'год' : diffYears < 5 ? 'года' : 'лет'}`;
+  }
+  if (diffMonths >= 1) {
+    return `${diffMonths} ${diffMonths === 1 ? 'месяц' : diffMonths < 5 ? 'месяца' : 'месяцев'}`;
+  }
+  if (diffDays >= 7) {
+    const weeks = Math.floor(diffDays / 7);
+    return `${weeks} ${weeks === 1 ? 'неделю' : weeks < 5 ? 'недели' : 'недель'}`;
+  }
+  return 'Новичок';
+}
+
 export default function FindMasterPage() {
   const navigate = useNavigate();
   const { categorySlug } = useParams();
   const [categories, setCategories] = useState([]);
   const [services, setServices] = useState([]);
+  const [workerStats, setWorkerStats] = useState({}); // ✅ ДОБАВЛЕНО: статистика мастеров
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,7 +74,7 @@ export default function FindMasterPage() {
         console.log('============================');
 
         setCategories(cats);
-        setServices((workersServices || []).map((item) => ({
+        const processedServices = (workersServices || []).map((item) => ({
           ...item,
           title: item.title || 'Услуга мастера',
           description: item.description || 'Описание услуги не указано',
@@ -57,7 +82,23 @@ export default function FindMasterPage() {
           active: item.active == null ? true : item.active,
           priceFrom: item.priceFrom || 0,
           priceTo: item.priceTo || 0,
-        })));
+        }));
+
+        setServices(processedServices);
+
+        // ✅ ДОБАВЛЕНО: Загружаем статистику для каждого мастера
+        const uniqueWorkerIds = [...new Set(processedServices.map(s => s.workerUserId))];
+        uniqueWorkerIds.forEach(async (workerId) => {
+          try {
+            const response = await fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/stats`);
+            if (response.ok) {
+              const stats = await response.json();
+              setWorkerStats(prev => ({ ...prev, [workerId]: stats }));
+            }
+          } catch (error) {
+            console.error(`Ошибка загрузки статистики для мастера ${workerId}:`, error);
+          }
+        });
       })
       .catch((e) => {
         console.error('ОШИБКА загрузки:', e);
@@ -315,13 +356,37 @@ export default function FindMasterPage() {
                     </span>
                   </div>
 
-                  {/* Рейтинг и отзывы */}
+                  {/* ✅ ОБНОВЛЕНО: Рейтинг, отзывы и стаж из API */}
                   <div className="master-stats">
-                    <div className="master-rating">
-                      <span className="rating-stars">★★★★☆</span>
-                      <span className="rating-text">4.0</span>
-                      <span className="rating-count">(25 отзывов)</span>
-                    </div>
+                    {workerStats[service.workerUserId] ? (
+                      <>
+                        <div className="master-rating">
+                          <span className="rating-stars">
+                            {'★'.repeat(Math.floor(workerStats[service.workerUserId].averageRating || 0))}
+                            {'☆'.repeat(5 - Math.floor(workerStats[service.workerUserId].averageRating || 0))}
+                          </span>
+                          <span className="rating-text">
+                            {(workerStats[service.workerUserId].averageRating || 0).toFixed(1)}
+                          </span>
+                          <span className="rating-count">
+                            ({workerStats[service.workerUserId].reviewsCount || 0}{' '}
+                            {workerStats[service.workerUserId].reviewsCount === 1
+                              ? 'отзыв'
+                              : workerStats[service.workerUserId].reviewsCount < 5
+                              ? 'отзыва'
+                              : 'отзывов'})
+                          </span>
+                        </div>
+                        <div className="master-meta-row">
+                          <span>📦 {workerStats[service.workerUserId].completedWorksCount || 0} заказов</span>
+                          <span>📅 {getExperience(workerStats[service.workerUserId].registeredAt)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="master-rating">
+                        <span className="rating-text">Загрузка...</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Цена */}
