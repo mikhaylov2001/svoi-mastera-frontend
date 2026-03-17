@@ -1,36 +1,30 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaTools, FaUser, FaBolt, FaChartBar, FaShieldAlt, FaRocket, FaBullseye, FaCreditCard } from 'react-icons/fa';
+import { FaTools, FaUser } from 'react-icons/fa';
 import { loginUser, registerUser } from '../api';
 import { useAuth } from '../context/AuthContext';
 import './AuthPages.css';
 
-/* ───────────────────────────────
-   Валидация email
-─────────────────────────────── */
+/* ═══════════════════════════════════════
+   ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+═══════════════════════════════════════ */
+
 function isValidEmail(email) {
-  // Проверяем базовый формат: что-то@что-то.что-то (минимум 2 символа в домене)
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   if (!re.test(email)) return false;
-
-  // Проверяем что нет двойных точек
   if (email.includes('..')) return false;
-
-  // Проверяем длину частей
   const [local, domain] = email.split('@');
   if (local.length > 64 || domain.length > 255) return false;
-
   return true;
 }
 
-/* ───────────────────────────────
-   Shared icons
-─────────────────────────────── */
 const EyeOpen = () => (
   <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+    <circle cx="12" cy="12" r="3"/>
   </svg>
 );
+
 const EyeClosed = () => (
   <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
     <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
@@ -39,68 +33,33 @@ const EyeClosed = () => (
   </svg>
 );
 
-/* ───────────────────────────────
-   Left panel (shared)
-─────────────────────────────── */
-function AuthLeft({ title, subtitle, points, stats }) {
-  return (
-    <div className="auth-left">
-      <div className="auth-left-content">
-        <Link to="/" className="auth-brand">
-          <span className="auth-brand-icon"><FaTools /></span>
-          <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
-        </Link>
-        <h2 className="auth-left-title">{title}</h2>
-        <p  className="auth-left-desc">{subtitle}</p>
-        <ul className="auth-left-points">
-          {points.map(([icon, text]) => (
-            <li key={text} className="auth-left-point">
-              <span className="auth-left-point-icon">{icon}</span>
-              {text}
-            </li>
-          ))}
-        </ul>
-      </div>
-      {stats && (
-        <div className="auth-stats-row">
-          {stats.map(([n, l]) => (
-            <div className="auth-stat-box" key={l}>
-              <div className="auth-stat-num">{n}</div>
-              <div className="auth-stat-lbl">{l}</div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ───────────────────────────────
+/* ═══════════════════════════════════════
    LOGIN PAGE
-─────────────────────────────── */
+═══════════════════════════════════════ */
+
 export function LoginPage() {
   const { login } = useAuth();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
-  const [form,    setForm]    = useState({ email:'', password:'' });
-  const [showPw,  setShowPw]  = useState(false);
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Валидация email
     const email = form.email.trim();
     if (!email) {
       setError('Введите email.');
       return;
     }
     if (!isValidEmail(email)) {
-      setError('Введите корректный email, например: name@mail.ru');
+      setError('Введите корректный email.');
       return;
     }
+
     if (!form.password) {
       setError('Введите пароль.');
       return;
@@ -108,101 +67,163 @@ export function LoginPage() {
 
     setLoading(true);
     try {
-      const resp = await loginUser({ ...form, email });
-
+      const resp = await loginUser({ email, password: form.password });
       const user = resp.user || {};
       const userId = user.id || resp.userId;
-      const userName = user.displayName || '';
-      const userRole = user.hasWorkerProfile ? 'WORKER' : 'CUSTOMER';
+      const userName = user.displayName || email;
+      const userRole = user.workerProfile ? 'WORKER' : 'CUSTOMER';
 
       if (!userId) {
-        throw new Error('Не удалось войти. Попробуйте ещё раз.');
+        throw new Error('Ошибка входа. Попробуйте снова.');
       }
 
       login(userId, userRole, userName);
       navigate(userRole === 'WORKER' ? '/worker' : '/profile');
     } catch (err) {
-      setError(err.message || 'Неверный email или пароль.');
+      setError(err.message || 'Ошибка входа. Проверьте данные.');
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-root">
-      <AuthLeft
-        title={<>Всё для мастеров —<br /><span>в одном месте</span></>}
-        subtitle="Маркетплейс для поиска мастеров в Йошкар-Оле. Быстро, удобно, безопасно."
-        points={[
-          [<FaBolt />,'Мгновенные уведомления о новых заказах'],
-          [<FaChartBar />,'Аналитика и статистика в реальном времени'],
-          [<FaShieldAlt />,'Безопасные сделки с гарантией оплаты'],
-        ]}
-        stats={[['24/7','Приём заявок'],['15+','Категорий'],['5.0★','Рейтинг']]}
-      />
+    <div className="auth-page">
+      <div className="auth-container">
 
-      <div className="auth-right">
-        <div className="auth-mobile-header">
-          <Link to="/" className="auth-mobile-brand">
-            <span className="auth-mobile-brand-icon"><FaTools /></span>
-            <span className="auth-mobile-brand-text">СвоиМастера</span>
-          </Link>
-          <p className="auth-mobile-sub">Вход в личный кабинет сервиса</p>
-        </div>
-
-        <div className="auth-form-card">
-          <h1 className="auth-form-title">Вход в аккаунт</h1>
-          <p  className="auth-form-sub">Рады видеть вас снова</p>
-
-          {error && <div className="auth-error-box">⚠️ {error}</div>}
-
-          <form onSubmit={handleSubmit}>
-            <div className="form-field">
-              <label className="form-label">Email</label>
-              <input className="form-input" type="email" name="email" placeholder="mail@example.com"
-                value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
+        {/* Левая панель */}
+        <div className="auth-left">
+          <div className="auth-brand">
+            <div className="auth-brand-icon">
+              <FaTools />
             </div>
+            <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
+          </div>
 
-            <div className="form-field">
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6}}>
-                <span className="form-label" style={{marginBottom:0}}>Пароль</span>
-                <button type="button" className="auth-forgot">Забыли пароль?</button>
+          <div className="auth-left-content">
+            <h1 className="auth-left-title">
+              Всё для мастеров —<br />
+              <span>в одном месте</span>
+            </h1>
+            <p className="auth-left-desc">
+              Маркетплейс для поиска мастеров в Йошкар-Оле. Быстро, удобно, безопасно.
+            </p>
+
+            <div className="auth-left-points">
+              <div className="auth-point">
+                <span className="auth-point-icon">⚡</span>
+                Мгновенные уведомления о новых заказах
               </div>
-              <div className="auth-input-wrap">
-                <input className="form-input" type={showPw ? 'text' : 'password'} name="password"
-                  placeholder="••••••••" style={{paddingRight:42}}
-                  value={form.password} onChange={e => setForm({...form, password: e.target.value})} required />
-                <button type="button" className="auth-eye" onClick={() => setShowPw(!showPw)}>
-                  {showPw ? <EyeClosed /> : <EyeOpen />}
-                </button>
+              <div className="auth-point">
+                <span className="auth-point-icon">📊</span>
+                Аналитика и статистика в реальном времени
+              </div>
+              <div className="auth-point">
+                <span className="auth-point-icon">🔒</span>
+                Безопасные сделки с гарантией оплаты
               </div>
             </div>
+          </div>
 
-            <button type="submit" className={`auth-submit btn btn-primary btn-full${loading ? ' auth-submit-loading' : ''}`} disabled={loading}>
-              {loading ? 'Входим…' : 'Войти в аккаунт'}
-            </button>
-          </form>
-
-          <p className="auth-alt">
-            Нет аккаунта?{' '}
-            <Link to="/register" className="auth-alt-link">Зарегистрироваться</Link>
-          </p>
+          <div className="auth-stats">
+            <div className="auth-stat">
+              <div className="auth-stat-num">24/7</div>
+              <div className="auth-stat-label">Приём заявок</div>
+            </div>
+            <div className="auth-stat">
+              <div className="auth-stat-num">15+</div>
+              <div className="auth-stat-label">Категорий</div>
+            </div>
+            <div className="auth-stat">
+              <div className="auth-stat-num">5.0★</div>
+              <div className="auth-stat-label">Рейтинг</div>
+            </div>
+          </div>
         </div>
+
+        {/* Правая панель - форма */}
+        <div className="auth-right">
+          <div className="auth-form-card">
+            <div className="auth-form-header">
+              <h2 className="auth-form-title">Вход в аккаунт</h2>
+              <p className="auth-form-subtitle">Рады видеть вас снова</p>
+            </div>
+
+            {error && (
+              <div className="auth-error">
+                <span className="auth-error-icon">⚠️</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="auth-field">
+                <label className="auth-label">Email</label>
+                <input
+                  type="email"
+                  className="auth-input"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="name@example.com"
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="auth-field">
+                <label className="auth-label">Пароль</label>
+                <div className="auth-input-wrap">
+                  <input
+                    type={showPw ? 'text' : 'password'}
+                    className="auth-input"
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    placeholder="••••••••"
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    className="auth-eye"
+                    onClick={() => setShowPw(!showPw)}
+                    tabIndex={-1}
+                  >
+                    {showPw ? <EyeClosed /> : <EyeOpen />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className={`btn btn-primary btn-full ${loading ? 'loading' : ''}`}
+                disabled={loading}
+              >
+                {loading ? 'Входим...' : 'Войти'}
+              </button>
+            </form>
+
+            <p className="auth-alt">
+              Нет аккаунта?{' '}
+              <Link to="/register" className="auth-alt-link">
+                Зарегистрироваться
+              </Link>
+            </p>
+          </div>
+        </div>
+
       </div>
     </div>
   );
 }
 
-/* ───────────────────────────────
+/* ═══════════════════════════════════════
    REGISTER PAGE
-─────────────────────────────── */
+═══════════════════════════════════════ */
+
 export function RegisterPage() {
   const { login } = useAuth();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
-  const [form,    setForm]    = useState({ name:'', email:'', password:'', role:'CUSTOMER' });
-  const [showPw,  setShowPw]  = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'CUSTOMER' });
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
+  const [error, setError] = useState('');
 
   const strength = (() => {
     const p = form.password;
@@ -212,11 +233,10 @@ export function RegisterPage() {
     return 2;
   })();
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Валидация имени
     const name = form.name.trim();
     if (!name) {
       setError('Введите ваше имя.');
@@ -227,18 +247,16 @@ export function RegisterPage() {
       return;
     }
 
-    // Валидация email
     const email = form.email.trim();
     if (!email) {
       setError('Введите email.');
       return;
     }
     if (!isValidEmail(email)) {
-      setError('Введите корректный email, например: name@mail.ru');
+      setError('Введите корректный email.');
       return;
     }
 
-    // Валидация пароля
     if (!form.password) {
       setError('Введите пароль.');
       return;
@@ -253,132 +271,202 @@ export function RegisterPage() {
       const resp = await registerUser({
         name,
         email,
-        password: form.password,  // ✅ ИСПРАВЛЕНО
-        role: form.role
+        password: form.password,
+        role: form.role,
       });
 
       const user = resp.user || {};
       const userId = user.id || resp.userId;
       const userName = user.displayName || name;
-      // Используем выбранную роль, а не ту что возвращает API
       const userRole = form.role;
 
       if (!userId) {
-        throw new Error('Не удалось создать аккаунт. Попробуйте ещё раз.');
+        throw new Error('Не удалось создать аккаунт.');
       }
 
       login(userId, userRole, userName);
       navigate(userRole === 'WORKER' ? '/worker' : '/profile');
     } catch (err) {
-      setError(err.message || 'Не удалось создать аккаунт. Попробуйте снова.');
+      setError(err.message || 'Ошибка регистрации. Попробуйте снова.');
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-root">
-      <AuthLeft
-        title={<>Начните зарабатывать<br /><span>уже сегодня</span></>}
-        subtitle="Регистрация займёт меньше минуты. Создайте аккаунт заказчика или мастера."
-        points={[
-          [<FaRocket />,'Быстрый старт — анкета за 2 минуты'],
-          [<FaBullseye />,'Умное распределение заказов по категориям'],
-          [<FaCreditCard />,'Безопасные выплаты с гарантией'],
-        ]}
-        stats={[['24/7','Приём заявок'],['15+','Категорий'],['5.0★','Рейтинг']]}
-      />
+    <div className="auth-page">
+      <div className="auth-container">
 
-      <div className="auth-right">
-        <div className="auth-mobile-header">
-          <Link to="/" className="auth-mobile-brand">
-            <span className="auth-mobile-brand-icon"><FaTools /></span>
-            <span className="auth-mobile-brand-text">СвоиМастера</span>
-          </Link>
-          <p className="auth-mobile-sub">Регистрация в сервисе</p>
-        </div>
-
-        <div className="auth-form-card">
-          <h1 className="auth-form-title">Создать аккаунт</h1>
-          <p  className="auth-form-sub">Присоединяйтесь к сервису</p>
-
-          {error && <div className="auth-error-box">⚠️ {error}</div>}
-
-          {/* Role picker */}
-          <div className="auth-role-picker">
-            <button
-              type="button"
-              className={`auth-role-btn ${form.role === 'CUSTOMER' ? 'active' : ''}`}
-              onClick={() => setForm({...form, role:'CUSTOMER'})}
-            >
-              <span className="auth-role-icon"><FaUser /></span>
-              <div>
-                <div className="auth-role-title">Заказчик</div>
-                <div className="auth-role-sub">Ищу мастера</div>
-              </div>
-            </button>
-            <button
-              type="button"
-              className={`auth-role-btn ${form.role === 'WORKER' ? 'active' : ''}`}
-              onClick={() => setForm({...form, role:'WORKER'})}
-            >
-              <span className="auth-role-icon"><FaTools /></span>
-              <div>
-                <div className="auth-role-title">Мастер</div>
-                <div className="auth-role-sub">Выполняю работы</div>
-              </div>
-            </button>
+        {/* Левая панель */}
+        <div className="auth-left">
+          <div className="auth-brand">
+            <div className="auth-brand-icon">
+              <FaTools />
+            </div>
+            <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-field">
-              <label className="form-label">Имя</label>
-              <input className="form-input" type="text" name="name" placeholder="Иван Иванов"
-                value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+          <div className="auth-left-content">
+            <h1 className="auth-left-title">
+              Начните зарабатывать<br />
+              <span>уже сегодня</span>
+            </h1>
+            <p className="auth-left-desc">
+              Регистрация займёт меньше минуты. Создайте аккаунт заказчика или мастера.
+            </p>
+
+            <div className="auth-left-points">
+              <div className="auth-point">
+                <span className="auth-point-icon">🚀</span>
+                Быстрый старт — анкета за 2 минуты
+              </div>
+              <div className="auth-point">
+                <span className="auth-point-icon">🎯</span>
+                Умное распределение заказов по категориям
+              </div>
+              <div className="auth-point">
+                <span className="auth-point-icon">💳</span>
+                Безопасные выплаты с гарантией
+              </div>
+            </div>
+          </div>
+
+          <div className="auth-stats">
+            <div className="auth-stat">
+              <div className="auth-stat-num">24/7</div>
+              <div className="auth-stat-label">Приём заявок</div>
+            </div>
+            <div className="auth-stat">
+              <div className="auth-stat-num">15+</div>
+              <div className="auth-stat-label">Категорий</div>
+            </div>
+            <div className="auth-stat">
+              <div className="auth-stat-num">5.0★</div>
+              <div className="auth-stat-label">Рейтинг</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Правая панель - форма */}
+        <div className="auth-right">
+          <div className="auth-form-card">
+            <div className="auth-form-header">
+              <h2 className="auth-form-title">Создать аккаунт</h2>
+              <p className="auth-form-subtitle">Присоединяйтесь к сервису</p>
             </div>
 
-            <div className="form-field">
-              <label className="form-label">Email</label>
-              <input className="form-input" type="email" name="email" placeholder="mail@example.com"
-                value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
+            {error && (
+              <div className="auth-error">
+                <span className="auth-error-icon">⚠️</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Выбор роли */}
+            <div className="auth-role-tabs">
+              <button
+                type="button"
+                className={`auth-role-tab ${form.role === 'CUSTOMER' ? 'active' : ''}`}
+                onClick={() => setForm({ ...form, role: 'CUSTOMER' })}
+              >
+                <span className="auth-role-icon">👤</span>
+                <div>
+                  <div className="auth-role-title">Заказчик</div>
+                  <div className="auth-role-sub">Ищу мастера</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                className={`auth-role-tab ${form.role === 'WORKER' ? 'active' : ''}`}
+                onClick={() => setForm({ ...form, role: 'WORKER' })}
+              >
+                <span className="auth-role-icon">🔧</span>
+                <div>
+                  <div className="auth-role-title">Мастер</div>
+                  <div className="auth-role-sub">Выполняю работы</div>
+                </div>
+              </button>
             </div>
 
-            <div className="form-field">
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6}}>
-                <span className="form-label" style={{marginBottom:0}}>Пароль</span>
-                {strength > 0 && (
-                  <span style={{fontSize:12, fontWeight:700, color: strength===3?'#4caf50':strength===2?'#ff9800':'#f44336'}}>
-                    {['','Слабый','Средний','Надёжный'][strength]}
-                  </span>
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="auth-field">
+                <label className="auth-label">Имя</label>
+                <input
+                  type="text"
+                  className="auth-input"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="Иван Иванов"
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="auth-field">
+                <label className="auth-label">Email</label>
+                <input
+                  type="email"
+                  className="auth-input"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="name@example.com"
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="auth-field">
+                <label className="auth-label">Пароль</label>
+                <div className="auth-input-wrap">
+                  <input
+                    type={showPw ? 'text' : 'password'}
+                    className="auth-input"
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    placeholder="••••••••"
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    className="auth-eye"
+                    onClick={() => setShowPw(!showPw)}
+                    tabIndex={-1}
+                  >
+                    {showPw ? <EyeClosed /> : <EyeOpen />}
+                  </button>
+                </div>
+
+                {/* Индикатор силы пароля */}
+                {form.password && (
+                  <>
+                    <div className="auth-pw-strength">
+                      <div className={`auth-pw-bar ${strength >= 1 ? 'filled' : ''}`} />
+                      <div className={`auth-pw-bar ${strength >= 2 ? 'filled' : ''}`} />
+                      <div className={`auth-pw-bar ${strength >= 3 ? 'filled' : ''}`} />
+                    </div>
+                    <div className={`auth-pw-label ${strength === 1 ? 'weak' : strength === 2 ? 'medium' : 'strong'}`}>
+                      {strength === 1 ? 'Слабый' : strength === 2 ? 'Средний' : 'Надёжный'}
+                    </div>
+                  </>
                 )}
               </div>
-              <div className="auth-input-wrap">
-                <input className="form-input" type={showPw ? 'text' : 'password'} name="password"
-                  placeholder="Минимум 6 символов" style={{paddingRight:42}}
-                  value={form.password} onChange={e => setForm({...form, password: e.target.value})} required />
-                <button type="button" className="auth-eye" onClick={() => setShowPw(!showPw)}>
-                  {showPw ? <EyeClosed /> : <EyeOpen />}
-                </button>
-              </div>
-              <div className="auth-strength">
-                {[1,2,3].map(i => (
-                  <div key={i} className={`auth-strength-bar ${strength>=i ? ['','weak','fair','good'][i] : ''}`} />
-                ))}
-              </div>
-            </div>
 
-            <button type="submit" className={`auth-submit btn btn-primary btn-full${loading ? ' auth-submit-loading' : ''}`} disabled={loading}>
-              {loading ? 'Создаём аккаунт…' : 'Создать аккаунт'}
-            </button>
-          </form>
+              <button
+                type="submit"
+                className={`btn btn-primary btn-full ${loading ? 'loading' : ''}`}
+                disabled={loading}
+              >
+                {loading ? 'Создаём аккаунт...' : 'Создать аккаунт'}
+              </button>
+            </form>
 
-          <p className="auth-alt">
-            Уже есть аккаунт?{' '}
-            <Link to="/login" className="auth-alt-link">Войти</Link>
-          </p>
+            <p className="auth-alt">
+              Уже есть аккаунт?{' '}
+              <Link to="/login" className="auth-alt-link">
+                Войти
+              </Link>
+            </p>
+          </div>
         </div>
+
       </div>
     </div>
   );
 }
-
-export default LoginPage;
