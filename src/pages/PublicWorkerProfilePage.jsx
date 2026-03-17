@@ -19,21 +19,21 @@ export default function PublicWorkerProfilePage() {
     Promise.all([
       // Услуги мастера
       fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/services`)
-        .then(r => r.json()),
+        .then(r => r.ok ? r.json() : []),
       // Статистика (рейтинг + количество отзывов)
       fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/stats`)
-        .then(r => r.json()),
+        .then(r => r.ok ? r.json() : { averageRating: 0, reviewsCount: 0 }),
       // Отзывы
-      fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/reviews`)
-        .then(r => r.json()),
-      // ✅ ДОБАВЛЕНО: Завершённые работы
+      fetch(`https://svoi-mastera-backend.onrender.com/api/v1/reviews/worker/${workerId}`)
+        .then(r => r.ok ? r.json() : []),
+      // Завершённые работы
       fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/completed-works`)
-        .then(r => r.json()),
+        .then(r => r.ok ? r.json() : []),
     ])
       .then(([servicesData, statsData, reviewsData, completedWorksData]) => {
-        setServices(servicesData || []);
-        setReviews(reviewsData || []);
-        setCompletedWorks(completedWorksData || []);  // ✅ ДОБАВЛЕНО
+        setServices(Array.isArray(servicesData) ? servicesData : []);
+        setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+        setCompletedWorks(Array.isArray(completedWorksData) ? completedWorksData : []);
 
         // Берём имя мастера из первого сервиса
         if (servicesData && servicesData.length > 0) {
