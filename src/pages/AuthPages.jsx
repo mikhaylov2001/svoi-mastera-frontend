@@ -250,12 +250,7 @@ export function RegisterPage() {
 
     setLoading(true);
     try {
-      const resp = await registerUser({
-        name,
-        email,
-        password: form.password,  // ✅ ИСПРАВЛЕНО
-        role: form.role
-      });
+      const resp = await registerUser({ name, email, password: form.password, role: form.role });
 
       const user = resp.user || {};
       const userId = user.id || resp.userId;

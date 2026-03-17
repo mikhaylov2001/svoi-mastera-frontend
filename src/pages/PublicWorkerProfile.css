@@ -72,6 +72,38 @@
   color: var(--gray-500);
 }
 
+/* ✅ ДОБАВЛЕНО: Статистика мастера */
+.public-worker-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.pub-stat-item {
+  text-align: center;
+  padding: 12px;
+  background: var(--gray-50);
+  border-radius: var(--r-md);
+}
+
+.pub-stat-value {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.pub-stat-label {
+  font-size: 12px;
+  color: var(--gray-500);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
 .public-worker-badges {
   display: flex;
   flex-direction: column;
@@ -283,6 +315,27 @@
   color: var(--gray-500);
   font-style: italic;
   margin: 0;
+}
+
+/* ✅ ДОБАВЛЕНО: Бейджи/смайлики в отзывах */
+.review-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.review-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-700);
 }
 
 /* Адаптив */

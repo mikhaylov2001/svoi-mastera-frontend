@@ -42,6 +42,7 @@ export default function PublicWorkerProfilePage() {
             name: servicesData[0].workerName || 'Мастер',
             rating: statsData?.averageRating || 0,
             reviewsCount: statsData?.reviewsCount || 0,
+            registeredAt: statsData?.registeredAt || null,  // ✅ ДОБАВЛЕНО
             city: 'Йошкар-Ола',
           });
         } else {
@@ -51,6 +52,7 @@ export default function PublicWorkerProfilePage() {
             name: 'Мастер',
             rating: statsData?.averageRating || 0,
             reviewsCount: statsData?.reviewsCount || 0,
+            registeredAt: statsData?.registeredAt || null,  // ✅ ДОБАВЛЕНО
             city: 'Йошкар-Ола',
           });
         }
@@ -102,6 +104,45 @@ export default function PublicWorkerProfilePage() {
     );
   };
 
+  // ✅ ДОБАВЛЕНО: Вычисление стажа работы
+  const getExperience = (registeredAt) => {
+    if (!registeredAt) return 'Новичок';
+
+    const now = new Date();
+    const registered = new Date(registeredAt);
+    const diffMs = now - registered;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffMonths = Math.floor(diffDays / 30);
+    const diffYears = Math.floor(diffDays / 365);
+
+    if (diffYears >= 1) {
+      return `${diffYears} ${diffYears === 1 ? 'год' : diffYears < 5 ? 'года' : 'лет'}`;
+    }
+    if (diffMonths >= 1) {
+      return `${diffMonths} ${diffMonths === 1 ? 'месяц' : diffMonths < 5 ? 'месяца' : 'месяцев'}`;
+    }
+    if (diffDays >= 7) {
+      const weeks = Math.floor(diffDays / 7);
+      return `${weeks} ${weeks === 1 ? 'неделю' : weeks < 5 ? 'недели' : 'недель'}`;
+    }
+    return 'Новичок';
+  };
+
+  // ✅ ДОБАВЛЕНО: Маппинг бейджей к смайликам
+  const badgeIcons = {
+    polite: '😊',
+    fast: '⚡',
+    quality: '💎',
+    price: '💰'
+  };
+
+  const badgeLabels = {
+    polite: 'Вежливый',
+    fast: 'Быстро',
+    quality: 'Качественно',
+    price: 'Цена/качество'
+  };
+
   return (
     <div>
       {/* Хедер */}
@@ -127,6 +168,18 @@ export default function PublicWorkerProfilePage() {
               <span className="rating-stars">{renderStars(worker.rating)}</span>
               <span className="rating-value">{worker.rating.toFixed(1)}</span>
               <span className="rating-count">({worker.reviewsCount} {worker.reviewsCount === 1 ? 'отзыв' : worker.reviewsCount < 5 ? 'отзыва' : 'отзывов'})</span>
+            </div>
+
+            {/* ✅ НОВАЯ СЕКЦИЯ: Статистика мастера */}
+            <div className="public-worker-stats">
+              <div className="pub-stat-item">
+                <div className="pub-stat-value">{completedWorks.length}</div>
+                <div className="pub-stat-label">Заказов</div>
+              </div>
+              <div className="pub-stat-item">
+                <div className="pub-stat-value">{getExperience(worker.registeredAt)}</div>
+                <div className="pub-stat-label">Стаж</div>
+              </div>
             </div>
 
             {/* Бейджи */}
@@ -219,6 +272,18 @@ export default function PublicWorkerProfilePage() {
                         <span className="review-stars">{renderStars(review.rating)}</span>
                         <span className="review-date">{new Date(review.createdAt).toLocaleDateString('ru-RU')}</span>
                       </div>
+
+                      {/* ✅ ДОБАВЛЕНО: Бейджи/смайлики */}
+                      {review.badges && review.badges.length > 0 && (
+                        <div className="review-badges">
+                          {review.badges.map((badge) => (
+                            <span key={badge} className="review-badge" title={badgeLabels[badge]}>
+                              {badgeIcons[badge]} {badgeLabels[badge]}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
                       <p className="review-text">{review.text}</p>
                       <p className="review-author">— {review.authorName || 'Клиент'}</p>
                     </div>
