@@ -10,6 +10,7 @@ export default function PublicWorkerProfilePage() {
   const [worker, setWorker] = useState(null);
   const [services, setServices] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [completedWorks, setCompletedWorks] = useState([]);  // ✅ ДОБАВЛЕНО
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -25,10 +26,14 @@ export default function PublicWorkerProfilePage() {
       // Отзывы
       fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/reviews`)
         .then(r => r.json()),
+      // ✅ ДОБАВЛЕНО: Завершённые работы
+      fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/completed-works`)
+        .then(r => r.json()),
     ])
-      .then(([servicesData, statsData, reviewsData]) => {
+      .then(([servicesData, statsData, reviewsData, completedWorksData]) => {
         setServices(servicesData || []);
         setReviews(reviewsData || []);
+        setCompletedWorks(completedWorksData || []);  // ✅ ДОБАВЛЕНО
 
         // Берём имя мастера из первого сервиса
         if (servicesData && servicesData.length > 0) {
@@ -159,6 +164,40 @@ export default function PublicWorkerProfilePage() {
                         {service.priceFrom || service.priceTo
                           ? `от ${service.priceFrom || '-'} до ${service.priceTo || '-'} ₽`
                           : 'Цена по договоренности'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ✅ НОВАЯ СЕКЦИЯ: Выполненные работы */}
+            <div className="public-section">
+              <h2 className="public-section-title">Выполненные работы ({completedWorks.length})</h2>
+
+              {completedWorks.length === 0 ? (
+                <p className="empty-text">История работ пока пуста</p>
+              ) : (
+                <div className="public-completed-works-list">
+                  {completedWorks.map((work) => (
+                    <div key={work.id} className="public-work-card">
+                      <div className="work-header">
+                        <h3 className="work-title">{work.title}</h3>
+                        {work.categoryName && (
+                          <span className="work-category">{work.categoryName}</span>
+                        )}
+                      </div>
+                      <p className="work-desc">{work.description}</p>
+                      <div className="work-footer">
+                        <div className="work-client">
+                          <span className="work-label">Заказчик:</span> {work.customerName}
+                        </div>
+                        <div className="work-price">
+                          {work.price ? `${work.price} ₽` : 'Договорная'}
+                        </div>
+                        <div className="work-date">
+                          {new Date(work.completedAt).toLocaleDateString('ru-RU')}
+                        </div>
                       </div>
                     </div>
                   ))}
