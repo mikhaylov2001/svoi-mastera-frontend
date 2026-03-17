@@ -16,19 +16,36 @@ export default function PublicWorkerProfilePage() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      // Эти API методы нужно будет создать или использовать существующие
-      fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/services`).then(r => r.json()),
-      // getReviewsByWorker(workerId), // если есть
+      // Услуги мастера
+      fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/services`)
+        .then(r => r.json()),
+      // Статистика (рейтинг + количество отзывов)
+      fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/stats`)
+        .then(r => r.json()),
+      // Отзывы
+      fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/reviews`)
+        .then(r => r.json()),
     ])
-      .then(([servicesData]) => {
+      .then(([servicesData, statsData, reviewsData]) => {
         setServices(servicesData || []);
+        setReviews(reviewsData || []);
+
         // Берём имя мастера из первого сервиса
         if (servicesData && servicesData.length > 0) {
           setWorker({
             id: workerId,
             name: servicesData[0].workerName || 'Мастер',
-            rating: 4.0,
-            reviewsCount: 25,
+            rating: statsData?.averageRating || 0,
+            reviewsCount: statsData?.reviewsCount || 0,
+            city: 'Йошкар-Ола',
+          });
+        } else {
+          // Если нет услуг, всё равно создаём профиль
+          setWorker({
+            id: workerId,
+            name: 'Мастер',
+            rating: statsData?.averageRating || 0,
+            reviewsCount: statsData?.reviewsCount || 0,
             city: 'Йошкар-Ола',
           });
         }
@@ -67,6 +84,19 @@ export default function PublicWorkerProfilePage() {
     .toUpperCase()
     .slice(0, 2);
 
+  // Генерация звёзд рейтинга
+  const renderStars = (rating) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    return (
+      '★'.repeat(fullStars) +
+      (hasHalfStar ? '½' : '') +
+      '☆'.repeat(emptyStars)
+    );
+  };
+
   return (
     <div>
       {/* Хедер */}
@@ -89,9 +119,9 @@ export default function PublicWorkerProfilePage() {
 
             {/* Рейтинг */}
             <div className="public-worker-rating">
-              <span className="rating-stars">★★★★☆</span>
-              <span className="rating-value">{worker.rating}</span>
-              <span className="rating-count">({worker.reviewsCount} отзывов)</span>
+              <span className="rating-stars">{renderStars(worker.rating)}</span>
+              <span className="rating-value">{worker.rating.toFixed(1)}</span>
+              <span className="rating-count">({worker.reviewsCount} {worker.reviewsCount === 1 ? 'отзыв' : worker.reviewsCount < 5 ? 'отзыва' : 'отзывов'})</span>
             </div>
 
             {/* Бейджи */}
@@ -147,7 +177,7 @@ export default function PublicWorkerProfilePage() {
                   {reviews.map((review) => (
                     <div key={review.id} className="public-review-card">
                       <div className="review-header">
-                        <span className="review-stars">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+                        <span className="review-stars">{renderStars(review.rating)}</span>
                         <span className="review-date">{new Date(review.createdAt).toLocaleDateString('ru-RU')}</span>
                       </div>
                       <p className="review-text">{review.text}</p>
