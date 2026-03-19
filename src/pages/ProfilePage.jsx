@@ -163,7 +163,12 @@ export default function ProfilePage() {
 
           {!loading && deals.slice(0, 5).map(deal => {
             const st = STATUS_MAP[deal.status] || { label: deal.status, cls: 'badge-new' };
-            const canReview = deal.status === 'COMPLETED' && deal.workerName;
+            // Показываем кнопку отзыва только если:
+            // 1. Сделка завершена
+            // 2. Есть мастер
+            // 3. Ещё не оставлен отзыв (deal.reviewId === null)
+            const canReview = deal.status === 'COMPLETED' && deal.workerName && !deal.reviewId;
+
             return (
               <div className="profile-deal-row" key={deal.id}>
                 <div className="profile-deal-info">
@@ -182,6 +187,9 @@ export default function ProfilePage() {
                     <button className="btn btn-outline btn-sm" onClick={() => { setReviewDeal(deal); setReviewForm({rating:5,comment:''}); setReviewStatus('idle'); }}>
                       Оставить отзыв
                     </button>
+                  )}
+                  {deal.reviewId && (
+                    <span className="review-left-badge">✓ Отзыв оставлен</span>
                   )}
                 </div>
               </div>

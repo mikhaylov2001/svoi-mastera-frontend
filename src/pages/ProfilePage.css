@@ -300,3 +300,16 @@
   .quick-action-title { font-size: 14px; }
   .quick-action-desc { font-size: 11px; }
 }
+
+/* Бейдж "Отзыв оставлен" */
+.review-left-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green);
+  background: var(--green-light);
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
