@@ -99,22 +99,22 @@ function Header() {
             >
               Главная
             </NavLink>
-            <NavLink
-              to="/categories"
-              className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-            >
-              Найти мастера
-            </NavLink>
 
-            {userId ? (
+            {userId && role === 'WORKER' ? (
               <>
+                {/* ══ НАВИГАЦИЯ ДЛЯ МАСТЕРА ══ */}
                 <NavLink
-                  to="/find-master"
+                  to="/find-work"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
                 >
-                  Активные мастера
+                  Найти работу
                 </NavLink>
-
+                <NavLink
+                  to="/active-clients"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Активные клиенты
+                </NavLink>
                 <NavLink
                   to="/chat"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
@@ -124,38 +124,57 @@ function Header() {
                     <span className="header-unread-badge">{unread}</span>
                   )}
                 </NavLink>
+                <NavLink
+                  to="/deals"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Мои сделки
+                </NavLink>
+              </>
+            ) : userId ? (
+              <>
+                {/* ══ НАВИГАЦИЯ ДЛЯ ЗАКАЗЧИКА ══ */}
+                <NavLink
+                  to="/categories"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Найти мастера
+                </NavLink>
+                <NavLink
+                  to="/find-master"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Активные мастера
+                </NavLink>
+                <NavLink
+                  to="/chat"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Сообщения
+                  {unread > 0 && (
+                    <span className="header-unread-badge">{unread}</span>
+                  )}
+                </NavLink>
+                <NavLink
+                  to="/deals"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Мои сделки
+                </NavLink>
+              </>
+            ) : (
+              <>
+                {/* ══ ДЛЯ НЕАВТОРИЗОВАННЫХ ══ */}
+                <NavLink
+                  to="/categories"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Найти мастера
+                </NavLink>
+              </>
+            )}
 
-                {role === 'WORKER' ? (
-                  <>
-                    <NavLink
-                      to="/find-work"
-                      className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                    >
-                      Найти работу
-                    </NavLink>
-                    <NavLink
-                      to="/active-clients"
-                      className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                    >
-                      Клиенты
-                    </NavLink>
-                    <NavLink
-                      to="/manage-services"
-                      className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                    >
-                      Мои услуги
-                    </NavLink>
-                  </>
-                ) : (
-                  <NavLink
-                    to="/deals"
-                    className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                  >
-                    Мои сделки
-                  </NavLink>
-                )}
-
-                {/* ── AVATAR DROPDOWN ── */}
+            {userId ? (
                 <div
                   className="header-user"
                   onClick={() => setMenuOpen(v => !v)}
@@ -208,32 +227,47 @@ function Header() {
                 <NavLink to="/" end className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
                   Главная
                 </NavLink>
-                <NavLink to="/categories" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                  Найти мастера
-                </NavLink>
 
-                {userId && (
+                {userId && role === 'WORKER' ? (
                   <>
-                    <NavLink to="/find-master" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                      Активные мастера
+                    {/* ══ МОБИЛЬНОЕ МЕНЮ МАСТЕРА ══ */}
+                    <NavLink to="/find-work" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Найти работу
                     </NavLink>
-
+                    <NavLink to="/active-clients" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Активные клиенты
+                    </NavLink>
                     <NavLink to="/chat" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
                       Сообщения {unread > 0 && `• ${unread}`}
                     </NavLink>
+                    <NavLink to="/deals" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Мои сделки
+                    </NavLink>
+                  </>
+                ) : userId ? (
+                  <>
+                    {/* ══ МОБИЛЬНОЕ МЕНЮ ЗАКАЗЧИКА ══ */}
+                    <NavLink to="/categories" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Найти мастера
+                    </NavLink>
+                    <NavLink to="/find-master" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Активные мастера
+                    </NavLink>
+                    <NavLink to="/chat" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Сообщения {unread > 0 && `• ${unread}`}
+                    </NavLink>
+                    <NavLink to="/deals" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Мои сделки
+                    </NavLink>
+                  </>
+                ) : (
+                  <NavLink to="/categories" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                    Найти мастера
+                  </NavLink>
+                )}
 
-                    {role === 'WORKER' ? (
-                      <>
-                        <NavLink to="/find-work"       className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Найти работу</NavLink>
-                        <NavLink to="/active-clients"  className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Клиенты</NavLink>
-                        <NavLink to="/manage-services" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Мои услуги</NavLink>
-                      </>
-                    ) : (
-                      <NavLink to="/deals" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                        Мои сделки
-                      </NavLink>
-                    )}
-
+                {userId && (
+                  <>
                     <NavLink to="/profile" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
                       Профиль
                     </NavLink>

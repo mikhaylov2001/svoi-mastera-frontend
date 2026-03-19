@@ -200,6 +200,7 @@
   box-shadow: 0 16px 48px rgba(0,0,0,.14);
   padding: 8px;
   min-width: 210px;
+  max-width: 280px;
   animation: fadeUp .2s ease both;
   z-index: 10;
 }
@@ -212,6 +213,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .header-dropdown-role {
