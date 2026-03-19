@@ -5,8 +5,15 @@ import { useAuth } from '../context/AuthContext';
 import './WorkerProfilePage.css';
 
 export default function WorkerProfilePage() {
-  const { userId, userName, logout } = useAuth();
+  const { userId, userName, role, logout } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if not a worker
+  useEffect(() => {
+    if (role && role !== 'WORKER') {
+      navigate('/profile');
+    }
+  }, [role, navigate]);
 
   const [requests, setRequests] = useState([]);
   const [reviews,  setReviews]  = useState([]);
