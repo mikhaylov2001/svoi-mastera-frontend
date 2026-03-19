@@ -5,6 +5,9 @@ import './SettingsPage.css';
 
 export default function NotificationsSettingsPage() {
   const { userId } = useAuth();
+
+  console.log('🔔 NotificationsSettingsPage загружена! userId:', userId);
+
   const [settings, setSettings] = useState({
     emailNotifications: true,
     pushNotifications: false,
