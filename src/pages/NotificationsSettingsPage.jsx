@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getNotificationSettings, updateNotificationSettings } from '../api';
 import './SettingsPage.css';
 
 export default function NotificationsSettingsPage() {
   const { userId } = useAuth();
-
-  console.log('🔔 NotificationsSettingsPage загружена! userId:', userId);
 
   const [settings, setSettings] = useState({
     emailNotifications: true,
@@ -16,15 +15,24 @@ export default function NotificationsSettingsPage() {
     messages: true,
     reviews: true,
   });
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    // TODO: Загрузить настройки из API
-    // fetch(`/api/v1/users/${userId}/notification-settings`)
-    //   .then(r => r.json())
-    //   .then(data => setSettings(data));
+    loadSettings();
   }, [userId]);
+
+  const loadSettings = async () => {
+    try {
+      const data = await getNotificationSettings(userId);
+      setSettings(data);
+    } catch (err) {
+      console.error('Failed to load settings:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleToggle = (key) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
@@ -34,19 +42,24 @@ export default function NotificationsSettingsPage() {
     setSaving(true);
     setSaved(false);
 
-    // TODO: Сохранить в API
-    // await fetch(`/api/v1/users/${userId}/notification-settings`, {
-    //   method: 'PUT',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(settings)
-    // });
-
-    setTimeout(() => {
-      setSaving(false);
+    try {
+      await updateNotificationSettings(userId, settings);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    }, 500);
+    } catch (err) {
+      console.error('Failed to save settings:', err);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="container" style={{ padding: '60px 24px', textAlign: 'center' }}>
+        <p>Загрузка...</p>
+      </div>
+    );
+  }
 
   return (
     <div>

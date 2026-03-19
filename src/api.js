@@ -209,3 +209,34 @@ export async function uploadAvatar(userId, base64Image) {
     body: JSON.stringify({ image: base64Image }),
   });
 }
+
+// ── NOTIFICATION SETTINGS ──
+export async function getNotificationSettings(userId) {
+  return apiCall(`/users/${userId}/notification-settings`);
+}
+
+export async function updateNotificationSettings(userId, settings) {
+  return apiCall(`/users/${userId}/notification-settings`, {
+    method: 'PUT',
+    body: JSON.stringify(settings),
+  });
+}
+
+// ── USER PROFILE ──
+export async function getUserProfile(userId) {
+  return apiCall(`/users/${userId}/profile`);
+}
+
+export async function updateUserProfile(userId, data) {
+  return apiCall(`/users/${userId}/profile`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function changePassword(userId, data) {
+  return apiCall(`/users/${userId}/change-password`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}

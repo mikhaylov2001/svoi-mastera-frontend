@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getUserProfile, updateUserProfile, changePassword } from '../api';
 import './SettingsPage.css';
 
 export default function PersonalSettingsPage() {
-  const { userId, userName } = useAuth();
+  const { userId } = useAuth();
   const [form, setForm] = useState({
     displayName: '',
     email: '',
@@ -20,31 +21,25 @@ export default function PersonalSettingsPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // TODO: Загрузить данные из API
-    // fetch(`/api/v1/users/${userId}/profile`)
-    //   .then(r => r.json())
-    //   .then(data => {
-    //     setForm({
-    //       displayName: data.displayName || '',
-    //       email: data.email || '',
-    //       phone: data.phone || '',
-    //       city: data.city || '',
-    //       currentPassword: '',
-    //       newPassword: '',
-    //       confirmPassword: '',
-    //     });
-    //     setLoading(false);
-    //   });
+    loadProfile();
+  }, [userId]);
 
-    // Временные данные
-    setForm(prev => ({
-      ...prev,
-      displayName: userName || '',
-      email: 'user@example.com',
-      city: 'Йошкар-Ола',
-    }));
-    setLoading(false);
-  }, [userId, userName]);
+  const loadProfile = async () => {
+    try {
+      const data = await getUserProfile(userId);
+      setForm(prev => ({
+        ...prev,
+        displayName: data.displayName || '',
+        email: data.email || '',
+        phone: data.phone || '',
+        city: data.city || '',
+      }));
+    } catch (err) {
+      console.error('Failed to load profile:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -75,32 +70,23 @@ export default function PersonalSettingsPage() {
       }
     }
 
-    // TODO: Сохранить в API
-    // await fetch(`/api/v1/users/${userId}/profile`, {
-    //   method: 'PUT',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     displayName: form.displayName,
-    //     email: form.email,
-    //     phone: form.phone,
-    //     city: form.city,
-    //   })
-    // });
+    try {
+      // Сохраняем профиль
+      await updateUserProfile(userId, {
+        displayName: form.displayName,
+        email: form.email,
+        phone: form.phone,
+        city: form.city,
+      });
 
-    // Если меняли пароль:
-    // if (form.newPassword) {
-    //   await fetch(`/api/v1/users/${userId}/change-password`, {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({
-    //       currentPassword: form.currentPassword,
-    //       newPassword: form.newPassword,
-    //     })
-    //   });
-    // }
+      // Если меняли пароль
+      if (form.newPassword) {
+        await changePassword(userId, {
+          currentPassword: form.currentPassword,
+          newPassword: form.newPassword,
+        });
+      }
 
-    setTimeout(() => {
-      setSaving(false);
       setSaved(true);
       // Очистка полей пароля
       setForm(prev => ({
@@ -110,7 +96,11 @@ export default function PersonalSettingsPage() {
         confirmPassword: '',
       }));
       setTimeout(() => setSaved(false), 3000);
-    }, 500);
+    } catch (err) {
+      setError(err.message || 'Не удалось сохранить изменения');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
