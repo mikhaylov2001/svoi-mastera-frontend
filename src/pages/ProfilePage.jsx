@@ -171,7 +171,7 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        {/* ✅ НОВАЯ СЕКЦИЯ: Быстрые действия */}
+        {/* ✅ Быстрые действия - один ряд */}
         <div className="profile-quick-actions">
           <Link to="/categories" className="quick-action-card quick-action-primary">
             <div className="quick-action-icon">🔍</div>
@@ -196,7 +196,7 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        {error && <div className="profile-error" style={{ padding: '12px 16px', background: '#fee2e2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 10, marginBottom: 16 }}>{error}</div>}
+        {error && <div className="profile-error">{error}</div>}
 
         {/* Recent deals */}
         <div className="profile-section">
