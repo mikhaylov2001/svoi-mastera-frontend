@@ -1,295 +1,184 @@
-import React, { useState, useEffect } from 'react';
-import { FaSearch, FaUser, FaClock, FaMapMarkerAlt, FaFilter, FaStar, FaBriefcase, FaBullseye } from 'react-icons/fa';
-import { getOpenJobRequests, getCategories } from '../api';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getMyDeals } from '../api';
 import './ActiveClientsPage.css';
 
-const categories = ['Все категории', 'Мебель', 'Сантехника', 'Электрика', 'Строительство', 'Уборка', 'Компьютеры', 'Бытовая техника'];
-const urgencyLevels = ['Все уровни', 'Срочно', 'Средняя', 'Низкая'];
+const STATUS_MAP = {
+  IN_PROGRESS: { label: 'В работе', emoji: '⚙️', color: '#f59e0b' },
+  COMPLETED:   { label: 'Завершена', emoji: '✅', color: '#22c55e' },
+  NEW:         { label: 'Новая',     emoji: '📋', color: '#6366f1' },
+};
 
 export default function ActiveClientsPage() {
-    const { userId } = useAuth();
-    const [jobRequests, setJobRequests] = useState([]);
-    const [filteredRequests, setFilteredRequests] = useState([]);
-    const [categories, setCategories] = useState(['Все категории']);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('Все категории');
-    const [selectedUrgency, setSelectedUrgency] = useState('Все уровни');
-    const [sortBy, setSortBy] = useState('По умолчанию');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+  const { userId } = useAuth();
+  const [deals, setDeals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('ALL');
 
-    const sortOptions = ['По умолчанию', 'Бюджет: по возрастанию', 'Бюджет: по убыванию', 'Новые'];
+  useEffect(() => {
+    loadDeals();
+  }, [userId]);
 
-    useEffect(() => {
-        const loadData = async () => {
-            try {
-                setLoading(true);
-                setError('');
-                
-                // Загружаем открытые заявки
-                const requestsData = await getOpenJobRequests();
-                
-                // Загружаем категории
-                const categoriesData = await getCategories();
-                const categoryNames = ['Все категории', ...categoriesData.map(cat => cat.name)];
-                
-                setJobRequests(requestsData || []);
-                setCategories(categoryNames);
-                setFilteredRequests(requestsData || []);
+  const loadDeals = async () => {
+    setLoading(true);
+    try {
+      const data = await getMyDeals(userId);
+      // Фильтруем только сделки где мы - мастер
+      const myWorkerDeals = data.filter(d => d.workerId === userId);
+      setDeals(myWorkerDeals);
+    } catch (err) {
+      console.error('Failed to load deals:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                // Отладка
-                console.log('=== ОТЛАДКА ActiveClientsPage ===');
-                console.log('Загружено заявок:', requestsData?.length || 0);
-                console.log('Загружено категорий:', categoriesData?.length || 0);
-                if (requestsData && requestsData.length > 0) {
-                    console.log('Пример заявки:', requestsData[0]);
-                }
-                if (categoriesData && categoriesData.length > 0) {
-                    console.log('Пример категории:', categoriesData[0]);
-                }
-                console.log('==================================');
-            } catch (error) {
-                console.error('Ошибка загрузки заказов:', error);
-                setError(error.message || 'Не удалось загрузить заказы');
-                setJobRequests([]);
-                setFilteredRequests([]);
-            } finally {
-                setLoading(false);
-            }
-        };
+  const filteredDeals = deals.filter(d => {
+    if (filter === 'ALL') return true;
+    if (filter === 'IN_PROGRESS') return d.status === 'IN_PROGRESS';
+    if (filter === 'COMPLETED') return d.status === 'COMPLETED';
+    return true;
+  });
 
-        if (userId) {
-            loadData();
-        }
-    }, [userId]);
+  const counts = {
+    ALL: deals.length,
+    IN_PROGRESS: deals.filter(d => d.status === 'IN_PROGRESS').length,
+    COMPLETED: deals.filter(d => d.status === 'COMPLETED').length,
+  };
 
-    useEffect(() => {
-        let filtered = jobRequests;
-
-        // Фильтрация по категории
-        if (selectedCategory !== 'Все категории') {
-            filtered = filtered.filter(request => {
-                // Пробуем разные способы сопоставления категории
-                return request.categoryName === selectedCategory ||
-                       request.category === selectedCategory ||
-                       request.categoryId === selectedCategory;
-            });
-        }
-
-        // Фильтрация по поиску
-        if (searchTerm) {
-            filtered = filtered.filter(request =>
-                request.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                request.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                request.customerName?.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-
-        // Сортировка
-        switch (sortBy) {
-            case 'Бюджет: по возрастанию':
-                filtered = [...filtered].sort((a, b) => (a.budgetTo || 0) - (b.budgetTo || 0));
-                break;
-            case 'Бюджет: по убыванию':
-                filtered = [...filtered].sort((a, b) => (b.budgetTo || 0) - (a.budgetTo || 0));
-                break;
-            case 'Новые':
-                filtered = [...filtered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                break;
-            default:
-                break;
-        }
-
-        setFilteredRequests(filtered);
-    }, [jobRequests, searchTerm, selectedCategory, sortBy]);
-
-    const handleOfferResponse = async (requestId) => {
-        // Здесь будет логика отклика на заказ
-        console.log('Отклик на заказ:', requestId);
-    };
-
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = now - date;
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffDays = Math.floor(diffHours / 24);
-
-        if (diffDays > 0) {
-            return `${diffDays} ${diffDays === 1 ? 'день' : diffDays < 5 ? 'дня' : 'дней'} назад`;
-        } else if (diffHours > 0) {
-            return `${diffHours} ${diffHours === 1 ? 'час' : diffHours < 5 ? 'часа' : 'часов'} назад`;
-        } else {
-            return 'Только что';
-        }
-    };
-
-    const getUrgencyColor = (budget) => {
-        if (!budget) return '#6b7280';
-        const budgetNum = parseInt(budget.toString().replace(/[^\d]/g, ''));
-        if (budgetNum < 2000) return '#dc2626'; // Срочно - маленький бюджет
-        if (budgetNum < 5000) return '#f59e0b'; // Средняя
-        return '#10b981'; // Низкая - большой бюджет
-    };
-
-    const getUrgencyLabel = (budget) => {
-        if (!budget) return 'Не указана';
-        const budgetNum = parseInt(budget.toString().replace(/[^\d]/g, ''));
-        if (budgetNum < 2000) return 'Срочно';
-        if (budgetNum < 5000) return 'Средняя';
-        return 'Низкая';
-    };
-
-    return (
-        <div>
-            <div className="page-header-bar">
-                <div className="container">
-                    <h1><FaUser /> Активные клиенты</h1>
-                    <p>Находите заказы от клиентов в вашей категории</p>
-                </div>
-            </div>
-
-            <div className="container">
-                {error && (
-                    <div className="error-message" style={{
-                        background: '#fef2f2',
-                        border: '1px solid #fecaca',
-                        color: '#dc2626',
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        marginBottom: '16px'
-                    }}>
-                        {error}
-                    </div>
-                )}
-
-                {/* Фильтры и поиск */}
-                <div className="clients-filters">
-                    <div className="search-section">
-                        <div className="search-input-wrapper">
-                            <FaSearch className="search-icon" />
-                            <input
-                                type="text"
-                                placeholder="Поиск заказов, клиентов..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="search-input"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="filters-section">
-                        <select
-                            value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
-                            className="filter-select"
-                        >
-                            {categories.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
-
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                            className="filter-select"
-                        >
-                            {sortOptions.map(option => (
-                                <option key={option} value={option}>{option}</option>
-                            ))}
-                        </select>
-
-                        <button
-                            className="filter-toggle"
-                            onClick={() => setShowFilters(!showFilters)}
-                        >
-                            <FaFilter /> Фильтры
-                        </button>
-                    </div>
-                </div>
-
-                {/* Результаты поиска */}
-                <div className="clients-results">
-                    <div className="results-count">
-                        Найдено заказов: {filteredRequests.length}
-                    </div>
-
-                    {loading ? (
-                        <div className="loading-clients">
-                            <div className="loading-spinner"></div>
-                            <p>Загрузка заказов...</p>
-                        </div>
-                    ) : filteredRequests.length === 0 ? (
-                        <div className="no-results">
-                            <FaBriefcase className="no-results-icon" />
-                            <h3>Заказы не найдены</h3>
-                            <p>Попробуйте изменить параметры поиска или фильтры</p>
-                        </div>
-                    ) : (
-                        <div className="clients-grid">
-                            {filteredRequests.map(request => (
-                                <div key={request.id} className="client-card">
-                                    <div className="client-header">
-                                        <div className="client-info">
-                                            <div className="client-name">{request.customerName || 'Клиент'}</div>
-                                            <div className="client-rating">
-                                                <FaStar className="star-icon" />
-                                                {request.customerRating || '0.0'}
-                                            </div>
-                                        </div>
-                                        <div className="client-meta">
-                                            <div className="client-category">{request.categoryName || 'Без категории'}</div>
-                                            <div
-                                                className="client-urgency"
-                                                style={{ backgroundColor: getUrgencyColor(request.budgetTo) }}
-                                            >
-                                                {getUrgencyLabel(request.budgetTo)}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="client-content">
-                                        <h3 className="client-title">{request.title}</h3>
-                                        <p className="client-description">{request.description}</p>
-
-                                        <div className="client-details">
-                                            <div className="detail-item">
-                                                <FaMapMarkerAlt className="detail-icon" />
-                                                <span>{request.addressText || 'Адрес не указан'}</span>
-                                            </div>
-                                            <div className="detail-item">
-                                                <FaClock className="detail-icon" />
-                                                <span>{formatDate(request.createdAt)}</span>
-                                            </div>
-                                            <div className="detail-item">
-                                                <FaBriefcase className="detail-icon" />
-                                                <span>{request.offerCount || 0} откликов</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="client-budget">
-                                            <span className="budget-label">Бюджет:</span>
-                                            <span className="budget-amount">
-                                                {request.budgetTo ? `${request.budgetTo} ₽` : 'Не указан'}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div className="client-footer">
-                                        <button
-                                            className="btn btn-primary"
-                                            onClick={() => handleOfferResponse(request.id)}
-                                        >
-                                            Откликнуться
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
+  return (
+    <div>
+      <div className="page-header-bar">
+        <div className="container">
+          <h1>Активные клиенты</h1>
+          <p>Ваши текущие заказы и завершённые работы</p>
         </div>
-    );
+      </div>
+
+      <div className="container">
+        <div className="ac-page">
+          {/* Фильтры */}
+          <div className="ac-filters">
+            <button
+              className={`ac-filter ${filter === 'ALL' ? 'active' : ''}`}
+              onClick={() => setFilter('ALL')}
+            >
+              Все <span className="ac-filter-count">{counts.ALL}</span>
+            </button>
+            <button
+              className={`ac-filter ${filter === 'IN_PROGRESS' ? 'active' : ''}`}
+              onClick={() => setFilter('IN_PROGRESS')}
+            >
+              В работе <span className="ac-filter-count">{counts.IN_PROGRESS}</span>
+            </button>
+            <button
+              className={`ac-filter ${filter === 'COMPLETED' ? 'active' : ''}`}
+              onClick={() => setFilter('COMPLETED')}
+            >
+              Завершены <span className="ac-filter-count">{counts.COMPLETED}</span>
+            </button>
+          </div>
+
+          {/* Список */}
+          {loading && (
+            <div className="ac-loading">
+              {[1,2,3].map(i => (
+                <div key={i} className="skeleton" style={{ height: 120, borderRadius: 16 }} />
+              ))}
+            </div>
+          )}
+
+          {!loading && filteredDeals.length === 0 && (
+            <div className="ac-empty">
+              <span style={{ fontSize: 48 }}>👥</span>
+              <h3>Нет клиентов</h3>
+              <p>Откликайтесь на заявки чтобы получить заказы</p>
+              <Link to="/find-work" className="btn btn-primary">
+                Найти работу
+              </Link>
+            </div>
+          )}
+
+          <div className="ac-list">
+            {filteredDeals.map(deal => {
+              const st = STATUS_MAP[deal.status] || { label: deal.status, emoji: '📋', color: '#9ca3af' };
+              const isInProgress = deal.status === 'IN_PROGRESS';
+              const customerConfirmed = deal.customerConfirmed;
+              const workerConfirmed = deal.workerConfirmed;
+
+              return (
+                <div key={deal.id} className="ac-card">
+                  <div className="ac-card-header">
+                    <div className="ac-client-info">
+                      <div className="ac-client-avatar">
+                        {deal.customerName?.[0]?.toUpperCase() || 'К'}
+                      </div>
+                      <div>
+                        <div className="ac-client-name">{deal.customerName || 'Клиент'}</div>
+                        <div className="ac-deal-title">{deal.title || 'Заказ'}</div>
+                      </div>
+                    </div>
+                    <div
+                      className="ac-status-badge"
+                      style={{ background: `${st.color}22`, color: st.color }}
+                    >
+                      {st.emoji} {st.label}
+                    </div>
+                  </div>
+
+                  {deal.description && (
+                    <div className="ac-deal-desc">{deal.description}</div>
+                  )}
+
+                  <div className="ac-deal-meta">
+                    {deal.category && <span>📂 {deal.category}</span>}
+                    {deal.agreedPrice && (
+                      <span className="ac-price">💰 {Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</span>
+                    )}
+                    {deal.createdAt && (
+                      <span>📅 {new Date(deal.createdAt).toLocaleDateString('ru-RU')}</span>
+                    )}
+                  </div>
+
+                  {/* Прогресс подтверждения */}
+                  {isInProgress && (
+                    <div className="ac-progress">
+                      <div className={`ac-progress-item ${customerConfirmed ? 'done' : ''}`}>
+                        {customerConfirmed ? '✅' : '⏳'} Заказчик
+                      </div>
+                      <div className="ac-progress-arrow">→</div>
+                      <div className={`ac-progress-item ${workerConfirmed ? 'done' : ''}`}>
+                        {workerConfirmed ? '✅' : '⏳'} Вы
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Действия */}
+                  <div className="ac-actions">
+                    <Link
+                      to={`/deals`}
+                      className="btn btn-outline btn-sm"
+                      onClick={() => {
+                        // Открываем детали сделки
+                        window.location.href = `/deals?dealId=${deal.id}`;
+                      }}
+                    >
+                      Подробнее
+                    </Link>
+                    <Link
+                      to={`/chat/${deal.customerId}`}
+                      className="btn btn-primary btn-sm"
+                    >
+                      💬 Написать
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

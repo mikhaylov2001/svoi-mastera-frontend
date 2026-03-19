@@ -206,8 +206,6 @@ function Header() {
                     </div>
                   )}
                 </div>
-
-              </>
             ) : (
               <>
                 <Link to="/login"    className="header-nav-link">Войти</Link>
