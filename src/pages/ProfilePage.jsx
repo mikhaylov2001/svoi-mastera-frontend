@@ -166,8 +166,8 @@ export default function ProfilePage() {
             // Показываем кнопку отзыва только если:
             // 1. Сделка завершена
             // 2. Есть мастер
-            // 3. Ещё не оставлен отзыв (deal.reviewId === null)
-            const canReview = deal.status === 'COMPLETED' && deal.workerName && !deal.reviewId;
+            // 3. Ещё НЕ оставлен отзыв
+            const canReview = deal.status === 'COMPLETED' && deal.workerName && !deal.hasReview;
 
             return (
               <div className="profile-deal-row" key={deal.id}>
@@ -188,7 +188,7 @@ export default function ProfilePage() {
                       Оставить отзыв
                     </button>
                   )}
-                  {deal.reviewId && (
+                  {deal.hasReview && (
                     <span className="review-left-badge">✓ Отзыв оставлен</span>
                   )}
                 </div>
