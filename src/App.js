@@ -20,8 +20,6 @@ import FindMasterPage from './pages/FindMasterPage';
 import ChatPage from './pages/ChatPage';
 import NotFoundPage from './pages/NotFoundPage';
 import './App.css';
-import NotificationsSettingsPage from './pages/NotificationsSettingsPage';
-import PersonalSettingsPage from './pages/PersonalSettingsPage';
 
 function ProtectedRoute({ children, workerOnly = false }) {
   const { userId, userRole } = useAuth();
@@ -55,8 +53,6 @@ function AppContent() {
           <Route path="/chat"            element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/chat/:partnerId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/worker"          element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
-          <Route path="/settings/notifications" element={<PrivateRoute><NotificationsSettingsPage /></PrivateRoute>} />
-          <Route path="/settings/personal" element={<PrivateRoute><PersonalSettingsPage /></PrivateRoute>} />
           <Route path="*"                element={<NotFoundPage />} />
         </Routes>
       </main>
