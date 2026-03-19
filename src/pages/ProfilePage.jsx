@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaMapMarkerAlt, FaCalendarAlt, FaBell, FaUser, FaCreditCard, FaTools, FaClipboardList, FaCheckCircle, FaClock } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaBell, FaUser, FaCreditCard, FaClipboardList, FaCheckCircle, FaClock } from 'react-icons/fa';
 import { getCustomerProfile, getMyDeals, createReview } from '../api';
 import { useAuth } from '../context/AuthContext';
 import './ProfilePage.css';
@@ -96,39 +96,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* ✅ НОВОЕ: Быстрые действия */}
-        <div className="quick-actions-grid">
-          <Link to="/categories" className="quick-action-card">
-            <div className="quick-action-icon" style={{ background: 'linear-gradient(135deg, #e8410a 0%, #ff7043 100%)' }}>
-              <FaTools />
-            </div>
-            <div>
-              <div className="quick-action-title">Найти мастера</div>
-              <div className="quick-action-desc">Создайте новую заявку</div>
-            </div>
-          </Link>
-
-          <Link to="/deals" className="quick-action-card">
-            <div className="quick-action-icon" style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)' }}>
-              <FaClipboardList />
-            </div>
-            <div>
-              <div className="quick-action-title">Мои сделки</div>
-              <div className="quick-action-desc">{stats.active} активных</div>
-            </div>
-          </Link>
-
-          <Link to="/chat" className="quick-action-card">
-            <div className="quick-action-icon" style={{ background: 'linear-gradient(135deg, #22c55e 0%, #4ade80 100%)' }}>
-              💬
-            </div>
-            <div>
-              <div className="quick-action-title">Сообщения</div>
-              <div className="quick-action-desc">Чат с мастерами</div>
-            </div>
-          </Link>
-        </div>
-
         {/* Stats Bar */}
         <div className="profile-stats-bar">
           {[
@@ -146,32 +113,7 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        {/* ✅ НОВАЯ СЕКЦИЯ: Быстрые действия */}
-        <div className="profile-quick-actions">
-          <Link to="/categories" className="quick-action-card quick-action-primary">
-            <div className="quick-action-icon">🔍</div>
-            <div className="quick-action-content">
-              <div className="quick-action-title">Найти мастера</div>
-              <div className="quick-action-desc">Создайте заявку и получите предложения</div>
-            </div>
-          </Link>
-          <Link to="/deals" className="quick-action-card">
-            <div className="quick-action-icon">📋</div>
-            <div className="quick-action-content">
-              <div className="quick-action-title">Мои сделки</div>
-              <div className="quick-action-desc">Все активные и завершённые</div>
-            </div>
-          </Link>
-          <Link to="/chat" className="quick-action-card">
-            <div className="quick-action-icon">💬</div>
-            <div className="quick-action-content">
-              <div className="quick-action-title">Сообщения</div>
-              <div className="quick-action-desc">Переписка с мастерами</div>
-            </div>
-          </Link>
-        </div>
-
-        {/* ✅ Быстрые действия - один ряд */}
+        {/* Быстрые действия */}
         <div className="profile-quick-actions">
           <Link to="/categories" className="quick-action-card quick-action-primary">
             <div className="quick-action-icon">🔍</div>
@@ -247,7 +189,7 @@ export default function ProfilePage() {
           })}
         </div>
 
-        {/* Settings placeholder */}
+        {/* Settings */}
         <div className="profile-section">
           <h2 className="profile-section-title">Настройки</h2>
           <div className="profile-settings-grid">
@@ -277,7 +219,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* ─── Review Modal ─── */}
+      {/* Review Modal */}
       {reviewDeal && (
         <div className="modal-overlay" onClick={() => setReviewDeal(null)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
