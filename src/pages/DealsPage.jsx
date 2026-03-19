@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   getMyDeals, completeDeal,
   getMyJobRequests, getOffersForRequest, acceptOffer, getCategories,
+  createReview,
 } from '../api';
 import { useAuth } from '../context/AuthContext';
 import './DealsPage.css';
@@ -56,6 +57,11 @@ export default function DealsPage() {
 
   const [actionId, setActionId] = useState(null);
 
+  // ✅ ДОБАВЛЕНО: Стейты для отзыва
+  const [reviewDeal, setReviewDeal] = useState(null);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
+  const [reviewStatus, setReviewStatus] = useState('idle');
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -104,6 +110,20 @@ export default function DealsPage() {
     setActionId(dealId);
     try { await completeDeal(userId, dealId); await load(); } catch {}
     setActionId(null);
+  };
+
+  // ✅ ДОБАВЛЕНО: Обработчик отправки отзыва
+  const handleReviewSubmit = async () => {
+    if (!reviewDeal) return;
+    setReviewStatus('sending');
+    try {
+      await createReview(userId, reviewDeal.id, reviewForm);
+      setReviewStatus('done');
+      await load();
+    } catch (err) {
+      console.error(err);
+      setReviewStatus('error');
+    }
   };
 
   const isCust = (d) => d.customerId === userId;
@@ -217,11 +237,28 @@ export default function DealsPage() {
                 </div>
               )}
               {dealDetail.status === 'COMPLETED' && (
-                <div className="dp-state">
-                  <span>✅</span>
-                  <h3>Сделка завершена</h3>
-                  <p>Обе стороны подтвердили выполнение</p>
-                </div>
+                <>
+                  <div className="dp-state">
+                    <span>✅</span>
+                    <h3>Сделка завершена</h3>
+                    <p>Обе стороны подтвердили выполнение</p>
+                  </div>
+
+                  {/* ✅ ДОБАВЛЕНО: Кнопка отзыва */}
+                  {im && !dealDetail.hasReview && (
+                    <button
+                      className="dp-review-btn"
+                      onClick={() => setReviewDeal(dealDetail)}
+                    >
+                      ⭐ Оставить отзыв мастеру
+                    </button>
+                  )}
+                  {im && dealDetail.hasReview && (
+                    <div className="dp-review-left">
+                      ✓ Вы оставили отзыв
+                    </div>
+                  )}
+                </>
               )}
               {dealDetail.status === 'IN_PROGRESS' && (
                 <>
@@ -571,6 +608,68 @@ export default function DealsPage() {
           </>
         )}
       </div>
+
+      {/* ✅ ДОБАВЛЕНО: Модалка отзыва */}
+      {reviewDeal && (
+        <div className="modal-overlay" onClick={() => setReviewDeal(null)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            {reviewStatus === 'done' ? (
+              <div className="modal-success">
+                <span>🎉</span>
+                <h3>Отзыв отправлен!</h3>
+                <button className="btn btn-primary btn-sm" onClick={() => setReviewDeal(null)}>Закрыть</button>
+              </div>
+            ) : (
+              <>
+                <h3 className="modal-title">Оставить отзыв</h3>
+                <p className="modal-sub">Мастер: {reviewDeal.workerName}</p>
+
+                <div className="form-field">
+                  <label className="form-label">Оценка</label>
+                  <div className="rating-row">
+                    {[1,2,3,4,5].map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        className={`rating-star ${reviewForm.rating >= s ? 'active' : ''}`}
+                        onClick={() => setReviewForm({...reviewForm, rating: s})}
+                      >★</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-field">
+                  <label className="form-label">Комментарий</label>
+                  <textarea
+                    className="form-input form-textarea"
+                    placeholder="Расскажите о работе мастера…"
+                    value={reviewForm.comment}
+                    onChange={e => setReviewForm({...reviewForm, comment: e.target.value})}
+                  />
+                </div>
+
+                {reviewStatus === 'error' && (
+                  <div className="cat-form-error">Не удалось отправить отзыв</div>
+                )}
+
+                <div style={{display:'flex',gap:10}}>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleReviewSubmit}
+                    disabled={reviewStatus === 'sending'}
+                  >
+                    {reviewStatus === 'sending' ? 'Отправляем…' : 'Отправить'}
+                  </button>
+                  <button type="button" className="btn btn-outline" onClick={() => setReviewDeal(null)}>
+                    Отмена
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
