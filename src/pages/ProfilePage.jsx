@@ -96,6 +96,39 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        {/* ✅ НОВОЕ: Быстрые действия */}
+        <div className="quick-actions-grid">
+          <Link to="/categories" className="quick-action-card">
+            <div className="quick-action-icon" style={{ background: 'linear-gradient(135deg, #e8410a 0%, #ff7043 100%)' }}>
+              <FaTools />
+            </div>
+            <div>
+              <div className="quick-action-title">Найти мастера</div>
+              <div className="quick-action-desc">Создайте новую заявку</div>
+            </div>
+          </Link>
+
+          <Link to="/deals" className="quick-action-card">
+            <div className="quick-action-icon" style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)' }}>
+              <FaClipboardList />
+            </div>
+            <div>
+              <div className="quick-action-title">Мои сделки</div>
+              <div className="quick-action-desc">{stats.active} активных</div>
+            </div>
+          </Link>
+
+          <Link to="/chat" className="quick-action-card">
+            <div className="quick-action-icon" style={{ background: 'linear-gradient(135deg, #22c55e 0%, #4ade80 100%)' }}>
+              💬
+            </div>
+            <div>
+              <div className="quick-action-title">Сообщения</div>
+              <div className="quick-action-desc">Чат с мастерами</div>
+            </div>
+          </Link>
+        </div>
+
         {/* Stats Bar */}
         <div className="profile-stats-bar">
           {[
@@ -111,6 +144,56 @@ export default function ProfilePage() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* ✅ НОВАЯ СЕКЦИЯ: Быстрые действия */}
+        <div className="profile-quick-actions">
+          <Link to="/categories" className="quick-action-card quick-action-primary">
+            <div className="quick-action-icon">🔍</div>
+            <div className="quick-action-content">
+              <div className="quick-action-title">Найти мастера</div>
+              <div className="quick-action-desc">Создайте заявку и получите предложения</div>
+            </div>
+          </Link>
+          <Link to="/deals" className="quick-action-card">
+            <div className="quick-action-icon">📋</div>
+            <div className="quick-action-content">
+              <div className="quick-action-title">Мои сделки</div>
+              <div className="quick-action-desc">Все активные и завершённые</div>
+            </div>
+          </Link>
+          <Link to="/chat" className="quick-action-card">
+            <div className="quick-action-icon">💬</div>
+            <div className="quick-action-content">
+              <div className="quick-action-title">Сообщения</div>
+              <div className="quick-action-desc">Переписка с мастерами</div>
+            </div>
+          </Link>
+        </div>
+
+        {/* ✅ НОВАЯ СЕКЦИЯ: Быстрые действия */}
+        <div className="profile-quick-actions">
+          <Link to="/categories" className="quick-action-card quick-action-primary">
+            <div className="quick-action-icon">🔍</div>
+            <div className="quick-action-content">
+              <div className="quick-action-title">Найти мастера</div>
+              <div className="quick-action-desc">Создайте заявку и получите предложения</div>
+            </div>
+          </Link>
+          <Link to="/deals" className="quick-action-card">
+            <div className="quick-action-icon">📋</div>
+            <div className="quick-action-content">
+              <div className="quick-action-title">Мои сделки</div>
+              <div className="quick-action-desc">Все активные и завершённые</div>
+            </div>
+          </Link>
+          <Link to="/chat" className="quick-action-card">
+            <div className="quick-action-icon">💬</div>
+            <div className="quick-action-content">
+              <div className="quick-action-title">Сообщения</div>
+              <div className="quick-action-desc">Переписка с мастерами</div>
+            </div>
+          </Link>
         </div>
 
         {error && <div className="profile-error" style={{ padding: '12px 16px', background: '#fee2e2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 10, marginBottom: 16 }}>{error}</div>}
@@ -144,13 +227,21 @@ export default function ProfilePage() {
                 <div className="profile-deal-info">
                   <div className="profile-deal-title">{deal.title || 'Задача'}</div>
                   {deal.workerName && <div className="profile-deal-worker"><FaUser /> {deal.workerName}</div>}
+                  {deal.description && <div className="profile-deal-desc">{deal.description}</div>}
+                  {deal.createdAt && (
+                    <div className="profile-deal-date">
+                      <FaCalendarAlt /> {new Date(deal.createdAt).toLocaleDateString('ru-RU')}
+                    </div>
+                  )}
                 </div>
-                <span className={`badge ${st.cls}`}>{st.label}</span>
-                {canReview && (
-                  <button className="btn btn-outline btn-sm" onClick={() => { setReviewDeal(deal); setReviewForm({rating:5,comment:''}); setReviewStatus('idle'); }}>
-                    <FaBell /> Отзыв
-                  </button>
-                )}
+                <div className="profile-deal-actions">
+                  <span className={`badge ${st.cls}`}>{st.label}</span>
+                  {canReview && (
+                    <button className="btn btn-outline btn-sm" onClick={() => { setReviewDeal(deal); setReviewForm({rating:5,comment:''}); setReviewStatus('idle'); }}>
+                      Оставить отзыв
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -160,26 +251,27 @@ export default function ProfilePage() {
         <div className="profile-section">
           <h2 className="profile-section-title">Настройки</h2>
           <div className="profile-settings-grid">
-            <div className="profile-settings-item">
+            <Link to="/settings/notifications" className="profile-settings-item profile-settings-clickable">
               <FaBell className="profile-settings-icon" />
               <div>
                 <div className="profile-settings-title">Уведомления</div>
                 <div className="profile-settings-desc">Настройте получение уведомлений о сделках</div>
               </div>
-            </div>
-            <div className="profile-settings-item">
+            </Link>
+            <Link to="/settings/personal" className="profile-settings-item profile-settings-clickable">
               <FaUser className="profile-settings-icon" />
               <div>
                 <div className="profile-settings-title">Личные данные</div>
                 <div className="profile-settings-desc">Измените имя, контактную информацию</div>
               </div>
-            </div>
-            <div className="profile-settings-item">
+            </Link>
+            <div className="profile-settings-item profile-settings-disabled">
               <FaCreditCard className="profile-settings-icon" />
               <div>
                 <div className="profile-settings-title">Платежные данные</div>
-                <div className="profile-settings-desc">Управляйте способами оплаты</div>
+                <div className="profile-settings-desc">Скоро появится</div>
               </div>
+              <span className="settings-badge">Скоро</span>
             </div>
           </div>
         </div>
