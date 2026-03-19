@@ -29,13 +29,14 @@ export default function PersonalSettingsPage() {
       const data = await getUserProfile(userId);
       setForm(prev => ({
         ...prev,
-        displayName: data.displayName || '',
+        displayName: data.name || '',
         email: data.email || '',
         phone: data.phone || '',
         city: data.city || '',
       }));
     } catch (err) {
       console.error('Failed to load profile:', err);
+      setError('Не удалось загрузить профиль');
     } finally {
       setLoading(false);
     }
@@ -73,8 +74,7 @@ export default function PersonalSettingsPage() {
     try {
       // Сохраняем профиль
       await updateUserProfile(userId, {
-        displayName: form.displayName,
-        email: form.email,
+        name: form.displayName,
         phone: form.phone,
         city: form.city,
       });
@@ -146,9 +146,13 @@ export default function PersonalSettingsPage() {
                   name="email"
                   className="form-input"
                   value={form.email}
-                  onChange={handleChange}
+                  disabled
                   placeholder="email@example.com"
+                  style={{ background: '#f9fafb', cursor: 'not-allowed' }}
                 />
+                <small style={{ fontSize: 12, color: '#9ca3af', marginTop: 4, display: 'block' }}>
+                  Email нельзя изменить
+                </small>
               </div>
 
               <div className="form-field">
