@@ -5,15 +5,15 @@ import { getMyDeals, getMyJobRequests } from '../api';
 import './CustomerProfilePage.css';
 
 export default function CustomerProfilePage() {
-  const { userId, userName, role, logout } = useAuth();
+  const { userId, userName, userRole, logout } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if worker
   useEffect(() => {
-    if (role && role === 'WORKER') {
+    if (userRole && userRole === 'WORKER') {
       navigate('/worker-profile');
     }
-  }, [role, navigate]);
+  }, [userRole, navigate]);
 
   const [deals, setDeals] = useState([]);
   const [requests, setRequests] = useState([]);
