@@ -120,7 +120,7 @@ export function LoginPage() {
       }
 
       login(userId, userRole, userName);
-      navigate(userRole === 'WORKER' ? '/worker' : '/profile');
+      navigate(userRole === 'WORKER' ? '/worker-profile' : '/profile');
     } catch (err) {
       setError(err.message || 'Неверный email или пароль.');
       setLoading(false);
@@ -268,7 +268,7 @@ export function RegisterPage() {
       }
 
       login(userId, userRole, userName);
-      navigate(userRole === 'WORKER' ? '/worker' : '/profile');
+      navigate(userRole === 'WORKER' ? '/worker-profile' : '/profile');
     } catch (err) {
       setError(err.message || 'Не удалось создать аккаунт. Попробуйте снова.');
       setLoading(false);
