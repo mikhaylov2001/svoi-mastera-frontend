@@ -1,46 +1,53 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getMyDeals, getMyJobRequests } from '../api';
-import './CustomerProfilePage.css';
+import { getUnreadCount } from '../api';
+import './Header.css';
 
-export default function CustomerProfilePage() {
-  const { userId, userName, userRole, logout } = useAuth();
+function SearchIcon() {
+  return (
+    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/>
+      <path d="m21 21-4.35-4.35"/>
+    </svg>
+  );
+}
+
+function LogoIcon() {
+  return <span style={{ fontSize: 28 }}>🔨</span>;
+}
+
+function Header() {
+  const { userId, userRole, userName, logout } = useAuth();
   const navigate = useNavigate();
-
-  const [deals, setDeals] = useState([]);
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // Redirect if worker - BEFORE loading data!
-  useEffect(() => {
-    if (userRole === 'WORKER') {
-      navigate('/worker-profile', { replace: true });
-    }
-  }, [userRole, navigate]);
-
-  const initials = (userName || 'Профиль').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0,2);
+  const [menuOpen,       setMenuOpen]       = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchTerm,     setSearchTerm]     = useState('');
+  const [unread,         setUnread]         = useState(0);
 
   useEffect(() => {
-    // Don't load data if user is a worker
-    if (userRole === 'WORKER') return;
-    loadData();
-  }, [userId, userRole]);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [dealsData, requestsData] = await Promise.all([
-        getMyDeals(userId),
-        getMyJobRequests(userId),
-      ]);
-      setDeals(dealsData || []);
-      setRequests(requestsData || []);
-    } catch (err) {
-      console.error('Failed to load profile data:', err);
-    } finally {
-      setLoading(false);
+    let iv;
+    async function loadUnread() {
+      if (!userId) { setUnread(0); return; }
+      try {
+        const count = await getUnreadCount(userId);
+        setUnread(count || 0);
+      } catch {
+        setUnread(0);
+      }
     }
+    loadUnread();
+    iv = setInterval(loadUnread, 10000);
+    return () => clearInterval(iv);
+  }, [userId]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const q = searchTerm.trim();
+    if (!q) return;
+    navigate(`/services?q=${encodeURIComponent(q)}`);
+    setSearchTerm('');
+    setMobileMenuOpen(false);
   };
 
   const handleLogout = () => {
@@ -48,144 +55,244 @@ export default function CustomerProfilePage() {
     navigate('/login');
   };
 
-  // Don't render anything if redirecting
-  if (userRole === 'WORKER') {
-    return null;
-  }
-
-  const activeDeals = deals.filter(d => d.status === 'IN_PROGRESS').length;
-  const completedDeals = deals.filter(d => d.status === 'COMPLETED').length;
-  const openRequests = requests.filter(r => r.status === 'OPEN').length;
+  const initials = userName
+    ? userName.trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2)
+    : 'SM';
 
   return (
-    <div>
-      <div className="page-header-bar">
-        <div className="container">
-          <h1>Мой профиль</h1>
-          <p>Управление заявками и сделками</p>
-        </div>
-      </div>
-
+    <header className="header">
       <div className="container">
-        <div className="cp-layout">
-          {/* Sidebar */}
-          <div className="cp-card">
-            <div className="cp-avatar">{initials}</div>
-            <div className="cp-name">{userName || 'Профиль'}</div>
-            <div className="cp-role-badge">Заказчик</div>
+        <div className="header-inner">
 
-            <div className="cp-stats">
-              <div className="cp-stat">
-                <div className="cp-stat-num">{activeDeals}</div>
-                <div className="cp-stat-lbl">Активных</div>
-              </div>
-              <div className="cp-stat">
-                <div className="cp-stat-num">{completedDeals}</div>
-                <div className="cp-stat-lbl">Завершено</div>
-              </div>
-              <div className="cp-stat">
-                <div className="cp-stat-num">{openRequests}</div>
-                <div className="cp-stat-lbl">Заявок</div>
-              </div>
-            </div>
+          {/* ── LOGO ── */}
+          <Link to="/" className="header-logo">
+            <LogoIcon />
+            <span className="header-logo-text">СвоиМастера</span>
+          </Link>
 
-            <Link to="/settings/personal" className="btn btn-outline btn-block">
-              ⚙️ Настройки
-            </Link>
-            <button onClick={handleLogout} className="btn btn-outline btn-block cp-logout-btn">
-              Выйти
-            </button>
-          </div>
+          {/* ── BURGER ── */}
+          <button
+            className={`header-burger ${mobileMenuOpen ? 'open' : ''}`}
+            onClick={() => setMobileMenuOpen(prev => !prev)}
+            aria-label="Меню"
+            type="button"
+          >
+            <span /><span /><span />
+          </button>
 
-          {/* Main content */}
-          <div className="cp-main">
-            <h2 className="cp-section-title">Быстрые действия</h2>
+          {/* ── SEARCH ── */}
+          <form onSubmit={handleSearchSubmit} className="header-search">
+            <span className="header-search-icon"><SearchIcon /></span>
+            <input
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Найти мастера или услугу…"
+              aria-label="Поиск"
+            />
+          </form>
 
-            <div className="cp-actions">
-              <Link to="/categories" className="cp-action-card">
-                <span className="cp-action-icon">🔍</span>
-                <div>
-                  <div className="cp-action-title">Найти мастера</div>
-                  <div className="cp-action-desc">Выберите категорию услуг</div>
-                </div>
-              </Link>
+          {/* ── NAV ── */}
+          <nav className="header-nav">
+            <NavLink
+              to="/" end
+              className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+            >
+              Главная
+            </NavLink>
 
-              <Link to="/deals" className="cp-action-card">
-                <span className="cp-action-icon">📋</span>
-                <div>
-                  <div className="cp-action-title">Мои сделки</div>
-                  <div className="cp-action-desc">Активные заказы: {activeDeals}</div>
-                </div>
-              </Link>
-
-              <Link to="/chat" className="cp-action-card">
-                <span className="cp-action-icon">💬</span>
-                <div>
-                  <div className="cp-action-title">Сообщения</div>
-                  <div className="cp-action-desc">Чат с мастерами</div>
-                </div>
-              </Link>
-            </div>
-
-            {/* Recent deals */}
-            {!loading && deals.length > 0 && (
+            {userId && userRole === 'WORKER' ? (
               <>
-                <h2 className="cp-section-title">Недавние сделки</h2>
-                <div className="cp-deals-list">
-                  {deals.slice(0, 3).map(deal => (
-                    <Link
-                      key={deal.id}
-                      to={`/deals?dealId=${deal.id}`}
-                      className="cp-deal-card"
-                    >
-                      <div className="cp-deal-title">{deal.title || 'Сделка'}</div>
-                      <div className="cp-deal-meta">
-                        {deal.workerName && <span>Мастер: {deal.workerName}</span>}
-                        {deal.agreedPrice && (
-                          <span className="cp-deal-price">
-                            {Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽
-                          </span>
-                        )}
-                      </div>
-                      <div
-                        className="cp-deal-status"
-                        style={{
-                          background: deal.status === 'COMPLETED' ? '#dcfce7' :
-                                     deal.status === 'IN_PROGRESS' ? '#fef3c7' : '#e0e7ff',
-                          color: deal.status === 'COMPLETED' ? '#16a34a' :
-                                 deal.status === 'IN_PROGRESS' ? '#d97706' : '#4f46e5'
-                        }}
-                      >
-                        {deal.status === 'COMPLETED' ? '✅ Завершена' :
-                         deal.status === 'IN_PROGRESS' ? '⚙️ В работе' : '📋 Новая'}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+                {/* ══ НАВИГАЦИЯ ДЛЯ МАСТЕРА ══ */}
+                <NavLink
+                  to="/find-work"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Найти работу
+                </NavLink>
+                <NavLink
+                  to="/active-clients"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Активные клиенты
+                </NavLink>
+                <NavLink
+                  to="/chat"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Сообщения
+                  {unread > 0 && (
+                    <span className="header-unread-badge">{unread}</span>
+                  )}
+                </NavLink>
+                <NavLink
+                  to="/deals"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Мои сделки
+                </NavLink>
+              </>
+            ) : userId ? (
+              <>
+                {/* ══ НАВИГАЦИЯ ДЛЯ ЗАКАЗЧИКА ══ */}
+                <NavLink
+                  to="/categories"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Найти мастера
+                </NavLink>
+                <NavLink
+                  to="/find-master"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Активные мастера
+                </NavLink>
+                <NavLink
+                  to="/chat"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Сообщения
+                  {unread > 0 && (
+                    <span className="header-unread-badge">{unread}</span>
+                  )}
+                </NavLink>
+                <NavLink
+                  to="/deals"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Мои сделки
+                </NavLink>
+              </>
+            ) : (
+              <>
+                {/* ══ ДЛЯ НЕАВТОРИЗОВАННЫХ ══ */}
+                <NavLink
+                  to="/categories"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Найти мастера
+                </NavLink>
               </>
             )}
 
-            {loading && (
-              <div className="cp-loading">
-                <div className="skeleton" style={{ height: 80, borderRadius: 16, marginBottom: 12 }} />
-                <div className="skeleton" style={{ height: 80, borderRadius: 16, marginBottom: 12 }} />
-                <div className="skeleton" style={{ height: 80, borderRadius: 16 }} />
-              </div>
-            )}
+            {userId ? (
+                <div
+                  className="header-user"
+                  onClick={() => setMenuOpen(v => !v)}
+                  onBlur={() => setTimeout(() => setMenuOpen(false), 150)}
+                  tabIndex={0}
+                >
+                  <div className="header-avatar">{initials}</div>
 
-            {!loading && deals.length === 0 && (
-              <div className="cp-empty">
-                <span style={{ fontSize: 48 }}>📋</span>
-                <h3>Нет сделок</h3>
-                <p>Найдите мастера и создайте первую заявку</p>
-                <Link to="/categories" className="btn btn-primary">
-                  Найти мастера
-                </Link>
-              </div>
+                  {menuOpen && (
+                    <div className="header-dropdown">
+                      <div className="header-dropdown-name">{userName || 'Профиль'}</div>
+                      <div className="header-dropdown-role">
+                        {userRole === 'WORKER' ? 'Мастер' : 'Заказчик'}
+                      </div>
+                      <div className="header-dropdown-divider" />
+                      <Link
+                        to="/profile"
+                        className="header-dropdown-item"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Мой профиль
+                      </Link>
+                      <button
+                        className="header-dropdown-item header-dropdown-logout"
+                        onClick={handleLogout}
+                      >
+                        Выйти
+                      </button>
+                    </div>
+                  )}
+                </div>
+            ) : (
+              <>
+                <Link to="/login"    className="header-nav-link">Войти</Link>
+                <Link to="/register" className="btn btn-primary btn-sm">Регистрация</Link>
+              </>
             )}
-          </div>
+          </nav>
+
+          {/* ── MOBILE MENU ── */}
+          {mobileMenuOpen && (
+            <>
+              <div
+                className="header-mobile-backdrop"
+                onClick={() => setMobileMenuOpen(false)}
+              />
+              <div className="header-mobile-menu">
+                <NavLink to="/" end className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                  Главная
+                </NavLink>
+
+                {userId && userRole === 'WORKER' ? (
+                  <>
+                    {/* ══ МОБИЛЬНОЕ МЕНЮ МАСТЕРА ══ */}
+                    <NavLink to="/find-work" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Найти работу
+                    </NavLink>
+                    <NavLink to="/active-clients" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Активные клиенты
+                    </NavLink>
+                    <NavLink to="/chat" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Сообщения {unread > 0 && `• ${unread}`}
+                    </NavLink>
+                    <NavLink to="/deals" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Мои сделки
+                    </NavLink>
+                  </>
+                ) : userId ? (
+                  <>
+                    {/* ══ МОБИЛЬНОЕ МЕНЮ ЗАКАЗЧИКА ══ */}
+                    <NavLink to="/categories" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Найти мастера
+                    </NavLink>
+                    <NavLink to="/find-master" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Активные мастера
+                    </NavLink>
+                    <NavLink to="/chat" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Сообщения {unread > 0 && `• ${unread}`}
+                    </NavLink>
+                    <NavLink to="/deals" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Мои сделки
+                    </NavLink>
+                  </>
+                ) : (
+                  <NavLink to="/categories" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                    Найти мастера
+                  </NavLink>
+                )}
+
+                {userId && (
+                  <>
+                    <NavLink to="/profile" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Профиль
+                    </NavLink>
+                    <button
+                      type="button"
+                      className="header-mobile-link header-mobile-logout"
+                      onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                    >
+                      Выйти
+                    </button>
+                  </>
+                )}
+
+                {!userId && (
+                  <>
+                    <Link to="/login"    className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Войти</Link>
+                    <Link to="/register" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Регистрация</Link>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+
         </div>
       </div>
-    </div>
+    </header>
   );
 }
+
+export default Header;
