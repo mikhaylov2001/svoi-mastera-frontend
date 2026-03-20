@@ -18,7 +18,7 @@ function LogoIcon() {
 }
 
 function Header() {
-  const { userId, role, userName, logout } = useAuth();
+  const { userId, userRole, userName, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen,       setMenuOpen]       = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -100,7 +100,7 @@ function Header() {
               Главная
             </NavLink>
 
-            {userId && role === 'WORKER' ? (
+            {userId && userRole === 'WORKER' ? (
               <>
                 {/* ══ НАВИГАЦИЯ ДЛЯ МАСТЕРА ══ */}
                 <NavLink
@@ -226,7 +226,7 @@ function Header() {
                   Главная
                 </NavLink>
 
-                {userId && role === 'WORKER' ? (
+                {userId && userRole === 'WORKER' ? (
                   <>
                     {/* ══ МОБИЛЬНОЕ МЕНЮ МАСТЕРА ══ */}
                     <NavLink to="/find-work" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>

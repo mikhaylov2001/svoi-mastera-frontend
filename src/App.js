@@ -11,7 +11,7 @@ import ServicesPage from './pages/ServicesPage';
 import ManageServicesPage from './pages/ManageServicesPage';
 import ActiveClientsPage from './pages/ActiveClientsPage';
 import { LoginPage, RegisterPage } from './pages/AuthPages';
-import ProfilePage from './pages/ProfilePage';
+import CustomerProfilePage from './pages/CustomerProfilePage';
 import WorkerProfilePage from './pages/WorkerProfilePage';
 import PublicWorkerProfilePage from './pages/PublicWorkerProfilePage';
 import DealsPage from './pages/DealsPage';
@@ -44,7 +44,8 @@ function AppContent() {
           <Route path="/categories/:slug"      element={<CategoryPage />} />
           <Route path="/login"           element={<LoginPage />} />
           <Route path="/register"        element={<RegisterPage />} />
-          <Route path="/profile"         element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/profile"         element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
+          <Route path="/worker-profile"  element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
           <Route path="/deals"           element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
           <Route path="/find-work"       element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
           <Route path="/find-master"     element={<FindMasterPage />} />
@@ -54,7 +55,6 @@ function AppContent() {
           <Route path="/active-clients"  element={<ProtectedRoute workerOnly><ActiveClientsPage /></ProtectedRoute>} />
           <Route path="/chat"            element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/chat/:partnerId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-          <Route path="/worker"          element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
           <Route path="/settings/notifications" element={<ProtectedRoute><NotificationsSettingsPage /></ProtectedRoute>} />
           <Route path="/settings/personal" element={<ProtectedRoute><PersonalSettingsPage /></ProtectedRoute>} />
           <Route path="*"                element={<NotFoundPage />} />
