@@ -8,22 +8,24 @@ export default function CustomerProfilePage() {
   const { userId, userName, userRole, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if worker
-  useEffect(() => {
-    if (userRole && userRole === 'WORKER') {
-      navigate('/worker-profile');
-    }
-  }, [userRole, navigate]);
-
   const [deals, setDeals] = useState([]);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Redirect if worker - BEFORE loading data!
+  useEffect(() => {
+    if (userRole === 'WORKER') {
+      navigate('/worker-profile', { replace: true });
+    }
+  }, [userRole, navigate]);
+
   const initials = (userName || 'Профиль').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0,2);
 
   useEffect(() => {
+    // Don't load data if user is a worker
+    if (userRole === 'WORKER') return;
     loadData();
-  }, [userId]);
+  }, [userId, userRole]);
 
   const loadData = async () => {
     setLoading(true);
@@ -45,6 +47,11 @@ export default function CustomerProfilePage() {
     logout();
     navigate('/login');
   };
+
+  // Don't render anything if redirecting
+  if (userRole === 'WORKER') {
+    return null;
+  }
 
   const activeDeals = deals.filter(d => d.status === 'IN_PROGRESS').length;
   const completedDeals = deals.filter(d => d.status === 'COMPLETED').length;
