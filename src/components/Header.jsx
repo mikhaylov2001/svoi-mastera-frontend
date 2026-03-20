@@ -187,7 +187,7 @@ function Header() {
                     <div className="header-dropdown">
                       <div className="header-dropdown-name">{userName || 'Профиль'}</div>
                       <div className="header-dropdown-role">
-                        {role === 'WORKER' ? 'Мастер' : 'Заказчик'}
+                        {userRole === 'WORKER' ? 'Мастер' : 'Заказчик'}
                       </div>
                       <div className="header-dropdown-divider" />
                       <Link
