@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getMyDeals, getMyJobRequests } from '../api';
+import { getMyDeals } from '../api';
+import ReviewForm from '../components/ReviewForm';
 import './CustomerProfilePage.css';
 
 export default function CustomerProfilePage() {
@@ -9,8 +10,8 @@ export default function CustomerProfilePage() {
   const navigate = useNavigate();
 
   const [deals, setDeals] = useState([]);
-  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showReviewForm, setShowReviewForm] = useState(null); // dealId для которого показываем форму
 
   // Redirect if worker
   useEffect(() => {
@@ -23,20 +24,16 @@ export default function CustomerProfilePage() {
 
   useEffect(() => {
     if (userRole === 'WORKER') return;
-    loadData();
+    loadDeals();
   }, [userId, userRole]);
 
-  const loadData = async () => {
+  const loadDeals = async () => {
     setLoading(true);
     try {
-      const [dealsData, requestsData] = await Promise.all([
-        getMyDeals(userId),
-        getMyJobRequests(userId),
-      ]);
-      setDeals(dealsData || []);
-      setRequests(requestsData || []);
+      const data = await getMyDeals(userId);
+      setDeals(data || []);
     } catch (err) {
-      console.error('Failed to load profile data:', err);
+      console.error('Failed to load deals:', err);
     } finally {
       setLoading(false);
     }
@@ -55,7 +52,6 @@ export default function CustomerProfilePage() {
   const totalDeals = deals.length;
   const completedDeals = deals.filter(d => d.status === 'COMPLETED').length;
   const activeDeals = deals.filter(d => d.status === 'IN_PROGRESS').length;
-  const openRequests = requests.filter(r => r.status === 'OPEN').length;
 
   return (
     <div className="cp-page">
@@ -105,7 +101,7 @@ export default function CustomerProfilePage() {
           <div className="cp-stat-card">
             <div className="cp-stat-icon">🔍</div>
             <div className="cp-stat-content">
-              <div className="cp-stat-num">{openRequests}</div>
+              <div className="cp-stat-num">0</div>
               <div className="cp-stat-label">Заявок</div>
             </div>
           </div>
@@ -125,7 +121,7 @@ export default function CustomerProfilePage() {
             <div className="cp-action-icon">📋</div>
             <div className="cp-action-content">
               <div className="cp-action-title">Мои сделки</div>
-              <div className="cp-action-desc">Активные заказы: {activeDeals}</div>
+              <div className="cp-action-desc">Активных: {activeDeals}</div>
             </div>
           </Link>
 
@@ -150,36 +146,66 @@ export default function CustomerProfilePage() {
 
             <div className="cp-deals-list">
               {deals.slice(0, 3).map(deal => (
-                <Link
-                  key={deal.id}
-                  to={`/deals?dealId=${deal.id}`}
-                  className="cp-deal-item"
-                >
-                  <div className="cp-deal-header">
-                    <div className="cp-deal-title">{deal.title || 'Сделка'}</div>
-                    <div
-                      className="cp-deal-status"
-                      style={{
-                        background: deal.status === 'COMPLETED' ? '#dcfce7' : '#fef3c7',
-                        color: deal.status === 'COMPLETED' ? '#16a34a' : '#d97706'
-                      }}
-                    >
-                      {deal.status === 'COMPLETED' ? 'Завершена' : 'В работе'}
+                <div key={deal.id}>
+                  <Link
+                    to={`/deals?dealId=${deal.id}`}
+                    className="cp-deal-item"
+                  >
+                    <div className="cp-deal-header">
+                      <div className="cp-deal-title">{deal.title || 'Сделка'}</div>
+                      <div
+                        className="cp-deal-status"
+                        style={{
+                          background: deal.status === 'COMPLETED' ? '#dcfce7' : '#fef3c7',
+                          color: deal.status === 'COMPLETED' ? '#16a34a' : '#d97706'
+                        }}
+                      >
+                        {deal.status === 'COMPLETED' ? 'Завершена' : 'В работе'}
+                      </div>
                     </div>
-                  </div>
-                  <div className="cp-deal-meta">
-                    <span>👤 Мастер: {deal.workerName || 'fff'}</span>
-                    {deal.agreedPrice && (
-                      <span>💰 {Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</span>
-                    )}
-                  </div>
-                  <div className="cp-deal-meta">
-                    <span>📅 {new Date(deal.createdAt).toLocaleDateString('ru-RU')}</span>
-                    {deal.status === 'COMPLETED' && (
-                      <span className="cp-deal-review-badge">✓ Завершена</span>
-                    )}
-                  </div>
-                </Link>
+                    <div className="cp-deal-meta">
+                      <span>👤 Мастер: {deal.workerName || 'Мастер'}</span>
+                      {deal.agreedPrice && (
+                        <span>💰 {Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</span>
+                      )}
+                    </div>
+                    <div className="cp-deal-meta">
+                      <span>📅 {new Date(deal.createdAt).toLocaleDateString('ru-RU')}</span>
+                      {deal.status === 'COMPLETED' && (
+                        <span className="cp-deal-review-badge">✓ Завершена</span>
+                      )}
+                    </div>
+                  </Link>
+
+                  {/* Review Form for completed deals */}
+                  {deal.status === 'COMPLETED' && !deal.hasReview && (
+                    <div style={{ marginTop: '12px' }}>
+                      {showReviewForm === deal.id ? (
+                        <ReviewForm
+                          dealId={deal.id}
+                          onSuccess={() => {
+                            setShowReviewForm(null);
+                            loadDeals();
+                          }}
+                        />
+                      ) : (
+                        <button
+                          onClick={() => setShowReviewForm(deal.id)}
+                          className="btn btn-outline btn-sm"
+                          style={{ width: '100%' }}
+                        >
+                          ⭐ Оставить отзыв
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {deal.status === 'COMPLETED' && deal.hasReview && (
+                    <div className="cp-review-sent">
+                      ✅ Отзыв отправлен
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>

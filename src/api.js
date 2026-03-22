@@ -1,5 +1,5 @@
-const API_BASE = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:8080/api/v1' 
+const API_BASE = process.env.NODE_ENV === 'development'
+  ? 'http://localhost:8080/api/v1'
   : 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 function getFriendlyMessage(status, endpoint, serverMessage) {
@@ -117,10 +117,12 @@ export async function getCustomerProfile(userId) {
 // ── REVIEWS ──
 export async function createReview(userId, dealId, data) {
   return apiCall(`/deals/${dealId}/reviews`, {
-    method: 'POST', headers: { 'X-User-Id': userId },
-    body: JSON.stringify({ rating: data.rating, text: data.comment || '' }),
+    method: 'POST',
+    headers: { 'X-User-Id': userId },
+    body: JSON.stringify({ rating: data.rating, text: data.text || '' }),
   });
 }
+
 export async function getReviewsByWorker(workerId) {
   return apiCall(`/workers/${workerId}/reviews`);
 }

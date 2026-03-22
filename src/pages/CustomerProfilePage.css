@@ -416,3 +416,19 @@
     padding: 20px;
   }
 }
+
+.cp-review-sent {
+  background: var(--green-light);
+  color: var(--green);
+  padding: 12px 16px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 14px;
+}
