@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getMyDeals, getOpenJobRequestsForWorker } from '../api';
+import { getMyDeals, getReviewsByWorker } from '../api';
 import './WorkerProfilePage.css';
 
 export default function WorkerProfilePage() {
@@ -9,7 +9,7 @@ export default function WorkerProfilePage() {
   const navigate = useNavigate();
 
   const [deals, setDeals] = useState([]);
-  const [requests, setRequests] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Redirect if customer
@@ -29,12 +29,12 @@ export default function WorkerProfilePage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [dealsData, requestsData] = await Promise.all([
+      const [dealsData, reviewsData] = await Promise.all([
         getMyDeals(userId),
-        getOpenJobRequestsForWorker(userId),
+        getReviewsByWorker(userId),
       ]);
       setDeals(dealsData || []);
-      setRequests(requestsData || []);
+      setReviews(reviewsData || []);
     } catch (err) {
       console.error('Failed to load worker data:', err);
     } finally {
@@ -55,6 +55,9 @@ export default function WorkerProfilePage() {
   const totalDeals = deals.length;
   const completedDeals = deals.filter(d => d.status === 'COMPLETED').length;
   const inProgressDeals = deals.filter(d => d.status === 'IN_PROGRESS').length;
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : '0.0';
 
   return (
     <div className="wp-page">
@@ -101,10 +104,10 @@ export default function WorkerProfilePage() {
             </div>
           </div>
           <div className="wp-stat-card">
-            <div className="wp-stat-icon">⏱️</div>
+            <div className="wp-stat-icon">⭐</div>
             <div className="wp-stat-content">
-              <div className="wp-stat-num">{inProgressDeals}</div>
-              <div className="wp-stat-label">В работе</div>
+              <div className="wp-stat-num">{avgRating}</div>
+              <div className="wp-stat-label">Рейтинг</div>
             </div>
           </div>
         </div>
@@ -123,7 +126,7 @@ export default function WorkerProfilePage() {
             <div className="wp-action-icon">📋</div>
             <div className="wp-action-content">
               <div className="wp-action-title">Мои сделки</div>
-              <div className="wp-action-desc">Все активные и завершённые</div>
+              <div className="wp-action-desc">Активных: {inProgressDeals}</div>
             </div>
           </Link>
 
@@ -131,7 +134,7 @@ export default function WorkerProfilePage() {
             <div className="wp-action-icon">💬</div>
             <div className="wp-action-content">
               <div className="wp-action-title">Сообщения</div>
-              <div className="wp-action-desc">Переписка с мастерами</div>
+              <div className="wp-action-desc">Переписка с заказчиками</div>
             </div>
           </Link>
         </div>
@@ -140,7 +143,7 @@ export default function WorkerProfilePage() {
         {!loading && deals.length > 0 && (
           <div className="wp-section">
             <div className="wp-section-header">
-              <h2 className="wp-section-title">Последние сделки</h2>
+              <h2 className="wp-section-title">Недавние сделки</h2>
               <Link to="/deals" className="wp-section-link">
                 Все сделки →
               </Link>
@@ -173,11 +176,41 @@ export default function WorkerProfilePage() {
                   </div>
                   <div className="wp-deal-meta">
                     <span>📅 {new Date(deal.createdAt).toLocaleDateString('ru-RU')}</span>
-                    {deal.status === 'COMPLETED' && deal.reviewGiven && (
-                      <span className="wp-deal-review-badge">✓ Отзыв оставлен</span>
+                    {deal.status === 'COMPLETED' && (
+                      <span className="wp-deal-review-badge">✓ Завершена</span>
                     )}
                   </div>
                 </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Reviews */}
+        {!loading && reviews.length > 0 && (
+          <div className="wp-section">
+            <div className="wp-section-header">
+              <h2 className="wp-section-title">Мои отзывы ({reviews.length})</h2>
+            </div>
+
+            <div className="wp-reviews-list">
+              {reviews.slice(0, 5).map(review => (
+                <div key={review.id} className="wp-review-item">
+                  <div className="wp-review-header">
+                    <div className="wp-review-rating">
+                      {'⭐'.repeat(review.rating)}
+                    </div>
+                    <div className="wp-review-date">
+                      {new Date(review.createdAt).toLocaleDateString('ru-RU')}
+                    </div>
+                  </div>
+                  {review.text && (
+                    <div className="wp-review-text">{review.text}</div>
+                  )}
+                  <div className="wp-review-author">
+                    — {review.customerName || 'Заказчик'}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
