@@ -1,66 +1,111 @@
-/* Settings Page */
+/* ═══════════════════════════════════════════════════════════
+   SettingsPages - Единый стиль для всех страниц настроек
+   ═══════════════════════════════════════════════════════════ */
+
 .settings-page {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 24px 0 60px;
+  min-height: 100vh;
+  background: var(--gray-50);
+  padding-bottom: 64px;
+}
+
+/* ═══ Header ═══ */
+.settings-header {
+  background: #fff;
+  border-bottom: 1px solid var(--gray-200);
+  padding: 16px 0;
+}
+
+.settings-back {
+  background: none;
+  border: none;
+  color: var(--gray-500);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.settings-back:hover {
+  color: var(--gray-900);
+}
+
+/* ═══ Page Title ═══ */
+.settings-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--gray-900);
+  margin: 24px 0;
+}
+
+/* ═══ Settings Card ═══ */
+.settings-card {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
 }
 
 .settings-section {
-  background: #fff;
-  border: 1.5px solid var(--gray-200);
-  border-radius: var(--r-xl);
-  padding: 24px;
-  margin-bottom: 16px;
+  width: 100%;
 }
 
 .settings-section-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--gray-800);
-  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-700);
+  margin: 0 0 24px;
 }
 
-.settings-section-desc {
-  font-size: 13px;
-  color: var(--gray-500);
-  margin: 0 0 20px 0;
+/* ═══ Settings List (для уведомлений) ═══ */
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-/* Settings Item (для тогглов) */
 .settings-item {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 16px 0;
-  border-top: 1px solid var(--gray-100);
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--gray-200);
 }
 
-.settings-item:first-child {
-  border-top: none;
-  padding-top: 0;
+.settings-item:last-child {
+  border-bottom: none;
 }
 
 .settings-item-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   flex: 1;
-  min-width: 0;
+}
+
+.settings-item-icon {
+  font-size: 28px;
+  flex-shrink: 0;
 }
 
 .settings-item-title {
   font-size: 15px;
   font-weight: 700;
-  color: var(--gray-800);
+  color: var(--gray-900);
   margin-bottom: 4px;
 }
 
 .settings-item-desc {
   font-size: 13px;
   color: var(--gray-500);
-  line-height: 1.4;
 }
 
-/* Toggle Switch */
-.toggle-switch {
+/* ═══ Toggle Switch ═══ */
+.toggle {
   position: relative;
   display: inline-block;
   width: 48px;
@@ -68,7 +113,7 @@
   flex-shrink: 0;
 }
 
-.toggle-switch input {
+.toggle input {
   opacity: 0;
   width: 0;
   height: 0;
@@ -77,48 +122,46 @@
 .toggle-slider {
   position: absolute;
   cursor: pointer;
-  inset: 0;
-  background: var(--gray-300);
-  border-radius: 999px;
-  transition: all 0.3s;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--gray-300);
+  transition: 0.3s;
+  border-radius: 28px;
 }
 
 .toggle-slider:before {
-  content: '';
   position: absolute;
+  content: "";
   height: 22px;
   width: 22px;
   left: 3px;
   bottom: 3px;
-  background: #fff;
+  background-color: white;
+  transition: 0.3s;
   border-radius: 50%;
-  transition: all 0.3s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.toggle-switch input:checked + .toggle-slider {
-  background: var(--primary);
+.toggle input:checked + .toggle-slider {
+  background-color: var(--primary);
 }
 
-.toggle-switch input:checked + .toggle-slider:before {
+.toggle input:checked + .toggle-slider:before {
   transform: translateX(20px);
 }
 
-.toggle-switch input:disabled + .toggle-slider {
-  opacity: 0.5;
+.toggle input:disabled + .toggle-slider {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* Form Fields */
-.form-field {
+/* ═══ Form (для личных данных) ═══ */
+.form-group {
   margin-bottom: 20px;
 }
 
-.form-field:last-child {
-  margin-bottom: 0;
-}
-
-.form-label {
+.form-group label {
   display: block;
   font-size: 14px;
   font-weight: 700;
@@ -126,82 +169,83 @@
   margin-bottom: 8px;
 }
 
-.form-input {
+.form-control {
   width: 100%;
   padding: 12px 16px;
-  border: 1.5px solid var(--gray-300);
-  border-radius: var(--r-md);
   font-size: 15px;
-  font-weight: 500;
-  color: var(--gray-800);
+  color: var(--gray-900);
   background: #fff;
+  border: 1.5px solid var(--gray-300);
+  border-radius: 10px;
   transition: all 0.2s;
+  font-family: inherit;
 }
 
-.form-input::placeholder {
-  color: var(--gray-400);
-}
-
-.form-input:focus {
+.form-control:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(232, 65, 10, 0.1);
 }
 
-.form-input:disabled {
-  background: var(--gray-50);
+.form-control:disabled {
+  background: var(--gray-100);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.form-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-top: 6px;
+}
+
+/* ═══ Buttons ═══ */
+.btn {
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border: 2px solid var(--primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #d03909;
+  border-color: #d03909;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(232, 65, 10, 0.25);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* Actions */
-.settings-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px 0 0;
-}
-
-.settings-saved {
-  color: var(--green);
-  font-size: 14px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.settings-error {
-  background: var(--red-light);
-  border: 1px solid #f5c2c7;
-  border-radius: var(--r-md);
-  padding: 12px 16px;
-  font-size: 14px;
-  color: var(--red);
-  margin-bottom: 16px;
-}
-
-/* Responsive */
+/* ═══ Responsive ═══ */
 @media (max-width: 768px) {
-  .settings-page {
-    padding: 16px 0 40px;
+  .settings-card {
+    padding: 24px 20px;
   }
 
-  .settings-section {
-    padding: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .settings-section {
-    padding: 16px;
+  .settings-title {
+    font-size: 22px;
+    margin: 20px 0;
   }
 
   .settings-item {
-    padding: 12px 0;
+    padding: 16px 0;
   }
 
-  .form-input {
-    padding: 11px 14px;
-    font-size: 14px;
+  .settings-item-icon {
+    font-size: 24px;
   }
 }

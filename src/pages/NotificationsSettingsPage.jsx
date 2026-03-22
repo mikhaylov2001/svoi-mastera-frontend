@@ -1,53 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getNotificationSettings, updateNotificationSettings } from '../api';
-import './SettingsPage.css';
+import { useToast } from '../context/ToastContext';
+import './SettingsPages.css';
 
-export default function NotificationsSettingsPage() {
+export default function NotificationSettingsPage() {
   const { userId } = useAuth();
+  const navigate = useNavigate();
+  const { showToast } = useToast();
 
-  const [settings, setSettings] = useState({
-    emailNotifications: true,
-    pushNotifications: false,
-    newDeals: true,
-    dealUpdates: true,
-    messages: true,
-    reviews: true,
-  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+
+  const [settings, setSettings] = useState({
+    newDeals: true,
+    messages: true,
+    reviews: true,
+    system: true
+  });
 
   useEffect(() => {
     loadSettings();
   }, [userId]);
 
   const loadSettings = async () => {
+    setLoading(true);
     try {
       const data = await getNotificationSettings(userId);
-      setSettings(data);
+      setSettings({
+        newDeals: data.newDeals ?? true,
+        messages: data.messages ?? true,
+        reviews: data.reviews ?? true,
+        system: data.system ?? true
+      });
     } catch (err) {
       console.error('Failed to load settings:', err);
+      showToast('Не удалось загрузить настройки', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleToggle = (key) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
-  };
+  const handleToggle = async (key) => {
+    const newSettings = { ...settings, [key]: !settings[key] };
+    setSettings(newSettings);
 
-  const handleSave = async () => {
     setSaving(true);
-    setSaved(false);
-
     try {
-      await updateNotificationSettings(userId, settings);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      await updateNotificationSettings(userId, newSettings);
+      showToast('Настройки сохранены', 'success');
     } catch (err) {
-      console.error('Failed to save settings:', err);
+      console.error('Failed to update settings:', err);
+      setSettings(settings); // Откатываем изменения
+      showToast('Не удалось сохранить настройки', 'error');
     } finally {
       setSaving(false);
     }
@@ -55,131 +61,126 @@ export default function NotificationsSettingsPage() {
 
   if (loading) {
     return (
-      <div className="container" style={{ padding: '60px 24px', textAlign: 'center' }}>
-        <p>Загрузка...</p>
+      <div className="settings-page">
+        <div className="settings-header">
+          <div className="container">
+            <button onClick={() => navigate(-1)} className="settings-back">
+              ← Назад к профилю
+            </button>
+          </div>
+        </div>
+        <div className="container">
+          <h1 className="settings-title">Уведомления</h1>
+          <div className="settings-card">
+            <div className="skeleton" style={{ height: 60, marginBottom: 16 }} />
+            <div className="skeleton" style={{ height: 60, marginBottom: 16 }} />
+            <div className="skeleton" style={{ height: 60 }} />
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="page-header-bar">
+    <div className="settings-page">
+      {/* Header */}
+      <div className="settings-header">
         <div className="container">
-          <Link to="/profile" className="cats-back-link">← Назад к профилю</Link>
-          <h1>Уведомления</h1>
+          <button onClick={() => navigate(-1)} className="settings-back">
+            ← Назад к профилю
+          </button>
         </div>
       </div>
 
       <div className="container">
-        <div className="settings-page">
+        <h1 className="settings-title">Уведомления</h1>
+
+        {/* Settings Card */}
+        <div className="settings-card">
           <div className="settings-section">
-            <h2 className="settings-section-title">Способы уведомлений</h2>
+            <h2 className="settings-section-title">Настройте получение уведомлений о сделках</h2>
 
-            <div className="settings-item">
-              <div className="settings-item-info">
-                <div className="settings-item-title">Email уведомления</div>
-                <div className="settings-item-desc">Получать уведомления на почту</div>
+            <div className="settings-list">
+              {/* New Deals */}
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  <div className="settings-item-icon">📋</div>
+                  <div>
+                    <div className="settings-item-title">Новые сделки</div>
+                    <div className="settings-item-desc">Уведомления о новых заказах</div>
+                  </div>
+                </div>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={settings.newDeals}
+                    onChange={() => handleToggle('newDeals')}
+                    disabled={saving}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
               </div>
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={settings.emailNotifications}
-                  onChange={() => handleToggle('emailNotifications')}
-                />
-                <span className="toggle-slider"></span>
-              </label>
-            </div>
 
-            <div className="settings-item">
-              <div className="settings-item-info">
-                <div className="settings-item-title">Push-уведомления</div>
-                <div className="settings-item-desc">Уведомления в браузере (скоро)</div>
+              {/* Messages */}
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  <div className="settings-item-icon">💬</div>
+                  <div>
+                    <div className="settings-item-title">Сообщения</div>
+                    <div className="settings-item-desc">Уведомления о новых сообщениях</div>
+                  </div>
+                </div>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={settings.messages}
+                    onChange={() => handleToggle('messages')}
+                    disabled={saving}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
               </div>
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={settings.pushNotifications}
-                  onChange={() => handleToggle('pushNotifications')}
-                  disabled
-                />
-                <span className="toggle-slider"></span>
-              </label>
-            </div>
-          </div>
 
-          <div className="settings-section">
-            <h2 className="settings-section-title">О чём уведомлять</h2>
-
-            <div className="settings-item">
-              <div className="settings-item-info">
-                <div className="settings-item-title">Новые сделки</div>
-                <div className="settings-item-desc">Когда мастер откликается на заявку</div>
+              {/* Reviews */}
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  <div className="settings-item-icon">⭐</div>
+                  <div>
+                    <div className="settings-item-title">Отзывы</div>
+                    <div className="settings-item-desc">Уведомления о новых отзывах</div>
+                  </div>
+                </div>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={settings.reviews}
+                    onChange={() => handleToggle('reviews')}
+                    disabled={saving}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
               </div>
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={settings.newDeals}
-                  onChange={() => handleToggle('newDeals')}
-                />
-                <span className="toggle-slider"></span>
-              </label>
-            </div>
 
-            <div className="settings-item">
-              <div className="settings-item-info">
-                <div className="settings-item-title">Обновления сделок</div>
-                <div className="settings-item-desc">Изменение статуса работ</div>
+              {/* System */}
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  <div className="settings-item-icon">🔔</div>
+                  <div>
+                    <div className="settings-item-title">Системные уведомления</div>
+                    <div className="settings-item-desc">Важные обновления и изменения</div>
+                  </div>
+                </div>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={settings.system}
+                    onChange={() => handleToggle('system')}
+                    disabled={saving}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
               </div>
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={settings.dealUpdates}
-                  onChange={() => handleToggle('dealUpdates')}
-                />
-                <span className="toggle-slider"></span>
-              </label>
             </div>
-
-            <div className="settings-item">
-              <div className="settings-item-info">
-                <div className="settings-item-title">Новые сообщения</div>
-                <div className="settings-item-desc">Сообщения от мастеров</div>
-              </div>
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={settings.messages}
-                  onChange={() => handleToggle('messages')}
-                />
-                <span className="toggle-slider"></span>
-              </label>
-            </div>
-
-            <div className="settings-item">
-              <div className="settings-item-info">
-                <div className="settings-item-title">Отзывы</div>
-                <div className="settings-item-desc">Напоминание оставить отзыв</div>
-              </div>
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={settings.reviews}
-                  onChange={() => handleToggle('reviews')}
-                />
-                <span className="toggle-slider"></span>
-              </label>
-            </div>
-          </div>
-
-          <div className="settings-actions">
-            <button
-              className="btn btn-primary"
-              onClick={handleSave}
-              disabled={saving}
-            >
-              {saving ? 'Сохраняем...' : 'Сохранить изменения'}
-            </button>
-            {saved && <span className="settings-saved">✓ Сохранено</span>}
           </div>
         </div>
       </div>

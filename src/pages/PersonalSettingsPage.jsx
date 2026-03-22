@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, updateUserProfile, changePassword } from '../api';
 import { useToast } from '../context/ToastContext';
-import './PersonalSettingsPage.css';
+import './SettingsPages.css';
 
 export default function PersonalSettingsPage() {
   const { userId, userRole, login } = useAuth();
@@ -64,7 +64,7 @@ export default function PersonalSettingsPage() {
         city: form.city.trim()
       });
 
-      // 🔥 ОБНОВЛЯЕМ AuthContext чтобы имя изменилось везде!
+      // Обновляем AuthContext чтобы имя изменилось везде
       login(userId, userRole, form.displayName.trim());
 
       showToast('Профиль обновлён', 'success');
@@ -121,12 +121,12 @@ export default function PersonalSettingsPage() {
         <div className="settings-header">
           <div className="container">
             <button onClick={() => navigate(-1)} className="settings-back">
-              ← Назад
+              ← Назад к профилю
             </button>
-            <h1>Личные данные</h1>
           </div>
         </div>
         <div className="container">
+          <h1 className="settings-title">Личные данные</h1>
           <div className="settings-card">
             <div className="skeleton" style={{ height: 60, marginBottom: 20 }} />
             <div className="skeleton" style={{ height: 60, marginBottom: 20 }} />
@@ -143,116 +143,121 @@ export default function PersonalSettingsPage() {
       <div className="settings-header">
         <div className="container">
           <button onClick={() => navigate(-1)} className="settings-back">
-            ← Назад
+            ← Назад к профилю
           </button>
-          <h1>Личные данные</h1>
         </div>
       </div>
 
       <div className="container">
+        <h1 className="settings-title">Личные данные</h1>
+
         {/* Profile Form */}
         <div className="settings-card">
-          <h2>Основная информация</h2>
+          <div className="settings-section">
+            <h2 className="settings-section-title">Основная информация</h2>
 
-          <form onSubmit={handleSaveProfile}>
-            <div className="form-group">
-              <label htmlFor="name">Имя</label>
-              <input
-                id="name"
-                type="text"
-                className="form-control"
-                placeholder="Иван Иванов"
-                value={form.displayName}
-                onChange={(e) => setForm({ ...form, displayName: e.target.value })}
-                required
-              />
-            </div>
+            <form onSubmit={handleSaveProfile}>
+              <div className="form-group">
+                <label htmlFor="name">Имя</label>
+                <input
+                  id="name"
+                  type="text"
+                  className="form-control"
+                  placeholder="Иван Иванов"
+                  value={form.displayName}
+                  onChange={(e) => setForm({ ...form, displayName: e.target.value })}
+                  required
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                className="form-control"
-                value={form.email}
-                disabled
-                style={{ background: 'var(--gray-100)', cursor: 'not-allowed' }}
-              />
-              <small className="form-hint">Email нельзя изменить</small>
-            </div>
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  className="form-control"
+                  value={form.email}
+                  disabled
+                  style={{ background: 'var(--gray-100)', cursor: 'not-allowed' }}
+                />
+                <small className="form-hint">Email нельзя изменить</small>
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="phone">Телефон</label>
-              <input
-                id="phone"
-                type="tel"
-                className="form-control"
-                placeholder="+7 (999) 123-45-67"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="phone">Телефон</label>
+                <input
+                  id="phone"
+                  type="tel"
+                  className="form-control"
+                  placeholder="+7 (999) 123-45-67"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="city">Город</label>
-              <input
-                id="city"
-                type="text"
-                className="form-control"
-                placeholder="Йошкар-Ола"
-                value={form.city}
-                onChange={(e) => setForm({ ...form, city: e.target.value })}
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="city">Город</label>
+                <input
+                  id="city"
+                  type="text"
+                  className="form-control"
+                  placeholder="Йошкар-Ола"
+                  value={form.city}
+                  onChange={(e) => setForm({ ...form, city: e.target.value })}
+                />
+              </div>
 
-            <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Сохранение...' : 'Сохранить изменения'}
-            </button>
-          </form>
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                {saving ? 'Сохранение...' : 'Сохранить изменения'}
+              </button>
+            </form>
+          </div>
         </div>
 
         {/* Password Form */}
         <div className="settings-card">
-          <h2>Изменить пароль</h2>
+          <div className="settings-section">
+            <h2 className="settings-section-title">Изменить пароль</h2>
 
-          <form onSubmit={handleChangePassword}>
-            <div className="form-group">
-              <label htmlFor="currentPassword">Текущий пароль</label>
-              <input
-                id="currentPassword"
-                type="password"
-                className="form-control"
-                value={passwordForm.currentPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-              />
-            </div>
+            <form onSubmit={handleChangePassword}>
+              <div className="form-group">
+                <label htmlFor="currentPassword">Текущий пароль</label>
+                <input
+                  id="currentPassword"
+                  type="password"
+                  className="form-control"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="newPassword">Новый пароль</label>
-              <input
-                id="newPassword"
-                type="password"
-                className="form-control"
-                value={passwordForm.newPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="newPassword">Новый пароль</label>
+                <input
+                  id="newPassword"
+                  type="password"
+                  className="form-control"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Подтвердите новый пароль</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                className="form-control"
-                value={passwordForm.confirmPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="confirmPassword">Подтвердите новый пароль</label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  className="form-control"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                />
+              </div>
 
-            <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Изменение...' : 'Изменить пароль'}
-            </button>
-          </form>
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                {saving ? 'Изменение...' : 'Изменить пароль'}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
