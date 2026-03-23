@@ -43,13 +43,27 @@ const BENEFITS = [
   { icon: '🎯', color: '#d13a99', bg: 'rgba(209,58,153,.1)',  title: 'Точная цена',           desc: 'Мастер называет цену до начала работы. Никаких скрытых платежей и сюрпризов' },
 ];
 
+const WORKER_BENEFITS = [
+  { icon: '📋', title: 'Прямые заявки',      desc: 'Получайте заказы напрямую от клиентов без посредников' },
+  { icon: '💰', title: 'Без комиссии',       desc: 'Вся оплата идёт вам, платформа не берёт процент' },
+  { icon: '⭐', title: 'Рейтинг и отзывы',   desc: 'Зарабатывайте репутацию и получайте больше заказов' },
+  { icon: '💬', title: 'Чат с клиентами',    desc: 'Обсуждайте детали заказа прямо в сервисе' },
+  { icon: '🔔', title: 'Уведомления',        desc: 'Не пропускайте новые заявки и сообщения' },
+  { icon: '📱', title: 'Удобно везде',       desc: 'Работайте с телефона, планшета или компьютера' },
+];
+
 export default function HomePage() {
-  const { userId } = useAuth();
+  const { userId, userRole } = useAuth();
   const [showGuestModal, setShowGuestModal] = useState(false);
 
+  // Для мастеров показываем специальную версию
+  if (userRole === 'WORKER') {
+    return <WorkerHomePage userId={userId} />;
+  }
+
+  // Для заказчиков и гостей — обычная версия
   return (
     <div>
-
       {/* ══ HERO (тёмный) ══ */}
       <section className="home-hero">
         <div className="container">
@@ -285,8 +299,6 @@ export default function HomePage() {
         </section>
       )}
 
-
-
       {/* ══ МОДАЛКА ══ */}
       {showGuestModal && (
         <div className="modal-overlay" onClick={() => setShowGuestModal(false)}>
@@ -302,7 +314,101 @@ export default function HomePage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
 
+// ═══════════════════════════════════════════════════════════
+// Главная страница для мастеров
+// ═══════════════════════════════════════════════════════════
+function WorkerHomePage({ userId }) {
+  return (
+    <div className="worker-home">
+      {/* ══ HERO для мастеров ══ */}
+      <section className="home-hero">
+        <div className="container">
+          <div className="hero-grid">
+            <div>
+              <div className="hero-tag fade-up">
+                <span className="hero-tag-dot" />
+                Йошкар-Ола · Платформа для мастеров
+              </div>
+              <h1 className="hero-title fade-up-1">
+                Найдите<br />
+                <span>новых клиентов</span><br />
+                в Йошкар-Оле
+              </h1>
+              <p className="hero-subtitle fade-up-2">
+                Получайте заявки от заказчиков напрямую.<br />
+                Работайте без посредников, растите свой рейтинг.
+              </p>
+              <div className="hero-actions fade-up-3">
+                <Link to="/find-work" className="btn btn-lg hero-btn-primary">
+                  📋 Найти работу
+                </Link>
+                <Link to="/worker-profile" className="btn btn-lg hero-btn-ghost">
+                  Мой профиль →
+                </Link>
+              </div>
+              <div className="hero-trust fade-up-4">
+                {[['24/7','новые заявки'],['9','категорий'],['0%','комиссия']].map(([n,l]) => (
+                  <div className="hero-trust-item" key={l}>
+                    <strong>{n}</strong> {l}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="hero-card fade-up-2">
+              <div className="hero-card-label">Платформа работает</div>
+              <div className="hero-stats-row">
+                {[['24/7','Заявки'],['9','Категорий'],['0%','Комиссия']].map(([n,l]) => (
+                  <div className="hero-stat" key={l}>
+                    <span className="hero-stat-num">{n}</span>
+                    <span className="hero-stat-lbl">{l}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="hero-card-divider" />
+              <div className="hero-live">
+                <span className="hero-live-dot" />
+                <div>
+                  <div className="hero-live-title">Платформа работает</div>
+                  <div className="hero-live-sub">Откликайтесь первым — получайте больше заказов</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ ПРЕИМУЩЕСТВА для мастеров ══ */}
+      <section className="home-benefits">
+        <div className="container">
+          <div className="benefits-header">
+            <p className="section-eyebrow">Работайте с комфортом</p>
+            <h2 className="section-title">Преимущества платформы</h2>
+            <p className="section-sub">Всё что нужно для успешной работы</p>
+          </div>
+          <div className="benefits-grid">
+            {WORKER_BENEFITS.map((b, i) => (
+              <div className="benefit-card fade-up" key={b.title} style={{ animationDelay: `${i * 0.06}s` }}>
+                <div className="benefit-icon" style={{ fontSize: '48px' }}>
+                  {b.icon}
+                </div>
+                <h3>{b.title}</h3>
+                <p>{b.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '40px' }}>
+            <Link to="/find-work" className="btn btn-primary btn-lg">
+              Начать работать
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
