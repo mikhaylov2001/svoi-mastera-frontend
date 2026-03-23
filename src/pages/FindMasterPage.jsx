@@ -1,428 +1,310 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { getCategories, getWorkerServices } from '../api';
-import './FindMasterPage.css';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { getOpenJobRequestsForWorker, createJobOffer } from '../api';
+import './FindWorkPage.css';
 
-// Маппинг иконок и цветов для категорий
-const CATEGORY_STYLES = {
-  'remont-kvartir': { emoji: '🏠', color: '#fff3e0' },
-  'santehnika': { emoji: '🔧', color: '#e3f2fd' },
-  'elektrika': { emoji: '⚡', color: '#fffde7' },
-  'uborka': { emoji: '🧹', color: '#fce4ec' },
-  'parikhmaher': { emoji: '💇', color: '#fce4ec' },
-  'manikur': { emoji: '💅', color: '#fce4ec' },
-  'krasota-i-zdorovie': { emoji: '✨', color: '#f3e5f5' },
-  'repetitorstvo': { emoji: '📚', color: '#e3f2fd' },
-  'kompyuternaya-pomosh': { emoji: '💻', color: '#e8f5e9' },
-};
+export default function FindWorkPage() {
+  const { userId } = useAuth();
+  const { showToast } = useToast();
 
-// ✅ ДОБАВЛЕНО: Вычисление стажа работы
-function getExperience(registeredAt) {
-  if (!registeredAt) return 'Новичок';
-
-  const now = new Date();
-  const registered = new Date(registeredAt);
-  const diffMs = now - registered;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffMonths = Math.floor(diffDays / 30);
-  const diffYears = Math.floor(diffDays / 365);
-
-  if (diffYears >= 1) {
-    return `${diffYears} ${diffYears === 1 ? 'год' : diffYears < 5 ? 'года' : 'лет'}`;
-  }
-  if (diffMonths >= 1) {
-    return `${diffMonths} ${diffMonths === 1 ? 'месяц' : diffMonths < 5 ? 'месяца' : 'месяцев'}`;
-  }
-  if (diffDays >= 7) {
-    const weeks = Math.floor(diffDays / 7);
-    return `${weeks} ${weeks === 1 ? 'неделю' : weeks < 5 ? 'недели' : 'недель'}`;
-  }
-  return 'Новичок';
-}
-
-export default function FindMasterPage() {
-  const navigate = useNavigate();
-  const { categorySlug } = useParams();
-  const [categories, setCategories] = useState([]);
-  const [services, setServices] = useState([]);
-  const [workerStats, setWorkerStats] = useState({}); // ✅ ДОБАВЛЕНО: статистика мастеров
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [showActiveOnly, setShowActiveOnly] = useState(true);
   const [sortBy, setSortBy] = useState('recency');
+  const [showOfferModal, setShowOfferModal] = useState(null);
+  const [offerForm, setOfferForm] = useState({ price: '', comment: '', estimatedDays: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    loadRequests();
+  }, [userId]);
+
+  const loadRequests = async () => {
     setLoading(true);
-    Promise.all([getCategories(), getWorkerServices()])
-      .then(([cats, workersServices]) => {
-        console.log('===== ЗАГРУЗКА ДАННЫХ =====');
-        console.log('Категории:', cats);
-        console.log('Количество категорий:', cats?.length || 0);
-        console.log('Сервисы (сырые ДО обработки):', workersServices);
-        console.log('Количество сервисов:', workersServices?.length || 0);
+    try {
+      const data = await getOpenJobRequestsForWorker(userId);
+      setRequests(data || []);
+    } catch (err) {
+      console.error('Failed to load requests:', err);
+      showToast('Не удалось загрузить заявки', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        // Показываем ПЕРВЫЙ сервис полностью
-        if (workersServices && workersServices.length > 0) {
-          console.log('ПЕРВЫЙ сервис ПОЛНОСТЬЮ:', JSON.stringify(workersServices[0], null, 2));
-        }
+  const handleOpenOfferModal = (request) => {
+    setShowOfferModal(request);
+    setOfferForm({ price: '', comment: '', estimatedDays: '' });
+  };
 
-        // Показываем ПЕРВУЮ категорию полностью
-        if (cats && cats.length > 0) {
-          console.log('ПЕРВАЯ категория ПОЛНОСТЬЮ:', JSON.stringify(cats[0], null, 2));
-        }
-        console.log('============================');
+  const handleCloseOfferModal = () => {
+    setShowOfferModal(null);
+    setOfferForm({ price: '', comment: '', estimatedDays: '' });
+  };
 
-        setCategories(cats);
-        const processedServices = (workersServices || []).map((item) => ({
-          ...item,
-          title: item.title || 'Услуга мастера',
-          description: item.description || 'Описание услуги не указано',
-          workerName: item.workerName || `Мастер ${item.workerUserId?.slice(0, 6)}`,
-          active: item.active == null ? true : item.active,
-          priceFrom: item.priceFrom || 0,
-          priceTo: item.priceTo || 0,
-        }));
+  const handleSubmitOffer = async (e) => {
+    e.preventDefault();
 
-        setServices(processedServices);
+    if (!offerForm.price) {
+      showToast('Укажите цену', 'error');
+      return;
+    }
 
-        // ✅ ДОБАВЛЕНО: Загружаем статистику для каждого мастера
-        const uniqueWorkerIds = [...new Set(processedServices.map(s => s.workerUserId))];
-        uniqueWorkerIds.forEach(async (workerId) => {
-          try {
-            const response = await fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/stats`);
-            if (response.ok) {
-              const stats = await response.json();
-              setWorkerStats(prev => ({ ...prev, [workerId]: stats }));
-            }
-          } catch (error) {
-            console.error(`Ошибка загрузки статистики для мастера ${workerId}:`, error);
-          }
-        });
-      })
-      .catch((e) => {
-        console.error('ОШИБКА загрузки:', e);
-        setError(e?.message || 'Ошибка загрузки данных');
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    setSubmitting(true);
+    try {
+      await createJobOffer(userId, showOfferModal.id, {
+        price: Number(offerForm.price),
+        comment: offerForm.comment || 'Готов выполнить работу',
+        estimatedDays: offerForm.estimatedDays ? Number(offerForm.estimatedDays) : null,
+      });
 
-  const selectedCategory = categories.find((c) => c.slug === categorySlug);
+      showToast('Отклик отправлен!', 'success');
+      handleCloseOfferModal();
+      loadRequests();
+    } catch (err) {
+      console.error('Failed to create offer:', err);
+      showToast('Не удалось отправить отклик', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-  // Если категория не выбрана - показываем список категорий
-  if (!categorySlug) {
-    return (
-      <div>
-        <div className="page-header-bar">
-          <div className="container">
-            <h1>Найти мастера</h1>
-            <p>Выберите категорию — найдите нужного мастера</p>
-          </div>
-        </div>
+  // Фильтрация
+  const filteredRequests = requests.filter(request => {
+    const matchesSearch = !searchTerm ||
+      request.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
-        <div className="container">
-          {loading ? (
-            <div className="cats-grid">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="cat-skeleton">
-                  <div style={{ width: 52, height: 52, background: '#e5e7eb', borderRadius: 'var(--r-md)' }}></div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ height: 16, background: '#e5e7eb', borderRadius: 4, marginBottom: 8, width: '60%' }}></div>
-                    <div style={{ height: 14, background: '#e5e7eb', borderRadius: 4, width: '90%' }}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="cats-error">
-              <span>😕</span>
-              <p>{error}</p>
-            </div>
-          ) : (
-            <div className="cats-grid">
-              {categories.map((cat, i) => {
-                // Фильтрация мастеров по категории
-                const allMasters = services.filter((s) => {
-                  // Проверяем совпадение по categoryId
-                  if (s.categoryId === cat.id) return true;
-                  if (String(s.categoryId) === String(cat.id)) return true;
+    return matchesSearch;
+  });
 
-                  return false;
-                });
+  // Сортировка
+  const sortedRequests = [...filteredRequests].sort((a, b) => {
+    if (sortBy === 'price-high') {
+      return (b.budgetTo || 0) - (a.budgetTo || 0);
+    }
+    if (sortBy === 'price-low') {
+      return (a.budgetTo || 0) - (b.budgetTo || 0);
+    }
+    // recency - по умолчанию
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
 
-                const activeMasters = allMasters.filter((s) => s.active === true);
+  // Группируем по категориям
+  const groupedRequests = sortedRequests.reduce((acc, request) => {
+    const category = request.categoryName || 'Без категории';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(request);
+    return acc;
+  }, {});
 
-                // Средняя цена
-                const pricesFrom = activeMasters
-                  .map((s) => s.priceFrom)
-                  .filter((p) => p && p > 0);
-                const avgPrice = pricesFrom.length > 0
-                  ? Math.round(pricesFrom.reduce((a, b) => a + b, 0) / pricesFrom.length)
-                  : null;
-
-                // Получаем стиль для категории
-                const style = CATEGORY_STYLES[cat.slug] || { emoji: '🛠️', color: '#fff3e0' };
-
-                return (
-                  <Link
-                    key={cat.id}
-                    to={`/find-master/${cat.slug}`}
-                    className="cat-card fade-up"
-                    style={{ animationDelay: `${i * 0.05}s` }}
-                  >
-                    <div className="cat-card-icon" style={{ background: style.color }}>
-                      {style.emoji}
-                    </div>
-                    <div className="cat-card-body">
-                      <h2>{cat.name}</h2>
-                      <p>
-                        {activeMasters.length > 0
-                          ? `${activeMasters.length} ${activeMasters.length === 1 ? 'мастер' : activeMasters.length < 5 ? 'мастера' : 'мастеров'}`
-                          : 'Нет активных мастеров'}
-                        {avgPrice && ` • от ${avgPrice} ₽`}
-                      </p>
-                    </div>
-                    <div className="cat-card-arrow">›</div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // Если категория выбрана - показываем мастеров
-  const visibleServices = services
-    .filter((item) => {
-      // Фильтр по категории - строгое совпадение
-      if (item.categoryId !== selectedCategory?.id &&
-          String(item.categoryId) !== String(selectedCategory?.id)) {
-        return false;
-      }
-
-      // Фильтр активных мастеров
-      if (showActiveOnly && !item.active) return false;
-
-      // Поиск
-      if (!searchTerm.trim()) return true;
-      const q = searchTerm.trim().toLowerCase();
-      return (
-        item.title.toLowerCase().includes(q) ||
-        item.description.toLowerCase().includes(q) ||
-        (item.workerName || '').toLowerCase().includes(q)
-      );
-    })
-    .sort((a, b) => {
-      if (sortBy === 'priceAsc') return (a.priceFrom || 0) - (b.priceFrom || 0);
-      if (sortBy === 'priceDesc') return (b.priceFrom || 0) - (a.priceFrom || 0);
-      if (sortBy === 'name') return (a.workerName || '').localeCompare(b.workerName || '');
-      return new Date(b.createdAt || Date.now()) - new Date(a.createdAt || Date.now());
-    });
-
-  if (!selectedCategory) {
-    return (
-      <div className="container" style={{ padding: '60px 24px', textAlign: 'center' }}>
-        <p>Категория не найдена</p>
-        <Link to="/find-master" className="btn btn-primary" style={{ marginTop: 16 }}>
-          К категориям
-        </Link>
-      </div>
-    );
-  }
+  const categories = Object.keys(groupedRequests).sort();
 
   return (
-    <div>
-      {/* Заголовок с выбранной категорией */}
-      <div className="page-header-bar">
-        <div className="container">
-          <Link to="/find-master" className="cats-back-link">
-            ← Все категории
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
-            <div className="cat-page-icon" style={{ background: CATEGORY_STYLES[selectedCategory.slug]?.color || '#fff3e0' }}>
-              {CATEGORY_STYLES[selectedCategory.slug]?.emoji || '🛠️'}
-            </div>
-            <div>
-              <h1>{selectedCategory.name}</h1>
-              <p>{selectedCategory.description || selectedCategory.desc || 'Найдите проверенного мастера'}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="find-work-page">
+      <div className="container" style={{ paddingTop: '32px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: 900, color: 'var(--gray-900)', marginBottom: '8px' }}>
+          Найти работу
+        </h1>
+        <p style={{ fontSize: '15px', color: 'var(--gray-600)', marginBottom: '24px' }}>
+          Открытые заявки в Йошкар-Оле · {sortedRequests.length} {sortedRequests.length === 1 ? 'заявка' : sortedRequests.length < 5 ? 'заявки' : 'заявок'}
+        </p>
 
-      <div className="container">
         {/* Панель фильтров */}
         <div className="find-master-controls">
           <div className="controls-left">
             <div className="search-box">
               <input
                 type="text"
-                placeholder="Поиск по названию или описанию..."
+                placeholder="Поиск заявок..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">
-              <option value="recency">По новизне</option>
-              <option value="priceAsc">Цена: по возрастанию</option>
-              <option value="priceDesc">Цена: по убыванию</option>
-              <option value="name">По имени мастера</option>
-            </select>
           </div>
-
           <div className="controls-right">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={showActiveOnly}
-                onChange={(e) => setShowActiveOnly(e.target.checked)}
-              />
-              <span>Только активные</span>
-            </label>
+            <select
+              className="sort-select"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="recency">Сначала новые</option>
+              <option value="price-high">Сначала дорогие</option>
+              <option value="price-low">Сначала дешёвые</option>
+            </select>
           </div>
         </div>
 
-        {/* Список мастеров */}
-        {loading ? (
-          <div className="loading-state">Загрузка мастеров...</div>
-        ) : error ? (
-          <div className="cats-error">
-            <span>😕</span>
-            <p>{error}</p>
+        {/* Loading */}
+        {loading && (
+          <div className="loading-state">
+            <div>Загрузка заявок...</div>
           </div>
-        ) : (
-          <div className="masters-grid">
-            {visibleServices.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">🔍</div>
-                <h3>Мастера не найдены</h3>
-                <p>
-                  {showActiveOnly
-                    ? 'В этой категории пока нет активных мастеров. Попробуйте снять фильтр.'
-                    : 'В этой категории пока нет мастеров.'}
-                </p>
-                <Link to="/find-master" className="btn btn-outline" style={{ marginTop: 16 }}>
-                  Выбрать другую категорию
-                </Link>
-              </div>
-            ) : (
-              visibleServices.map((service) => (
+        )}
+
+        {/* Empty State */}
+        {!loading && sortedRequests.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-state-icon">📋</div>
+            <h3>Нет открытых заявок</h3>
+            <p>Заявки появятся здесь автоматически</p>
+          </div>
+        )}
+
+        {/* Categories with Requests */}
+        {!loading && categories.map((category, idx) => (
+          <div key={category} style={{ marginBottom: '48px' }}>
+            {/* Category Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '20px',
+              paddingBottom: '12px',
+              borderBottom: '2px solid var(--gray-300)'
+            }}>
+              <h2 style={{
+                fontSize: '22px',
+                fontWeight: 800,
+                color: 'var(--gray-900)',
+                margin: 0,
+                letterSpacing: '-0.3px'
+              }}>
+                {category}
+              </h2>
+              <span style={{
+                background: 'var(--primary-light)',
+                color: 'var(--primary)',
+                padding: '4px 12px',
+                borderRadius: '999px',
+                fontSize: '13px',
+                fontWeight: 700
+              }}>
+                {groupedRequests[category].length}
+              </span>
+            </div>
+
+            {/* Requests Grid */}
+            <div className="masters-grid">
+              {groupedRequests[category].map((request, i) => (
                 <div
-                  key={service.id}
-                  className={`master-card ${!service.active ? 'master-card-inactive' : ''}`}
-                  onClick={() => navigate(`/workers/${service.workerUserId}`)}
-                  style={{ cursor: 'pointer' }}
+                  key={request.id}
+                  className="master-card fade-up"
+                  style={{ animationDelay: `${i * 0.05}s` }}
                 >
-                  {!service.active && <div className="inactive-badge">Неактивен</div>}
+                  {/* Title */}
+                  <h3 className="master-card-title">{request.title}</h3>
 
-                  {/* Хедер с аватаром и именем мастера */}
-                  <div className="master-card-header">
-                    <div className="master-card-avatar">
-                      {(service.workerName || 'Мастер')
-                        .split(' ')
-                        .map((x) => x[0] || '')
-                        .join('')
-                        .toUpperCase()
-                        .slice(0, 2)}
-                    </div>
-                    <div className="master-card-header-info">
-                      <h3 className="master-card-worker-name">{service.workerName || 'Мастер'}</h3>
-                      <p className="master-card-meta">{selectedCategory.name} • Йошкар-Ола</p>
-                    </div>
+                  {/* Description */}
+                  {request.description && (
+                    <p className="master-text">{request.description}</p>
+                  )}
+
+                  {/* Meta Info */}
+                  <div className="master-card-meta">
+                    {request.addressText && `📍 ${request.addressText}`}
                   </div>
 
-                  {/* Название услуги */}
-                  <h4 className="master-card-service-title">{service.title || 'Услуга мастера'}</h4>
-
-                  {/* Описание */}
-                  <div className="master-text">{service.description || 'Описание услуги не указано'}</div>
-
-                  {/* Бейджи с преимуществами */}
-                  <div className="master-badges">
-                    <span className="master-badge">
-                      <span className="badge-icon">✓</span>
-                      Проверен
-                    </span>
-                    <span className="master-badge">
-                      <span className="badge-icon">⚡</span>
-                      Быстрый отклик
-                    </span>
-                    <span className="master-badge">
-                      <span className="badge-icon">🛡️</span>
-                      Гарантия
-                    </span>
-                  </div>
-
-                  {/* ✅ ОБНОВЛЕНО: Рейтинг, отзывы и стаж из API */}
-                  <div className="master-stats">
-                    {workerStats[service.workerUserId] ? (
-                      <>
-                        <div className="master-rating">
-                          <span className="rating-stars">
-                            {'★'.repeat(Math.floor(workerStats[service.workerUserId].averageRating || 0))}
-                            {'☆'.repeat(5 - Math.floor(workerStats[service.workerUserId].averageRating || 0))}
-                          </span>
-                          <span className="rating-text">
-                            {(workerStats[service.workerUserId].averageRating || 0).toFixed(1)}
-                          </span>
-                          <span className="rating-count">
-                            ({workerStats[service.workerUserId].reviewsCount || 0}{' '}
-                            {workerStats[service.workerUserId].reviewsCount === 1
-                              ? 'отзыв'
-                              : workerStats[service.workerUserId].reviewsCount < 5
-                              ? 'отзыва'
-                              : 'отзывов'})
-                          </span>
-                        </div>
-                        <div className="master-meta-row">
-                          <span>📦 {workerStats[service.workerUserId].completedWorksCount || 0} заказов</span>
-                          <span>📅 {getExperience(workerStats[service.workerUserId].registeredAt)}</span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="master-rating">
-                        <span className="rating-text">Загрузка...</span>
+                  {/* Price & Date */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    {request.budgetTo && (
+                      <div className="master-price">
+                        до {Number(request.budgetTo).toLocaleString('ru-RU')} ₽
                       </div>
                     )}
+                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                      {new Date(request.createdAt).toLocaleDateString('ru-RU')}
+                    </div>
                   </div>
 
-                  {/* Цена */}
-                  <div className="master-price">
-                    {service.priceFrom || service.priceTo
-                      ? `от ${service.priceFrom || '-'} до ${service.priceTo || '-'} ₽`
-                      : 'Цена по договоренности'}
-                  </div>
+                  {/* Offers Count */}
+                  {request.offersCount > 0 && (
+                    <div style={{
+                      fontSize: '12px',
+                      color: 'var(--gray-500)',
+                      marginBottom: '12px',
+                      fontWeight: 600
+                    }}>
+                      {request.offersCount} {request.offersCount === 1 ? 'отклик' : 'откликов'}
+                    </div>
+                  )}
 
-                  {/* Кнопки действий */}
-                  <div className="master-actions" onClick={(e) => e.stopPropagation()}>
+                  {/* Actions */}
+                  <div className="master-actions">
                     <button
                       className="btn btn-primary"
-                      onClick={() => navigate(`/chat/${service.workerUserId}`)}
+                      onClick={() => handleOpenOfferModal(request)}
                     >
-                      💬 Написать
-                    </button>
-                    <button
-                      className="btn btn-outline"
-                      onClick={() => {
-                        const titleParam = encodeURIComponent(service.title || 'Заказать работу');
-                        const descriptionParam = encodeURIComponent(service.description || '');
-                        navigate(
-                          `/categories/${categorySlug}?title=${titleParam}&description=${descriptionParam}`
-                        );
-                      }}
-                    >
-                      Заказать работу
+                      Откликнуться
                     </button>
                   </div>
                 </div>
-              ))
-            )}
+              ))}
+            </div>
           </div>
-        )}
+        ))}
       </div>
+
+      {/* Offer Modal */}
+      {showOfferModal && (
+        <div className="modal-overlay" onClick={handleCloseOfferModal}>
+          <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+            <h3>Отклик на заявку</h3>
+            <p className="modal-subtitle">{showOfferModal.title}</p>
+
+            <form onSubmit={handleSubmitOffer}>
+              <div className="form-group">
+                <label htmlFor="price">Ваша цена *</label>
+                <input
+                  type="number"
+                  id="price"
+                  className="form-control"
+                  placeholder="Например, 5000"
+                  value={offerForm.price}
+                  onChange={(e) => setOfferForm({ ...offerForm, price: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="estimatedDays">Срок выполнения (дней)</label>
+                <input
+                  type="number"
+                  id="estimatedDays"
+                  className="form-control"
+                  placeholder="Например, 3"
+                  value={offerForm.estimatedDays}
+                  onChange={(e) => setOfferForm({ ...offerForm, estimatedDays: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="comment">Комментарий</label>
+                <textarea
+                  id="comment"
+                  className="form-control"
+                  rows={4}
+                  placeholder="Опишите как вы выполните работу..."
+                  value={offerForm.comment}
+                  onChange={(e) => setOfferForm({ ...offerForm, comment: e.target.value })}
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn btn-outline" onClick={handleCloseOfferModal}>
+                  Отмена
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? 'Отправка...' : 'Отправить отклик'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
