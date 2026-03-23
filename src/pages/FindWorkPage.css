@@ -7,6 +7,7 @@
 }
 .cats-back-link:hover { color: var(--primary); }
 
+/* ===== СЕТКА КАТЕГОРИЙ ===== */
 .cats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -53,18 +54,21 @@
   display: flex; align-items: center; gap: 16px;
 }
 
-.cats-error {
-  text-align: center; padding: 60px 0;
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
-}
-.cats-error p { font-size: 15px; color: var(--gray-500); }
-
 .cat-page-icon {
   width: 52px; height: 52px;
   border-radius: var(--r-md);
   display: flex; align-items: center; justify-content: center;
   font-size: 28px; flex-shrink: 0;
 }
+
+/* ===== ПУСТОЕ СОСТОЯНИЕ ===== */
+.fw-empty {
+  text-align: center;
+  padding: 60px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.fw-empty span { font-size: 48px; }
+.fw-empty p { font-size: 15px; color: var(--gray-500); }
 
 /* ===== СЕТКА ЗАЯВОК ===== */
 .fw-requests-grid {
@@ -74,6 +78,7 @@
   padding: 28px 0 56px;
 }
 
+/* ===== КАРТОЧКА ЗАЯВКИ ===== */
 .fw-request-card {
   background: #fff;
   border: 1.5px solid var(--gray-200);
@@ -93,7 +98,7 @@
   justify-content: space-between; gap: 8px;
 }
 .fw-request-budget { font-size: 15px; font-weight: 800; color: var(--primary); }
-.fw-request-date   { font-size: 12px; color: var(--gray-400); }
+.fw-request-date   { font-size: 12px; color: var(--gray-400); flex-shrink: 0; }
 
 .fw-request-title {
   font-size: 16px; font-weight: 700;
@@ -112,7 +117,7 @@
 .fw-request-meta {
   display: flex; flex-wrap: wrap; gap: 8px;
   font-size: 12px; color: var(--gray-500);
-  padding-top: 4px;
+  padding-top: 8px;
   border-top: 1px solid var(--gray-100);
   margin-top: auto;
 }
