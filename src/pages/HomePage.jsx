@@ -351,7 +351,7 @@ function WorkerHomePage({ userId }) {
                 </Link>
               </div>
               <div className="hero-trust fade-up-4">
-                {[['24/7','новые заявки'],['9','категорий'],['0%','комиссия']].map(([n,l]) => (
+                {[['24/7','новые заявки'],['9','категорий'],['5%','комиссия']].map(([n,l]) => (
                   <div className="hero-trust-item" key={l}>
                     <strong>{n}</strong> {l}
                   </div>
@@ -362,7 +362,7 @@ function WorkerHomePage({ userId }) {
             <div className="hero-card fade-up-2">
               <div className="hero-card-label">Платформа работает</div>
               <div className="hero-stats-row">
-                {[['24/7','Заявки'],['9','Категорий'],['0%','Комиссия']].map(([n,l]) => (
+                {[['24/7','Заявки'],['9','Категорий'],['5%','Комиссия']].map(([n,l]) => (
                   <div className="hero-stat" key={l}>
                     <span className="hero-stat-num">{n}</span>
                     <span className="hero-stat-lbl">{l}</span>

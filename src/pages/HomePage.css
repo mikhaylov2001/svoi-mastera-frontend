@@ -396,31 +396,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
-   Worker Home Page - Версия для мастеров
+   Worker Home Page - Версия для мастеров (оранжевый стиль)
    ═══════════════════════════════════════════════════════════ */
 
-.worker-home .home-hero {
-  background:
-    radial-gradient(ellipse 90% 70% at 5% 50%,  rgba(59,130,246,.25)  0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 95% 10%,  rgba(96,165,250,.14)  0%, transparent 55%),
-    radial-gradient(ellipse 50% 50% at 50% 100%, rgba(30,58,138,.3)   0%, transparent 60%),
-    linear-gradient(160deg, #0c1445 0%, #1e3a8a 60%, #0c1445 100%);
-}
-
-.worker-home .hero-title span {
-  background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.worker-home .hero-tag {
-  background: rgba(59,130,246,.15);
-  border-color: rgba(59,130,246,.35);
-  color: #60a5fa;
-}
-
-.worker-home .hero-tag-dot {
-  background: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59,130,246,.3);
-}
+/* Для мастеров используем тот же оранжевый стиль что и для клиентов */
