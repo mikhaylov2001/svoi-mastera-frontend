@@ -22,6 +22,85 @@ function pluralRequests(n) {
   return `${n} заявок`;
 }
 
+// ═══ Модалка вынесена за пределы основного компонента ═══
+// Это критично — иначе при каждом вводе компонент пересоздаётся
+function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submitting }) {
+  if (!request) return null;
+
+  return (
+    <div className="fw-modal-overlay" onClick={onClose}>
+      <div className="fw-modal" onClick={e => e.stopPropagation()}>
+
+        <div className="fw-modal-header">
+          <h3 className="fw-modal-title">📩 Отклик на заявку</h3>
+          <p className="fw-modal-subtitle">{request.title}</p>
+        </div>
+
+        <form onSubmit={onSubmit}>
+          <div className="fw-modal-body">
+
+            <div className="fw-modal-field">
+              <label className="fw-modal-label">Ваша цена, ₽ *</label>
+              <input
+                type="number"
+                className="fw-modal-input"
+                placeholder="Например, 5000"
+                value={offerForm.price}
+                onChange={e => setOfferForm(prev => ({ ...prev, price: e.target.value }))}
+                required
+                min="1"
+                autoFocus
+              />
+              {request.budgetTo && (
+                <span className="fw-modal-hint">
+                  Бюджет заказчика: до {Number(request.budgetTo).toLocaleString('ru-RU')} ₽
+                </span>
+              )}
+            </div>
+
+            <div className="fw-modal-field">
+              <label className="fw-modal-label">Срок выполнения (дней)</label>
+              <input
+                type="number"
+                className="fw-modal-input"
+                placeholder="Например, 3"
+                value={offerForm.estimatedDays}
+                onChange={e => setOfferForm(prev => ({ ...prev, estimatedDays: e.target.value }))}
+                min="1"
+              />
+            </div>
+
+            <div className="fw-modal-field">
+              <label className="fw-modal-label">Комментарий</label>
+              <textarea
+                className="fw-modal-input fw-modal-textarea"
+                placeholder="Опишите как вы выполните работу, ваш опыт..."
+                value={offerForm.comment}
+                onChange={e => setOfferForm(prev => ({ ...prev, comment: e.target.value }))}
+              />
+            </div>
+
+          </div>
+
+          <div className="fw-modal-footer">
+            <button type="button" className="fw-modal-cancel" onClick={onClose}>
+              Отмена
+            </button>
+            <button
+              type="submit"
+              className="fw-modal-submit"
+              disabled={submitting || !offerForm.price}
+            >
+              {submitting ? 'Отправка...' : '📩 Отправить отклик'}
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  );
+}
+
 export default function FindWorkPage() {
   const { userId } = useAuth();
   const { showToast } = useToast();
@@ -85,87 +164,6 @@ export default function FindWorkPage() {
       setSubmitting(false);
     }
   };
-
-  // ═══ Модалка отклика ═══
-  const OfferModal = () => (
-    <div className="fw-modal-overlay" onClick={handleCloseOfferModal}>
-      <div className="fw-modal" onClick={e => e.stopPropagation()}>
-
-        {/* Шапка */}
-        <div className="fw-modal-header">
-          <h3 className="fw-modal-title">📩 Отклик на заявку</h3>
-          <p className="fw-modal-subtitle">{showOfferModal.title}</p>
-        </div>
-
-        {/* Форма */}
-        <form onSubmit={handleSubmitOffer}>
-          <div className="fw-modal-body">
-
-            <div className="fw-modal-field">
-              <label className="fw-modal-label">Ваша цена, ₽ *</label>
-              <input
-                type="number"
-                className="fw-modal-input"
-                placeholder="Например, 5000"
-                value={offerForm.price}
-                onChange={e => setOfferForm({ ...offerForm, price: e.target.value })}
-                required
-                min="1"
-                autoFocus
-              />
-              {showOfferModal.budgetTo && (
-                <span className="fw-modal-hint">
-                  Бюджет заказчика: до {Number(showOfferModal.budgetTo).toLocaleString('ru-RU')} ₽
-                </span>
-              )}
-            </div>
-
-            <div className="fw-modal-field">
-              <label className="fw-modal-label">Срок выполнения (дней)</label>
-              <input
-                type="number"
-                className="fw-modal-input"
-                placeholder="Например, 3"
-                value={offerForm.estimatedDays}
-                onChange={e => setOfferForm({ ...offerForm, estimatedDays: e.target.value })}
-                min="1"
-              />
-            </div>
-
-            <div className="fw-modal-field">
-              <label className="fw-modal-label">Комментарий</label>
-              <textarea
-                className="fw-modal-input fw-modal-textarea"
-                placeholder="Опишите как вы выполните работу, ваш опыт..."
-                value={offerForm.comment}
-                onChange={e => setOfferForm({ ...offerForm, comment: e.target.value })}
-              />
-            </div>
-
-          </div>
-
-          {/* Футер */}
-          <div className="fw-modal-footer">
-            <button
-              type="button"
-              className="fw-modal-cancel"
-              onClick={handleCloseOfferModal}
-            >
-              Отмена
-            </button>
-            <button
-              type="submit"
-              className="fw-modal-submit"
-              disabled={submitting || !offerForm.price}
-            >
-              {submitting ? 'Отправка...' : '📩 Отправить отклик'}
-            </button>
-          </div>
-        </form>
-
-      </div>
-    </div>
-  );
 
   // ═══ ЭКРАН 2: заявки внутри категории ═══
   if (selectedCategory) {
@@ -244,7 +242,14 @@ export default function FindWorkPage() {
           )}
         </div>
 
-        {showOfferModal && <OfferModal />}
+        <OfferModal
+          request={showOfferModal}
+          offerForm={offerForm}
+          setOfferForm={setOfferForm}
+          onClose={handleCloseOfferModal}
+          onSubmit={handleSubmitOffer}
+          submitting={submitting}
+        />
       </div>
     );
   }
