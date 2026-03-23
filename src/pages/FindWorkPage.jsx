@@ -1,349 +1,313 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getOpenJobRequestsForWorker, createJobOffer, getMyDeals, getCategories } from '../api';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { getOpenJobRequestsForWorker, createJobOffer } from '../api';
 import './FindWorkPage.css';
 
-const DEAL_ST = {
-  NEW:{l:'Новая',c:'st-new'}, IN_PROGRESS:{l:'В работе',c:'st-prog'},
-  COMPLETED:{l:'Выполнена',c:'st-done'}, CANCELLED:{l:'Отменена',c:'st-fail'},
+// Иконки и цвета для категорий
+const CATEGORY_STYLES = {
+  'Ремонт квартир': { emoji: '🏠', color: '#fff3e0' },
+  'Сантехника': { emoji: '🔧', color: '#e3f2fd' },
+  'Электрика': { emoji: '⚡', color: '#fffde7' },
+  'Уборка': { emoji: '🧹', color: '#fce4ec' },
+  'Парикмахер': { emoji: '💇', color: '#fce4ec' },
+  'Маникюр': { emoji: '💅', color: '#fce4ec' },
+  'Красота и здоровье': { emoji: '✨', color: '#f3e5f5' },
+  'Репетиторство': { emoji: '📚', color: '#e3f2fd' },
+  'Компьютерная помощь': { emoji: '💻', color: '#e8f5e9' },
 };
 
 export default function FindWorkPage() {
   const { userId } = useAuth();
   const { showToast } = useToast();
-  const navigate = useNavigate();
-  const [tab, setTab] = useState('feed');
+
   const [requests, setRequests] = useState([]);
-  const [deals, setDeals] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [catFilter, setCatFilter] = useState('ALL');
-  const [detail, setDetail] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showOfferModal, setShowOfferModal] = useState(null);
+  const [offerForm, setOfferForm] = useState({ price: '', comment: '', estimatedDays: '' });
+  const [submitting, setSubmitting] = useState(false);
 
-  // Offer form
-  const [useClientPrice, setUseClientPrice] = useState(true);
-  const [customPrice, setCustomPrice] = useState('');
-  const [comment, setComment] = useState('');
-  const [days, setDays] = useState('');
-  const [offerStatus, setOfferStatus] = useState('idle');
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [reqs, myDeals, cats] = await Promise.all([
-        getOpenJobRequestsForWorker(userId),
-        getMyDeals(userId).catch(() => []),
-        getCategories(),
-      ]);
-      setRequests(reqs); setDeals(myDeals); setCategories(cats);
-    } catch {}
-    setLoading(false);
+  useEffect(() => {
+    loadRequests();
   }, [userId]);
 
-  useEffect(() => { load(); }, [load]);
-
-  const catName = (id) => categories.find(c => c.id === id)?.name || '';
-  const feedCats = [...new Set(requests.map(r => r.categoryId))];
-  const filtered = catFilter === 'ALL' ? requests : requests.filter(r => r.categoryId === catFilter);
-
-  const openDetail = (req) => {
-    setDetail(req);
-    setUseClientPrice(!!req.budgetTo);
-    setCustomPrice(req.budgetTo ? String(req.budgetTo) : '');
-    setComment('');
-    setDays('');
-    setOfferStatus('idle');
-  };
-
-  const getFinalPrice = () => {
-    if (useClientPrice && detail?.budgetTo) return Number(detail.budgetTo);
-    return customPrice ? Number(customPrice) : 0;
-  };
-
-  const handleSend = async () => {
-    const price = getFinalPrice();
-    if (!price || !detail) return;
-    setOfferStatus('sending');
+  const loadRequests = async () => {
+    setLoading(true);
     try {
-      await createJobOffer(userId, detail.id, {
-        price,
-        comment: comment || (useClientPrice ? 'Согласен на вашу цену. Готов выполнить!' : 'Предлагаю свою цену. Готов обсудить.'),
-        estimatedDays: days ? Number(days) : null,
-      });
-      setOfferStatus('done');
-      setRequests(prev => prev.filter(r => r.id !== detail.id));
-      showToast('Отклик успешно отправлен', { variant: 'success' });
-    } catch (error) {
-      setOfferStatus('error');
-      showToast(error?.message || 'Ошибка отправки отклика', { variant: 'error' });
+      const data = await getOpenJobRequestsForWorker(userId);
+      setRequests(data || []);
+    } catch (err) {
+      console.error('Failed to load requests:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const timeAgo = (d) => {
-    if (!d) return '';
-    const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
-    if (m < 60) return `${m} мин. назад`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h} ч. назад`;
-    const dd = Math.floor(h / 24);
-    return dd === 1 ? 'вчера' : `${dd} дн. назад`;
+  const handleOpenOfferModal = (request) => {
+    setShowOfferModal(request);
+    setOfferForm({ price: '', comment: '', estimatedDays: '' });
   };
 
-  // ═══ DETAIL VIEW ═══
-  if (detail) {
-    const clientPrice = detail.budgetTo ? Number(detail.budgetTo) : 0;
-    const customerId =
-      detail.customerId ||
-      detail.customerUserId ||
-      detail.ownerId ||
-      detail.userId ||
-      null;
+  const handleCloseOfferModal = () => {
+    setShowOfferModal(null);
+    setOfferForm({ price: '', comment: '', estimatedDays: '' });
+  };
+
+  const handleSubmitOffer = async (e) => {
+    e.preventDefault();
+    if (!offerForm.price) {
+      showToast('Укажите цену', 'error');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await createJobOffer(userId, showOfferModal.id, {
+        price: Number(offerForm.price),
+        comment: offerForm.comment || 'Готов выполнить работу',
+        estimatedDays: offerForm.estimatedDays ? Number(offerForm.estimatedDays) : null,
+      });
+      showToast('Отклик отправлен!', 'success');
+      handleCloseOfferModal();
+      loadRequests();
+    } catch (err) {
+      console.error('Failed to create offer:', err);
+      showToast('Не удалось отправить отклик', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Группируем заявки по категориям
+  const groupedRequests = requests.reduce((acc, request) => {
+    const category = request.categoryName || 'Без категории';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(request);
+    return acc;
+  }, {});
+
+  const categories = Object.keys(groupedRequests).sort();
+
+  // ═══════════════════════════════════════════════════════════
+  // ЭКРАН 2: Внутри категории - показываем заявки
+  // ═══════════════════════════════════════════════════════════
+  if (selectedCategory) {
+    const categoryRequests = groupedRequests[selectedCategory] || [];
 
     return (
-      <div className="fw-dp">
-        <div className="container">
-          <button className="fw-back" onClick={() => setDetail(null)}>← Назад к заявкам</button>
+      <div className="find-work-page">
+        <div className="container" style={{ paddingTop: '32px' }}>
+          {/* Кнопка Назад */}
+          <button
+            className="cats-back-link"
+            onClick={() => setSelectedCategory(null)}
+          >
+            ← Назад
+          </button>
 
-          <div className="fw-dl">
-            {/* Left: request info */}
-            <div className="fw-dm">
-              <div className="fw-dc">
-                <div className="fw-dc-cat">{catName(detail.categoryId)}</div>
-                <h1 className="fw-dc-title">{detail.title}</h1>
+          <h1 style={{ fontSize: '28px', fontWeight: 900, color: 'var(--gray-900)', marginBottom: '8px' }}>
+            {selectedCategory}
+          </h1>
+          <p style={{ fontSize: '15px', color: 'var(--gray-600)', marginBottom: '32px' }}>
+            {categoryRequests.length} {categoryRequests.length === 1 ? 'заявка' : categoryRequests.length < 5 ? 'заявки' : 'заявок'}
+          </p>
 
-                {clientPrice > 0 && (
-                  <div className="fw-dc-price-block">
-                    <div className="fw-dc-price-label">Предварительная цена клиента</div>
-                    <div className="fw-dc-price">{clientPrice.toLocaleString('ru-RU')} ₽</div>
-                  </div>
-                )}
-                {!clientPrice && (
-                  <div className="fw-dc-price-block">
-                    <div className="fw-dc-price-label">Цена</div>
-                    <div className="fw-dc-price fw-dc-price-dog">Договорная</div>
-                  </div>
-                )}
-
-                <div className="fw-dc-meta">
-                  {detail.addressText && <div>📍 {detail.addressText}</div>}
-                  {detail.city && <div>🏙 {detail.city}</div>}
-                  {detail.createdAt && <div>🕐 {timeAgo(detail.createdAt)}</div>}
+          {/* Сетка заявок */}
+          <div className="cats-grid">
+            {categoryRequests.map((request, idx) => (
+              <div
+                key={request.id}
+                className="cat-card fade-up"
+                style={{
+                  animationDelay: `${idx * 0.05}s`,
+                  cursor: 'default',
+                  flexDirection: 'column',
+                  alignItems: 'stretch'
+                }}
+              >
+                {/* Category Badge */}
+                <div style={{
+                  background: 'var(--primary-light)',
+                  color: 'var(--primary)',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.3px',
+                  marginBottom: '10px',
+                  width: 'fit-content'
+                }}>
+                  {request.categoryName || 'Без категории'}
                 </div>
 
-                {detail.description && detail.description !== 'Без описания' && (
-                  <>
-                    <div className="fw-dc-sep" />
-                    <h3 className="fw-dc-sub">Описание</h3>
-                    <p className="fw-dc-desc">{detail.description}</p>
-                  </>
+                {/* Title */}
+                <h2 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '6px' }}>
+                  {request.title}
+                </h2>
+
+                {/* Status */}
+                <p style={{ fontSize: '13px', color: 'var(--gray-500)', margin: '0 0 6px' }}>
+                  Договорная
+                </p>
+
+                {/* Description */}
+                {request.description && (
+                  <p style={{ fontSize: '13px', color: 'var(--gray-600)', lineHeight: 1.5, marginBottom: '10px' }}>
+                    {request.description}
+                  </p>
                 )}
+
+                {/* Meta */}
+                <div style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '12px' }}>
+                  {request.addressText && <div>📍 {request.addressText}</div>}
+                  <div>{new Date(request.createdAt).toLocaleDateString('ru-RU')}</div>
+                </div>
+
+                {/* Button */}
+                <button
+                  className="btn btn-primary"
+                  onClick={() => handleOpenOfferModal(request)}
+                  style={{ marginTop: 'auto', width: '100%' }}
+                >
+                  Откликнуться
+                </button>
               </div>
-            </div>
-
-            {/* Right: action panel */}
-            <div className="fw-ds">
-              {offerStatus === 'done' ? (
-                <div className="fw-sc fw-sc-ok">
-                  <span>✅</span>
-                  <h3>Отклик отправлен!</h3>
-                  <p>Заказчик увидит ваше предложение и решит</p>
-                  <button className="fw-b fw-b-p" onClick={() => setDetail(null)}>Вернуться к ленте</button>
-                </div>
-              ) : (
-                <div className="fw-sc">
-                  <h3 className="fw-sc-t">Взять заказ</h3>
-
-                  {/* Price choice */}
-                  {clientPrice > 0 && (
-                    <div className="fw-price-choice">
-                      <button className={`fw-pc-btn ${useClientPrice ? 'active' : ''}`}
-                        onClick={() => setUseClientPrice(true)}>
-                        ✅ Согласен — {clientPrice.toLocaleString('ru-RU')} ₽
-                      </button>
-                      <button className={`fw-pc-btn ${!useClientPrice ? 'active' : ''}`}
-                        onClick={() => setUseClientPrice(false)}>
-                        ✏️ Предложить свою цену
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Custom price input */}
-                  {(!useClientPrice || !clientPrice) && (
-                    <div className="fw-f">
-                      <label>Ваша цена, ₽</label>
-                      <input type="number" placeholder="Сколько возьмёте за работу"
-                        value={customPrice} onChange={e => setCustomPrice(e.target.value)} />
-                    </div>
-                  )}
-
-                  <div className="fw-f">
-                    <label>Срок выполнения (дней)</label>
-                    <input type="number" placeholder="Не обязательно"
-                      value={days} onChange={e => setDays(e.target.value)} />
-                  </div>
-
-                  <div className="fw-f">
-                    <label>Сообщение заказчику</label>
-                    <textarea placeholder={useClientPrice && clientPrice
-                      ? 'Здравствуйте! Согласен на вашу цену, готов приступить…'
-                      : 'Здравствуйте! Предлагаю свою цену, потому что…'}
-                      value={comment} onChange={e => setComment(e.target.value)} />
-                  </div>
-
-                  {/* Summary */}
-                  <div className="fw-summary">
-                    <div className="fw-summary-label">Итого ваш отклик:</div>
-                    <div className="fw-summary-price">
-                      {getFinalPrice() > 0 ? `${getFinalPrice().toLocaleString('ru-RU')} ₽` : 'Укажите цену'}
-                    </div>
-                    {useClientPrice && clientPrice > 0 && (
-                      <div className="fw-summary-note">Вы соглашаетесь на цену клиента</div>
-                    )}
-                    {!useClientPrice && customPrice && clientPrice > 0 && Number(customPrice) !== clientPrice && (
-                      <div className="fw-summary-note fw-summary-diff">
-                        {Number(customPrice) < clientPrice
-                          ? `Дешевле на ${(clientPrice - Number(customPrice)).toLocaleString('ru-RU')} ₽`
-                          : `Дороже на ${(Number(customPrice) - clientPrice).toLocaleString('ru-RU')} ₽`
-                        }
-                      </div>
-                    )}
-                  </div>
-
-                  {offerStatus === 'error' && <div className="fw-err">Не удалось отправить. Попробуйте ещё раз.</div>}
-
-                  <button className="fw-b fw-b-p" disabled={getFinalPrice() <= 0 || offerStatus === 'sending'}
-                    onClick={handleSend}>
-                    {offerStatus === 'sending' ? 'Отправляем…'
-                      : useClientPrice && clientPrice ? '✅ Взять за ' + clientPrice.toLocaleString('ru-RU') + ' ₽'
-                      : '📤 Отправить предложение'}
-                  </button>
-
-                  <button
-                    className="fw-b fw-b-chat"
-                    onClick={() => {
-                      if (customerId) navigate(`/chat/${customerId}?jobRequestId=${detail.id}`);
-                      else navigate('/chat');
-                    }}
-                  >
-                    💬 Написать заказчику
-                  </button>
-                </div>
-              )}
-            </div>
+            ))}
           </div>
         </div>
+
+        {/* Offer Modal */}
+        {showOfferModal && (
+          <div className="modal-overlay" onClick={handleCloseOfferModal}>
+            <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+              <h3>Отклик на заявку</h3>
+              <p style={{ fontSize: '14px', color: 'var(--gray-600)', margin: '8px 0 24px' }}>
+                {showOfferModal.title}
+              </p>
+
+              <form onSubmit={handleSubmitOffer}>
+                <div className="form-group">
+                  <label htmlFor="price">Ваша цена *</label>
+                  <input
+                    type="number"
+                    id="price"
+                    className="form-control"
+                    placeholder="Например, 5000"
+                    value={offerForm.price}
+                    onChange={(e) => setOfferForm({ ...offerForm, price: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="estimatedDays">Срок выполнения (дней)</label>
+                  <input
+                    type="number"
+                    id="estimatedDays"
+                    className="form-control"
+                    placeholder="Например, 3"
+                    value={offerForm.estimatedDays}
+                    onChange={(e) => setOfferForm({ ...offerForm, estimatedDays: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="comment">Комментарий</label>
+                  <textarea
+                    id="comment"
+                    className="form-control"
+                    rows={4}
+                    placeholder="Опишите как вы выполните работу..."
+                    value={offerForm.comment}
+                    onChange={(e) => setOfferForm({ ...offerForm, comment: e.target.value })}
+                  />
+                </div>
+
+                <div className="modal-actions">
+                  <button type="button" className="btn btn-outline" onClick={handleCloseOfferModal}>
+                    Отмена
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={submitting}>
+                    {submitting ? 'Отправка...' : 'Отправить отклик'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
-  // ═══ LIST VIEW ═══
+  // ═══════════════════════════════════════════════════════════
+  // ЭКРАН 1: Главная - показываем категории
+  // ═══════════════════════════════════════════════════════════
   return (
-    <div>
-      <div className="page-header-bar">
-        <div className="container">
-          <h1>Найти работу</h1>
-          <p>Открытые заявки в Йошкар-Оле</p>
-        </div>
-      </div>
-      <div className="container">
-        <div className="fw-tabs">
-          <button className={`fw-tab ${tab==='feed'?'active':''}`} onClick={() => setTab('feed')}>
-            Заявки {requests.length > 0 && <span className="fw-tab-num">{requests.length}</span>}
-          </button>
-          <button className={`fw-tab ${tab==='deals'?'active':''}`} onClick={() => setTab('deals')}>
-            Мои сделки {deals.length > 0 && <span className="fw-tab-num">{deals.length}</span>}
-          </button>
-        </div>
+    <div className="find-work-page">
+      <div className="container" style={{ paddingTop: '32px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: 900, color: 'var(--gray-900)', marginBottom: '8px' }}>
+          Услуги
+        </h1>
+        <p style={{ fontSize: '15px', color: 'var(--gray-600)', marginBottom: '32px' }}>
+          Выберите раздел — найдите активные заявки
+        </p>
 
-        {tab === 'feed' && (
-          <div>
-            {feedCats.length > 0 && (
-              <div className="fw-cats">
-                <button className={`fw-cat ${catFilter==='ALL'?'active':''}`} onClick={() => setCatFilter('ALL')}>Все</button>
-                {feedCats.map(id => (
-                  <button key={id} className={`fw-cat ${catFilter===id?'active':''}`} onClick={() => setCatFilter(id)}>
-                    {catName(id)}
-                  </button>
-                ))}
+        {/* Loading */}
+        {loading && (
+          <div className="cats-grid">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="cat-skeleton">
+                <div className="skeleton" style={{ width: 52, height: 52, borderRadius: 'var(--r-md)' }} />
+                <div style={{ flex: 1 }}>
+                  <div className="skeleton" style={{ width: '60%', height: 16, marginBottom: 8 }} />
+                  <div className="skeleton" style={{ width: '90%', height: 13 }} />
+                </div>
               </div>
-            )}
-            {loading ? (
-              <div className="fw-grid">{[1,2,3,4].map(i => <div key={i} className="fw-skel skeleton" />)}</div>
-            ) : filtered.length === 0 ? (
-              <div className="card empty-state"><span className="empty-state-icon">🔍</span><h3>Заявок нет</h3><p>Новые появятся здесь</p></div>
-            ) : (
-              <div className="fw-grid">
-                {filtered.map((req, i) => {
-                  const price = req.budgetTo ? Number(req.budgetTo) : 0;
-                  return (
-                    <div key={req.id} className="fw-card fade-up" style={{animationDelay:`${i*0.04}s`}} onClick={() => openDetail(req)}>
-                      <div className="fw-card-cat">{catName(req.categoryId)}</div>
-                      <h3 className="fw-card-title">{req.title}</h3>
-                      <div className="fw-card-price-row">
-                        {price > 0 ? (
-                          <>
-                            <div className="fw-card-price">{price.toLocaleString('ru-RU')} ₽</div>
-                            <div className="fw-card-price-hint">предв. цена</div>
-                          </>
-                        ) : (
-                          <div className="fw-card-price fw-card-price-dog">Договорная</div>
-                        )}
-                      </div>
-                      {req.description && req.description !== 'Без описания' && (
-                        <p className="fw-card-desc">{req.description}</p>
-                      )}
-                      <div className="fw-card-bottom">
-                        {req.addressText && <span>📍 {req.addressText}</span>}
-                        <span>{timeAgo(req.createdAt)}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            ))}
           </div>
         )}
 
-        {tab === 'deals' && (
-          <div>
-            {deals.length === 0 ? (
-              <div className="card empty-state"><span className="empty-state-icon">🤝</span><h3>Сделок нет</h3><p>Откликайтесь на заявки</p></div>
-            ) : (
-              <div className="fw-deals">{deals.map((d,i) => {
-                const st = DEAL_ST[d.status]||{l:d.status,c:'st-new'};
-                return (
-                  <div key={d.id} className="fw-deal fade-up" style={{animationDelay:`${i*0.04}s`}}
-                    onClick={() => navigate('/deals')}>
-                    <div className="fw-deal-row">
-                      <div className="fw-deal-info">
-                        <h3 className="fw-deal-title">{d.title || 'Задача'}</h3>
-                        <div className="fw-deal-meta">
-                          {d.category && <span>🏷 {d.category}</span>}
-                          <span>👤 {d.customerName || 'Заказчик'}</span>
-                          <span>{timeAgo(d.createdAt)}</span>
-                        </div>
-                      </div>
-                      <div className="fw-deal-right">
-                        <span className={`fw-deal-st ${st.c}`}>{st.l}</span>
-                        <div className="fw-deal-price">{d.agreedPrice?`${Number(d.agreedPrice).toLocaleString('ru-RU')} ₽`:'—'}</div>
-                      </div>
-                    </div>
-                    {d.status === 'IN_PROGRESS' && (
-                      <div className="fw-deal-prog">
-                        <span className={d.customerConfirmed ? 'fw-chk-ok' : 'fw-chk-wait'}>
-                          {d.customerConfirmed ? '✅' : '⏳'} Заказчик
-                        </span>
-                        <span className={d.workerConfirmed ? 'fw-chk-ok' : 'fw-chk-wait'}>
-                          {d.workerConfirmed ? '✅' : '⏳'} Мастер
-                        </span>
-                      </div>
-                    )}
+        {/* Empty */}
+        {!loading && categories.length === 0 && (
+          <div className="cats-error">
+            <span>📋</span>
+            <p>Нет открытых заявок</p>
+          </div>
+        )}
+
+        {/* Категории */}
+        {!loading && categories.length > 0 && (
+          <div className="cats-grid">
+            {categories.map((category, idx) => {
+              const style = CATEGORY_STYLES[category] || { emoji: '📋', color: '#f3f4f6' };
+              const count = groupedRequests[category].length;
+
+              return (
+                <button
+                  key={category}
+                  className="cat-card fade-up"
+                  onClick={() => setSelectedCategory(category)}
+                  style={{
+                    animationDelay: `${idx * 0.05}s`,
+                    cursor: 'pointer',
+                    border: '1.5px solid var(--gray-200)'
+                  }}
+                >
+                  <div className="cat-card-icon" style={{ background: style.color }}>
+                    {style.emoji}
                   </div>
-                );
-              })}</div>
-            )}
+                  <div className="cat-card-body">
+                    <h2>{category}</h2>
+                    <p>{count} {count === 1 ? 'категория' : 'категорий'}</p>
+                  </div>
+                  <div className="cat-card-arrow">→</div>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
