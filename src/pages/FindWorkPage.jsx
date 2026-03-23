@@ -4,18 +4,17 @@ import { useToast } from '../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer } from '../api';
 import './FindWorkPage.css';
 
-const CATEGORY_STYLES = {
-  'Ремонт квартир':      { emoji: '🏠', color: '#fff3e0' },
-  'Сантехника':          { emoji: '🔧', color: '#e3f2fd' },
-  'Электрика':           { emoji: '⚡', color: '#fffde7' },
-  'Уборка':              { emoji: '🧹', color: '#fce4ec' },
-  'Парикмахер':          { emoji: '💇', color: '#fce4ec' },
-  'Маникюр и педикюр':   { emoji: '💅', color: '#fce4ec' },
-  'Маникюр':             { emoji: '💅', color: '#fce4ec' },
-  'Красота и здоровье':  { emoji: '✨', color: '#f3e5f5' },
-  'Репетиторство':       { emoji: '📚', color: '#e3f2fd' },
-  'Компьютерная помощь': { emoji: '💻', color: '#e8f5e9' },
-};
+const ALL_CATEGORIES = [
+  { slug: 'remont-kvartir',       name: 'Ремонт квартир',      emoji: '🏠', color: '#fff3e0' },
+  { slug: 'santehnika',           name: 'Сантехника',           emoji: '🔧', color: '#e3f2fd' },
+  { slug: 'elektrika',            name: 'Электрика',            emoji: '⚡', color: '#fffde7' },
+  { slug: 'uborka',               name: 'Уборка',               emoji: '🧹', color: '#fce4ec' },
+  { slug: 'parikhmaher',          name: 'Парикмахер',           emoji: '💇', color: '#fce4ec' },
+  { slug: 'manikur',              name: 'Маникюр и педикюр',    emoji: '💅', color: '#fce4ec' },
+  { slug: 'krasota-i-zdorovie',   name: 'Красота и здоровье',   emoji: '✨', color: '#f3e5f5' },
+  { slug: 'repetitorstvo',        name: 'Репетиторство',        emoji: '📚', color: '#e3f2fd' },
+  { slug: 'kompyuternaya-pomosh', name: 'Компьютерная помощь',  emoji: '💻', color: '#e8f5e9' },
+];
 
 function pluralRequests(n) {
   if (n % 10 === 1 && n % 100 !== 11) return `${n} заявка`;
@@ -27,12 +26,12 @@ export default function FindWorkPage() {
   const { userId } = useAuth();
   const { showToast } = useToast();
 
-  const [requests, setRequests]         = useState([]);
-  const [loading, setLoading]           = useState(true);
+  const [requests, setRequests]                 = useState([]);
+  const [loading, setLoading]                   = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showOfferModal, setShowOfferModal]     = useState(null);
-  const [offerForm, setOfferForm]       = useState({ price: '', comment: '', estimatedDays: '' });
-  const [submitting, setSubmitting]     = useState(false);
+  const [offerForm, setOfferForm]               = useState({ price: '', comment: '', estimatedDays: '' });
+  const [submitting, setSubmitting]             = useState(false);
 
   useEffect(() => { loadRequests(); }, [userId]);
 
@@ -46,6 +45,20 @@ export default function FindWorkPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Матчим заявки к категории по названию или slug
+  const getRequestsForCategory = (cat) => {
+    return requests.filter(r => {
+      const rName = (r.categoryName || '').toLowerCase().trim();
+      const rSlug = (r.categorySlug || '').toLowerCase().trim();
+      return (
+        rName === cat.name.toLowerCase() ||
+        rSlug === cat.slug.toLowerCase() ||
+        rName.includes(cat.name.toLowerCase()) ||
+        cat.name.toLowerCase().includes(rName) && rName.length > 2
+      );
+    });
   };
 
   const handleOpenOfferModal = (request) => {
@@ -79,35 +92,23 @@ export default function FindWorkPage() {
     }
   };
 
-  // Группируем по категориям
-  const groupedRequests = requests.reduce((acc, req) => {
-    const cat = req.categoryName || 'Без категории';
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(req);
-    return acc;
-  }, {});
-
-  const categories = Object.keys(groupedRequests).sort();
-
   // ═══ ЭКРАН 2: заявки внутри категории ═══
   if (selectedCategory) {
-    const catRequests = groupedRequests[selectedCategory] || [];
-    const catStyle = CATEGORY_STYLES[selectedCategory] || { emoji: '📋', color: '#f3f4f6' };
+    const catRequests = getRequestsForCategory(selectedCategory);
 
     return (
       <div>
-        {/* Header */}
         <div className="page-header-bar">
           <div className="container">
             <button className="cats-back-link" onClick={() => setSelectedCategory(null)}>
               ← Все категории
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
-              <div className="cat-page-icon" style={{ background: catStyle.color }}>
-                {catStyle.emoji}
+              <div className="cat-page-icon" style={{ background: selectedCategory.color }}>
+                {selectedCategory.emoji}
               </div>
               <div>
-                <h1>{selectedCategory}</h1>
+                <h1>{selectedCategory.name}</h1>
                 <p>{pluralRequests(catRequests.length)} от заказчиков</p>
               </div>
             </div>
@@ -117,7 +118,7 @@ export default function FindWorkPage() {
         <div className="container">
           {catRequests.length === 0 ? (
             <div className="cats-error" style={{ padding: '60px 0' }}>
-              <span>📋</span>
+              <span style={{ fontSize: 48 }}>📋</span>
               <p>Заявок в этой категории пока нет</p>
             </div>
           ) : (
@@ -128,7 +129,6 @@ export default function FindWorkPage() {
                   className="fw-request-card fade-up"
                   style={{ animationDelay: `${idx * 0.05}s` }}
                 >
-                  {/* Бюджет */}
                   <div className="fw-request-top">
                     <span className="fw-request-budget">
                       {req.budget
@@ -140,21 +140,16 @@ export default function FindWorkPage() {
                     </span>
                   </div>
 
-                  {/* Заголовок */}
                   <h3 className="fw-request-title">{req.title}</h3>
 
-                  {/* Описание */}
                   {req.description && (
                     <p className="fw-request-desc">{req.description}</p>
                   )}
 
-                  {/* Мета */}
                   <div className="fw-request-meta">
                     {req.addressText && <span>📍 {req.addressText}</span>}
-                    {req.categoryName && <span>🏷️ {req.categoryName}</span>}
                   </div>
 
-                  {/* Кнопка */}
                   <button
                     className="btn btn-primary btn-full"
                     onClick={() => handleOpenOfferModal(req)}
@@ -167,7 +162,6 @@ export default function FindWorkPage() {
           )}
         </div>
 
-        {/* Модалка отклика */}
         {showOfferModal && (
           <div className="modal-overlay" onClick={handleCloseOfferModal}>
             <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
@@ -175,33 +169,27 @@ export default function FindWorkPage() {
               <p style={{ fontSize: 14, color: 'var(--gray-500)', marginBottom: 20 }}>
                 {showOfferModal.title}
               </p>
-
               <form onSubmit={handleSubmitOffer}>
                 <div className="form-field">
                   <label className="form-label">Ваша цена, ₽ *</label>
                   <input
-                    type="number"
-                    className="form-input"
+                    type="number" className="form-input"
                     placeholder="Например, 5000"
                     value={offerForm.price}
                     onChange={e => setOfferForm({ ...offerForm, price: e.target.value })}
-                    required
-                    min="1"
+                    required min="1"
                   />
                 </div>
-
                 <div className="form-field">
                   <label className="form-label">Срок выполнения (дней)</label>
                   <input
-                    type="number"
-                    className="form-input"
+                    type="number" className="form-input"
                     placeholder="Например, 3"
                     value={offerForm.estimatedDays}
                     onChange={e => setOfferForm({ ...offerForm, estimatedDays: e.target.value })}
                     min="1"
                   />
                 </div>
-
                 <div className="form-field">
                   <label className="form-label">Комментарий</label>
                   <textarea
@@ -211,22 +199,11 @@ export default function FindWorkPage() {
                     onChange={e => setOfferForm({ ...offerForm, comment: e.target.value })}
                   />
                 </div>
-
                 <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={handleCloseOfferModal}
-                    style={{ flex: 1 }}
-                  >
+                  <button type="button" className="btn btn-outline" onClick={handleCloseOfferModal} style={{ flex: 1 }}>
                     Отмена
                   </button>
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    disabled={submitting}
-                    style={{ flex: 2 }}
-                  >
+                  <button type="submit" className="btn btn-primary" disabled={submitting} style={{ flex: 2 }}>
                     {submitting ? 'Отправка...' : '📩 Отправить отклик'}
                   </button>
                 </div>
@@ -249,10 +226,9 @@ export default function FindWorkPage() {
       </div>
 
       <div className="container">
-        {/* Скелетон */}
-        {loading && (
-          <div className="cats-grid" style={{ padding: '28px 0 48px' }}>
-            {[1,2,3,4,5,6].map(i => (
+        {loading ? (
+          <div className="cats-grid">
+            {[1,2,3,4,5,6,7,8,9].map(i => (
               <div key={i} className="cat-skeleton">
                 <div className="skeleton" style={{ width: 52, height: 52, borderRadius: 'var(--r-md)' }} />
                 <div style={{ flex: 1 }}>
@@ -262,36 +238,23 @@ export default function FindWorkPage() {
               </div>
             ))}
           </div>
-        )}
-
-        {/* Пусто */}
-        {!loading && categories.length === 0 && (
-          <div className="cats-error" style={{ padding: '60px 0' }}>
-            <span>📋</span>
-            <p>Нет открытых заявок от заказчиков</p>
-          </div>
-        )}
-
-        {/* Категории */}
-        {!loading && categories.length > 0 && (
-          <div className="cats-grid" style={{ padding: '28px 0 48px' }}>
-            {categories.map((cat, idx) => {
-              const style = CATEGORY_STYLES[cat] || { emoji: '📋', color: '#f3f4f6' };
-              const count = groupedRequests[cat].length;
-
+        ) : (
+          <div className="cats-grid">
+            {ALL_CATEGORIES.map((cat, idx) => {
+              const count = getRequestsForCategory(cat).length;
               return (
                 <button
-                  key={cat}
+                  key={cat.slug}
                   className="cat-card fade-up"
                   onClick={() => setSelectedCategory(cat)}
                   style={{ animationDelay: `${idx * 0.05}s` }}
                 >
-                  <div className="cat-card-icon" style={{ background: style.color }}>
-                    {style.emoji}
+                  <div className="cat-card-icon" style={{ background: cat.color }}>
+                    {cat.emoji}
                   </div>
                   <div className="cat-card-body">
-                    <h2>{cat}</h2>
-                    <p>{pluralRequests(count)}</p>
+                    <h2>{cat.name}</h2>
+                    <p>{count > 0 ? pluralRequests(count) : 'Нет активных заявок'}</p>
                   </div>
                   <div className="cat-card-arrow">›</div>
                 </button>
