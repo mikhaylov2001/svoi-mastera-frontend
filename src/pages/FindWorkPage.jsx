@@ -4,7 +4,6 @@ import { useToast } from '../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories } from '../api';
 import './FindWorkPage.css';
 
-// Стили по slug — берутся из бэкенда CategoryDto (id, name, slug)
 const CATEGORY_STYLES = {
   'remont-kvartir':       { emoji: '🏠', color: '#fff3e0' },
   'santehnika':           { emoji: '🔧', color: '#e3f2fd' },
@@ -28,7 +27,7 @@ export default function FindWorkPage() {
   const { showToast } = useToast();
 
   const [requests, setRequests]                 = useState([]);
-  const [categories, setCategories]             = useState([]); // [{id, name, slug}] с бэкенда
+  const [categories, setCategories]             = useState([]);
   const [loading, setLoading]                   = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showOfferModal, setShowOfferModal]     = useState(null);
@@ -40,10 +39,9 @@ export default function FindWorkPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      // Параллельно грузим категории с API и открытые заявки
       const [cats, reqs] = await Promise.all([
-        getCategories(),                        // GET /api/v1/categories → [{id, name, slug}]
-        getOpenJobRequestsForWorker(userId),    // GET /api/v1/worker/job-requests → [{id, categoryId, ...}]
+        getCategories(),
+        getOpenJobRequestsForWorker(userId),
       ]);
       setCategories(cats || []);
       setRequests(reqs || []);
@@ -54,7 +52,6 @@ export default function FindWorkPage() {
     }
   };
 
-  // Матчим заявки к категории по categoryId (UUID)
   const getRequestsForCategory = (cat) =>
     requests.filter(r => r.categoryId === cat.id);
 
@@ -75,7 +72,7 @@ export default function FindWorkPage() {
     try {
       await createJobOffer(userId, showOfferModal.id, {
         price:         Number(offerForm.price),
-        comment:       offerForm.comment || 'Готов выполнить работу',
+        message:       offerForm.comment || 'Готов выполнить работу',
         estimatedDays: offerForm.estimatedDays ? Number(offerForm.estimatedDays) : null,
       });
       showToast('Отклик отправлен!', 'success');
@@ -88,6 +85,87 @@ export default function FindWorkPage() {
       setSubmitting(false);
     }
   };
+
+  // ═══ Модалка отклика ═══
+  const OfferModal = () => (
+    <div className="fw-modal-overlay" onClick={handleCloseOfferModal}>
+      <div className="fw-modal" onClick={e => e.stopPropagation()}>
+
+        {/* Шапка */}
+        <div className="fw-modal-header">
+          <h3 className="fw-modal-title">📩 Отклик на заявку</h3>
+          <p className="fw-modal-subtitle">{showOfferModal.title}</p>
+        </div>
+
+        {/* Форма */}
+        <form onSubmit={handleSubmitOffer}>
+          <div className="fw-modal-body">
+
+            <div className="fw-modal-field">
+              <label className="fw-modal-label">Ваша цена, ₽ *</label>
+              <input
+                type="number"
+                className="fw-modal-input"
+                placeholder="Например, 5000"
+                value={offerForm.price}
+                onChange={e => setOfferForm({ ...offerForm, price: e.target.value })}
+                required
+                min="1"
+                autoFocus
+              />
+              {showOfferModal.budgetTo && (
+                <span className="fw-modal-hint">
+                  Бюджет заказчика: до {Number(showOfferModal.budgetTo).toLocaleString('ru-RU')} ₽
+                </span>
+              )}
+            </div>
+
+            <div className="fw-modal-field">
+              <label className="fw-modal-label">Срок выполнения (дней)</label>
+              <input
+                type="number"
+                className="fw-modal-input"
+                placeholder="Например, 3"
+                value={offerForm.estimatedDays}
+                onChange={e => setOfferForm({ ...offerForm, estimatedDays: e.target.value })}
+                min="1"
+              />
+            </div>
+
+            <div className="fw-modal-field">
+              <label className="fw-modal-label">Комментарий</label>
+              <textarea
+                className="fw-modal-input fw-modal-textarea"
+                placeholder="Опишите как вы выполните работу, ваш опыт..."
+                value={offerForm.comment}
+                onChange={e => setOfferForm({ ...offerForm, comment: e.target.value })}
+              />
+            </div>
+
+          </div>
+
+          {/* Футер */}
+          <div className="fw-modal-footer">
+            <button
+              type="button"
+              className="fw-modal-cancel"
+              onClick={handleCloseOfferModal}
+            >
+              Отмена
+            </button>
+            <button
+              type="submit"
+              className="fw-modal-submit"
+              disabled={submitting || !offerForm.price}
+            >
+              {submitting ? 'Отправка...' : '📩 Отправить отклик'}
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  );
 
   // ═══ ЭКРАН 2: заявки внутри категории ═══
   if (selectedCategory) {
@@ -127,7 +205,6 @@ export default function FindWorkPage() {
                   className="fw-request-card fade-up"
                   style={{ animationDelay: `${idx * 0.05}s` }}
                 >
-                  {/* Бюджет + дата */}
                   <div className="fw-request-top">
                     <span className="fw-request-budget">
                       {req.budgetTo
@@ -141,15 +218,12 @@ export default function FindWorkPage() {
                     </span>
                   </div>
 
-                  {/* Заголовок */}
                   <h3 className="fw-request-title">{req.title}</h3>
 
-                  {/* Описание */}
                   {req.description && req.description !== 'Без описания' && (
                     <p className="fw-request-desc">{req.description}</p>
                   )}
 
-                  {/* Мета */}
                   <div className="fw-request-meta">
                     {req.addressText && <span>📍 {req.addressText}</span>}
                     {req.city && !req.addressText && <span>🏙️ {req.city}</span>}
@@ -158,7 +232,6 @@ export default function FindWorkPage() {
                     )}
                   </div>
 
-                  {/* Кнопка */}
                   <button
                     className="btn btn-primary btn-full"
                     onClick={() => handleOpenOfferModal(req)}
@@ -171,69 +244,7 @@ export default function FindWorkPage() {
           )}
         </div>
 
-        {/* Модалка отклика */}
-        {showOfferModal && (
-          <div className="modal-overlay" onClick={handleCloseOfferModal}>
-            <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
-              <h3 style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Отклик на заявку</h3>
-              <p style={{ fontSize: 14, color: 'var(--gray-500)', marginBottom: 20 }}>
-                {showOfferModal.title}
-              </p>
-              <form onSubmit={handleSubmitOffer}>
-                <div className="form-field">
-                  <label className="form-label">Ваша цена, ₽ *</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    placeholder="Например, 5000"
-                    value={offerForm.price}
-                    onChange={e => setOfferForm({ ...offerForm, price: e.target.value })}
-                    required
-                    min="1"
-                  />
-                </div>
-                <div className="form-field">
-                  <label className="form-label">Срок выполнения (дней)</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    placeholder="Например, 3"
-                    value={offerForm.estimatedDays}
-                    onChange={e => setOfferForm({ ...offerForm, estimatedDays: e.target.value })}
-                    min="1"
-                  />
-                </div>
-                <div className="form-field">
-                  <label className="form-label">Комментарий</label>
-                  <textarea
-                    className="form-input form-textarea"
-                    placeholder="Опишите как вы выполните работу..."
-                    value={offerForm.comment}
-                    onChange={e => setOfferForm({ ...offerForm, comment: e.target.value })}
-                  />
-                </div>
-                <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={handleCloseOfferModal}
-                    style={{ flex: 1 }}
-                  >
-                    Отмена
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    disabled={submitting}
-                    style={{ flex: 2 }}
-                  >
-                    {submitting ? 'Отправка...' : '📩 Отправить отклик'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+        {showOfferModal && <OfferModal />}
       </div>
     );
   }
@@ -271,7 +282,6 @@ export default function FindWorkPage() {
             {categories.map((cat, idx) => {
               const style = CATEGORY_STYLES[cat.slug] || { emoji: '📋', color: '#f3f4f6' };
               const count = getRequestsForCategory(cat).length;
-
               return (
                 <button
                   key={cat.id}

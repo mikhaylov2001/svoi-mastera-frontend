@@ -122,6 +122,154 @@
   margin-top: auto;
 }
 
+/* ===== МОДАЛКА ===== */
+.fw-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.fw-modal {
+  background: #fff;
+  border-radius: var(--r-xl);
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+  animation: fadeUp .25s cubic-bezier(.16,1,.3,1) both;
+  overflow: hidden;
+}
+
+/* Шапка модалки */
+.fw-modal-header {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.fw-modal-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--gray-800);
+  margin: 0 0 4px;
+}
+
+.fw-modal-subtitle {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Тело модалки */
+.fw-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fw-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fw-modal-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-700);
+}
+
+.fw-modal-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--r-md);
+  font-size: 15px;
+  color: var(--gray-800);
+  font-family: inherit;
+  transition: all .15s;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.fw-modal-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(232, 65, 10, 0.1);
+}
+
+.fw-modal-input::placeholder {
+  color: var(--gray-400);
+}
+
+.fw-modal-textarea {
+  resize: none;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+/* Подсказка под полем цены */
+.fw-modal-hint {
+  font-size: 12px;
+  color: var(--gray-400);
+  margin-top: 2px;
+}
+
+/* Футер модалки */
+.fw-modal-footer {
+  padding: 16px 24px 24px;
+  display: flex;
+  gap: 10px;
+}
+
+.fw-modal-cancel {
+  flex: 1;
+  padding: 13px;
+  background: #fff;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all .15s;
+  font-family: inherit;
+}
+.fw-modal-cancel:hover {
+  border-color: var(--gray-400);
+  color: var(--gray-800);
+}
+
+.fw-modal-submit {
+  flex: 2;
+  padding: 13px;
+  background: linear-gradient(135deg, #e8410a, #ff7043);
+  border: none;
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: inherit;
+  box-shadow: 0 4px 16px rgba(232, 65, 10, 0.3);
+}
+.fw-modal-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(232, 65, 10, 0.4);
+}
+.fw-modal-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* ===== АНИМАЦИЯ ===== */
 .fade-up { animation: fadeUp 0.4s ease-out forwards; opacity: 0; }
 @keyframes fadeUp {
@@ -140,4 +288,8 @@
   .cat-card         { padding: 16px 14px; }
   .cat-card-icon    { width: 44px; height: 44px; font-size: 24px; }
   .fw-request-card  { padding: 16px; }
+  .fw-modal         { margin: 0; border-radius: var(--r-lg); }
+  .fw-modal-footer  { flex-direction: column; }
+  .fw-modal-cancel,
+  .fw-modal-submit  { flex: none; width: 100%; }
 }
