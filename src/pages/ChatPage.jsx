@@ -7,34 +7,45 @@ import {
 import { useAuth } from '../context/AuthContext';
 import './ChatPage.css';
 
+// ── Фоны чата ──────────────────────────────────────────────
+const CHAT_BACKGROUNDS = [
+  { id: 'warm',    label: 'Тёплый',    style: { background: '#fdf6f0', backgroundImage: 'radial-gradient(ellipse at 20% 50%, rgba(232,65,10,.04) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(255,143,0,.05) 0%, transparent 50%)' } },
+  { id: 'dots',    label: 'Точки',     style: { backgroundColor: '#eef0f3', backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='1' fill='%23c9cdd4'/%3E%3C/svg%3E\")", backgroundSize: '20px 20px' } },
+  { id: 'mint',    label: 'Мята',      style: { background: 'linear-gradient(135deg, #e0f7fa 0%, #e8f5e9 100%)' } },
+  { id: 'lavender',label: 'Лаванда',   style: { background: 'linear-gradient(135deg, #f3e5f5 0%, #e8eaf6 100%)' } },
+  { id: 'peach',   label: 'Персик',    style: { background: 'linear-gradient(135deg, #fff8e1 0%, #fce4ec 100%)' } },
+  { id: 'dark',    label: 'Тёмный',    style: { background: '#1a1a2e' }, dark: true },
+  { id: 'ocean',   label: 'Океан',     style: { background: 'linear-gradient(135deg, #0f3460 0%, #16213e 100%)' }, dark: true },
+  { id: 'forest',  label: 'Лес',       style: { background: 'linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%)' }, dark: true },
+  { id: 'sunrise', label: 'Рассвет',   style: { background: 'linear-gradient(135deg, #ff6b35 0%, #f7c59f 50%, #efefd0 100%)' } },
+  { id: 'night',   label: 'Ночь',      style: { background: 'linear-gradient(135deg, #0d0d0d 0%, #1a1a2e 50%, #16213e 100%)' }, dark: true },
+  { id: 'blobs',   label: 'Пузыри',    style: { backgroundColor: '#e3f2fd', backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(100,181,246,.4) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(129,212,250,.3) 0%, transparent 40%)' } },
+  { id: 'white',   label: 'Белый',     style: { background: '#ffffff' } },
+];
+
+const EMOJI_LIST = [
+  '😀','😂','🥰','😍','🤩','😎','🤔','😮','😢','😡',
+  '👍','👎','❤️','🔥','✅','⭐','💯','🎉','🙏','💪',
+  '😊','😄','🤗','😌','😴','🥳','😬','🤝','👋','🫡',
+  '💬','📱','🔨','🏠','⚡','🔧','💻','🧹','✨','📚',
+];
+
 // ── Avatar ──────────────────────────────────────────────────
 function Avatar({ name, url, size = 40 }) {
   if (url) return <img src={url} alt="" className="cht-ava" style={{ width: size, height: size }} />;
   const ini = (name || '?').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
   const cols = ['#7c3aed','#2563eb','#059669','#d97706','#dc2626','#0891b2','#db2777','#4f46e5'];
-  const col  = cols[(ini.charCodeAt(0) || 0) % cols.length];
-  return (
-    <div className="cht-ava" style={{ width: size, height: size, background: col, fontSize: size * 0.37 }}>
-      {ini}
-    </div>
-  );
+  const col = cols[(ini.charCodeAt(0) || 0) % cols.length];
+  return <div className="cht-ava" style={{ width: size, height: size, background: col, fontSize: size * 0.37 }}>{ini}</div>;
 }
 
-// ── Telegram-style double tick ───────────────────────────────
+// ── Ticks (Telegram-style) ───────────────────────────────────
 function Ticks({ isRead }) {
-  const color = isRead ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.6)';
+  const color = isRead ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.55)';
   return (
     <svg width="16" height="11" viewBox="0 0 16 11" fill="none" style={{ flexShrink: 0, marginBottom: -1 }}>
-      {/* первая галочка */}
       <path d="M1 5.5L4.5 9L10 2" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-      {/* вторая галочка (сдвинута вправо) — показывается только при прочтении */}
-      {isRead && (
-        <path d="M5 5.5L8.5 9L14 2" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-      )}
-      {/* одна галочка когда не прочитано */}
-      {!isRead && (
-        <path d="M5 5.5L8.5 9L14 2" stroke="rgba(255,255,255,.3)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-      )}
+      <path d="M5 5.5L8.5 9L14 2" stroke={isRead ? color : 'rgba(255,255,255,.25)'} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -56,6 +67,53 @@ function fmtTime(d) {
 function fmtDate(d) {
   if (!d) return '';
   return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+}
+
+// ── Voice recorder hook ──────────────────────────────────────
+function useVoiceRecorder(onDone) {
+  const [recording, setRecording] = useState(false);
+  const [seconds, setSeconds]     = useState(0);
+  const mediaRef  = useRef(null);
+  const chunksRef = useRef([]);
+  const timerRef  = useRef(null);
+
+  const start = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      chunksRef.current = [];
+      mr.ondataavailable = e => chunksRef.current.push(e.data);
+      mr.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const url  = URL.createObjectURL(blob);
+        onDone({ blob, url, duration: seconds });
+        stream.getTracks().forEach(t => t.stop());
+      };
+      mr.start();
+      mediaRef.current = mr;
+      setRecording(true);
+      setSeconds(0);
+      timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000);
+    } catch {
+      alert('Нет доступа к микрофону');
+    }
+  };
+
+  const stop = () => {
+    mediaRef.current?.stop();
+    clearInterval(timerRef.current);
+    setRecording(false);
+  };
+
+  const cancel = () => {
+    mediaRef.current?.stop();
+    clearInterval(timerRef.current);
+    chunksRef.current = [];
+    setRecording(false);
+    setSeconds(0);
+  };
+
+  return { recording, seconds, start, stop, cancel };
 }
 
 // ────────────────────────────────────────────────────────────
@@ -82,10 +140,28 @@ export default function ChatPage() {
   const [editingText, setEditingText] = useState('');
   const [menuId,      setMenuId]      = useState(null);
 
+  // UI panels
+  const [showEmoji,   setShowEmoji]   = useState(false);
+  const [showAttach,  setShowAttach]  = useState(false);
+  const [showBgPicker,setShowBgPicker]= useState(false);
+  const [bgId,        setBgId]        = useState(() => localStorage.getItem('chatBg') || 'warm');
+
+  // Media previews
+  const [mediaPreview, setMediaPreview] = useState(null); // {type, url, name, file}
+
   const endRef   = useRef(null);
   const inputRef = useRef(null);
+  const fileRef  = useRef(null);
+  const photoRef = useRef(null);
 
-  // ── Loaders ──
+  const currentBg = CHAT_BACKGROUNDS.find(b => b.id === bgId) || CHAT_BACKGROUNDS[0];
+
+  // Voice
+  const voice = useVoiceRecorder(({ url, duration }) => {
+    setMediaPreview({ type: 'voice', url, duration });
+  });
+
+  // Loaders
   const loadConvos = useCallback(async () => {
     if (!userId) return;
     try { setConvos(await getConversations(userId)); } catch {}
@@ -102,6 +178,7 @@ export default function ChatPage() {
     if (!partnerIdStr) return;
     setLoading(true);
     setMenuId(null); setEditingId(null);
+    setShowEmoji(false); setShowAttach(false);
     loadMsgs().then(() => setLoading(false));
     setTimeout(() => inputRef.current?.focus(), 150);
   }, [partnerIdStr, loadMsgs]);
@@ -116,13 +193,28 @@ export default function ChatPage() {
     return () => clearInterval(iv);
   }, [partnerIdStr, loadMsgs, loadConvos]);
 
-  // ── Actions ──
+  // Send text
   const send = async () => {
-    if (!text.trim() || !partnerIdStr || !userId) return;
+    const t = text.trim();
+    if ((!t && !mediaPreview) || !partnerIdStr || !userId) return;
     setSending(true); setError('');
     try {
-      await sendMessage(userId, partnerIdStr, text.trim(), jobRequestId);
-      setText(''); await loadMsgs(); await loadConvos();
+      // Если есть медиа превью — добавляем метку к тексту (реальная загрузка файлов требует бэкенда)
+      let finalText = t;
+      if (mediaPreview) {
+        if (mediaPreview.type === 'image') finalText = `📷 ${mediaPreview.name || 'Фото'}${t ? '\n' + t : ''}`;
+        else if (mediaPreview.type === 'video') finalText = `🎥 ${mediaPreview.name || 'Видео'}${t ? '\n' + t : ''}`;
+        else if (mediaPreview.type === 'file')  finalText = `📎 ${mediaPreview.name || 'Файл'}${t ? '\n' + t : ''}`;
+        else if (mediaPreview.type === 'voice') finalText = `🎤 Голосовое (${mediaPreview.duration}с)`;
+        else if (mediaPreview.type === 'location') finalText = `📍 ${mediaPreview.name}`;
+        setMediaPreview(null);
+      }
+      if (!finalText) { setSending(false); return; }
+      await sendMessage(userId, partnerIdStr, finalText, jobRequestId);
+      setText('');
+      setShowEmoji(false);
+      setShowAttach(false);
+      await loadMsgs(); await loadConvos();
     } catch (e) { setError(e?.message || 'Не удалось отправить.'); }
     setSending(false);
   };
@@ -131,37 +223,66 @@ export default function ChatPage() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
+  // Edit
   const startEdit  = (m) => { setEditingId(m.id); setEditingText(m.text || ''); setMenuId(null); };
   const cancelEdit = ()  => { setEditingId(null); setEditingText(''); };
-
-  const saveEdit = async () => {
+  const saveEdit   = async () => {
     if (!editingId || !editingText.trim()) return;
-    setSending(true); setError('');
+    setSending(true);
     try { await updateMessage(userId, editingId, editingText.trim()); cancelEdit(); await loadMsgs(); await loadConvos(); }
-    catch (e) { setError(e?.message || 'Не удалось изменить.'); }
+    catch (e) { setError(e?.message || 'Ошибка.'); }
     setSending(false);
   };
 
+  // Delete
   const removeMsg = async (messageId) => {
-    setMenuId(null); setSending(true); setError('');
+    setMenuId(null); setSending(true);
     try { await deleteMessage(userId, messageId); await loadMsgs(); await loadConvos(); }
-    catch (e) { setError(e?.message || 'Не удалось удалить.'); }
+    catch (e) { setError(e?.message || 'Ошибка.'); }
     setSending(false);
   };
 
   const removeChat = async () => {
     if (!window.confirm('Удалить весь чат?')) return;
-    setSending(true); setError('');
+    setSending(true);
     try { await deleteConversation(userId, partnerIdStr); setMsgs([]); await loadConvos(); navigate('/chat'); }
-    catch (e) { setError(e?.message || 'Не удалось удалить чат.'); }
+    catch (e) { setError(e?.message || 'Ошибка.'); }
     setSending(false);
   };
 
-  const activePartner = convos.find(c => String(c.partnerId) === partnerIdStr);
-  const closeMenu = () => setMenuId(null);
+  // File pick
+  const handleFilePick = (e, type) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setMediaPreview({ type, url, name: file.name, file });
+    setShowAttach(false);
+    e.target.value = '';
+  };
 
+  // Location
+  const shareLocation = () => {
+    setShowAttach(false);
+    if (!navigator.geolocation) { alert('Геолокация недоступна'); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setMediaPreview({ type: 'location', name: `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}` }),
+      () => alert('Не удалось получить геолокацию')
+    );
+  };
+
+  // Background
+  const changeBg = (id) => {
+    setBgId(id);
+    localStorage.setItem('chatBg', id);
+    setShowBgPicker(false);
+  };
+
+  const activePartner = convos.find(c => String(c.partnerId) === partnerIdStr);
+  const closeAll = () => { setMenuId(null); setShowEmoji(false); setShowAttach(false); };
+
+  // ══════════════════════════════════════════════════════════
   return (
-    <div className="cht-root" onClick={closeMenu}>
+    <div className="cht-root" onClick={closeAll}>
 
       {/* ══ SIDEBAR ══ */}
       <div className={`cht-side ${partnerIdStr ? 'cht-side-hide' : ''}`}>
@@ -176,7 +297,7 @@ export default function ChatPage() {
           <div className="cht-side-empty">
             <div className="cht-side-empty-icon">💬</div>
             <h3>Нет диалогов</h3>
-            <p>Напишите мастеру или заказчику со страницы заявки или сделки</p>
+            <p>Напишите мастеру или заказчику со страницы заявки</p>
           </div>
         ) : (
           <div className="cht-side-list">
@@ -184,9 +305,9 @@ export default function ChatPage() {
               <div
                 key={c.partnerId}
                 className={`cht-conv ${String(c.partnerId) === partnerIdStr ? 'active' : ''}`}
-                onClick={() => navigate(`/chat/${c.partnerId}`)}
+                onClick={(e) => { e.stopPropagation(); navigate(`/chat/${c.partnerId}`); }}
               >
-                <Avatar name={c.partnerName} url={c.partnerAvatarUrl} size={44} />
+                <Avatar name={c.partnerName} url={c.partnerAvatarUrl} size={46} />
                 <div className="cht-conv-body">
                   <div className="cht-conv-top">
                     <span className="cht-conv-name">{c.partnerName}</span>
@@ -194,9 +315,7 @@ export default function ChatPage() {
                   </div>
                   <div className="cht-conv-bottom">
                     <span className="cht-conv-msg">{c.lastMessage || 'Нет сообщений'}</span>
-                    {c.unreadCount > 0 && (
-                      <span className="cht-conv-badge">{c.unreadCount}</span>
-                    )}
+                    {c.unreadCount > 0 && <span className="cht-conv-badge">{c.unreadCount}</span>}
                   </div>
                 </div>
               </div>
@@ -219,7 +338,7 @@ export default function ChatPage() {
         {partnerIdStr && (
           <>
             {/* Header */}
-            <div className="cht-hd" onClick={closeMenu}>
+            <div className="cht-hd" onClick={e => e.stopPropagation()}>
               <button className="cht-hd-back" onClick={() => navigate('/chat')}>
                 <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                   <path d="M15 18l-6-6 6-6"/>
@@ -234,24 +353,53 @@ export default function ChatPage() {
               </div>
 
               <div className="cht-hd-actions">
+                {/* Сменить фон */}
                 <button
-                  className="cht-hd-btn cht-hd-btn-danger"
+                  className="cht-hd-icon-btn"
+                  onClick={(e) => { e.stopPropagation(); setShowBgPicker(v => !v); }}
+                  title="Сменить фон"
+                >
+                  🎨
+                </button>
+                {/* Удалить чат */}
+                <button
+                  className="cht-hd-icon-btn cht-hd-icon-btn-danger"
                   onClick={(e) => { e.stopPropagation(); removeChat(); }}
                   title="Удалить чат"
                 >
-                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
                   </svg>
-                  <span>Удалить чат</span>
                 </button>
               </div>
             </div>
+
+            {/* Background picker */}
+            {showBgPicker && (
+              <div className="cht-bg-picker" onClick={e => e.stopPropagation()}>
+                <div className="cht-bg-picker-title">Выберите фон</div>
+                <div className="cht-bg-grid">
+                  {CHAT_BACKGROUNDS.map(bg => (
+                    <button
+                      key={bg.id}
+                      className={`cht-bg-item ${bgId === bg.id ? 'active' : ''}`}
+                      onClick={() => changeBg(bg.id)}
+                      style={bg.style}
+                      title={bg.label}
+                    >
+                      {bgId === bg.id && <span className="cht-bg-check">✓</span>}
+                      <span className="cht-bg-label" style={{ color: bg.dark ? '#fff' : '#374151' }}>{bg.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Error */}
             {error && <div className="cht-error">{error}</div>}
 
             {/* Messages */}
-            <div className="cht-msgs">
+            <div className="cht-msgs" style={currentBg.style}>
               {loading ? (
                 <div className="cht-msgs-loading">Загрузка...</div>
               ) : msgs.length === 0 ? (
@@ -262,11 +410,8 @@ export default function ChatPage() {
               ) : (
                 msgs.map((m, i) => {
                   const mine     = m.senderId === userId;
-                  const showDate = i === 0 ||
-                    new Date(msgs[i-1].createdAt).toDateString() !== new Date(m.createdAt).toDateString();
-
-                  // Последнее ли это сообщение в группе (следующее — другой отправитель или конец)
-                  const isLast = i === msgs.length - 1 || msgs[i+1].senderId !== m.senderId;
+                  const showDate = i === 0 || new Date(msgs[i-1].createdAt).toDateString() !== new Date(m.createdAt).toDateString();
+                  const isLast   = i === msgs.length - 1 || msgs[i+1].senderId !== m.senderId;
 
                   return (
                     <React.Fragment key={m.id}>
@@ -276,42 +421,22 @@ export default function ChatPage() {
                         </div>
                       )}
 
-                      <div
-                        className={`cht-msg ${mine ? 'cht-msg-my' : 'cht-msg-their'}`}
-                        style={{ marginBottom: isLast ? 8 : 2 }}
-                      >
-                        {/* Аватар чужого (только у последнего в группе) */}
+                      <div className={`cht-msg ${mine ? 'cht-msg-my' : 'cht-msg-their'}`} style={{ marginBottom: isLast ? 8 : 2 }}>
                         {!mine && (
-                          <div style={{ width: 30, flexShrink: 0 }}>
+                          <div style={{ width: 32, flexShrink: 0 }}>
                             {isLast && <Avatar name={m.senderName} url={m.senderAvatarUrl} size={28} />}
                           </div>
                         )}
 
                         <div className="cht-bubble">
-                          {!mine && isLast && (
-                            <div className="cht-bubble-name">{m.senderName}</div>
-                          )}
+                          {!mine && isLast && <div className="cht-bubble-name">{m.senderName}</div>}
 
-                          {/* Edit mode */}
                           {mine && editingId === m.id ? (
                             <div className="cht-edit-wrap">
-                              <textarea
-                                className="cht-edit-textarea"
-                                value={editingText}
-                                onChange={e => setEditingText(e.target.value)}
-                                autoFocus
-                              />
+                              <textarea className="cht-edit-textarea" value={editingText} onChange={e => setEditingText(e.target.value)} autoFocus />
                               <div className="cht-edit-actions">
-                                <button className="btn btn-outline btn-sm" onClick={cancelEdit} disabled={sending}>
-                                  Отмена
-                                </button>
-                                <button
-                                  className="btn btn-primary btn-sm"
-                                  onClick={saveEdit}
-                                  disabled={sending || !editingText.trim()}
-                                >
-                                  Сохранить
-                                </button>
+                                <button className="btn btn-outline btn-sm" onClick={cancelEdit} disabled={sending}>Отмена</button>
+                                <button className="btn btn-primary btn-sm" onClick={saveEdit} disabled={sending || !editingText.trim()}>Сохранить</button>
                               </div>
                             </div>
                           ) : (
@@ -322,8 +447,6 @@ export default function ChatPage() {
                               >
                                 {m.text}
                               </div>
-
-                              {/* Время + галочки — telegram style */}
                               <div className="cht-bubble-meta">
                                 <span className="cht-bubble-time">{fmtTime(m.createdAt)}</span>
                                 {mine && <Ticks isRead={m.isRead} />}
@@ -331,25 +454,10 @@ export default function ChatPage() {
                             </>
                           )}
 
-                          {/* Контекстное меню */}
                           {mine && menuId === m.id && editingId !== m.id && (
                             <div className="cht-msg-menu" onClick={e => e.stopPropagation()}>
-                              <button
-                                className="btn btn-outline btn-sm"
-                                style={{ fontSize: 12, padding: '4px 10px', color: 'rgba(255,255,255,.9)', borderColor: 'rgba(255,255,255,.3)', background: 'rgba(255,255,255,.1)' }}
-                                onClick={() => startEdit(m)}
-                                disabled={sending}
-                              >
-                                ✏️ Изменить
-                              </button>
-                              <button
-                                className="btn btn-outline btn-sm"
-                                style={{ fontSize: 12, padding: '4px 10px', color: 'rgba(255,200,200,.95)', borderColor: 'rgba(255,150,150,.4)', background: 'rgba(255,100,100,.15)' }}
-                                onClick={() => removeMsg(m.id)}
-                                disabled={sending}
-                              >
-                                🗑 Удалить
-                              </button>
+                              <button className="cht-menu-btn" onClick={() => startEdit(m)}>✏️ Изменить</button>
+                              <button className="cht-menu-btn cht-menu-btn-del" onClick={() => removeMsg(m.id)}>🗑 Удалить</button>
                             </div>
                           )}
                         </div>
@@ -361,27 +469,129 @@ export default function ChatPage() {
               <div ref={endRef} />
             </div>
 
-            {/* Input */}
-            <div className="cht-input">
-              <textarea
-                ref={inputRef}
-                className="cht-input-field"
-                placeholder="Написать сообщение…"
-                value={text}
-                onChange={e => setText(e.target.value)}
-                onKeyDown={onKey}
-                rows={1}
-              />
+            {/* Media preview */}
+            {mediaPreview && (
+              <div className="cht-media-preview" onClick={e => e.stopPropagation()}>
+                <div className="cht-media-preview-inner">
+                  {mediaPreview.type === 'image' && <img src={mediaPreview.url} alt="" />}
+                  {mediaPreview.type === 'video' && <video src={mediaPreview.url} controls />}
+                  {mediaPreview.type === 'voice' && (
+                    <div className="cht-voice-preview">
+                      🎤 Голосовое · {mediaPreview.duration}с
+                      <audio src={mediaPreview.url} controls />
+                    </div>
+                  )}
+                  {mediaPreview.type === 'file' && <div className="cht-file-preview">📎 {mediaPreview.name}</div>}
+                  {mediaPreview.type === 'location' && <div className="cht-file-preview">📍 {mediaPreview.name}</div>}
+                </div>
+                <button className="cht-media-preview-close" onClick={() => setMediaPreview(null)}>✕</button>
+              </div>
+            )}
+
+            {/* Emoji panel */}
+            {showEmoji && (
+              <div className="cht-emoji-panel" onClick={e => e.stopPropagation()}>
+                {EMOJI_LIST.map(emoji => (
+                  <button
+                    key={emoji}
+                    className="cht-emoji-btn"
+                    onClick={() => { setText(t => t + emoji); inputRef.current?.focus(); }}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Attach panel */}
+            {showAttach && (
+              <div className="cht-attach-panel" onClick={e => e.stopPropagation()}>
+                <button className="cht-attach-btn" onClick={() => photoRef.current?.click()}>
+                  <span className="cht-attach-icon" style={{ background: '#4caf50' }}>📷</span>
+                  <span>Фото / Видео</span>
+                </button>
+                <button className="cht-attach-btn" onClick={() => fileRef.current?.click()}>
+                  <span className="cht-attach-icon" style={{ background: '#2196f3' }}>📎</span>
+                  <span>Файл</span>
+                </button>
+                <button className="cht-attach-btn" onClick={shareLocation}>
+                  <span className="cht-attach-icon" style={{ background: '#f44336' }}>📍</span>
+                  <span>Геолокация</span>
+                </button>
+                <button className="cht-attach-btn" onClick={() => { setShowAttach(false); }}>
+                  <span className="cht-attach-icon" style={{ background: '#9c27b0' }}>📊</span>
+                  <span>Опрос</span>
+                </button>
+              </div>
+            )}
+
+            {/* Input bar */}
+            <div className="cht-input" onClick={e => e.stopPropagation()}>
+
+              {/* Attach */}
               <button
-                className="cht-input-send"
-                disabled={!text.trim() || sending}
-                onClick={send}
+                className="cht-input-icon-btn"
+                onClick={() => { setShowAttach(v => !v); setShowEmoji(false); }}
+                title="Прикрепить"
               >
-                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                  <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                 </svg>
               </button>
+
+              {/* Voice / recording */}
+              {voice.recording ? (
+                <div className="cht-voice-recording">
+                  <button className="cht-voice-cancel" onClick={voice.cancel}>✕</button>
+                  <div className="cht-voice-dot" />
+                  <span className="cht-voice-timer">{String(Math.floor(voice.seconds/60)).padStart(2,'0')}:{String(voice.seconds%60).padStart(2,'0')}</span>
+                  <span className="cht-voice-hint">Отпустите для отправки</span>
+                  <button className="cht-voice-stop btn btn-primary btn-sm" onClick={voice.stop}>✓ Готово</button>
+                </div>
+              ) : (
+                <>
+                  {/* Emoji */}
+                  <button
+                    className="cht-input-icon-btn"
+                    onClick={() => { setShowEmoji(v => !v); setShowAttach(false); }}
+                    title="Эмодзи"
+                  >
+                    😊
+                  </button>
+
+                  {/* Text field */}
+                  <textarea
+                    ref={inputRef}
+                    className="cht-input-field"
+                    placeholder="Написать сообщение…"
+                    value={text}
+                    onChange={e => setText(e.target.value)}
+                    onKeyDown={onKey}
+                    rows={1}
+                  />
+
+                  {/* Send or Voice */}
+                  {text.trim() || mediaPreview ? (
+                    <button className="cht-input-send" disabled={sending} onClick={send}>
+                      <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                      </svg>
+                    </button>
+                  ) : (
+                    <button className="cht-input-send cht-input-voice" onMouseDown={voice.start} title="Голосовое">
+                      <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <rect x="9" y="2" width="6" height="12" rx="3"/>
+                        <path d="M19 10a7 7 0 0 1-14 0M12 19v3M8 22h8"/>
+                      </svg>
+                    </button>
+                  )}
+                </>
+              )}
             </div>
+
+            {/* Hidden inputs */}
+            <input ref={photoRef} type="file" accept="image/*,video/*" style={{ display:'none' }} onChange={e => handleFilePick(e, e.target.files?.[0]?.type?.startsWith('video') ? 'video' : 'image')} />
+            <input ref={fileRef}  type="file" style={{ display:'none' }} onChange={e => handleFilePick(e, 'file')} />
           </>
         )}
       </div>

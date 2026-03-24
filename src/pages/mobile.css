@@ -1,0 +1,231 @@
+/* ═══════════════════════════════════════════════════════════
+   mobile.css — адаптация для всех устройств
+   iPhone / Android / Tablet / Desktop
+   Подключить в index.css: @import './mobile.css';
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Базовые iOS фиксы ── */
+* { -webkit-tap-highlight-color: transparent; }
+
+input, textarea, select {
+  font-size: 16px !important;
+  -webkit-appearance: none;
+}
+button { touch-action: manipulation; }
+
+/* ═══════════════════════════════════════════════
+   TABLET (768px – 1024px)
+═══════════════════════════════════════════════ */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container { padding: 0 20px; }
+
+  /* Профили */
+  .wp-stats-grid, .cp-stats-grid { grid-template-columns: repeat(3, 1fr); }
+  .wp-actions-grid, .cp-actions-grid { grid-template-columns: repeat(2, 1fr); }
+  .wp-settings-grid, .cp-settings-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Сетки */
+  .cats-grid        { grid-template-columns: repeat(2, 1fr); }
+  .fw-requests-grid { grid-template-columns: repeat(2, 1fr); }
+  .sections-grid    { grid-template-columns: repeat(2, 1fr); }
+  .masters-grid     { grid-template-columns: repeat(2, 1fr); }
+  .popular-grid     { grid-template-columns: repeat(3, 1fr); }
+  .benefits-grid    { grid-template-columns: repeat(2, 1fr); }
+  .reviews-grid     { grid-template-columns: repeat(2, 1fr); }
+
+  /* Deals */
+  .dp-grid { grid-template-columns: 1fr 280px; }
+
+  /* Orders */
+  .orders-layout { grid-template-columns: 200px 1fr; }
+
+  /* Чат */
+  .cht-side { width: 260px; }
+}
+
+/* ═══════════════════════════════════════════════
+   MOBILE (≤768px)
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .container { padding: 0 16px !important; }
+
+  /* Page header */
+  .page-header-bar { padding: 14px 0; }
+  .page-header-bar h1 { font-size: 20px !important; }
+  .page-header-bar p  { font-size: 12px !important; }
+
+  /* Buttons */
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 38px; }
+
+  /* Modals → bottom sheet */
+  .modal-overlay { padding: 0 !important; align-items: flex-end !important; }
+  .modal-card {
+    border-radius: 20px 20px 0 0 !important;
+    padding: 20px 16px 32px !important;
+    max-width: 100% !important; width: 100% !important;
+    margin: 0 !important; max-height: 90vh; overflow-y: auto;
+  }
+
+  /* fw-modal → bottom sheet */
+  .fw-modal-overlay { padding: 0 !important; align-items: flex-end !important; }
+  .fw-modal { border-radius: 20px 20px 0 0 !important; max-width: 100% !important; max-height: 90vh; overflow-y: auto; }
+  .fw-modal-footer { flex-direction: column; padding: 12px 20px 28px !important; }
+  .fw-modal-cancel, .fw-modal-submit { flex: none !important; width: 100% !important; min-height: 48px; }
+
+  /* Auth */
+  .auth-form-card  { padding: 22px 16px 24px; }
+  .auth-form-title { font-size: 20px; }
+  .auth-role-picker { grid-template-columns: 1fr; }
+
+  /* Sections */
+  .sections-grid { grid-template-columns: 1fr !important; gap: 10px; padding: 16px 0 40px; }
+
+  /* Categories */
+  .cats-grid { grid-template-columns: 1fr !important; gap: 10px; padding: 16px 0 40px; }
+  .cat-card { padding: 14px 12px; }
+  .cat-card-icon { width: 44px !important; height: 44px !important; font-size: 22px !important; }
+
+  /* Category form */
+  .cat-page-layout { grid-template-columns: 1fr !important; padding: 16px 0 40px; }
+  .cat-sidebar { display: none !important; }
+  .cat-form-card { padding: 18px 16px; border-radius: 14px; }
+  .cat-form-row  { grid-template-columns: 1fr !important; }
+
+  /* Deals */
+  .dpage-tabs { width: 100%; }
+  .dpage-tab  { flex: 1; justify-content: center; font-size: 13px; padding: 9px 6px; }
+  .dpage-filters {
+    flex-wrap: nowrap !important; overflow-x: auto;
+    -webkit-overflow-scrolling: touch; padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .dpage-filters::-webkit-scrollbar { display: none; }
+  .dpage-filter-btn { flex-shrink: 0; }
+  .dpage-card-top   { flex-direction: column; gap: 8px; }
+  .dpage-card-right { flex-direction: row; align-items: center; }
+  .dpage-card-body  { padding: 14px 12px; }
+  .dp-grid   { grid-template-columns: 1fr !important; padding: 14px 0 40px; }
+  .dp-side   { position: static !important; }
+  .dp-card   { padding: 16px; border-radius: 12px; margin-bottom: 10px; }
+  .dp-people { grid-template-columns: 1fr !important; }
+
+  /* Worker/Customer Profile */
+  .wp-profile-card, .cp-profile-card {
+    flex-direction: column !important; align-items: flex-start !important;
+    gap: 14px; padding: 16px !important; margin: 16px 0 !important;
+  }
+  .wp-stats-grid, .cp-stats-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px; }
+  .wp-stat-card, .cp-stat-card { padding: 12px !important; flex-direction: column; text-align: center; gap: 6px; }
+  .wp-stat-num, .cp-stat-num { font-size: 20px !important; }
+  .wp-actions-grid, .cp-actions-grid { grid-template-columns: 1fr !important; gap: 10px; margin-bottom: 20px; }
+  .wp-settings-grid, .cp-settings-grid { grid-template-columns: 1fr !important; gap: 10px; }
+  .wp-action-card, .cp-action-card { padding: 16px !important; }
+  .wp-deal-item, .cp-deal-item { padding: 14px !important; }
+
+  /* Public Worker Profile */
+  .public-worker-layout { grid-template-columns: 1fr !important; padding: 14px 0 40px; gap: 14px; }
+  .public-worker-card { position: static !important; padding: 20px; }
+  .public-section { padding: 16px; border-radius: 12px; margin-bottom: 12px; }
+  .work-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+
+  /* Find Master */
+  .find-master-controls { flex-direction: column; gap: 10px; padding: 14px; }
+  .search-box { max-width: 100% !important; }
+  .sort-select { width: 100%; }
+  .masters-grid { grid-template-columns: 1fr !important; }
+  .master-actions { flex-direction: column; }
+  .master-actions .btn { width: 100%; min-height: 44px; }
+
+  /* Find Work */
+  .fw-requests-grid { grid-template-columns: 1fr !important; padding: 16px 0 40px; }
+  .fw-request-card  { padding: 16px; }
+
+  /* Active Clients */
+  .ac-toolbar { flex-direction: column; gap: 10px; }
+  .ac-filters { overflow-x: auto; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .ac-filters::-webkit-scrollbar { display: none; }
+  .ac-filter { flex-shrink: 0; }
+  .ac-group-toggle { width: 100%; }
+  .ac-group-btn { flex: 1; text-align: center; }
+  .ac-card-inner { padding: 14px; }
+  .ac-card-header { flex-direction: column !important; gap: 10px; }
+  .ac-detail-row { grid-template-columns: 1fr 1fr !important; gap: 10px; }
+  .ac-actions { flex-direction: column; gap: 10px; }
+  .ac-actions-right { width: 100%; display: flex; gap: 8px; }
+  .ac-actions-right .btn { flex: 1; justify-content: center; }
+
+  /* My Orders */
+  .orders-layout { grid-template-columns: 1fr !important; }
+  .orders-sidebar { display: none !important; }
+  .orders-mobile-filters { display: flex !important; }
+  .orders-new-btn-mobile { display: inline-flex !important; }
+  .order-card { padding: 14px; }
+  .order-card-top { flex-direction: column; gap: 8px; }
+
+  /* Settings */
+  .settings-title { font-size: 22px !important; margin: 16px 0 !important; }
+  .settings-card  { padding: 18px 16px !important; border-radius: 12px !important; }
+  .settings-item  { padding: 14px 0 !important; }
+  .settings-card .btn-primary { width: 100% !important; min-height: 48px; }
+
+  /* Profile (old) */
+  .profile-quick-actions { grid-template-columns: 1fr !important; }
+  .profile-stats-bar     { grid-template-columns: repeat(3,1fr) !important; }
+  .profile-section       { padding: 16px; }
+  .profile-deal-row      { grid-template-columns: 1fr !important; }
+
+  /* Manage Services */
+  .service-item  { flex-direction: column !important; gap: 14px; padding: 16px; }
+  .service-image { width: 100% !important; height: 180px !important; }
+  .form-row      { grid-template-columns: 1fr !important; }
+
+  /* Home */
+  .home-hero     { padding: 36px 0 44px; }
+  .hero-grid     { grid-template-columns: 1fr !important; }
+  .hero-card     { display: none !important; }
+  .hero-title    { font-size: 28px !important; letter-spacing: -1px; }
+  .hero-actions  { flex-direction: column; gap: 10px; }
+  .hero-actions .btn { width: 100%; justify-content: center; min-height: 48px; }
+  .how-grid      { grid-template-columns: 1fr !important; }
+  .popular-grid  { grid-template-columns: 1fr !important; }
+  .benefits-grid { grid-template-columns: 1fr !important; }
+  .reviews-grid  { grid-template-columns: 1fr !important; }
+  .home-cta      { flex-direction: column; padding: 28px 20px !important; text-align: center; gap: 20px; }
+  .cta-btn       { width: 100%; justify-content: center; min-height: 48px; }
+}
+
+/* ═══════════════════════════════════════════════
+   SMALL PHONES (≤480px)
+═══════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .container { padding: 0 12px !important; }
+  .hero-title { font-size: 24px !important; }
+  .wp-stats-grid, .cp-stats-grid { grid-template-columns: 1fr !important; }
+  .profile-stats-bar { grid-template-columns: 1fr !important; gap: 8px; }
+  .profile-stat-bar-item { gap: 8px; }
+  .auth-right { padding: 16px 12px 24px; }
+  .auth-form-card { padding: 20px 14px 22px; }
+}
+
+/* ═══════════════════════════════════════════════
+   iPhone SE (≤375px)
+═══════════════════════════════════════════════ */
+@media (max-width: 375px) {
+  .container { padding: 0 10px !important; }
+  .dpage-tab { font-size: 12px !important; padding: 8px 4px !important; }
+  .ac-filter { padding: 8px 12px; font-size: 13px; }
+  .hero-title { font-size: 22px !important; }
+  .section-title { font-size: 20px !important; }
+}
+
+/* ═══════════════════════════════════════════════
+   Скроллбары скрыты на мобиле
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .cht-side-list::-webkit-scrollbar,
+  .cht-msgs::-webkit-scrollbar,
+  .orders-mobile-filters::-webkit-scrollbar,
+  .ac-filters::-webkit-scrollbar,
+  .dpage-filters::-webkit-scrollbar { display: none; }
+}
