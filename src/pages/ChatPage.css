@@ -332,15 +332,35 @@
 
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 768px) {
-  .cht-side        { width: 100%; }
-  .cht-side-hide   { display: none; }
+  /* Список диалогов — на весь экран */
+  .cht-side       { width: 100%; border-right: none; }
+  .cht-side-hide  { display: none; }
   .cht-main-placeholder { display: none; }
-  .cht-hd-back     { display: flex; }
-  .cht-hd          { padding: 8px 12px; }
-  .cht-msgs        { padding: 12px 12px; }
-  .cht-bubble      { max-width: 80%; font-size: 15px; }
-  .cht-input       { padding: 8px 10px; }
-  .cht-input-field { font-size: 16px; }
+
+  /* Кнопка назад */
+  .cht-hd-back    { display: flex; }
+  .cht-hd         { padding: 8px 12px; min-height: 52px; }
+  .cht-hd-btn span { display: none; } /* только иконка */
+
+  /* Сообщения */
+  .cht-msgs       { padding: 10px 10px; }
+  .cht-bubble     { max-width: 84%; font-size: 15px; }
+
+  /* Поле ввода — font-size 16px чтобы iOS не зумил */
+  .cht-input      { padding: 8px 10px; gap: 8px; }
+  .cht-input-field { font-size: 16px; padding: 10px 14px; }
   .cht-input-send  { width: 40px; height: 40px; }
-  .cht-hd-btn span { display: none; }
+
+  /* Список диалогов — удобнее для пальцев */
+  .cht-conv       { padding: 13px 16px; }
+  .cht-side-hd    { padding: 14px 16px 12px; }
+
+  /* Дата */
+  .cht-date-sep span { font-size: 11px; padding: 4px 10px; }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 380px) {
+  .cht-bubble     { max-width: 90%; }
+  .cht-msgs       { padding: 8px 8px; }
 }
