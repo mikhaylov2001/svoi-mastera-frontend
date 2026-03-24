@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import Header from './components/Header';
@@ -39,6 +39,11 @@ function DealsRoute() {
 }
 
 function AppContent() {
+  const location = useLocation();
+
+  // На страницах чата скрываем футер — чат занимает весь экран
+  const isChatPage = location.pathname.startsWith('/chat');
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
@@ -68,7 +73,8 @@ function AppContent() {
           <Route path="*"                element={<NotFoundPage />} />
         </Routes>
       </main>
-      <Footer />
+      {/* Футер скрыт на странице чата */}
+      {!isChatPage && <Footer />}
     </div>
   );
 }

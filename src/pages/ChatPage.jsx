@@ -1,51 +1,75 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { getConversations, getConversation, sendMessage, updateMessage, deleteMessage, deleteConversation } from '../api';
+import {
+  getConversations, getConversation, sendMessage,
+  updateMessage, deleteMessage, deleteConversation,
+} from '../api';
 import { useAuth } from '../context/AuthContext';
 import './ChatPage.css';
 
+// ── Avatar ──────────────────────────────────────────────────
 function Avatar({ name, url, size = 44 }) {
   if (url) return <img src={url} alt="" className="cht-ava" style={{ width: size, height: size }} />;
   const ini = (name || '?').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
   const cols = ['#e8410a','#1565c0','#2e7d32','#f57f17','#7b1fa2','#00838f','#d81b60','#3949ab'];
-  const col = cols[(ini.charCodeAt(0) || 0) % cols.length];
-  return <div className="cht-ava" style={{ width: size, height: size, background: col, fontSize: size * 0.36 }}>{ini}</div>;
+  const col  = cols[(ini.charCodeAt(0) || 0) % cols.length];
+  return (
+    <div className="cht-ava" style={{ width: size, height: size, background: col, fontSize: size * 0.36 }}>
+      {ini}
+    </div>
+  );
 }
 
+// ── Time helpers ─────────────────────────────────────────────
 function timeStr(d) {
   if (!d) return '';
-  const dt = new Date(d);
-  const now = new Date();
-  if (dt.toDateString() === now.toDateString()) return dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  const dt = new Date(d), now = new Date();
+  if (dt.toDateString() === now.toDateString())
+    return dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
   const y = new Date(now); y.setDate(y.getDate() - 1);
   if (dt.toDateString() === y.toDateString()) return 'вчера';
   return dt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
+function fmtTime(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+}
+
+// ────────────────────────────────────────────────────────────
 export default function ChatPage() {
-  const { partnerId } = useParams();
-  const { userId } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { partnerId }  = useParams();
+  const { userId }     = useAuth();
+  const navigate       = useNavigate();
+  const location       = useLocation();
 
   const partnerIdStr = useMemo(() => (partnerId == null ? null : String(partnerId)), [partnerId]);
   const jobRequestId = useMemo(() => {
-    const qp = new URLSearchParams(location.search || '');
-    const v = qp.get('jobRequestId');
+    const v = new URLSearchParams(location.search || '').get('jobRequestId');
     return v ? String(v) : null;
   }, [location.search]);
 
-  const [convos, setConvos] = useState([]);
-  const [msgs, setMsgs] = useState([]);
+  const [convos,  setConvos]  = useState([]);
+  const [msgs,    setMsgs]    = useState([]);
   const [loading, setLoading] = useState(true);
-  const [text, setText] = useState('');
+  const [text,    setText]    = useState('');
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [editingText, setEditingText] = useState('');
-  const [menuId, setMenuId] = useState(null);
-  const endRef = useRef(null);
+  const [error,   setError]   = useState('');
 
+  const [editingId,   setEditingId]   = useState(null);
+  const [editingText, setEditingText] = useState('');
+  const [menuId,      setMenuId]      = useState(null);
+
+  const endRef      = useRef(null);
+  const inputRef    = useRef(null);
+  const msgsRef     = useRef(null);
+
+  // ── Loaders ──
   const loadConvos = useCallback(async () => {
     if (!userId) return;
     try { setConvos(await getConversations(userId)); } catch {}
@@ -57,11 +81,21 @@ export default function ChatPage() {
   }, [userId, partnerIdStr]);
 
   useEffect(() => { loadConvos(); }, [loadConvos]);
+
   useEffect(() => {
-    if (partnerIdStr) { setLoading(true); loadMsgs().then(() => setLoading(false)); }
+    if (!partnerIdStr) return;
+    setLoading(true);
+    loadMsgs().then(() => setLoading(false));
+    setMenuId(null);
+    setEditingId(null);
+    // фокус на поле ввода
+    setTimeout(() => inputRef.current?.focus(), 100);
   }, [partnerIdStr, loadMsgs]);
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
+  // Scroll to bottom
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [msgs]);
 
   // Poll
   useEffect(() => {
@@ -70,10 +104,10 @@ export default function ChatPage() {
     return () => clearInterval(iv);
   }, [partnerIdStr, loadMsgs, loadConvos]);
 
+  // ── Send ──
   const send = async () => {
     if (!text.trim() || !partnerIdStr || !userId) return;
-    setSending(true);
-    setError('');
+    setSending(true); setError('');
     try {
       await sendMessage(userId, partnerIdStr, text.trim(), jobRequestId);
       setText('');
@@ -85,77 +119,59 @@ export default function ChatPage() {
     setSending(false);
   };
 
-  const onKey = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+  const onKey = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  };
+
+  // ── Edit ──
+  const startEdit = (m) => { setEditingId(m.id); setEditingText(m.text || ''); setMenuId(null); };
+  const cancelEdit = ()  => { setEditingId(null); setEditingText(''); };
+
+  const saveEdit = async () => {
+    if (!userId || !editingId || !editingText.trim()) return;
+    setSending(true); setError('');
+    try {
+      await updateMessage(userId, editingId, editingText.trim());
+      cancelEdit(); await loadMsgs(); await loadConvos();
+    } catch (e) { setError(e?.message || 'Не удалось изменить сообщение.'); }
+    setSending(false);
+  };
+
+  // ── Delete msg ──
+  const removeMsg = async (messageId) => {
+    if (!userId || !messageId) return;
+    setMenuId(null); setSending(true); setError('');
+    try { await deleteMessage(userId, messageId); await loadMsgs(); await loadConvos(); }
+    catch (e) { setError(e?.message || 'Не удалось удалить сообщение.'); }
+    setSending(false);
+  };
+
+  // ── Delete chat ──
+  const removeChat = async () => {
+    if (!userId || !partnerIdStr) return;
+    if (!window.confirm('Удалить весь чат?')) return;
+    setSending(true); setError('');
+    try {
+      await deleteConversation(userId, partnerIdStr);
+      setMsgs([]); await loadConvos(); navigate('/chat');
+    } catch (e) { setError(e?.message || 'Не удалось удалить чат.'); }
+    setSending(false);
+  };
 
   const activePartner = convos.find(c => String(c.partnerId) === partnerIdStr);
   const closeMenu = () => setMenuId(null);
 
-  const startEdit = (m) => {
-    setEditingId(m.id);
-    setEditingText(m.text || '');
-    closeMenu();
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditingText('');
-  };
-
-  const saveEdit = async () => {
-    if (!userId || !editingId) return;
-    const next = (editingText || '').trim();
-    if (!next) return;
-    setSending(true);
-    setError('');
-    try {
-      await updateMessage(userId, editingId, next);
-      cancelEdit();
-      await loadMsgs();
-      await loadConvos();
-    } catch (e) {
-      setError(e?.message || 'Не удалось изменить сообщение.');
-    }
-    setSending(false);
-  };
-
-  const removeMsg = async (messageId) => {
-    if (!userId || !messageId) return;
-    closeMenu();
-    setSending(true);
-    setError('');
-    try {
-      await deleteMessage(userId, messageId);
-      await loadMsgs();
-      await loadConvos();
-    } catch (e) {
-      setError(e?.message || 'Не удалось удалить сообщение.');
-    }
-    setSending(false);
-  };
-
-  const removeChat = async () => {
-    if (!userId || !partnerIdStr) return;
-    closeMenu();
-    if (!window.confirm('Удалить весь чат?')) return;
-    setSending(true);
-    setError('');
-    try {
-      await deleteConversation(userId, partnerIdStr);
-      setMsgs([]);
-      await loadConvos();
-      navigate('/chat');
-    } catch (e) {
-      setError(e?.message || 'Не удалось удалить чат.');
-    }
-    setSending(false);
-  };
-
+  // ════════════════════════════════════════════════════════
   return (
-    <div className="cht">
-      {/* ═══ SIDEBAR ═══ */}
+    <div className="cht-root" onClick={closeMenu}>
+
+      {/* ══ SIDEBAR ══ */}
       <div className={`cht-side ${partnerIdStr ? 'cht-side-hide' : ''}`}>
         <div className="cht-side-hd">
           <h2>Сообщения</h2>
+          <div className="cht-side-hd-sub">
+            {convos.length > 0 ? `${convos.length} диалогов` : 'Нет диалогов'}
+          </div>
         </div>
 
         {convos.length === 0 ? (
@@ -167,18 +183,22 @@ export default function ChatPage() {
         ) : (
           <div className="cht-side-list">
             {convos.map(c => (
-              <div key={c.partnerId}
-                className={`cht-conv ${c.partnerId === partnerId ? 'active' : ''}`}
-                onClick={() => navigate(`/chat/${c.partnerId}`)}>
-                <Avatar name={c.partnerName} url={c.partnerAvatarUrl} size={48} />
+              <div
+                key={c.partnerId}
+                className={`cht-conv ${String(c.partnerId) === partnerIdStr ? 'active' : ''}`}
+                onClick={() => navigate(`/chat/${c.partnerId}`)}
+              >
+                <Avatar name={c.partnerName} url={c.partnerAvatarUrl} size={44} />
                 <div className="cht-conv-body">
                   <div className="cht-conv-top">
                     <span className="cht-conv-name">{c.partnerName}</span>
                     <span className="cht-conv-time">{timeStr(c.lastMessageAt)}</span>
                   </div>
                   <div className="cht-conv-bottom">
-                    <span className="cht-conv-msg">{c.lastMessage}</span>
-                    {c.unreadCount > 0 && <span className="cht-conv-badge">{c.unreadCount}</span>}
+                    <span className="cht-conv-msg">{c.lastMessage || 'Нет сообщений'}</span>
+                    {c.unreadCount > 0 && (
+                      <span className="cht-conv-badge">{c.unreadCount}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -187,15 +207,19 @@ export default function ChatPage() {
         )}
       </div>
 
-      {/* ═══ CHAT AREA ═══ */}
+      {/* ══ CHAT AREA ══ */}
       <div className={`cht-main ${!partnerIdStr ? 'cht-main-placeholder' : ''}`}>
-        {!partnerIdStr ? (
+
+        {/* Placeholder */}
+        {!partnerIdStr && (
           <div className="cht-placeholder">
             <div className="cht-placeholder-icon">💬</div>
             <h3>Выберите диалог</h3>
             <p>или начните новый со страницы заявки</p>
           </div>
-        ) : (
+        )}
+
+        {partnerIdStr && (
           <>
             {/* Header */}
             <div className="cht-hd" onClick={closeMenu}>
@@ -204,27 +228,29 @@ export default function ChatPage() {
                   <path d="M15 18l-6-6 6-6"/>
                 </svg>
               </button>
+
               <Avatar name={activePartner?.partnerName} url={activePartner?.partnerAvatarUrl} size={38} />
+
               <div className="cht-hd-info">
                 <div className="cht-hd-name">{activePartner?.partnerName || 'Чат'}</div>
-                <div className="cht-hd-status">онлайн</div>
+                <div className="cht-hd-status">● онлайн</div>
               </div>
-              <button
-                className="btn btn-ghost btn-sm"
-                style={{ marginLeft: 'auto' }}
-                onClick={(e) => { e.stopPropagation(); removeChat(); }}
-              >
-                Удалить чат
-              </button>
+
+              <div className="cht-hd-actions">
+                <button
+                  className="cht-hd-btn cht-hd-btn-danger"
+                  onClick={(e) => { e.stopPropagation(); removeChat(); }}
+                >
+                  🗑 <span>Удалить чат</span>
+                </button>
+              </div>
             </div>
 
+            {/* Error */}
+            {error && <div className="cht-error">{error}</div>}
+
             {/* Messages */}
-            <div className="cht-msgs">
-              {error && (
-                <div className="cht-msgs-loading" style={{ color: '#b91c1c' }}>
-                  {error}
-                </div>
-              )}
+            <div className="cht-msgs" ref={msgsRef}>
               {loading ? (
                 <div className="cht-msgs-loading">Загрузка сообщений...</div>
               ) : msgs.length === 0 ? (
@@ -233,61 +259,95 @@ export default function ChatPage() {
                   <p>Напишите первое сообщение</p>
                 </div>
               ) : (
-                <>
-                  {msgs.map((m, i) => {
-                    const mine = m.senderId === userId;
-                    const showDate = i === 0 || new Date(msgs[i-1].createdAt).toDateString() !== new Date(m.createdAt).toDateString();
-                    return (
-                      <React.Fragment key={m.id}>
-                        {showDate && (
-                          <div className="cht-date-sep">
-                            <span>{new Date(m.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}</span>
-                          </div>
-                        )}
-                        <div className={`cht-msg ${mine ? 'cht-msg-my' : 'cht-msg-their'}`}>
-                          {!mine && <Avatar name={m.senderName} url={m.senderAvatarUrl} size={32} />}
-                          <div className="cht-bubble">
-                            {!mine && <div className="cht-bubble-name">{m.senderName}</div>}
-                            {mine && editingId === m.id ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                <textarea
-                                  className="cht-input-field"
-                                  style={{ minHeight: 70 }}
-                                  value={editingText}
-                                  onChange={(e) => setEditingText(e.target.value)}
-                                />
-                                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                                  <button className="btn btn-outline btn-sm" onClick={cancelEdit} disabled={sending}>Отмена</button>
-                                  <button className="btn btn-primary btn-sm" onClick={saveEdit} disabled={sending || !editingText.trim()}>
-                                    Сохранить
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="cht-bubble-text" onClick={() => mine && setMenuId(menuId === m.id ? null : m.id)}>
-                                {m.text}
-                              </div>
-                            )}
-                            <div className="cht-bubble-time">
-                              {new Date(m.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
-                              {mine && <span className="cht-bubble-read">{m.isRead ? ' ✓✓' : ' ✓'}</span>}
-                            </div>
-                            {mine && menuId === m.id && editingId !== m.id && (
-                              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
-                                <button className="btn btn-outline btn-sm" onClick={() => startEdit(m)} disabled={sending}>
-                                  Редактировать
-                                </button>
-                                <button className="btn btn-outline btn-sm" onClick={() => removeMsg(m.id)} disabled={sending}>
-                                  Удалить
-                                </button>
-                              </div>
-                            )}
-                          </div>
+                msgs.map((m, i) => {
+                  const mine = m.senderId === userId;
+                  const showDate = i === 0 ||
+                    new Date(msgs[i-1].createdAt).toDateString() !== new Date(m.createdAt).toDateString();
+
+                  return (
+                    <React.Fragment key={m.id}>
+                      {showDate && (
+                        <div className="cht-date-sep">
+                          <span>{fmtDate(m.createdAt)}</span>
                         </div>
-                      </React.Fragment>
-                    );
-                  })}
-                </>
+                      )}
+
+                      <div className={`cht-msg ${mine ? 'cht-msg-my' : 'cht-msg-their'}`}>
+                        {!mine && (
+                          <Avatar name={m.senderName} url={m.senderAvatarUrl} size={30} />
+                        )}
+
+                        <div className="cht-bubble">
+                          {!mine && (
+                            <div className="cht-bubble-name">{m.senderName}</div>
+                          )}
+
+                          {/* Edit mode */}
+                          {mine && editingId === m.id ? (
+                            <div className="cht-edit-wrap">
+                              <textarea
+                                className="cht-edit-textarea"
+                                value={editingText}
+                                onChange={e => setEditingText(e.target.value)}
+                                autoFocus
+                              />
+                              <div className="cht-edit-actions">
+                                <button className="btn btn-outline btn-sm" onClick={cancelEdit} disabled={sending}>
+                                  Отмена
+                                </button>
+                                <button
+                                  className="btn btn-primary btn-sm"
+                                  onClick={saveEdit}
+                                  disabled={sending || !editingText.trim()}
+                                >
+                                  Сохранить
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div
+                              className="cht-bubble-text"
+                              onClick={e => { e.stopPropagation(); mine && setMenuId(menuId === m.id ? null : m.id); }}
+                            >
+                              {m.text}
+                            </div>
+                          )}
+
+                          {/* Time + read */}
+                          {editingId !== m.id && (
+                            <div className="cht-bubble-time">
+                              {fmtTime(m.createdAt)}
+                              {mine && (
+                                <span className="cht-bubble-read">{m.isRead ? '✓✓' : '✓'}</span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Context menu */}
+                          {mine && menuId === m.id && editingId !== m.id && (
+                            <div className="cht-msg-menu" onClick={e => e.stopPropagation()}>
+                              <button
+                                className="btn btn-outline btn-sm"
+                                onClick={() => startEdit(m)}
+                                disabled={sending}
+                              >
+                                ✏️ Изменить
+                              </button>
+                              <button
+                                className="btn btn-outline btn-sm"
+                                style={{ color: '#dc2626', borderColor: '#fca5a5' }}
+                                onClick={() => removeMsg(m.id)}
+                                disabled={sending}
+                              >
+                                🗑 Удалить
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  );
+                })
               )}
               <div ref={endRef} />
             </div>
@@ -295,6 +355,7 @@ export default function ChatPage() {
             {/* Input */}
             <div className="cht-input">
               <textarea
+                ref={inputRef}
                 className="cht-input-field"
                 placeholder="Написать сообщение…"
                 value={text}
@@ -302,7 +363,11 @@ export default function ChatPage() {
                 onKeyDown={onKey}
                 rows={1}
               />
-              <button className="cht-input-send" disabled={!text.trim() || sending} onClick={send}>
+              <button
+                className="cht-input-send"
+                disabled={!text.trim() || sending}
+                onClick={send}
+              >
                 <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
                 </svg>
