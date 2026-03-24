@@ -16,6 +16,7 @@ import CustomerProfilePage from './pages/CustomerProfilePage';
 import WorkerProfilePage from './pages/WorkerProfilePage';
 import PublicWorkerProfilePage from './pages/PublicWorkerProfilePage';
 import DealsPage from './pages/DealsPage';
+import WorkerDealsPage from './pages/WorkerDealsPage';
 import FindWorkPage from './pages/FindWorkPage';
 import FindMasterPage from './pages/FindMasterPage';
 import ChatPage from './pages/ChatPage';
@@ -29,6 +30,12 @@ function ProtectedRoute({ children, workerOnly = false }) {
   if (!userId) return <Navigate to="/login" replace />;
   if (workerOnly && userRole !== 'WORKER') return <Navigate to="/profile" replace />;
   return children;
+}
+
+// Роут /deals — показывает WorkerDealsPage мастеру, DealsPage клиенту
+function DealsRoute() {
+  const { userRole } = useAuth();
+  return userRole === 'WORKER' ? <WorkerDealsPage /> : <DealsPage />;
 }
 
 function AppContent() {
@@ -47,7 +54,7 @@ function AppContent() {
           <Route path="/register"        element={<RegisterPage />} />
           <Route path="/profile"         element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
           <Route path="/worker-profile"  element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
-          <Route path="/deals"           element={<ProtectedRoute><DealsPage /></ProtectedRoute>} />
+          <Route path="/deals"           element={<ProtectedRoute><DealsRoute /></ProtectedRoute>} />
           <Route path="/find-work"       element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
           <Route path="/find-master"     element={<FindMasterPage />} />
           <Route path="/find-master/:categorySlug" element={<FindMasterPage />} />
