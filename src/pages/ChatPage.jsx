@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   getConversations, getConversation, sendMessage,
   updateMessage, deleteMessage, deleteConversation,
+  uploadFile,
 } from '../api';
 import { useAuth } from '../context/AuthContext';
 import './ChatPage.css';
@@ -422,37 +423,72 @@ export default function ChatPage() {
     setBusy(true); setErr('');
     try {
       let finalTxt = t;
-      let voiceData = null;
-      let imgData   = null;
+      let attachmentUrl  = null;
+      let attachmentType = null;
 
       if (preview) {
-        if (preview.type === 'voice') {
-          finalTxt  = `🎤 Голосовое (${preview.duration}с)`;
-          voiceData = { url: preview.url, duration: preview.duration };
-        } else if (preview.type === 'image') {
-          finalTxt = `📷 ${preview.name || 'Фото'}${t ? '\n'+t : ''}`;
-          imgData  = preview.url;
-        } else if (preview.type === 'video') {
-          finalTxt = `🎥 ${preview.name || 'Видео'}${t ? '\n'+t : ''}`;
-        } else if (preview.type === 'file') {
-          finalTxt = `📎 ${preview.name || 'Файл'}${t ? '\n'+t : ''}`;
-        } else if (preview.type === 'location') {
-          finalTxt = `📍 ${preview.name}`;
+        // ── Загружаем файл на сервер ──────────────────────────
+        if (preview.file && ['image','video','file'].includes(preview.type)) {
+          try {
+            const uploaded = await uploadFile(userId, preview.file);
+            attachmentUrl  = uploaded.url;
+            attachmentType = preview.type; // 'image' | 'video' | 'file'
+
+            if (preview.type === 'image')      finalTxt = `📷 ${uploaded.filename || preview.name}${t ? '\n'+t : ''}`;
+            else if (preview.type === 'video') finalTxt = `🎥 ${uploaded.filename || preview.name}${t ? '\n'+t : ''}`;
+            else if (preview.type === 'file')  finalTxt = `📎 ${uploaded.filename || preview.name}${t ? '\n'+t : ''}`;
+          } catch (uploadErr) {
+            // Если сервер не поддерживает — отправляем только текст с меткой
+            console.warn('Upload failed, sending as text:', uploadErr);
+            if (preview.type === 'image')      finalTxt = `📷 ${preview.name}${t ? '\n'+t : ''}`;
+            else if (preview.type === 'video') finalTxt = `🎥 ${preview.name}${t ? '\n'+t : ''}`;
+            else if (preview.type === 'file')  finalTxt = `📎 ${preview.name}${t ? '\n'+t : ''}`;
+          }
         }
+
+        // ── Голосовое — конвертируем в base64 и загружаем ────
+        else if (preview.type === 'voice' && preview.blob) {
+          try {
+            const voiceFile = new File([preview.blob], `voice_${Date.now()}.webm`, { type: preview.blob.type });
+            const uploaded  = await uploadFile(userId, voiceFile);
+            attachmentUrl   = uploaded.url;
+            attachmentType  = 'voice';
+            finalTxt        = `🎤 Голосовое (${preview.duration}с)`;
+          } catch (uploadErr) {
+            console.warn('Voice upload failed:', uploadErr);
+            finalTxt = `🎤 Голосовое (${preview.duration}с)`;
+          }
+        }
+
+        // ── Геолокация ────────────────────────────────────────
+        else if (preview.type === 'location') {
+          finalTxt       = `📍 ${preview.name}`;
+          attachmentType = 'location';
+          attachmentUrl  = preview.name; // "lat, lon"
+        }
+
         setPreview(null);
       }
 
       if (!finalTxt) { setBusy(false); return; }
-      const sent = await sendMessage(userId, pid, finalTxt, jrId);
+
+      // Отправляем сообщение с attachment
+      const sent = await sendMessage(userId, pid, finalTxt, jrId, attachmentUrl, attachmentType);
       const sentId = sent?.id;
 
-      if (sentId && voiceData) setVoiceStore(p => ({ ...p, [sentId]: voiceData }));
-      if (sentId && imgData)   setImgStore(p => ({ ...p, [sentId]: imgData }));
-      if (sentId && preview?.type === 'file' && preview.url)
-        setFileStore(p => ({ ...p, [sentId]: { url: preview.url, name: preview.name } }));
+      // Сохраняем локально для немедленного отображения
+      if (sentId) {
+        if (attachmentType === 'voice' && attachmentUrl)
+          setVoiceStore(p => ({ ...p, [sentId]: { url: attachmentUrl, duration: preview?.duration || 0 } }));
+        if ((attachmentType === 'image' || attachmentType === 'video') && attachmentUrl)
+          setImgStore(p => ({ ...p, [sentId]: attachmentUrl }));
+        if (attachmentType === 'file' && attachmentUrl)
+          setFileStore(p => ({ ...p, [sentId]: { url: attachmentUrl, name: preview?.name } }));
+      }
 
       setTxt(''); setShowEmoji(false); setShowAttach(false);
       await loadMsgs(); await loadConvos();
+
     } catch (e) { setErr(e?.message || 'Не удалось отправить.'); }
     setBusy(false);
   };
@@ -613,9 +649,10 @@ export default function ChatPage() {
               const showDate = i === 0 || new Date(msgs[i-1].createdAt).toDateString() !== new Date(m.createdAt).toDateString();
               const isLast   = i === msgs.length-1 || msgs[i+1].senderId !== m.senderId;
               const parsed   = parseMsgContent(m.text);
-              const vd       = voiceStore[m.id];
-              const imgUrl   = imgStore[m.id];
-              const fileData = fileStore[m.id];
+              const vd       = voiceStore[m.id] || (m.attachmentType === 'voice'  && m.attachmentUrl ? { url: m.attachmentUrl, duration: parseInt(m.text?.match(/\((\d+)с\)/)?.[1]) || 0 } : null);
+              const imgUrl   = imgStore[m.id]   || (m.attachmentType === 'image'  && m.attachmentUrl ? m.attachmentUrl : null)
+                                                || (m.attachmentType === 'video'  && m.attachmentUrl ? m.attachmentUrl : null);
+              const fileData = fileStore[m.id]  || (m.attachmentType === 'file'   && m.attachmentUrl ? { url: m.attachmentUrl, name: parsed.filename } : null);
 
               return (
                 <React.Fragment key={m.id}>

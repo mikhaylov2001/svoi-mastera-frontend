@@ -166,10 +166,16 @@ export async function deleteWorkerService(userId, id) {
 }
 
 // ── MESSAGES ──
-export async function sendMessage(userId, receiverId, text, jobRequestId) {
+export async function sendMessage(userId, receiverId, text, jobRequestId, attachmentUrl, attachmentType) {
   return apiCall('/messages', {
     method: 'POST', headers: { 'X-User-Id': userId },
-    body: JSON.stringify({ receiverId, text, jobRequestId: jobRequestId || null }),
+    body: JSON.stringify({
+      receiverId,
+      text,
+      jobRequestId: jobRequestId || null,
+      attachmentUrl: attachmentUrl || null,
+      attachmentType: attachmentType || null,
+    }),
   });
 }
 export async function getConversation(userId, partnerId) {
@@ -210,6 +216,32 @@ export async function uploadAvatar(userId, base64Image) {
     method: 'POST', headers: { 'X-User-Id': userId },
     body: JSON.stringify({ image: base64Image }),
   });
+}
+
+// ── FILE UPLOAD ──
+// Загружает файл на сервер, возвращает { url, filename, size, type }
+export async function uploadFile(userId, file) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await fetch(`${API_BASE}/files/upload`, {
+      method: 'POST',
+      headers: { 'X-User-Id': userId },
+      body: formData,
+      // Content-Type НЕ ставим — браузер сам ставит multipart/form-data с boundary
+    });
+    const text = await response.text();
+    let data;
+    try { data = text ? JSON.parse(text) : {}; } catch { data = { message: text }; }
+    if (!response.ok) throw new Error(data.message || 'Ошибка загрузки файла');
+    return data; // { url, filename, size, contentType }
+  } catch (error) {
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new Error('Нет соединения с сервером.');
+    }
+    throw error;
+  }
 }
 
 // ── NOTIFICATION SETTINGS ──
