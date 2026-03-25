@@ -176,16 +176,73 @@ function LocBubble({ coords }) {
   );
 }
 
+// ─── File type config ─────────────────────────────────────────
+const FILE_TYPES = {
+  PDF:  { bg: 'linear-gradient(135deg,#f44336,#e53935)', label: 'PDF', icon: (
+    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h1.5a1.5 1.5 0 0 1 0 3H9v-3zm0 0V11m6 5h-1.5M15 13v3"/></svg>
+  )},
+  DOC:  { bg: 'linear-gradient(135deg,#1565c0,#1e88e5)', label: 'DOC', icon: (
+    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+  )},
+  DOCX: { bg: 'linear-gradient(135deg,#1565c0,#1e88e5)', label: 'DOCX', icon: (
+    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+  )},
+  XLS:  { bg: 'linear-gradient(135deg,#2e7d32,#43a047)', label: 'XLS', icon: (
+    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 12l2.5 3-2.5 3m4-6l2.5 3-2.5 3"/></svg>
+  )},
+  XLSX: { bg: 'linear-gradient(135deg,#2e7d32,#43a047)', label: 'XLSX', icon: (
+    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 12l2.5 3-2.5 3m4-6l2.5 3-2.5 3"/></svg>
+  )},
+  PPT:  { bg: 'linear-gradient(135deg,#e65100,#f4511e)', label: 'PPT', icon: (
+    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h1.5a1.5 1.5 0 0 1 0 3H9v-3z"/></svg>
+  )},
+  PPTX: { bg: 'linear-gradient(135deg,#e65100,#f4511e)', label: 'PPTX', icon: (
+    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h1.5a1.5 1.5 0 0 1 0 3H9v-3z"/></svg>
+  )},
+  ZIP:  { bg: 'linear-gradient(135deg,#6a1b9a,#9c27b0)', label: 'ZIP', icon: (
+    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M12 8v8m0-8l3 3m-3-3L9 11"/></svg>
+  )},
+  RAR:  { bg: 'linear-gradient(135deg,#6a1b9a,#9c27b0)', label: 'RAR', icon: (
+    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+  )},
+  MP3:  { bg: 'linear-gradient(135deg,#00838f,#00acc1)', label: 'MP3', icon: (
+    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 15V9l5 3-5 3z" fill="#fff" stroke="none"/></svg>
+  )},
+  MP4:  { bg: 'linear-gradient(135deg,#00695c,#00897b)', label: 'MP4', icon: (
+    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0 1 21 8.82v6.36a1 1 0 0 1-1.447.889L15 14"/><rect x="3" y="7" width="12" height="10" rx="2"/></svg>
+  )},
+  TXT:  { bg: 'linear-gradient(135deg,#546e7a,#78909c)', label: 'TXT', icon: (
+    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8"/></svg>
+  )},
+};
+const FILE_DEFAULT = { bg: 'linear-gradient(135deg,#455a64,#607d8b)', label: '', icon: (
+  <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+)};
+
 // ─── File Bubble ──────────────────────────────────────────────
 function FileBubble({ name, mine }) {
-  const ext = name?.split('.').pop()?.toUpperCase() || 'FILE';
-  const icon = ext === 'PDF' ? '📄' : ext.match(/^(DOC|DOCX)$/) ? '📝' : ext.match(/^(XLS|XLSX)$/) ? '📊' : ext.match(/^(ZIP|RAR)$/) ? '🗜️' : '📎';
+  const ext = (name?.split('.').pop() || 'FILE').toUpperCase();
+  const cfg = FILE_TYPES[ext] || FILE_DEFAULT;
+
+  // Размер файла — пока не знаем, показываем тип
+  const shortName = name?.length > 28 ? name.slice(0, 25) + '…' + name.slice(-6) : name || 'Файл';
+
   return (
     <div className="cfile">
-      <div className="cfile-icon">{icon}</div>
-      <div className="cfile-info">
-        <div className="cfile-name">{name || 'Файл'}</div>
-        <div className="cfile-ext">{ext}</div>
+      <div className="cfile-ic" style={{ background: cfg.bg }}>
+        {cfg.icon}
+        <span className="cfile-ic-ext">{cfg.label || ext.slice(0,4)}</span>
+      </div>
+      <div className="cfile-body">
+        <div className="cfile-name">{shortName}</div>
+        <div className="cfile-meta">{ext} · Файл</div>
+      </div>
+      <div className="cfile-dl">
+        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
       </div>
     </div>
   );
@@ -416,7 +473,12 @@ export default function ChatPage() {
 
   const pickFile = (e, type) => {
     const f = e.target.files?.[0]; if (!f) return;
-    setPreview({ type, url: URL.createObjectURL(f), name: f.name, file: f });
+    const url = URL.createObjectURL(f);
+    // Определяем тип точнее по mime
+    let realType = type;
+    if (f.type.startsWith('image/')) realType = 'image';
+    else if (f.type.startsWith('video/')) realType = 'video';
+    setPreview({ type: realType, url, name: f.name, file: f });
     setShowAttach(false);
     e.target.value = '';
   };
@@ -637,8 +699,18 @@ export default function ChatPage() {
           {preview && (
             <div className="cprev" onClick={e => e.stopPropagation()}>
               <div className="cprev-inner">
-                {preview.type === 'image' && <img src={preview.url} alt="" className="cprev-img"/>}
-                {preview.type === 'video' && <video src={preview.url} controls className="cprev-img"/>}
+                {(preview.type === 'image') && (
+                  <div className="cprev-img-wrap">
+                    <img src={preview.url} alt="" className="cprev-img"/>
+                    <span className="cprev-img-label">📷 {preview.name}</span>
+                  </div>
+                )}
+                {preview.type === 'video' && (
+                  <div className="cprev-img-wrap">
+                    <video src={preview.url} className="cprev-img" muted/>
+                    <span className="cprev-img-label">🎥 {preview.name}</span>
+                  </div>
+                )}
                 {preview.type === 'voice' && (
                   <div className="cprev-voice">
                     <span style={{fontSize:22}}>🎤</span>
@@ -647,7 +719,12 @@ export default function ChatPage() {
                   </div>
                 )}
                 {preview.type === 'file' && (
-                  <div className="cprev-file"><span>📎</span><span>{preview.name}</span></div>
+                  <div className="cprev-file">
+                    <div className="cprev-file-ic" style={{background: (FILE_TYPES[(preview.name?.split('.').pop()||'').toUpperCase()] || FILE_DEFAULT).bg}}>
+                      {(FILE_TYPES[(preview.name?.split('.').pop()||'').toUpperCase()] || FILE_DEFAULT).icon}
+                    </div>
+                    <span>{preview.name}</span>
+                  </div>
                 )}
                 {preview.type === 'location' && (
                   <div className="cprev-file"><span>📍</span><span>{preview.name}</span></div>
