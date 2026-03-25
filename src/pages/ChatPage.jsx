@@ -220,15 +220,21 @@ const FILE_DEFAULT = { bg: 'linear-gradient(135deg,#455a64,#607d8b)', label: '',
 )};
 
 // ─── File Bubble ──────────────────────────────────────────────
-function FileBubble({ name, mine }) {
+function FileBubble({ name, mine, fileUrl }) {
   const ext = (name?.split('.').pop() || 'FILE').toUpperCase();
   const cfg = FILE_TYPES[ext] || FILE_DEFAULT;
-
-  // Размер файла — пока не знаем, показываем тип
   const shortName = name?.length > 28 ? name.slice(0, 25) + '…' + name.slice(-6) : name || 'Файл';
 
+  const download = () => {
+    if (!fileUrl) { alert('Файл недоступен для скачивания'); return; }
+    const a = document.createElement('a');
+    a.href = fileUrl;
+    a.download = name || 'file';
+    a.click();
+  };
+
   return (
-    <div className="cfile">
+    <div className="cfile" onClick={download} style={{ cursor: fileUrl ? 'pointer' : 'default' }}>
       <div className="cfile-ic" style={{ background: cfg.bg }}>
         {cfg.icon}
         <span className="cfile-ic-ext">{cfg.label || ext.slice(0,4)}</span>
@@ -237,7 +243,7 @@ function FileBubble({ name, mine }) {
         <div className="cfile-name">{shortName}</div>
         <div className="cfile-meta">{ext} · Файл</div>
       </div>
-      <div className="cfile-dl">
+      <div className={`cfile-dl ${fileUrl ? 'cfile-dl-active' : 'cfile-dl-disabled'}`}>
         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
@@ -363,6 +369,8 @@ export default function ChatPage() {
   const [voiceStore, setVoiceStore] = useState({});
   // локальное хранилище изображений: messageId -> objectURL
   const [imgStore,   setImgStore]   = useState({});
+  // локальное хранилище файлов: messageId -> {url, name}
+  const [fileStore,  setFileStore]  = useState({});
   // превью перед отправкой
   const [preview, setPreview] = useState(null);
 
@@ -440,6 +448,8 @@ export default function ChatPage() {
 
       if (sentId && voiceData) setVoiceStore(p => ({ ...p, [sentId]: voiceData }));
       if (sentId && imgData)   setImgStore(p => ({ ...p, [sentId]: imgData }));
+      if (sentId && preview?.type === 'file' && preview.url)
+        setFileStore(p => ({ ...p, [sentId]: { url: preview.url, name: preview.name } }));
 
       setTxt(''); setShowEmoji(false); setShowAttach(false);
       await loadMsgs(); await loadConvos();
@@ -605,6 +615,7 @@ export default function ChatPage() {
               const parsed   = parseMsgContent(m.text);
               const vd       = voiceStore[m.id];
               const imgUrl   = imgStore[m.id];
+              const fileData = fileStore[m.id];
 
               return (
                 <React.Fragment key={m.id}>
@@ -617,7 +628,11 @@ export default function ChatPage() {
                       <div className="cmrow-ava">{isLast && <Ava name={m.senderName} url={m.senderAvatarUrl} size={30}/>}</div>
                     )}
 
-                    <div className={`cbub ${parsed.type === 'location' ? 'cbub-loc' : parsed.type === 'image_text' || imgUrl ? 'cbub-img' : ''}`}>
+                    <div className={[
+                      'cbub',
+                      parsed.type === 'location' ? 'cbub-loc' : '',
+                      (parsed.type === 'image_text' && imgUrl) || (parsed.type === 'video_text' && imgUrl) ? 'cbub-img' : '',
+                    ].filter(Boolean).join(' ')}>
 
                       {!mine && isLast && <div className="cbub-name">{m.senderName}</div>}
 
@@ -641,29 +656,62 @@ export default function ChatPage() {
                             <VoicePlayer url={vd.url} dur={vd.duration} mine={mine}/>
 
                           ) : parsed.type === 'voice' ? (
-                            // голосовое без локального url (из другой сессии)
+                            // голосовое без локального url
                             <div className="cvp-stub">
-                              <span style={{fontSize:20}}>🎤</span>
-                              <span>{m.text?.replace('🎤 ','') || 'Голосовое'}</span>
-                            </div>
-
-                          ) : (parsed.type === 'image_text' || imgUrl) ? (
-                            <ImageBubble
-                              url={imgUrl || ''}
-                              caption={parsed.caption || (imgUrl ? '' : parsed.filename)}
-                            />
-
-                          ) : parsed.type === 'file_text' ? (
-                            <FileBubble name={parsed.filename} mine={mine}/>
-
-                          ) : parsed.type === 'video_text' ? (
-                            <div className="cvid">
-                              <span style={{fontSize:28}}>🎥</span>
-                              <div>
-                                <div style={{fontWeight:700, fontSize:14}}>{parsed.filename}</div>
-                                {parsed.caption && <div style={{fontSize:13, opacity:.8}}>{parsed.caption}</div>}
+                              <div className="cvp-stub-btn">
+                                <IcPlay/>
+                              </div>
+                              <div className="cvp-stub-body">
+                                <div className="cvp-stub-wave">
+                                  {Array.from({length:28}).map((_,i) => (
+                                    <div key={i} className="cvp-stub-bar"
+                                      style={{height: 3 + Math.round(Math.abs(Math.sin(i*0.85+0.5)*11))}}/>
+                                  ))}
+                                </div>
+                                <div className="cvp-stub-time">
+                                  {m.text?.match(/\((\d+)с\)/)?.[1] ? `0:${String(m.text.match(/\((\d+)с\)/)[1]).padStart(2,'0')}` : 'Голосовое'}
+                                </div>
                               </div>
                             </div>
+
+                          ) : parsed.type === 'image_text' && imgUrl ? (
+                            <ImageBubble url={imgUrl} caption={parsed.caption}/>
+
+                          ) : parsed.type === 'image_text' && !imgUrl ? (
+                            // фото без локального url (другая сессия)
+                            <div className="cphoto-stub">
+                              <div className="cphoto-stub-icon">
+                                <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                  <rect x="3" y="3" width="18" height="18" rx="3"/>
+                                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                                  <path d="M21 15l-5-5L5 21"/>
+                                </svg>
+                              </div>
+                              <div className="cphoto-stub-text">
+                                {parsed.caption || parsed.filename || 'Фото'}
+                              </div>
+                            </div>
+
+                          ) : parsed.type === 'video_text' && imgUrl ? (
+                            <ImageBubble url={imgUrl} caption={parsed.caption || parsed.filename}/>
+
+                          ) : parsed.type === 'video_text' ? (
+                            <div className="cphoto-stub">
+                              <div className="cphoto-stub-icon">
+                                <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                  <path d="M15 10l4.553-2.069A1 1 0 0 1 21 8.82v6.36a1 1 0 0 1-1.447.889L15 14"/>
+                                  <rect x="3" y="7" width="12" height="10" rx="2"/>
+                                </svg>
+                              </div>
+                              <div className="cphoto-stub-text">{parsed.filename || 'Видео'}</div>
+                            </div>
+
+                          ) : parsed.type === 'file_text' ? (
+                            <FileBubble
+                              name={parsed.filename}
+                              mine={mine}
+                              fileUrl={fileData?.url}
+                            />
 
                           ) : (
                             <div className="cbub-txt"
