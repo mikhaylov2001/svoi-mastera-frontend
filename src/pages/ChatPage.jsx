@@ -153,6 +153,7 @@ export default function ChatPage() {
   const inputRef = useRef(null);
   const fileRef  = useRef(null);
   const photoRef = useRef(null);
+  const cameraRef = useRef(null);
 
   const currentBg = CHAT_BACKGROUNDS.find(b => b.id === bgId) || CHAT_BACKGROUNDS[0];
 
@@ -503,62 +504,64 @@ export default function ChatPage() {
               </div>
             )}
 
-            {/* Attach panel */}
+            {/* Attach panel — Telegram style, снизу вверх */}
             {showAttach && (
               <div className="cht-attach-panel" onClick={e => e.stopPropagation()}>
                 <button className="cht-attach-btn" onClick={() => photoRef.current?.click()}>
-                  <span className="cht-attach-icon" style={{ background: '#4caf50' }}>📷</span>
-                  <span>Фото / Видео</span>
+                  <span className="cht-attach-icon" style={{ background: 'linear-gradient(135deg,#43a047,#66bb6a)' }}>
+                    <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  </span>
+                  <span>Фото или видео</span>
                 </button>
                 <button className="cht-attach-btn" onClick={() => fileRef.current?.click()}>
-                  <span className="cht-attach-icon" style={{ background: '#2196f3' }}>📎</span>
+                  <span className="cht-attach-icon" style={{ background: 'linear-gradient(135deg,#1e88e5,#42a5f5)' }}>
+                    <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                  </span>
                   <span>Файл</span>
                 </button>
-                <button className="cht-attach-btn" onClick={shareLocation}>
-                  <span className="cht-attach-icon" style={{ background: '#f44336' }}>📍</span>
-                  <span>Геолокация</span>
+                <button className="cht-attach-btn" onClick={() => { const cr = cameraRef.current; if(cr) cr.click(); setShowAttach(false); }}>
+                  <span className="cht-attach-icon" style={{ background: 'linear-gradient(135deg,#e53935,#ef5350)' }}>
+                    <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </span>
+                  <span>Камера</span>
                 </button>
-                <button className="cht-attach-btn" onClick={() => { setShowAttach(false); }}>
-                  <span className="cht-attach-icon" style={{ background: '#9c27b0' }}>📊</span>
-                  <span>Опрос</span>
+                <button className="cht-attach-btn" onClick={shareLocation}>
+                  <span className="cht-attach-icon" style={{ background: 'linear-gradient(135deg,#f4511e,#ff7043)' }}>
+                    <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </span>
+                  <span>Местоположение</span>
                 </button>
               </div>
             )}
 
-            {/* Input bar */}
+            {/* Input bar: [📎] [поле] [😊] [🎤/отправить] */}
             <div className="cht-input" onClick={e => e.stopPropagation()}>
 
-              {/* Attach */}
+              {/* Attach — слева */}
               <button
-                className="cht-input-icon-btn"
+                className={`cht-input-icon-btn ${showAttach ? 'active' : ''}`}
                 onClick={() => { setShowAttach(v => !v); setShowEmoji(false); }}
                 title="Прикрепить"
               >
-                <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+                  style={{ transform: showAttach ? 'rotate(45deg)' : 'none', transition: 'transform .2s' }}>
                   <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                 </svg>
               </button>
 
-              {/* Voice / recording */}
+              {/* Voice recording mode */}
               {voice.recording ? (
                 <div className="cht-voice-recording">
                   <button className="cht-voice-cancel" onClick={voice.cancel}>✕</button>
                   <div className="cht-voice-dot" />
-                  <span className="cht-voice-timer">{String(Math.floor(voice.seconds/60)).padStart(2,'0')}:{String(voice.seconds%60).padStart(2,'0')}</span>
-                  <span className="cht-voice-hint">Отпустите для отправки</span>
-                  <button className="cht-voice-stop btn btn-primary btn-sm" onClick={voice.stop}>✓ Готово</button>
+                  <span className="cht-voice-timer">
+                    {String(Math.floor(voice.seconds/60)).padStart(2,'0')}:{String(voice.seconds%60).padStart(2,'0')}
+                  </span>
+                  <span className="cht-voice-hint">Запись...</span>
+                  <button className="cht-voice-stop btn btn-primary btn-sm" onClick={voice.stop}>✓</button>
                 </div>
               ) : (
                 <>
-                  {/* Emoji */}
-                  <button
-                    className="cht-input-icon-btn"
-                    onClick={() => { setShowEmoji(v => !v); setShowAttach(false); }}
-                    title="Эмодзи"
-                  >
-                    😊
-                  </button>
-
                   {/* Text field */}
                   <textarea
                     ref={inputRef}
@@ -570,7 +573,21 @@ export default function ChatPage() {
                     rows={1}
                   />
 
-                  {/* Send or Voice */}
+                  {/* Emoji — справа перед отправкой */}
+                  <button
+                    className={`cht-input-icon-btn ${showEmoji ? 'active' : ''}`}
+                    onClick={() => { setShowEmoji(v => !v); setShowAttach(false); }}
+                    title="Эмодзи"
+                  >
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                      <circle cx="9" cy="10" r="1" fill="currentColor"/>
+                      <circle cx="15" cy="10" r="1" fill="currentColor"/>
+                    </svg>
+                  </button>
+
+                  {/* Send or Voice — крайний правый */}
                   {text.trim() || mediaPreview ? (
                     <button className="cht-input-send" disabled={sending} onClick={send}>
                       <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
@@ -590,8 +607,9 @@ export default function ChatPage() {
             </div>
 
             {/* Hidden inputs */}
-            <input ref={photoRef} type="file" accept="image/*,video/*" style={{ display:'none' }} onChange={e => handleFilePick(e, e.target.files?.[0]?.type?.startsWith('video') ? 'video' : 'image')} />
-            <input ref={fileRef}  type="file" style={{ display:'none' }} onChange={e => handleFilePick(e, 'file')} />
+            <input ref={photoRef}  type="file" accept="image/*,video/*" style={{ display:'none' }} onChange={e => handleFilePick(e, e.target.files?.[0]?.type?.startsWith('video') ? 'video' : 'image')} />
+            <input ref={fileRef}   type="file" style={{ display:'none' }} onChange={e => handleFilePick(e, 'file')} />
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{ display:'none' }} onChange={e => handleFilePick(e, 'image')} />
           </>
         )}
       </div>
