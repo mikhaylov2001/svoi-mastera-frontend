@@ -472,8 +472,11 @@ export default function DealsPage() {
                   {label} <span>{count}</span>
                 </button>
               ))}
-              <Link to="/sections" className="btn btn-primary btn-sm" style={{ marginLeft:'auto' }}>
-                + Новая заявка
+              <Link to="/sections" className="dpage-findwork-btn" style={{ marginLeft:'auto' }}>
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                Найти мастера
               </Link>
             </div>
 
