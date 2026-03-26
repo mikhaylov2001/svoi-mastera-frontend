@@ -741,7 +741,6 @@ export default function ChatPage() {
                             <ImageBubble url={imgUrl} caption={parsed.caption}/>
 
                           ) : parsed.type === 'image_text' && !imgUrl ? (
-                            // фото без локального url (другая сессия)
                             <div className="cphoto-stub">
                               <div className="cphoto-stub-icon">
                                 <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -750,9 +749,8 @@ export default function ChatPage() {
                                   <path d="M21 15l-5-5L5 21"/>
                                 </svg>
                               </div>
-                              <div className="cphoto-stub-text">
-                                {parsed.caption || parsed.filename || 'Фото'}
-                              </div>
+                              <div className="cphoto-stub-label">Фотография</div>
+                              {parsed.caption && <div className="cphoto-stub-text">{parsed.caption}</div>}
                             </div>
 
                           ) : parsed.type === 'video_text' && imgUrl ? (
@@ -766,7 +764,8 @@ export default function ChatPage() {
                                   <rect x="3" y="7" width="12" height="10" rx="2"/>
                                 </svg>
                               </div>
-                              <div className="cphoto-stub-text">{parsed.filename || 'Видео'}</div>
+                              <div className="cphoto-stub-label">Видео</div>
+                              {parsed.caption && <div className="cphoto-stub-text">{parsed.caption}</div>}
                             </div>
 
                           ) : parsed.type === 'file_text' ? (

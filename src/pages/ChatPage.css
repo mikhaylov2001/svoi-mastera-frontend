@@ -281,7 +281,12 @@
 .cphoto-stub-icon { opacity: .5; }
 .cmrow.mine  .cphoto-stub-icon { color: rgba(255,255,255,.9); }
 .cmrow.their .cphoto-stub-icon { color: #9ca3af; }
-.cphoto-stub-text { font-size: 12px; font-weight: 600; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cphoto-stub-label {
+  font-size: 14px; font-weight: 700;
+}
+.cmrow.mine  .cphoto-stub-label { color: rgba(255,255,255,.9); }
+.cmrow.their .cphoto-stub-label { color: #374151; }
+.cphoto-stub-text { font-size: 12px; font-weight: 500; max-width: 180px; }
 .cmrow.mine  .cphoto-stub-text { color: rgba(255,255,255,.65); }
 .cmrow.their .cphoto-stub-text { color: #9ca3af; }
 
