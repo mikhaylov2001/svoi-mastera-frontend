@@ -275,6 +275,17 @@ function parseMsgContent(text) {
   return { type: 'text', text };
 }
 
+// ─── Preview text helpers ──────────────────────────────────────
+const fmtPreview = text => {
+  if (!text) return '';
+  if (text.startsWith('📷 ')) return '📷 Фотография';
+  if (text.startsWith('🎥 ')) return '🎥 Видео';
+  if (text.startsWith('🎤 ')) return '🎤 Голосовое';
+  if (text.startsWith('📎 ')) return '📎 Файл';
+  if (text.startsWith('📍 ')) return '📍 Местоположение';
+  return text;
+};
+
 // ─── Time helpers ─────────────────────────────────────────────
 const fmtShort = d => {
   if (!d) return '';
@@ -602,7 +613,7 @@ export default function ChatPage() {
                     <span className="cs-item-time">{fmtShort(c.lastMessageAt)}</span>
                   </div>
                   <div className="cs-item-row">
-                    <span className="cs-item-msg">{c.lastMessage || 'Нет сообщений'}</span>
+                    <span className="cs-item-msg">{fmtPreview(c.lastMessage) || 'Нет сообщений'}</span>
                     {c.unreadCount > 0 && <span className="cs-badge">{c.unreadCount}</span>}
                   </div>
                 </div>
