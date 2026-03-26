@@ -383,8 +383,8 @@ export default function ChatPage() {
 
   const curBg = BG_LIST.find(b => b.id === bgId) || BG_LIST[0];
 
-  const voice = useVoiceRec(({ url, duration }) => {
-    setPreview({ type: 'voice', url, duration });
+  const voice = useVoiceRec(({ blob, url, duration }) => {
+    setPreview({ type: 'voice', blob, url, duration });
   });
 
   // loaders
@@ -453,16 +453,29 @@ export default function ChatPage() {
 
         // ── Голосовое ────────────────────────────────────────
         else if (preview.type === 'voice' && preview.blob) {
+          finalTxt = `🎤 Голосовое (${preview.duration}с)`;
           try {
-            const voiceFile = new File([preview.blob], `voice_${Date.now()}.webm`, { type: preview.blob.type });
+            // Пробуем загрузить на сервер
+            const voiceFile = new File([preview.blob], `voice_${Date.now()}.webm`, { type: preview.blob.type || 'audio/webm' });
             const uploaded  = await uploadFile(userId, voiceFile);
             attachmentUrl   = uploaded.url;
             attachmentType  = 'voice';
-          } catch (uploadErr) {
-            console.warn('Voice upload failed:', uploadErr);
-            attachmentType = 'voice';
+          } catch {
+            // Сервер не поддерживает — сохраняем как base64 прямо в БД
+            try {
+              const base64 = await new Promise((res, rej) => {
+                const reader = new FileReader();
+                reader.onload  = () => res(reader.result); // data:audio/webm;base64,...
+                reader.onerror = rej;
+                reader.readAsDataURL(preview.blob);
+              });
+              attachmentUrl  = base64; // сохранится в поле attachment_url в БД
+              attachmentType = 'voice';
+            } catch {
+              // совсем не получилось — хотя бы покажем в текущей сессии
+              attachmentType = 'voice';
+            }
           }
-          finalTxt = `🎤 Голосовое (${preview.duration}с)`;
         }
 
         // ── Геолокация ────────────────────────────────────────
