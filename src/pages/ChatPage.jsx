@@ -427,67 +427,80 @@ export default function ChatPage() {
       let attachmentType = null;
 
       if (preview) {
+        // ── Сохраняем локальный URL сразу — для показа в текущей сессии ──
+        const localUrl = preview.url;
+
         // ── Загружаем файл на сервер ──────────────────────────
         if (preview.file && ['image','video','file'].includes(preview.type)) {
           try {
             const uploaded = await uploadFile(userId, preview.file);
             attachmentUrl  = uploaded.url;
-            attachmentType = preview.type; // 'image' | 'video' | 'file'
+            attachmentType = preview.type;
 
             if (preview.type === 'image')      finalTxt = `📷 ${uploaded.filename || preview.name}${t ? '\n'+t : ''}`;
             else if (preview.type === 'video') finalTxt = `🎥 ${uploaded.filename || preview.name}${t ? '\n'+t : ''}`;
             else if (preview.type === 'file')  finalTxt = `📎 ${uploaded.filename || preview.name}${t ? '\n'+t : ''}`;
           } catch (uploadErr) {
-            // Если сервер не поддерживает — отправляем только текст с меткой
-            console.warn('Upload failed, sending as text:', uploadErr);
+            // Сервер не поддерживает загрузку — отправляем текст, показываем локально
+            console.warn('Upload failed, using local URL:', uploadErr);
+            attachmentType = preview.type;
+            // attachmentUrl = null — не сохранится в БД, но покажется локально
             if (preview.type === 'image')      finalTxt = `📷 ${preview.name}${t ? '\n'+t : ''}`;
             else if (preview.type === 'video') finalTxt = `🎥 ${preview.name}${t ? '\n'+t : ''}`;
             else if (preview.type === 'file')  finalTxt = `📎 ${preview.name}${t ? '\n'+t : ''}`;
           }
         }
 
-        // ── Голосовое — конвертируем в base64 и загружаем ────
+        // ── Голосовое ────────────────────────────────────────
         else if (preview.type === 'voice' && preview.blob) {
           try {
             const voiceFile = new File([preview.blob], `voice_${Date.now()}.webm`, { type: preview.blob.type });
             const uploaded  = await uploadFile(userId, voiceFile);
             attachmentUrl   = uploaded.url;
             attachmentType  = 'voice';
-            finalTxt        = `🎤 Голосовое (${preview.duration}с)`;
           } catch (uploadErr) {
             console.warn('Voice upload failed:', uploadErr);
-            finalTxt = `🎤 Голосовое (${preview.duration}с)`;
+            attachmentType = 'voice';
           }
+          finalTxt = `🎤 Голосовое (${preview.duration}с)`;
         }
 
         // ── Геолокация ────────────────────────────────────────
         else if (preview.type === 'location') {
           finalTxt       = `📍 ${preview.name}`;
           attachmentType = 'location';
-          attachmentUrl  = preview.name; // "lat, lon"
+          attachmentUrl  = preview.name;
         }
 
         setPreview(null);
+
+        // Отправляем сообщение
+        if (!finalTxt) { setBusy(false); return; }
+        const sent = await sendMessage(userId, pid, finalTxt, jrId, attachmentUrl, attachmentType);
+        const sentId = sent?.id;
+
+        // Сохраняем в локальный store для показа сразу
+        if (sentId) {
+          if (attachmentType === 'voice')
+            setVoiceStore(p => ({ ...p, [sentId]: { url: attachmentUrl || localUrl, duration: preview?.duration || 0 } }));
+          if (attachmentType === 'image' || attachmentType === 'video')
+            setImgStore(p => ({ ...p, [sentId]: attachmentUrl || localUrl }));
+          if (attachmentType === 'file')
+            setFileStore(p => ({ ...p, [sentId]: { url: attachmentUrl || localUrl, name: preview?.name } }));
+        }
+
+        setTxt(''); setShowEmoji(false); setShowAttach(false);
+        await loadMsgs(); await loadConvos();
+        setBusy(false);
+        return; // выходим — уже сохранили
       }
 
-      if (!finalTxt) { setBusy(false); return; }
-
-      // Отправляем сообщение с attachment
-      const sent = await sendMessage(userId, pid, finalTxt, jrId, attachmentUrl, attachmentType);
-      const sentId = sent?.id;
-
-      // Сохраняем локально для немедленного отображения
-      if (sentId) {
-        if (attachmentType === 'voice' && attachmentUrl)
-          setVoiceStore(p => ({ ...p, [sentId]: { url: attachmentUrl, duration: preview?.duration || 0 } }));
-        if ((attachmentType === 'image' || attachmentType === 'video') && attachmentUrl)
-          setImgStore(p => ({ ...p, [sentId]: attachmentUrl }));
-        if (attachmentType === 'file' && attachmentUrl)
-          setFileStore(p => ({ ...p, [sentId]: { url: attachmentUrl, name: preview?.name } }));
+      // Простое текстовое сообщение (без вложений)
+      if (finalTxt) {
+        await sendMessage(userId, pid, finalTxt, jrId, null, null);
+        setTxt(''); setShowEmoji(false); setShowAttach(false);
+        await loadMsgs(); await loadConvos();
       }
-
-      setTxt(''); setShowEmoji(false); setShowAttach(false);
-      await loadMsgs(); await loadConvos();
 
     } catch (e) { setErr(e?.message || 'Не удалось отправить.'); }
     setBusy(false);
