@@ -19,10 +19,11 @@ function LogoIcon() {
 
 function Header() {
   const { userId, userRole, userName, userLastName, userAvatar, logout } = useAuth();
+  const BACKEND = 'https://svoi-mastera-backend.onrender.com';
   const fullAvatarUrl = userAvatar
-    ? (userAvatar.startsWith('http') || userAvatar.startsWith('data:')
+    ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http')
         ? userAvatar
-        : 'https://svoi-mastera-backend.onrender.com' + userAvatar)
+        : BACKEND + userAvatar)
     : '';
   const navigate = useNavigate();
   const [menuOpen,       setMenuOpen]       = useState(false);

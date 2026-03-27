@@ -114,6 +114,7 @@ export function LoginPage() {
       const userId = user.id || resp.userId;
       const userName = user.displayName || '';
       const userRole = user.hasWorkerProfile ? 'WORKER' : 'CUSTOMER';
+      // Принимаем любой формат — base64 (data:...) или путь (/api/v1/avatar/...)
       const avatarUrl = user.avatarUrl || '';
 
       if (!userId) {
@@ -262,6 +263,7 @@ export function RegisterPage() {
       const userId = user.id || resp.userId;
       const userName = user.displayName || name;
       const userRole = form.role;
+      // Принимаем любой формат — base64 (data:...) или путь (/api/v1/avatar/...)
       const avatarUrl = user.avatarUrl || '';
 
       if (!userId) {

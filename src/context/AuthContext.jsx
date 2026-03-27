@@ -1,46 +1,83 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+const API_BASE = process.env.NODE_ENV === 'development'
+  ? 'http://localhost:8080/api/v1'
+  : 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 const AuthContext = createContext();
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 }
 
-// Читаем localStorage синхронно при инициализации —
-// так userId доступен уже на первом рендере и PrivateRoute не редиректит.
-function getStoredValue(key, fallback = '') {
+function getStored(key, fallback = '') {
+  try { return localStorage.getItem(key) || fallback; } catch { return fallback; }
+}
+
+// Читаем аватар из localStorage — принимаем любой формат
+function getStoredAvatar() {
   try {
-    return localStorage.getItem(key) || fallback;
-  } catch {
-    return fallback;
-  }
+    return localStorage.getItem('userAvatar') || '';
+  } catch { return ''; }
 }
 
 export function AuthProvider({ children }) {
-  const [userId,      setUserId]      = useState(() => getStoredValue('userId', null));
-  const [userName,    setUserName]    = useState(() => getStoredValue('userName', ''));
-  const [userLastName,setUserLastName]= useState(() => getStoredValue('userLastName', ''));
-  const [userRole,    setUserRole]    = useState(() => getStoredValue('userRole', 'CUSTOMER'));
-  const [userAvatar,  setUserAvatar]  = useState(() => getStoredValue('userAvatar', ''));
-  const [loading,    setLoading]    = useState(true);
+  const [userId,       setUserId]       = useState(() => getStored('userId', null));
+  const [userName,     setUserName]     = useState(() => getStored('userName', ''));
+  const [userLastName, setUserLastName] = useState(() => getStored('userLastName', ''));
+  const [userRole,     setUserRole]     = useState(() => getStored('userRole', 'CUSTOMER'));
+  const [userAvatar,   setUserAvatar]   = useState(() => getStoredAvatar());
+  const [loading,      setLoading]      = useState(true);
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 100);
-    return () => clearTimeout(timer);
+  // При старте — подгружаем актуальный профиль с сервера
+  useEffect(() => {
+    const id = getStored('userId', null);
+    if (!id) { setLoading(false); return; }
+
+    fetch(`${API_BASE}/users/${id}/profile`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        // Обновляем фамилию
+        if (data.lastName) {
+          setUserLastName(data.lastName);
+          localStorage.setItem('userLastName', data.lastName);
+        }
+        // Обновляем имя
+        if (data.displayName) {
+          setUserName(data.displayName);
+          localStorage.setItem('userName', data.displayName);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+
+    // Аватар грузим отдельно через /auth/me
+    fetch(`${API_BASE}/auth/me`, { headers: { 'X-User-Id': id } })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        const av = data.avatarUrl || '';
+        if (av) {
+          // Сохраняем любой формат — base64 или старый путь
+          setUserAvatar(av);
+          localStorage.setItem('userAvatar', av);
+        }
+        // Если аватара нет на сервере — не трогаем localStorage
+      })
+      .catch(() => {});
   }, []);
 
   const login = (id, role = 'CUSTOMER', name = '', avatarUrl = '', lastName = '') => {
-    const userIdStr = String(id);
-    setUserId(userIdStr);
+    const uid = String(id);
+    setUserId(uid);
     setUserRole(role);
     setUserName(name);
     setUserLastName(lastName);
     setUserAvatar(avatarUrl);
-    localStorage.setItem('userId', userIdStr);
+    localStorage.setItem('userId', uid);
     localStorage.setItem('userRole', role);
     localStorage.setItem('userName', name);
     localStorage.setItem('userLastName', lastName);
@@ -48,16 +85,10 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    setUserId(null);
-    setUserRole('CUSTOMER');
-    setUserName('');
-    setUserLastName('');
-    setUserAvatar('');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userLastName');
-    localStorage.removeItem('userAvatar');
+    setUserId(null); setUserRole('CUSTOMER');
+    setUserName(''); setUserLastName(''); setUserAvatar('');
+    ['userId','userRole','userName','userLastName','userAvatar']
+      .forEach(k => localStorage.removeItem(k));
   };
 
   const updateAvatar = (url) => {
@@ -70,20 +101,15 @@ export function AuthProvider({ children }) {
     localStorage.setItem('userLastName', ln);
   };
 
-  const value = {
-    userId,
-    userName,
-    userLastName,
-    userRole,
-    userAvatar,
-    updateAvatar,
-    updateLastName,
-    login,
-    logout,
-    isAuthenticated: !!userId,
-    isWorker: userRole === 'WORKER',
-    loading,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{
+      userId, userName, userLastName, userRole, userAvatar,
+      updateAvatar, updateLastName, login, logout,
+      isAuthenticated: !!userId,
+      isWorker: userRole === 'WORKER',
+      loading,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
