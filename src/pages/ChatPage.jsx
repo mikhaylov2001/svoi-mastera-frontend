@@ -69,7 +69,6 @@ function Ava({ name, url, size=40 }) {
   }
   return <div className="cav" style={{width:size,height:size,background:bg,fontSize:size*0.36}}>{ini}</div>;
 }
-}
 
 // ─── Ticks ───────────────────────────────────────────────────
 function Ticks({ isRead }) {
