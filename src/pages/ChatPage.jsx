@@ -52,12 +52,23 @@ function fullUrl(url) {
 }
 
 function Ava({ name, url, size=40 }) {
+  const [imgError, setImgError] = React.useState(false);
   const src = fullUrl(url);
-  if (src) return <img src={src} alt="" className="cav" style={{width:size,height:size}} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}/>;
   const ini = (name||'?').trim().split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
   const pallete = ['#7c3aed','#2563eb','#059669','#d97706','#dc2626','#0891b2','#db2777'];
   const bg = pallete[(ini.charCodeAt(0)||0) % pallete.length];
+
+  if (src && !imgError) {
+    return (
+      <img
+        src={src} alt="" className="cav"
+        style={{width:size, height:size}}
+        onError={() => setImgError(true)}
+      />
+    );
+  }
   return <div className="cav" style={{width:size,height:size,background:bg,fontSize:size*0.36}}>{ini}</div>;
+}
 }
 
 // ─── Ticks ───────────────────────────────────────────────────

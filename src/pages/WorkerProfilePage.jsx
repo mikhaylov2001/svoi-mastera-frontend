@@ -130,19 +130,20 @@ export default function WorkerProfilePage() {
               style={{display:'none'}}
               onChange={handleAvatarChange}
             />
+            <button
+              onClick={() => avatarInputRef.current?.click()}
+              style={{
+                background:'none', border:'none', cursor:'pointer',
+                fontSize:11, color:'#e8410a', fontWeight:600,
+                padding:'4px 0 0', textAlign:'center', display:'block',
+                width:80,
+              }}
+            >
+              {avatarLoading ? '⏳ Загрузка...' : fullAvatarUrl ? 'Изменить фото' : '+ Добавить фото'}
+            </button>
             <div className="wp-profile-info">
               <div className="wp-profile-name">{userName || 'Мастер'}</div>
               <div className="wp-profile-role">Мастер</div>
-              <button
-                onClick={() => avatarInputRef.current?.click()}
-                style={{
-                  background:'none', border:'none', cursor:'pointer',
-                  fontSize:12, color:'#e8410a', fontWeight:600,
-                  padding:'2px 0', textAlign:'left', marginBottom:4,
-                }}
-              >
-                {avatarLoading ? '⏳ Загрузка...' : '📷 ' + (fullAvatarUrl ? 'Изменить фото' : 'Добавить фото')}
-              </button>
               <div className="wp-profile-meta">
                 <span>📍 Йошкар-Ола</span>
                 <span>📅 На сервисе с март 2026 г.</span>
