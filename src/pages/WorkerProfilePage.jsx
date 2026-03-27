@@ -9,6 +9,10 @@ export default function WorkerProfilePage() {
   const navigate = useNavigate();
   const avatarInputRef = useRef(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
+  const BACKEND = 'https://svoi-mastera-backend.onrender.com';
+  const fullAvatarUrl = userAvatar
+    ? (userAvatar.startsWith('http') || userAvatar.startsWith('data:') ? userAvatar : BACKEND + userAvatar)
+    : '';
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0];
@@ -19,9 +23,7 @@ export default function WorkerProfilePage() {
       const base64 = reader.result;
       try {
         const res = await uploadAvatar(userId, base64);
-        const url = res?.avatarUrl
-          ? `https://svoi-mastera-backend.onrender.com${res.avatarUrl}`
-          : base64;
+        const url = res?.avatarUrl ? BACKEND + res.avatarUrl : base64;
         updateAvatar(url);
       } catch {
         updateAvatar(base64);
@@ -102,12 +104,12 @@ export default function WorkerProfilePage() {
               style={{ cursor:'pointer', position:'relative', overflow:'hidden' }}
               title="Нажмите чтобы сменить фото"
             >
-              {userAvatar
-                ? <img src={userAvatar} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}}/>
+              {fullAvatarUrl
+                ? <img src={fullAvatarUrl} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}}/>
                 : initials
               }
               <div style={{
-                position:'absolute', inset:0, background:'rgba(0,0,0,.35)',
+                position:'absolute', inset:0, background:'rgba(0,0,0,.4)',
                 borderRadius:'50%', display:'flex', alignItems:'center',
                 justifyContent:'center', opacity: avatarLoading ? 1 : 0,
                 transition:'opacity .2s',
@@ -116,8 +118,8 @@ export default function WorkerProfilePage() {
                 onMouseLeave={e => { if (!avatarLoading) e.currentTarget.style.opacity=0; }}
               >
                 {avatarLoading
-                  ? <span style={{color:'#fff',fontSize:18}}>⏳</span>
-                  : <span style={{color:'#fff',fontSize:18}}>📷</span>
+                  ? <span style={{color:'#fff',fontSize:16}}>⏳</span>
+                  : <span style={{color:'#fff',fontSize:16}}>📷</span>
                 }
               </div>
             </div>
@@ -131,6 +133,16 @@ export default function WorkerProfilePage() {
             <div className="wp-profile-info">
               <div className="wp-profile-name">{userName || 'Мастер'}</div>
               <div className="wp-profile-role">Мастер</div>
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                style={{
+                  background:'none', border:'none', cursor:'pointer',
+                  fontSize:12, color:'#e8410a', fontWeight:600,
+                  padding:'2px 0', textAlign:'left', marginBottom:4,
+                }}
+              >
+                {avatarLoading ? '⏳ Загрузка...' : '📷 ' + (fullAvatarUrl ? 'Изменить фото' : 'Добавить фото')}
+              </button>
               <div className="wp-profile-meta">
                 <span>📍 Йошкар-Ола</span>
                 <span>📅 На сервисе с март 2026 г.</span>

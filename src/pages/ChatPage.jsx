@@ -42,8 +42,18 @@ const IcPause  = () => <svg width="14" height="14" fill="currentColor" viewBox="
 const IcAttach = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>;
 
 // ─── Avatar ──────────────────────────────────────────────────
+const BACKEND = 'https://svoi-mastera-backend.onrender.com';
+
+function fullUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('data:')) return url;
+  return BACKEND + url;
+}
+
 function Ava({ name, url, size=40 }) {
-  if (url) return <img src={url} alt="" className="cav" style={{width:size,height:size}} />;
+  const src = fullUrl(url);
+  if (src) return <img src={src} alt="" className="cav" style={{width:size,height:size}} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}/>;
   const ini = (name||'?').trim().split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
   const pallete = ['#7c3aed','#2563eb','#059669','#d97706','#dc2626','#0891b2','#db2777'];
   const bg = pallete[(ini.charCodeAt(0)||0) % pallete.length];

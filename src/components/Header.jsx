@@ -19,6 +19,11 @@ function LogoIcon() {
 
 function Header() {
   const { userId, userRole, userName, userAvatar, logout } = useAuth();
+  const fullAvatarUrl = userAvatar
+    ? (userAvatar.startsWith('http') || userAvatar.startsWith('data:')
+        ? userAvatar
+        : 'https://svoi-mastera-backend.onrender.com' + userAvatar)
+    : '';
   const navigate = useNavigate();
   const [menuOpen,       setMenuOpen]       = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -182,8 +187,8 @@ function Header() {
                   tabIndex={0}
                 >
                   <div className="header-avatar">
-                    {userAvatar
-                      ? <img src={userAvatar} alt="" style={{width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover'}}/>
+                    {fullAvatarUrl
+                      ? <img src={fullAvatarUrl} alt="" style={{width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover'}}/>
                       : initials
                     }
                   </div>
