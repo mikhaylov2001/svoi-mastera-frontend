@@ -13,7 +13,9 @@ export default function CustomerProfilePage() {
 
   const BACKEND = 'https://svoi-mastera-backend.onrender.com';
   const fullAvatarUrl = userAvatar
-    ? (userAvatar.startsWith('http') || userAvatar.startsWith('data:') ? userAvatar : BACKEND + userAvatar)
+    ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http')
+        ? userAvatar
+        : BACKEND + userAvatar)
     : '';
 
   const handleAvatarChange = async (e) => {
@@ -25,9 +27,8 @@ export default function CustomerProfilePage() {
       const base64 = reader.result;
       try {
         const res = await uploadAvatar(userId, base64);
-        const url = res?.avatarUrl
-          ? BACKEND + res.avatarUrl
-          : base64;
+        // Сервер теперь возвращает base64 напрямую
+        const url = res?.avatarUrl || base64;
         updateAvatar(url);
       } catch {
         updateAvatar(base64);

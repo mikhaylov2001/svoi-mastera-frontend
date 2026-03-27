@@ -114,9 +114,7 @@ export function LoginPage() {
       const userId = user.id || resp.userId;
       const userName = user.displayName || '';
       const userRole = user.hasWorkerProfile ? 'WORKER' : 'CUSTOMER';
-      const avatarUrl = user.avatarUrl
-        ? `https://svoi-mastera-backend.onrender.com${user.avatarUrl}`
-        : '';
+      const avatarUrl = user.avatarUrl || '';
 
       if (!userId) {
         throw new Error('Не удалось войти. Попробуйте ещё раз.');
@@ -264,9 +262,7 @@ export function RegisterPage() {
       const userId = user.id || resp.userId;
       const userName = user.displayName || name;
       const userRole = form.role;
-      const avatarUrl = user.avatarUrl
-        ? `https://svoi-mastera-backend.onrender.com${user.avatarUrl}`
-        : '';
+      const avatarUrl = user.avatarUrl || '';
 
       if (!userId) {
         throw new Error('Не удалось создать аккаунт. Попробуйте ещё раз.');
