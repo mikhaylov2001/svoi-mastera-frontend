@@ -32,14 +32,16 @@ export function AuthProvider({ children }) {
     return () => clearTimeout(timer);
   }, []);
 
-  const login = (id, role = 'CUSTOMER', name = '') => {
+  const login = (id, role = 'CUSTOMER', name = '', avatarUrl = '') => {
     const userIdStr = String(id);
     setUserId(userIdStr);
     setUserRole(role);
     setUserName(name);
+    setUserAvatar(avatarUrl);
     localStorage.setItem('userId', userIdStr);
     localStorage.setItem('userRole', role);
     localStorage.setItem('userName', name);
+    localStorage.setItem('userAvatar', avatarUrl);
   };
 
   const logout = () => {

@@ -169,7 +169,8 @@
 .cmrow { display: flex; align-items: flex-end; gap: 6px; }
 .cmrow.mine  { justify-content: flex-end; }
 .cmrow.their { justify-content: flex-start; }
-.cmrow-ava   { width: 32px; flex-shrink: 0; display: flex; align-items: flex-end; }
+.cmrow-ava      { width: 32px; flex-shrink: 0; display: flex; align-items: flex-end; }
+.cmrow-ava-mine { order: 1; }
 
 /* ─── BUBBLE ─── */
 .cbub {

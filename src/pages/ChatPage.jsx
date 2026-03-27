@@ -351,7 +351,7 @@ function useVoiceRec(onDone) {
 // ─── MAIN COMPONENT ───────────────────────────────────────────
 export default function ChatPage() {
   const { partnerId } = useParams();
-  const { userId }    = useAuth();
+  const { userId, userName, userAvatar } = useAuth();
   const navigate      = useNavigate();
   const loc           = useLocation();
 
@@ -809,6 +809,12 @@ export default function ChatPage() {
                         </>
                       )}
                     </div>
+
+                    {mine && (
+                      <div className="cmrow-ava cmrow-ava-mine">
+                        {isLast && <Ava name={userName} url={userAvatar} size={30}/>}
+                      </div>
+                    )}
                   </div>
                 </React.Fragment>
               );
