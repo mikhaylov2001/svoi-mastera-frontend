@@ -54,18 +54,19 @@ export function AuthProvider({ children }) {
       .catch(() => {})
       .finally(() => setLoading(false));
 
-    // Аватар грузим отдельно через /auth/me
+    // Аватар грузим через /auth/me — обновляем только если сервер вернул непустой
     fetch(`${API_BASE}/auth/me`, { headers: { 'X-User-Id': id } })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (!data) return;
         const av = data.avatarUrl || '';
-        if (av) {
-          // Сохраняем любой формат — base64 или старый путь
+        if (av && av.length > 10) {
+          // Сервер вернул аватар — сохраняем
           setUserAvatar(av);
           localStorage.setItem('userAvatar', av);
         }
-        // Если аватара нет на сервере — не трогаем localStorage
+        // Если сервер вернул пустой — НЕ трогаем localStorage
+        // Это важно: аватар мог быть загружен в этой сессии как base64
       })
       .catch(() => {});
   }, []);
