@@ -98,49 +98,51 @@ export default function WorkerProfilePage() {
         {/* Profile Card */}
         <div className="wp-profile-card">
           <div className="wp-profile-left">
-            <div
-              className="wp-profile-avatar"
-              onClick={() => avatarInputRef.current?.click()}
-              style={{ cursor:'pointer', position:'relative', overflow:'hidden' }}
-              title="Нажмите чтобы сменить фото"
-            >
-              {fullAvatarUrl
-                ? <img src={fullAvatarUrl} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}}/>
-                : initials
-              }
-              <div style={{
-                position:'absolute', inset:0, background:'rgba(0,0,0,.4)',
-                borderRadius:'50%', display:'flex', alignItems:'center',
-                justifyContent:'center', opacity: avatarLoading ? 1 : 0,
-                transition:'opacity .2s',
-              }}
-                onMouseEnter={e => e.currentTarget.style.opacity=1}
-                onMouseLeave={e => { if (!avatarLoading) e.currentTarget.style.opacity=0; }}
+            {/* Аватар + кнопка снизу */}
+            <div style={{display:'flex', flexDirection:'column', alignItems:'center', gap:6, flexShrink:0}}>
+              <div
+                className="wp-profile-avatar"
+                onClick={() => avatarInputRef.current?.click()}
+                style={{ cursor:'pointer', position:'relative', overflow:'hidden' }}
+                title="Нажмите чтобы сменить фото"
               >
-                {avatarLoading
-                  ? <span style={{color:'#fff',fontSize:16}}>⏳</span>
-                  : <span style={{color:'#fff',fontSize:16}}>📷</span>
+                {fullAvatarUrl
+                  ? <img src={fullAvatarUrl} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}}/>
+                  : initials
                 }
+                <div style={{
+                  position:'absolute', inset:0, background:'rgba(0,0,0,.4)',
+                  borderRadius:'50%', display:'flex', alignItems:'center',
+                  justifyContent:'center', opacity: avatarLoading ? 1 : 0,
+                  transition:'opacity .2s',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.opacity=1}
+                  onMouseLeave={e => { if (!avatarLoading) e.currentTarget.style.opacity=0; }}
+                >
+                  {avatarLoading
+                    ? <span style={{color:'#fff',fontSize:16}}>⏳</span>
+                    : <span style={{color:'#fff',fontSize:16}}>📷</span>
+                  }
+                </div>
               </div>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                style={{display:'none'}}
+                onChange={handleAvatarChange}
+              />
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                style={{
+                  background:'none', border:'none', cursor:'pointer',
+                  fontSize:11, color:'#e8410a', fontWeight:600,
+                  padding:0, textAlign:'center',
+                }}
+              >
+                {avatarLoading ? '⏳ Загрузка...' : fullAvatarUrl ? 'Изменить фото' : '+ Добавить фото'}
+              </button>
             </div>
-            <input
-              ref={avatarInputRef}
-              type="file"
-              accept="image/*"
-              style={{display:'none'}}
-              onChange={handleAvatarChange}
-            />
-            <button
-              onClick={() => avatarInputRef.current?.click()}
-              style={{
-                background:'none', border:'none', cursor:'pointer',
-                fontSize:11, color:'#e8410a', fontWeight:600,
-                padding:'4px 0 0', textAlign:'center', display:'block',
-                width:80,
-              }}
-            >
-              {avatarLoading ? '⏳ Загрузка...' : fullAvatarUrl ? 'Изменить фото' : '+ Добавить фото'}
-            </button>
             <div className="wp-profile-info">
               <div className="wp-profile-name">{userName || 'Мастер'}</div>
               <div className="wp-profile-role">Мастер</div>
