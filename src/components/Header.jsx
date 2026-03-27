@@ -18,7 +18,7 @@ function LogoIcon() {
 }
 
 function Header() {
-  const { userId, userRole, userName, logout } = useAuth();
+  const { userId, userRole, userName, userAvatar, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen,       setMenuOpen]       = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -181,7 +181,12 @@ function Header() {
                   onBlur={() => setTimeout(() => setMenuOpen(false), 150)}
                   tabIndex={0}
                 >
-                  <div className="header-avatar">{initials}</div>
+                  <div className="header-avatar">
+                    {userAvatar
+                      ? <img src={userAvatar} alt="" style={{width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover'}}/>
+                      : initials
+                    }
+                  </div>
 
                   {menuOpen && (
                     <div className="header-dropdown">

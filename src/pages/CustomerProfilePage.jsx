@@ -1,13 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getMyDeals } from '../api';
+import { getMyDeals, uploadAvatar } from '../api';
 import ReviewForm from '../components/ReviewForm';
 import './CustomerProfilePage.css';
 
 export default function CustomerProfilePage() {
-  const { userId, userName, userRole, logout } = useAuth();
+  const { userId, userName, userRole, userAvatar, updateAvatar, logout } = useAuth();
   const navigate = useNavigate();
+  const avatarInputRef = useRef(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarLoading(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result;
+      try {
+        const res = await uploadAvatar(userId, base64);
+        const url = res?.avatarUrl
+          ? `https://svoi-mastera-backend.onrender.com${res.avatarUrl}`
+          : base64;
+        updateAvatar(url);
+      } catch {
+        updateAvatar(base64); // показываем локально если сервер не ответил
+      }
+      setAvatarLoading(false);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +91,38 @@ export default function CustomerProfilePage() {
         {/* Profile Card */}
         <div className="cp-profile-card">
           <div className="cp-profile-left">
-            <div className="cp-profile-avatar">{initials}</div>
+            <div
+              className="cp-profile-avatar"
+              onClick={() => avatarInputRef.current?.click()}
+              style={{ cursor:'pointer', position:'relative', overflow:'hidden' }}
+              title="Нажмите чтобы сменить фото"
+            >
+              {userAvatar
+                ? <img src={userAvatar} alt="" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'50%'}}/>
+                : initials
+              }
+              <div style={{
+                position:'absolute', inset:0, background:'rgba(0,0,0,.35)',
+                borderRadius:'50%', display:'flex', alignItems:'center',
+                justifyContent:'center', opacity: avatarLoading ? 1 : 0,
+                transition:'opacity .2s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.opacity=1}
+                onMouseLeave={e => { if (!avatarLoading) e.currentTarget.style.opacity=0; }}
+              >
+                {avatarLoading
+                  ? <span style={{color:'#fff',fontSize:18}}>⏳</span>
+                  : <span style={{color:'#fff',fontSize:18}}>📷</span>
+                }
+              </div>
+            </div>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              style={{display:'none'}}
+              onChange={handleAvatarChange}
+            />
             <div className="cp-profile-info">
               <div className="cp-profile-name">{userName || 'Заказчик'}</div>
               <div className="cp-profile-role">Заказчик</div>

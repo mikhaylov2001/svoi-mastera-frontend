@@ -21,24 +21,22 @@ function getStoredValue(key, fallback = '') {
 }
 
 export function AuthProvider({ children }) {
-  const [userId, setUserId]     = useState(() => getStoredValue('userId', null));
-  const [userName, setUserName] = useState(() => getStoredValue('userName', ''));
-  const [userRole, setUserRole] = useState(() => getStoredValue('userRole', 'CUSTOMER'));
-  const [loading, setLoading] = useState(true);
+  const [userId,     setUserId]     = useState(() => getStoredValue('userId', null));
+  const [userName,   setUserName]   = useState(() => getStoredValue('userName', ''));
+  const [userRole,   setUserRole]   = useState(() => getStoredValue('userRole', 'CUSTOMER'));
+  const [userAvatar, setUserAvatar] = useState(() => getStoredValue('userAvatar', ''));
+  const [loading,    setLoading]    = useState(true);
 
   React.useEffect(() => {
-    // Имитация инициализации при загрузке, например проверка токена
     const timer = setTimeout(() => setLoading(false), 100);
     return () => clearTimeout(timer);
   }, []);
 
   const login = (id, role = 'CUSTOMER', name = '') => {
     const userIdStr = String(id);
-
     setUserId(userIdStr);
     setUserRole(role);
     setUserName(name);
-
     localStorage.setItem('userId', userIdStr);
     localStorage.setItem('userRole', role);
     localStorage.setItem('userName', name);
@@ -48,16 +46,24 @@ export function AuthProvider({ children }) {
     setUserId(null);
     setUserRole('CUSTOMER');
     setUserName('');
-
+    setUserAvatar('');
     localStorage.removeItem('userId');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
+    localStorage.removeItem('userAvatar');
+  };
+
+  const updateAvatar = (url) => {
+    setUserAvatar(url);
+    localStorage.setItem('userAvatar', url);
   };
 
   const value = {
     userId,
     userName,
     userRole,
+    userAvatar,
+    updateAvatar,
     login,
     logout,
     isAuthenticated: !!userId,
