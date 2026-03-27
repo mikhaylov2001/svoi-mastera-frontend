@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getMyDeals, uploadAvatar } from '../api';
+import { getMyDeals, uploadAvatar, getUserProfile } from '../api';
 import ReviewForm from '../components/ReviewForm';
 import './CustomerProfilePage.css';
 
@@ -40,7 +40,8 @@ export default function CustomerProfilePage() {
 
   const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showReviewForm, setShowReviewForm] = useState(null); // dealId для которого показываем форму
+  const [lastName, setLastName] = useState('');
+  const [showReviewForm, setShowReviewForm] = useState(null);
 
   // Redirect if worker
   useEffect(() => {
@@ -59,8 +60,12 @@ export default function CustomerProfilePage() {
   const loadDeals = async () => {
     setLoading(true);
     try {
-      const data = await getMyDeals(userId);
+      const [data, profile] = await Promise.all([
+        getMyDeals(userId),
+        getUserProfile(userId),
+      ]);
       setDeals(data || []);
+      setLastName(profile?.lastName || '');
     } catch (err) {
       console.error('Failed to load deals:', err);
     } finally {
@@ -142,7 +147,9 @@ export default function CustomerProfilePage() {
               </button>
             </div>
             <div className="cp-profile-info">
-              <div className="cp-profile-name">{userName || 'Заказчик'}</div>
+              <div className="cp-profile-name">
+                {userName || 'Заказчик'}{lastName ? ` ${lastName}` : ''}
+              </div>
               <div className="cp-profile-role">Заказчик</div>
               <div className="cp-profile-meta">
                 <span>📍 Йошкар-Ола</span>

@@ -15,6 +15,7 @@ export default function PersonalSettingsPage() {
 
   const [form, setForm] = useState({
     displayName: '',
+    lastName: '',
     email: '',
     phone: '',
     city: ''
@@ -36,6 +37,7 @@ export default function PersonalSettingsPage() {
       const data = await getUserProfile(userId);
       setForm({
         displayName: data.displayName || '',
+        lastName: data.lastName || '',
         email: data.email || '',
         phone: data.phone || '',
         city: data.city || ''
@@ -60,11 +62,12 @@ export default function PersonalSettingsPage() {
     try {
       await updateUserProfile(userId, {
         displayName: form.displayName.trim(),
+        lastName: form.lastName.trim(),
         phone: form.phone.trim(),
         city: form.city.trim()
       });
 
-      // Обновляем AuthContext чтобы имя изменилось везде
+      // Обновляем AuthContext
       login(userId, userRole, form.displayName.trim());
 
       showToast('Профиль обновлён', 'success');
@@ -163,10 +166,22 @@ export default function PersonalSettingsPage() {
                   id="name"
                   type="text"
                   className="form-control"
-                  placeholder="Иван Иванов"
+                  placeholder="Иван"
                   value={form.displayName}
                   onChange={(e) => setForm({ ...form, displayName: e.target.value })}
                   required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="lastName">Фамилия</label>
+                <input
+                  id="lastName"
+                  type="text"
+                  className="form-control"
+                  placeholder="Иванов"
+                  value={form.lastName}
+                  onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                 />
               </div>
 

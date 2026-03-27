@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getMyDeals, getReviewsByWorker, uploadAvatar } from '../api';
+import { getMyDeals, getReviewsByWorker, uploadAvatar, getUserProfile } from '../api';
 import './WorkerProfilePage.css';
 
 export default function WorkerProfilePage() {
@@ -36,6 +36,7 @@ export default function WorkerProfilePage() {
 
   const [deals, setDeals] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(true);
 
   // Redirect if customer
@@ -55,12 +56,14 @@ export default function WorkerProfilePage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [dealsData, reviewsData] = await Promise.all([
+      const [dealsData, reviewsData, profile] = await Promise.all([
         getMyDeals(userId),
         getReviewsByWorker(userId),
+        getUserProfile(userId),
       ]);
       setDeals(dealsData || []);
       setReviews(reviewsData || []);
+      setLastName(profile?.lastName || '');
     } catch (err) {
       console.error('Failed to load worker data:', err);
     } finally {
@@ -144,7 +147,9 @@ export default function WorkerProfilePage() {
               </button>
             </div>
             <div className="wp-profile-info">
-              <div className="wp-profile-name">{userName || 'Мастер'}</div>
+              <div className="wp-profile-name">
+                {userName || 'Мастер'}{lastName ? ` ${lastName}` : ''}
+              </div>
               <div className="wp-profile-role">Мастер</div>
               <div className="wp-profile-meta">
                 <span>📍 Йошкар-Ола</span>
