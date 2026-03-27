@@ -18,7 +18,7 @@ function LogoIcon() {
 }
 
 function Header() {
-  const { userId, userRole, userName, userAvatar, logout } = useAuth();
+  const { userId, userRole, userName, userLastName, userAvatar, logout } = useAuth();
   const fullAvatarUrl = userAvatar
     ? (userAvatar.startsWith('http') || userAvatar.startsWith('data:')
         ? userAvatar
@@ -195,7 +195,9 @@ function Header() {
 
                   {menuOpen && (
                     <div className="header-dropdown">
-                      <div className="header-dropdown-name">{userName || 'Профиль'}</div>
+                      <div className="header-dropdown-name">
+                        {[userName, userLastName].filter(Boolean).join(' ') || 'Профиль'}
+                      </div>
                       <div className="header-dropdown-role">
                         {userRole === 'WORKER' ? 'Мастер' : 'Заказчик'}
                       </div>

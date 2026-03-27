@@ -6,7 +6,7 @@ import { useToast } from '../context/ToastContext';
 import './SettingsPages.css';
 
 export default function PersonalSettingsPage() {
-  const { userId, userRole, login } = useAuth();
+  const { userId, userRole, login, userAvatar } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
 
@@ -68,7 +68,7 @@ export default function PersonalSettingsPage() {
       });
 
       // Обновляем AuthContext
-      login(userId, userRole, form.displayName.trim());
+      login(userId, userRole, form.displayName.trim(), userAvatar, form.lastName.trim());
 
       showToast('Профиль обновлён', 'success');
     } catch (err) {

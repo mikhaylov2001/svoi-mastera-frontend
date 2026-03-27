@@ -21,10 +21,11 @@ function getStoredValue(key, fallback = '') {
 }
 
 export function AuthProvider({ children }) {
-  const [userId,     setUserId]     = useState(() => getStoredValue('userId', null));
-  const [userName,   setUserName]   = useState(() => getStoredValue('userName', ''));
-  const [userRole,   setUserRole]   = useState(() => getStoredValue('userRole', 'CUSTOMER'));
-  const [userAvatar, setUserAvatar] = useState(() => getStoredValue('userAvatar', ''));
+  const [userId,      setUserId]      = useState(() => getStoredValue('userId', null));
+  const [userName,    setUserName]    = useState(() => getStoredValue('userName', ''));
+  const [userLastName,setUserLastName]= useState(() => getStoredValue('userLastName', ''));
+  const [userRole,    setUserRole]    = useState(() => getStoredValue('userRole', 'CUSTOMER'));
+  const [userAvatar,  setUserAvatar]  = useState(() => getStoredValue('userAvatar', ''));
   const [loading,    setLoading]    = useState(true);
 
   React.useEffect(() => {
@@ -32,15 +33,17 @@ export function AuthProvider({ children }) {
     return () => clearTimeout(timer);
   }, []);
 
-  const login = (id, role = 'CUSTOMER', name = '', avatarUrl = '') => {
+  const login = (id, role = 'CUSTOMER', name = '', avatarUrl = '', lastName = '') => {
     const userIdStr = String(id);
     setUserId(userIdStr);
     setUserRole(role);
     setUserName(name);
+    setUserLastName(lastName);
     setUserAvatar(avatarUrl);
     localStorage.setItem('userId', userIdStr);
     localStorage.setItem('userRole', role);
     localStorage.setItem('userName', name);
+    localStorage.setItem('userLastName', lastName);
     localStorage.setItem('userAvatar', avatarUrl);
   };
 
@@ -48,10 +51,12 @@ export function AuthProvider({ children }) {
     setUserId(null);
     setUserRole('CUSTOMER');
     setUserName('');
+    setUserLastName('');
     setUserAvatar('');
     localStorage.removeItem('userId');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
+    localStorage.removeItem('userLastName');
     localStorage.removeItem('userAvatar');
   };
 
@@ -60,12 +65,19 @@ export function AuthProvider({ children }) {
     localStorage.setItem('userAvatar', url);
   };
 
+  const updateLastName = (ln) => {
+    setUserLastName(ln);
+    localStorage.setItem('userLastName', ln);
+  };
+
   const value = {
     userId,
     userName,
+    userLastName,
     userRole,
     userAvatar,
     updateAvatar,
+    updateLastName,
     login,
     logout,
     isAuthenticated: !!userId,
