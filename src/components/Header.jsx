@@ -170,13 +170,7 @@ function Header() {
               </>
             ) : (
               <>
-                {/* ══ ДЛЯ НЕАВТОРИЗОВАННЫХ ══ */}
-                <NavLink
-                  to="/categories"
-                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                >
-                  Найти мастера
-                </NavLink>
+                {/* ══ ДЛЯ НЕАВТОРИЗОВАННЫХ — только Войти/Регистрация ══ */}
               </>
             )}
 
@@ -272,9 +266,8 @@ function Header() {
                     </NavLink>
                   </>
                 ) : (
-                  <NavLink to="/categories" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                    Найти мастера
-                  </NavLink>
+                  // Неавторизованные — пустой блок
+                  null
                 )}
 
                 {userId && (
