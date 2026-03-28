@@ -302,14 +302,59 @@ export default function HomePage() {
       {/* ══ МОДАЛКА ══ */}
       {showGuestModal && (
         <div className="modal-overlay" onClick={() => setShowGuestModal(false)}>
-          <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
-            <h3>Войдите или зарегистрируйтесь</h3>
-            <p style={{ color: 'var(--gray-500)', fontSize: 14, margin: '8px 0 16px' }}>
-              Предложения мастеров, чат и безопасные сделки — всё внутри аккаунта.
+          <div className="modal-card" onClick={e => e.stopPropagation()} style={{
+            maxWidth: 480, padding: '40px 40px 32px', borderRadius: 24,
+            background: '#fff', boxShadow: '0 32px 80px rgba(0,0,0,.22)',
+            position: 'relative',
+          }}>
+            {/* Закрыть */}
+            <button onClick={() => setShowGuestModal(false)} style={{
+              position: 'absolute', top: 16, right: 16,
+              background: '#f3f4f6', border: 'none', cursor: 'pointer',
+              width: 32, height: 32, borderRadius: '50%',
+              fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#6b7280',
+            }}>✕</button>
+
+            {/* Иконка */}
+            <div style={{
+              width: 60, height: 60, borderRadius: '50%',
+              background: 'linear-gradient(135deg,#e8410a,#ff7043)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 28, marginBottom: 20,
+              boxShadow: '0 8px 24px rgba(232,65,10,.3)',
+            }}>🔨</div>
+
+            <h3 style={{ fontSize: 24, fontWeight: 900, color: '#111827', margin: '0 0 8px' }}>
+              Добро пожаловать!
+            </h3>
+            <p style={{ color: '#6b7280', fontSize: 15, margin: '0 0 28px', lineHeight: 1.6 }}>
+              Войдите чтобы найти мастера, оставить заявку и получить отклики уже через 10 минут.
             </p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <Link to="/login"    className="btn btn-primary btn-sm" onClick={() => setShowGuestModal(false)}>Войти</Link>
-              <Link to="/register" className="btn btn-outline btn-sm" onClick={() => setShowGuestModal(false)}>Зарегистрироваться</Link>
+
+            {/* Кнопки */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <Link
+                to="/register"
+                className="btn btn-primary"
+                onClick={() => setShowGuestModal(false)}
+                style={{ width: '100%', textAlign: 'center', padding: '14px', fontSize: 15, fontWeight: 700, borderRadius: 12 }}
+              >
+                🚀 Зарегистрироваться бесплатно
+              </Link>
+              <Link
+                to="/login"
+                onClick={() => setShowGuestModal(false)}
+                style={{
+                  width: '100%', textAlign: 'center', padding: '13px',
+                  fontSize: 15, fontWeight: 600, borderRadius: 12,
+                  border: '1.5px solid #e5e7eb', color: '#374151',
+                  textDecoration: 'none', display: 'block',
+                  transition: 'all .15s',
+                }}
+              >
+                Уже есть аккаунт? Войти
+              </Link>
             </div>
           </div>
         </div>
