@@ -146,11 +146,14 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding: 0 64px;
+    padding: 0 64px 0 0;
   }
   .home-strip-inner::-webkit-scrollbar { display: none; }
 
   .home-strip { display: flex; gap: 8px; white-space: nowrap; width: max-content; }
+
+  /* Убираем левый fade — карточки начинаются с края */
+  .home-strip-wrap::before { display: none; }
 
   .strip-chip {
     display: inline-flex; align-items: center; gap: 7px;
