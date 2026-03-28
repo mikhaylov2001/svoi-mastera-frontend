@@ -83,10 +83,10 @@ export default function HomePage() {
                 Выбирайте по рейтингу, договаривайтесь внутри сервиса.
               </p>
               <div className="hero-actions fade-up-3">
-                <Link to="/sections" className="btn btn-lg hero-btn-primary">
+                <Link to={userId ? '/categories' : '/register'} className="btn btn-lg hero-btn-primary">
                   🔍 Найти мастера
                 </Link>
-                <Link to={userId ? '/profile' : '/register'} className="btn btn-lg hero-btn-ghost">
+                <Link to={userId ? '/worker-profile' : '/register?role=WORKER'} className="btn btn-lg hero-btn-ghost">
                   Стать мастером →
                 </Link>
               </div>
@@ -126,7 +126,7 @@ export default function HomePage() {
       <div className="home-strip-wrap">
         <div className="container" style={{ position: 'relative' }}>
           <div className="home-strip-inner">
-            <div className="home-strip">
+            <div className="home-strip" style={{ justifyContent: 'flex-start', paddingLeft: 0 }}>
               {ALL_CATS.map(cat => (
                 <Link key={cat.slug} to={`/categories/${cat.slug}`} className="strip-chip">
                   <span>{cat.emoji}</span>{cat.name}
