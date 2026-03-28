@@ -23,6 +23,10 @@ import ChatPage from './pages/ChatPage';
 import NotFoundPage from './pages/NotFoundPage';
 import NotificationsSettingsPage from './pages/NotificationsSettingsPage';
 import PersonalSettingsPage from './pages/PersonalSettingsPage';
+import SupportPage from './pages/SupportPage';
+import TermsPage   from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import FaqPage     from './pages/FaqPage';
 import './App.css';
 
 function ProtectedRoute({ children, workerOnly = false }) {
@@ -70,6 +74,10 @@ function AppContent() {
           <Route path="/chat/:partnerId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/settings/notifications" element={<ProtectedRoute><NotificationsSettingsPage /></ProtectedRoute>} />
           <Route path="/settings/personal" element={<ProtectedRoute><PersonalSettingsPage /></ProtectedRoute>} />
+          <Route path="/support" element={<SupportPage />} />
+          <Route path="/terms"   element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/faq"     element={<FaqPage />} />
           <Route path="*"                element={<NotFoundPage />} />
         </Routes>
       </main>
