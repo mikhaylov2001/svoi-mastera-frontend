@@ -55,7 +55,7 @@ function Footer() {
             </div>
             <div className="footer-contact-item">
               <span className="footer-contact-icon">✉️</span>
-              support@svoimastera.ru
+              dm7723934@gmail.com
             </div>
             <div className="footer-contact-item">
               <span className="footer-contact-icon">💬</span>

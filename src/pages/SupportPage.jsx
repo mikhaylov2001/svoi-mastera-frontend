@@ -30,10 +30,10 @@ export default function SupportPage() {
                 <div className="legal-contact-title">Telegram</div>
                 <div className="legal-contact-val">@dm7723934</div>
               </a>
-              <a href="mailto:support@svoimastera.ru" className="legal-contact-card">
+              <a href="mailto:dm7723934@gmail.com" className="legal-contact-card">
                 <div className="legal-contact-icon">✉️</div>
                 <div className="legal-contact-title">Email</div>
-                <div className="legal-contact-val">support@svoimastera.ru</div>
+                <div className="legal-contact-val">dm7723934@gmail.com</div>
               </a>
               <div className="legal-contact-card">
                 <div className="legal-contact-icon">⏰</div>

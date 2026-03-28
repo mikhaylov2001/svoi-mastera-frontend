@@ -16,7 +16,7 @@ const FAQS = [
   },
   {
     q: 'Что делать, если мастер не выполнил работу?',
-    a: 'Не подтверждайте завершение сделки. Напишите в поддержку через Telegram @dm7723934 или на email support@svoimastera.ru с описанием ситуации и номером сделки. Мы поможем разобраться.'
+    a: 'Не подтверждайте завершение сделки. Напишите в поддержку через Telegram @dm7723934 или на email dm7723934@gmail.com с описанием ситуации и номером сделки. Мы поможем разобраться.'
   },
   {
     q: 'Можно ли оставить отзыв о мастере?',
@@ -90,10 +90,10 @@ export default function FaqPage() {
                 <div className="legal-contact-title">Telegram</div>
                 <div className="legal-contact-val">@dm7723934</div>
               </a>
-              <a href="mailto:support@svoimastera.ru" className="legal-contact-card">
+              <a href="mailto:dm7723934@gmail.com" className="legal-contact-card">
                 <div className="legal-contact-icon">✉️</div>
                 <div className="legal-contact-title">Email</div>
-                <div className="legal-contact-val">support@svoimastera.ru</div>
+                <div className="legal-contact-val">dm7723934@gmail.com</div>
               </a>
             </div>
           </div>
