@@ -47,8 +47,7 @@ function AuthLeft({ title, subtitle, points, stats }) {
     <div className="auth-left">
       <div className="auth-left-content">
         <Link to="/" className="auth-brand">
-
-          <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
+          <span className="auth-brand-text">🔨 СвоиМастера в Йошкар-Оле</span>
         </Link>
         <h2 className="auth-left-title">{title}</h2>
         <p  className="auth-left-desc">{subtitle}</p>
@@ -145,8 +144,7 @@ export function LoginPage() {
       <div className="auth-right">
         <div className="auth-mobile-header">
           <Link to="/" className="auth-mobile-brand">
-
-            <span className="auth-mobile-brand-text">СвоиМастера</span>
+            <span className="auth-mobile-brand-text">🔨 СвоиМастера</span>
           </Link>
           <p className="auth-mobile-sub">Вход в личный кабинет сервиса</p>
         </div>
@@ -295,8 +293,7 @@ export function RegisterPage() {
       <div className="auth-right">
         <div className="auth-mobile-header">
           <Link to="/" className="auth-mobile-brand">
-
-            <span className="auth-mobile-brand-text">СвоиМастера</span>
+            <span className="auth-mobile-brand-text">🔨 СвоиМастера</span>
           </Link>
           <p className="auth-mobile-sub">Регистрация в сервисе</p>
         </div>
