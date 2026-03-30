@@ -114,12 +114,14 @@ export function LoginPage() {
       const userId = user.id || resp.userId;
       const userName = user.displayName || '';
       const userRole = user.hasWorkerProfile ? 'WORKER' : 'CUSTOMER';
+      const avatarUrl = user.avatarUrl || '';
+      const lastName = user.lastName || '';
 
       if (!userId) {
         throw new Error('Не удалось войти. Попробуйте ещё раз.');
       }
 
-      login(userId, userRole, userName);
+      login(userId, userRole, userName, avatarUrl, lastName);
       navigate(userRole === 'WORKER' ? '/worker-profile' : '/profile');
     } catch (err) {
       setError(err.message || 'Неверный email или пароль.');
@@ -261,14 +263,15 @@ export function RegisterPage() {
       const user = resp.user || {};
       const userId = user.id || resp.userId;
       const userName = user.displayName || name;
-      // Используем выбранную роль, а не ту что возвращает API
       const userRole = form.role;
+      const avatarUrl = user.avatarUrl || '';
+      const lastName = user.lastName || form.lastName?.trim() || '';
 
       if (!userId) {
         throw new Error('Не удалось создать аккаунт. Попробуйте ещё раз.');
       }
 
-      login(userId, userRole, userName);
+      login(userId, userRole, userName, avatarUrl, lastName);
       navigate(userRole === 'WORKER' ? '/worker-profile' : '/profile');
     } catch (err) {
       setError(err.message || 'Не удалось создать аккаунт. Попробуйте снова.');
