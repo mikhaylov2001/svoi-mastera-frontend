@@ -316,7 +316,7 @@ export function RegisterPage() {
               <div className="auth-role-icon-wrap">🏠</div>
               <div className="auth-role-body">
                 <div className="auth-role-title">Заказчик</div>
-                <div className="auth-role-sub">Ищу мастера для своих задач</div>
+                <div className="auth-role-sub">Ищу мастера</div>
               </div>
             </button>
             <button type="button"
@@ -326,7 +326,7 @@ export function RegisterPage() {
               <div className="auth-role-icon-wrap">🔧</div>
               <div className="auth-role-body">
                 <div className="auth-role-title">Мастер</div>
-                <div className="auth-role-sub">Выполняю заказы и зарабатываю</div>
+                <div className="auth-role-sub">Выполняю заказы</div>
               </div>
             </button>
           </div>
