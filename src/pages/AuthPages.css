@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap');
 
-.auth-root { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; background: #fff; }
+.auth-root { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; background: #0f3460; }
 
 .auth-left {
   background: linear-gradient(155deg, #1a1a2e 0%, #16213e 55%, #0f3460 100%);
@@ -23,11 +23,11 @@
 .auth-stat-num { font-family: var(--font-display); font-size: 18px; font-weight: 900; color: #fff; }
 .auth-stat-lbl { font-size: 10px; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
 
-.auth-right { display: flex; align-items: center; justify-content: center; padding: 32px; background: var(--gray-50); }
+.auth-right { display: flex; align-items: center; justify-content: center; padding: 32px; background: linear-gradient(155deg, #16213e 0%, #0f3460 100%); }
 .auth-form-card {
-  width: 100%; max-width: 380px; background: #fff;
-  border: 1.5px solid var(--gray-200); border-radius: var(--r-xl); padding: 32px;
-  box-shadow: var(--shadow-xl); animation: fadeUp .5s cubic-bezier(.16,1,.3,1) both;
+  width: 100%; max-width: 380px; background: rgba(255,255,255,.97);
+  border: 1px solid rgba(255,255,255,.15); border-radius: var(--r-xl); padding: 32px;
+  box-shadow: 0 32px 80px rgba(0,0,0,.45); animation: fadeUp .5s cubic-bezier(.16,1,.3,1) both;
 }
 .auth-mobile-header { display: none; }
 .auth-mobile-brand { display:flex; align-items:center; gap:8px; text-decoration:none; margin-bottom:4px; }
@@ -72,7 +72,7 @@
   .auth-right {
     min-height: 100vh;
     padding: 20px 16px 24px;
-    background: linear-gradient(180deg, #f9fafb 0%, #ffffff 45%, #f9fafb 100%);
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   }
   .auth-mobile-header { display:block; width:100%; max-width:380px; margin-bottom:12px; }
 }
