@@ -1,405 +1,450 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaTools, FaUser, FaBolt, FaChartBar, FaShieldAlt, FaRocket, FaBullseye, FaCreditCard } from 'react-icons/fa';
-import { loginUser, registerUser } from '../api';
 import { useAuth } from '../context/AuthContext';
-import './AuthPages.css';
+import { SECTIONS } from './SectionsPage';
+import { CATEGORIES_BY_SECTION } from './CategoriesPage';
+import './HomePage.css';
 
-/* ───────────────────────────────
-   Валидация email
-─────────────────────────────── */
-function isValidEmail(email) {
-  // Проверяем базовый формат: что-то@что-то.что-то (минимум 2 символа в домене)
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-  if (!re.test(email)) return false;
+const ALL_CATS = Object.values(CATEGORIES_BY_SECTION).flat();
 
-  // Проверяем что нет двойных точек
-  if (email.includes('..')) return false;
+const REVIEWS = [
+  {
+    name: 'Анна К.',
+    initials: 'АК',
+    color: '#6366f1',
+    text: 'Нашла сантехника за 15 минут. Приехал вовремя, всё сделал аккуратно. Сервис огонь!',
+    rating: 5,
+    service: 'Сантехника',
+  },
+  {
+    name: 'Михаил Р.',
+    initials: 'МР',
+    color: '#0ea5e9',
+    text: 'Заказывал электрика для новой квартиры. Мастер профессиональный, цена честная.',
+    rating: 5,
+    service: 'Электрика',
+  },
+  {
+    name: 'Светлана Т.',
+    initials: 'СТ',
+    color: '#22c55e',
+    text: 'Репетитор по математике для дочки — нашла через сервис. Уже видим результат!',
+    rating: 5,
+    service: 'Образование',
+  },
+];
 
-  // Проверяем длину частей
-  const [local, domain] = email.split('@');
-  if (local.length > 64 || domain.length > 255) return false;
+const BENEFITS = [
+  { icon: '⚡', color: '#f59e0b', bg: 'rgba(245,158,11,.1)',  title: 'Быстрый отклик',       desc: 'Первые предложения от мастеров поступают в течение 10 минут после публикации задачи' },
+  { icon: '🔒', color: '#22c55e', bg: 'rgba(34,197,94,.1)',   title: 'Безопасная сделка',     desc: 'Оплата защищена — деньги переходят мастеру только после подтверждения выполненной работы' },
+  { icon: '⭐', color: '#6366f1', bg: 'rgba(99,102,241,.1)',  title: 'Проверенные мастера',   desc: 'Рейтинг, отзывы и история выполненных работ — выбирайте лучшего с полной информацией' },
+  { icon: '💬', color: '#0ea5e9', bg: 'rgba(14,165,233,.1)',  title: 'Чат внутри сервиса',    desc: 'Обсуждайте детали, отправляйте фото и уточняйте условия прямо в приложении' },
+  { icon: '📍', color: '#e8410a', bg: 'rgba(232,65,10,.1)',   title: 'Мастера рядом',         desc: 'Только мастера из Йошкар-Олы — никаких долгих ожиданий и лишних расходов на дорогу' },
+  { icon: '🎯', color: '#d13a99', bg: 'rgba(209,58,153,.1)',  title: 'Точная цена',           desc: 'Мастер называет цену до начала работы. Никаких скрытых платежей и сюрпризов' },
+];
 
-  return true;
-}
+const WORKER_BENEFITS = [
+  { icon: '📋', title: 'Прямые заявки',      desc: 'Получайте заказы напрямую от клиентов без посредников' },
+  { icon: '💰', title: 'Комиссия 5%',        desc: 'Минимальная комиссия платформы — больше прибыли вам' },
+  { icon: '⭐', title: 'Рейтинг и отзывы',   desc: 'Зарабатывайте репутацию и получайте больше заказов' },
+  { icon: '💬', title: 'Чат с клиентами',    desc: 'Обсуждайте детали заказа прямо в сервисе' },
+  { icon: '🔔', title: 'Уведомления',        desc: 'Не пропускайте новые заявки и сообщения' },
+  { icon: '📱', title: 'Удобно везде',       desc: 'Работайте с телефона, планшета или компьютера' },
+];
 
-/* ───────────────────────────────
-   Shared icons
-─────────────────────────────── */
-const EyeOpen = () => (
-  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-  </svg>
-);
-const EyeClosed = () => (
-  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-    <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
-    <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
-    <line x1="1" y1="1" x2="23" y2="23"/>
-  </svg>
-);
+export default function HomePage() {
+  const { userId, userRole } = useAuth();
+  const [showGuestModal, setShowGuestModal] = useState(false);
 
-/* ───────────────────────────────
-   Left panel (shared)
-─────────────────────────────── */
-function AuthLeft({ title, subtitle, points, stats }) {
+  // Для мастеров показываем специальную версию
+  if (userRole === 'WORKER') {
+    return <WorkerHomePage userId={userId} />;
+  }
+
+  // Для заказчиков и гостей — обычная версия
   return (
-    <div className="auth-left">
-      <div className="auth-left-content">
-        <Link to="/" className="auth-brand">
-          <span className="auth-brand-icon">
-            <svg width="22" height="22" viewBox="0 0 100 100" fill="#fff">
-              {/* Левый молоток */}
-              <g transform="rotate(-45, 50, 50)">
-                <rect x="44" y="10" width="12" height="30" rx="3"/>
-                <rect x="30" y="8" width="40" height="16" rx="4"/>
-              </g>
-              {/* Правый молоток */}
-              <g transform="rotate(45, 50, 50)">
-                <rect x="44" y="10" width="12" height="30" rx="3"/>
-                <rect x="30" y="8" width="40" height="16" rx="4"/>
-              </g>
-            </svg>
-          </span>
-          <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
-        </Link>
-        <h2 className="auth-left-title">{title}</h2>
-        <p  className="auth-left-desc">{subtitle}</p>
-        <ul className="auth-left-points">
-          {points.map(([icon, text]) => (
-            <li key={text} className="auth-left-point">
-              <span className="auth-left-point-icon">{icon}</span>
-              {text}
-            </li>
-          ))}
-        </ul>
-      </div>
-      {stats && (
-        <div className="auth-stats-row">
-          {stats.map(([n, l]) => (
-            <div className="auth-stat-box" key={l}>
-              <div className="auth-stat-num">{n}</div>
-              <div className="auth-stat-lbl">{l}</div>
+    <div>
+      {/* ══ HERO (тёмный) ══ */}
+      <section className="home-hero">
+        <div className="container">
+          <div className="hero-grid">
+            <div>
+              <div className="hero-tag fade-up">
+                <span className="hero-tag-dot" />
+                Йошкар-Ола · Маркетплейс мастеров
+              </div>
+              <h1 className="hero-title fade-up-1">
+                Свои мастера<br />
+                для <span>любых задач</span><br />
+                в Йошкар-Оле
+              </h1>
+              <p className="hero-subtitle fade-up-2">
+                Опишите задачу — мастера откликнутся сами.<br />
+                Выбирайте по рейтингу, договаривайтесь внутри сервиса.
+              </p>
+              <div className="hero-actions fade-up-3">
+                <Link to={userId ? '/categories' : '/register'} className="btn btn-lg hero-btn-primary">
+                  🔍 Найти мастера
+                </Link>
+                <Link to={userId ? '/worker-profile' : '/register?role=WORKER'} className="btn btn-lg hero-btn-ghost">
+                  Стать мастером →
+                </Link>
+              </div>
+              <div className="hero-trust fade-up-4">
+                {[['24/7','приём заявок'],['9','категорий'],['5.0★','рейтинг']].map(([n,l]) => (
+                  <div className="hero-trust-item" key={l}>
+                    <strong>{n}</strong> {l}
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+
+            <div className="hero-card fade-up-2">
+              <div className="hero-card-label">Платформа живёт</div>
+              <div className="hero-stats-row">
+                {[['24/7','Заявки'],['9','Категорий'],['5.0★','Рейтинг']].map(([n,l]) => (
+                  <div className="hero-stat" key={l}>
+                    <span className="hero-stat-num">{n}</span>
+                    <span className="hero-stat-lbl">{l}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="hero-card-divider" />
+              <div className="hero-live">
+                <span className="hero-live-dot" />
+                <div>
+                  <div className="hero-live-title">Сервис работает</div>
+                  <div className="hero-live-sub">Первый отклик — в среднем 10 минут</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ STRIP (тёмный) ══ */}
+      <div className="home-strip-wrap">
+        <div className="container" style={{ position: 'relative' }}>
+          <div className="home-strip-inner">
+            <div className="home-strip" style={{ justifyContent: 'flex-start', paddingLeft: 0 }}>
+              {ALL_CATS.map(cat => (
+                <Link key={cat.slug} to={`/categories/${cat.slug}`} className="strip-chip">
+                  <span>{cat.emoji}</span>{cat.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ══ КАК РАБОТАЕТ (белый) ══ */}
+      <section className="home-how">
+        <div className="container">
+          <div className="home-how-header">
+            <p className="section-eyebrow">Просто и понятно</p>
+            <h2 className="section-title">Как это работает</h2>
+            <p className="section-sub">Три шага от задачи до результата</p>
+          </div>
+          <div className="how-grid">
+
+            <div className="how-card fade-up" style={{ animationDelay: '0s' }}>
+              <div className="how-card-illustration how-card-illus-1">
+                <div className="how-illus-circle" />
+                <div className="how-illus-lines"><span /><span /><span /></div>
+                <div className="how-illus-icon">📝</div>
+              </div>
+              <div className="how-num-row">
+                <div className="how-num">1</div>
+                <div className="how-num-label">Шаг первый</div>
+              </div>
+              <h3>Создайте задачу</h3>
+              <p>Опишите что нужно сделать, укажите адрес и удобное время</p>
+            </div>
+
+            <div className="how-card fade-up" style={{ animationDelay: '0.1s' }}>
+              <div className="how-card-illustration how-card-illus-2">
+                <div className="how-illus-circle" />
+                <div className="how-illus-avatars">
+                  <span>А</span><span>М</span><span>К</span>
+                </div>
+                <div className="how-illus-icon">💬</div>
+              </div>
+              <div className="how-num-row">
+                <div className="how-num">2</div>
+                <div className="how-num-label">Шаг второй</div>
+              </div>
+              <h3>Получите отклики</h3>
+              <p>Мастера предложат цену — смотрите рейтинг и отзывы</p>
+            </div>
+
+            <div className="how-card fade-up" style={{ animationDelay: '0.2s' }}>
+              <div className="how-card-illustration how-card-illus-3">
+                <div className="how-illus-circle" />
+                <div className="how-illus-check">
+                  <svg viewBox="0 0 40 40" fill="none">
+                    <circle cx="20" cy="20" r="18" stroke="currentColor" strokeWidth="2.5" strokeDasharray="4 3"/>
+                    <path d="M12 20.5l5.5 5.5 10-11" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <div className="how-illus-icon">🤝</div>
+              </div>
+              <div className="how-num-row">
+                <div className="how-num">3</div>
+                <div className="how-num-label">Шаг третий</div>
+              </div>
+              <h3>Заключите сделку</h3>
+              <p>Выберите мастера и оформите безопасную сделку внутри сервиса</p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ══ РАЗДЕЛЫ УСЛУГ (белый) ══ */}
+      <section className="home-popular">
+        <div className="container">
+          <div className="home-popular-header">
+            <div>
+              <p className="section-eyebrow">Услуги</p>
+              <h2 className="section-title">Разделы услуг</h2>
+              <p className="section-sub">Выберите нужный раздел и создайте задачу</p>
+            </div>
+            <Link to="/sections" className="btn btn-outline btn-sm">Все разделы →</Link>
+          </div>
+          <div className="popular-grid">
+            {SECTIONS.map((sec, i) => (
+              <Link
+                key={sec.slug}
+                to={`/sections/${sec.slug}`}
+                className="popular-card fade-up"
+                style={{ animationDelay: `${i * 0.05}s` }}
+              >
+                <div className="popular-card-icon" style={{ background: sec.color }}>
+                  {sec.emoji}
+                </div>
+                <h3>{sec.name}</h3>
+                <p className="popular-card-desc">{sec.desc}</p>
+                <div className="popular-card-footer">
+                  <span className="popular-card-link">Перейти <span>→</span></span>
+                  <span className="popular-card-badge">услуги</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ ПРЕИМУЩЕСТВА (белый) ══ */}
+      <section className="home-benefits">
+        <div className="container">
+          <div className="benefits-header">
+            <p className="section-eyebrow">Почему мы</p>
+            <h2 className="section-title">Преимущества сервиса</h2>
+            <p className="section-sub">Всё что нужно для комфортного поиска мастера</p>
+          </div>
+          <div className="benefits-grid">
+            {BENEFITS.map((b, i) => (
+              <div className="benefit-card fade-up" key={b.title} style={{ animationDelay: `${i * 0.06}s` }}>
+                <div className="benefit-icon" style={{ color: b.color, background: b.bg }}>
+                  {b.icon}
+                </div>
+                <h3>{b.title}</h3>
+                <p>{b.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ ОТЗЫВЫ (тёмный) ══ */}
+      <section className="home-reviews">
+        <div className="container">
+          <div className="reviews-header">
+            <p className="section-eyebrow">Отзывы</p>
+            <h2 className="section-title">Что говорят клиенты</h2>
+            <p className="section-sub">Реальные отзывы о мастерах из Йошкар-Олы</p>
+          </div>
+          <div className="reviews-grid">
+            {REVIEWS.map((r, i) => (
+              <div className="review-card fade-up" key={r.name} style={{ animationDelay: `${i * 0.08}s` }}>
+                <div className="review-stars">{'★'.repeat(r.rating)}</div>
+                <p className="review-text">«{r.text}»</p>
+                <div className="review-footer">
+                  <div className="review-avatar" style={{ background: r.color }}>{r.initials}</div>
+                  <div>
+                    <div className="review-name">{r.name}</div>
+                    <div className="review-service">{r.service}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ CTA (тёмный) ══ */}
+      {!userId && (
+        <section className="home-cta-section">
+          <div className="container">
+            <div className="home-cta">
+              <div className="cta-text">
+                <h2>Готовы разместить задачу?</h2>
+                <p>Зарегистрируйтесь бесплатно — первые отклики уже через 10 минут</p>
+              </div>
+              <button className="btn btn-lg cta-btn" onClick={() => setShowGuestModal(true)}>
+                Начать бесплатно →
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ══ МОДАЛКА ══ */}
+      {showGuestModal && (
+        <div className="modal-overlay" onClick={() => setShowGuestModal(false)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()} style={{
+            maxWidth: 480, padding: '40px 40px 32px', borderRadius: 24,
+            background: '#fff', boxShadow: '0 32px 80px rgba(0,0,0,.22)',
+            position: 'relative',
+          }}>
+            {/* Закрыть */}
+            <button onClick={() => setShowGuestModal(false)} style={{
+              position: 'absolute', top: 16, right: 16,
+              background: '#f3f4f6', border: 'none', cursor: 'pointer',
+              width: 32, height: 32, borderRadius: '50%',
+              fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#6b7280',
+            }}>✕</button>
+
+            <h3 style={{ fontSize: 24, fontWeight: 900, color: '#111827', margin: '0 0 8px' }}>
+              Добро пожаловать!
+            </h3>
+            <p style={{ color: '#6b7280', fontSize: 15, margin: '0 0 28px', lineHeight: 1.6 }}>
+              Войдите чтобы найти мастера, оставить заявку и получить отклики уже через 10 минут.
+            </p>
+
+            {/* Кнопки */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <Link
+                to="/register"
+                className="btn btn-primary"
+                onClick={() => setShowGuestModal(false)}
+                style={{ width: '100%', textAlign: 'center', padding: '14px', fontSize: 15, fontWeight: 700, borderRadius: 12 }}
+              >
+                Зарегистрироваться бесплатно
+              </Link>
+              <Link
+                to="/login"
+                onClick={() => setShowGuestModal(false)}
+                style={{
+                  width: '100%', textAlign: 'center', padding: '13px',
+                  fontSize: 15, fontWeight: 600, borderRadius: 12,
+                  border: '1.5px solid #e5e7eb', color: '#374151',
+                  textDecoration: 'none', display: 'block',
+                  transition: 'all .15s',
+                }}
+              >
+                Уже есть аккаунт? Войти
+              </Link>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-/* ───────────────────────────────
-   LOGIN PAGE
-─────────────────────────────── */
-export function LoginPage() {
-  const { login } = useAuth();
-  const navigate  = useNavigate();
-
-  const [form,    setForm]    = useState({ email:'', password:'' });
-  const [showPw,  setShowPw]  = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
-
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setError('');
-
-    // Валидация email
-    const email = form.email.trim();
-    if (!email) {
-      setError('Введите email.');
-      return;
-    }
-    if (!isValidEmail(email)) {
-      setError('Введите корректный email, например: name@mail.ru');
-      return;
-    }
-    if (!form.password) {
-      setError('Введите пароль.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const resp = await loginUser({ ...form, email });
-
-      const user = resp.user || {};
-      const userId = user.id || resp.userId;
-      const userName = user.displayName || '';
-      const userRole = user.hasWorkerProfile ? 'WORKER' : 'CUSTOMER';
-      const avatarUrl = user.avatarUrl || '';
-      const lastName = user.lastName || '';
-
-      if (!userId) {
-        throw new Error('Не удалось войти. Попробуйте ещё раз.');
-      }
-
-      login(userId, userRole, userName, avatarUrl, lastName);
-      navigate(userRole === 'WORKER' ? '/worker-profile' : '/profile');
-    } catch (err) {
-      setError(err.message || 'Неверный email или пароль.');
-      setLoading(false);
-    }
-  };
-
+// ═══════════════════════════════════════════════════════════
+// Главная страница для мастеров
+// ═══════════════════════════════════════════════════════════
+function WorkerHomePage({ userId }) {
   return (
-    <div className="auth-root">
-      <AuthLeft
-        title={<>Всё для мастеров —<br /><span>в одном месте</span></>}
-        subtitle="Маркетплейс для поиска мастеров в Йошкар-Оле. Быстро, удобно, безопасно."
-        points={[
-          [<FaBolt />,'Мгновенные уведомления о новых заказах'],
-          [<FaChartBar />,'Аналитика и статистика в реальном времени'],
-          [<FaShieldAlt />,'Безопасные сделки с гарантией оплаты'],
-        ]}
-        stats={[['24/7','Приём заявок'],['9+','Категорий'],['5.0★','Рейтинг']]}
-      />
-
-      <div className="auth-right">
-        <div className="auth-mobile-header">
-          <Link to="/" className="auth-mobile-brand">
-
-            <span className="auth-mobile-brand-text">СвоиМастера</span>
-          </Link>
-          <p className="auth-mobile-sub">Вход в личный кабинет сервиса</p>
-        </div>
-
-        <div className="auth-form-card">
-          <h1 className="auth-form-title">Вход в аккаунт</h1>
-          <p  className="auth-form-sub">Рады видеть вас снова</p>
-
-          {error && <div className="auth-error-box">⚠️ {error}</div>}
-
-          <form onSubmit={handleSubmit}>
-            <div className="form-field">
-              <label className="form-label">Email</label>
-              <input className="form-input" type="email" name="email" placeholder="mail@example.com"
-                value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
-            </div>
-
-            <div className="form-field">
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6}}>
-                <span className="form-label" style={{marginBottom:0}}>Пароль</span>
-                <button type="button" className="auth-forgot">Забыли пароль?</button>
+    <div className="worker-home">
+      {/* ══ HERO для мастеров ══ */}
+      <section className="home-hero">
+        <div className="container">
+          <div className="hero-grid">
+            <div>
+              <div className="hero-tag fade-up">
+                <span className="hero-tag-dot" />
+                Йошкар-Ола · Платформа для мастеров
               </div>
-              <div className="auth-input-wrap">
-                <input className="form-input" type={showPw ? 'text' : 'password'} name="password"
-                  placeholder="••••••••" style={{paddingRight:42}}
-                  value={form.password} onChange={e => setForm({...form, password: e.target.value})} required />
-                <button type="button" className="auth-eye" onClick={() => setShowPw(!showPw)}>
-                  {showPw ? <EyeClosed /> : <EyeOpen />}
-                </button>
+              <h1 className="hero-title fade-up-1">
+                Найдите<br />
+                <span>новых клиентов</span><br />
+                в Йошкар-Оле
+              </h1>
+              <p className="hero-subtitle fade-up-2">
+                Получайте заявки от заказчиков напрямую.<br />
+                Работайте без посредников, растите свой рейтинг.
+              </p>
+              <div className="hero-actions fade-up-3">
+                <Link to="/find-work" className="btn btn-lg hero-btn-primary">
+                  📋 Найти работу
+                </Link>
+                <Link to="/worker-profile" className="btn btn-lg hero-btn-ghost">
+                  Мой профиль →
+                </Link>
               </div>
-            </div>
-
-            <button type="submit" className={`auth-submit btn btn-primary btn-full${loading ? ' auth-submit-loading' : ''}`} disabled={loading}>
-              {loading ? 'Входим…' : 'Войти в аккаунт'}
-            </button>
-          </form>
-
-          <p className="auth-alt">
-            Нет аккаунта?{' '}
-            <Link to="/register" className="auth-alt-link">Зарегистрироваться</Link>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ───────────────────────────────
-   REGISTER PAGE
-─────────────────────────────── */
-export function RegisterPage() {
-  const { login } = useAuth();
-  const navigate  = useNavigate();
-
-  const [form,    setForm]    = useState({ name:'', email:'', password:'', role:'CUSTOMER' });
-  const [showPw,  setShowPw]  = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
-
-  const strength = (() => {
-    const p = form.password;
-    if (!p) return 0;
-    if (p.length < 6) return 1;
-    if (p.length >= 8 && /[A-Z]/.test(p) && /[0-9]/.test(p)) return 3;
-    return 2;
-  })();
-
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setError('');
-
-    // Валидация имени
-    const name = form.name.trim();
-    if (!name) {
-      setError('Введите ваше имя.');
-      return;
-    }
-    if (name.length < 2) {
-      setError('Имя должно содержать минимум 2 символа.');
-      return;
-    }
-
-    // Валидация email
-    const email = form.email.trim();
-    if (!email) {
-      setError('Введите email.');
-      return;
-    }
-    if (!isValidEmail(email)) {
-      setError('Введите корректный email, например: name@mail.ru');
-      return;
-    }
-
-    // Валидация пароля
-    if (!form.password) {
-      setError('Введите пароль.');
-      return;
-    }
-    if (form.password.length < 6) {
-      setError('Пароль должен содержать минимум 6 символов.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const resp = await registerUser({
-        name,
-        lastName: form.lastName?.trim() || '',
-        email,
-        password: form.password,
-        role: form.role
-      });
-
-      const user = resp.user || {};
-      const userId = user.id || resp.userId;
-      const userName = user.displayName || name;
-      const userRole = form.role;
-      const avatarUrl = user.avatarUrl || '';
-      const lastName = user.lastName || form.lastName?.trim() || '';
-
-      if (!userId) {
-        throw new Error('Не удалось создать аккаунт. Попробуйте ещё раз.');
-      }
-
-      login(userId, userRole, userName, avatarUrl, lastName);
-      navigate(userRole === 'WORKER' ? '/worker-profile' : '/profile');
-    } catch (err) {
-      setError(err.message || 'Не удалось создать аккаунт. Попробуйте снова.');
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="auth-root">
-      <AuthLeft
-        title={<>Начните зарабатывать<br /><span>уже сегодня</span></>}
-        subtitle="Регистрация займёт меньше минуты. Создайте аккаунт заказчика или мастера."
-        points={[
-          [<FaRocket />,'Быстрый старт — анкета за 2 минуты'],
-          [<FaBullseye />,'Умное распределение заказов по категориям'],
-          [<FaCreditCard />,'Безопасные выплаты с гарантией'],
-        ]}
-        stats={[['24/7','Приём заявок'],['9+','Категорий'],['5.0★','Рейтинг']]}
-      />
-
-      <div className="auth-right">
-        <div className="auth-mobile-header">
-          <Link to="/" className="auth-mobile-brand">
-
-            <span className="auth-mobile-brand-text">СвоиМастера</span>
-          </Link>
-          <p className="auth-mobile-sub">Регистрация в сервисе</p>
-        </div>
-
-        <div className="auth-form-card">
-          <h1 className="auth-form-title">Создать аккаунт</h1>
-          <p  className="auth-form-sub">Присоединяйтесь к сервису</p>
-
-          {error && <div className="auth-error-box">⚠️ {error}</div>}
-
-          {/* Role picker */}
-          <div className="auth-role-picker">
-            <button type="button"
-              className={`auth-role-btn ${form.role === 'CUSTOMER' ? 'active' : ''}`}
-              onClick={() => setForm({...form, role:'CUSTOMER'})}>
-              {form.role === 'CUSTOMER' && <span className="auth-role-check">✓</span>}
-              <div className="auth-role-icon-wrap">🏠</div>
-              <div className="auth-role-body">
-                <div className="auth-role-title">Заказчик</div>
-                <div className="auth-role-sub">Ищу мастера</div>
-              </div>
-            </button>
-            <button type="button"
-              className={`auth-role-btn ${form.role === 'WORKER' ? 'active' : ''}`}
-              onClick={() => setForm({...form, role:'WORKER'})}>
-              {form.role === 'WORKER' && <span className="auth-role-check">✓</span>}
-              <div className="auth-role-icon-wrap">🔧</div>
-              <div className="auth-role-body">
-                <div className="auth-role-title">Мастер</div>
-                <div className="auth-role-sub">Выполняю заказы</div>
-              </div>
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit}>
-            <div className="form-field">
-              <label className="form-label">Имя</label>
-              <input className="form-input" type="text" name="name" placeholder="Иван"
-                value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
-            </div>
-
-            <div className="form-field">
-              <label className="form-label">Фамилия</label>
-              <input className="form-input" type="text" name="lastName" placeholder="Иванов"
-                value={form.lastName || ''} onChange={e => setForm({...form, lastName: e.target.value})} />
-            </div>
-
-            <div className="form-field">
-              <label className="form-label">Email</label>
-              <input className="form-input" type="email" name="email" placeholder="mail@example.com"
-                value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
-            </div>
-
-            <div className="form-field">
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6}}>
-                <span className="form-label" style={{marginBottom:0}}>Пароль</span>
-                {strength > 0 && (
-                  <span style={{fontSize:12, fontWeight:700, color: strength===3?'#4caf50':strength===2?'#ff9800':'#f44336'}}>
-                    {['','Слабый','Средний','Надёжный'][strength]}
-                  </span>
-                )}
-              </div>
-              <div className="auth-input-wrap">
-                <input className="form-input" type={showPw ? 'text' : 'password'} name="password"
-                  placeholder="Минимум 6 символов" style={{paddingRight:42}}
-                  value={form.password} onChange={e => setForm({...form, password: e.target.value})} required />
-                <button type="button" className="auth-eye" onClick={() => setShowPw(!showPw)}>
-                  {showPw ? <EyeClosed /> : <EyeOpen />}
-                </button>
-              </div>
-              <div className="auth-strength">
-                {[1,2,3].map(i => (
-                  <div key={i} className={`auth-strength-bar ${strength>=i ? ['','weak','fair','good'][i] : ''}`} />
+              <div className="hero-trust fade-up-4">
+                {[['24/7','новые заявки'],['9','категорий'],['5%','комиссия']].map(([n,l]) => (
+                  <div className="hero-trust-item" key={l}>
+                    <strong>{n}</strong> {l}
+                  </div>
                 ))}
               </div>
             </div>
 
-            <button type="submit" className={`auth-submit btn btn-primary btn-full${loading ? ' auth-submit-loading' : ''}`} disabled={loading}>
-              {loading ? 'Создаём аккаунт…' : 'Создать аккаунт'}
-            </button>
-          </form>
-
-          <p className="auth-alt">
-            Уже есть аккаунт?{' '}
-            <Link to="/login" className="auth-alt-link">Войти</Link>
-          </p>
+            <div className="hero-card fade-up-2">
+              <div className="hero-card-label">Платформа работает</div>
+              <div className="hero-stats-row">
+                {[['24/7','Заявки'],['9','Категорий'],['5%','Комиссия']].map(([n,l]) => (
+                  <div className="hero-stat" key={l}>
+                    <span className="hero-stat-num">{n}</span>
+                    <span className="hero-stat-lbl">{l}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="hero-card-divider" />
+              <div className="hero-live">
+                <span className="hero-live-dot" />
+                <div>
+                  <div className="hero-live-title">Платформа работает</div>
+                  <div className="hero-live-sub">Откликайтесь первым — получайте больше заказов</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* ══ ПРЕИМУЩЕСТВА для мастеров ══ */}
+      <section className="home-benefits">
+        <div className="container">
+          <div className="benefits-header">
+            <p className="section-eyebrow">Работайте с комфортом</p>
+            <h2 className="section-title">Преимущества платформы</h2>
+            <p className="section-sub">Всё что нужно для успешной работы</p>
+          </div>
+          <div className="benefits-grid">
+            {WORKER_BENEFITS.map((b, i) => (
+              <div className="benefit-card fade-up" key={b.title} style={{ animationDelay: `${i * 0.06}s` }}>
+                <div className="benefit-icon" style={{ fontSize: '48px' }}>
+                  {b.icon}
+                </div>
+                <h3>{b.title}</h3>
+                <p>{b.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '40px' }}>
+            <Link to="/find-work" className="btn btn-primary btn-lg">
+              Начать работать
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
-
-export default LoginPage;
