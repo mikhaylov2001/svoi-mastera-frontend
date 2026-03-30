@@ -316,15 +316,6 @@ export default function HomePage() {
               color: '#6b7280',
             }}>✕</button>
 
-            {/* Иконка */}
-            <div style={{
-              width: 60, height: 60, borderRadius: '50%',
-              background: 'linear-gradient(135deg,#e8410a,#ff7043)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 28, marginBottom: 20,
-              boxShadow: '0 8px 24px rgba(232,65,10,.3)',
-            }}>🔨</div>
-
             <h3 style={{ fontSize: 24, fontWeight: 900, color: '#111827', margin: '0 0 8px' }}>
               Добро пожаловать!
             </h3>
@@ -340,7 +331,7 @@ export default function HomePage() {
                 onClick={() => setShowGuestModal(false)}
                 style={{ width: '100%', textAlign: 'center', padding: '14px', fontSize: 15, fontWeight: 700, borderRadius: 12 }}
               >
-                🚀 Зарегистрироваться бесплатно
+                Зарегистрироваться бесплатно
               </Link>
               <Link
                 to="/login"
