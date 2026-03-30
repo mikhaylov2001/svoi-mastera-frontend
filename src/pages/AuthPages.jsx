@@ -47,7 +47,7 @@ function AuthLeft({ title, subtitle, points, stats }) {
     <div className="auth-left">
       <div className="auth-left-content">
         <Link to="/" className="auth-brand">
-          <span className="auth-brand-icon"><svg width="18" height="18" viewBox="0 0 512 512" fill="#fff"><path d="M275 281l-149 149c-15 15-40 15-55 0s-15-40 0-55L220 226zM507 101L405 4l-55 54 27 27-72 72 54 54 72-72 27 27z"/></svg></span>
+          <span className="auth-brand-icon"><svg width="18" height="18" viewBox="0 0 512 512" fill="#fff"><path d="M368 32h-12c-36 0-64 28-64 64v16l-24 24-89-89a56 56 0 0 0-79 0L56 91a56 56 0 0 0 0 79l89 89-24 24H105C69 283 41 311 41 347v13l101 101h13c36 0 64-28 64-64v-16l24-24 89 89a56 56 0 0 0 79 0l44-44a56 56 0 0 0 0-79l-89-89 24-24h16c36 0 64-28 64-64v-13L368 32z"/></svg></span>
           <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
         </Link>
         <h2 className="auth-left-title">{title}</h2>
