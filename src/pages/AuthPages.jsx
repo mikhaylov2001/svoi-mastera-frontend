@@ -47,13 +47,7 @@ function AuthLeft({ title, subtitle, points, stats }) {
     <div className="auth-left">
       <div className="auth-left-content">
         <Link to="/" className="auth-brand">
-          <span className="auth-brand-icon">
-            <svg width="18" height="18" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-              <path d="M15 12l-8.5 8.5a2.12 2.12 0 0 1-3-3L12 9"/>
-              <path d="M17.64 15L22 10.36 17 5l-4.5 4.5"/>
-              <path d="M2 2l4.5 4.5"/>
-            </svg>
-          </span>
+          <span className="auth-brand-icon"><svg width="18" height="18" viewBox="0 0 512 512" fill="#fff"><path d="M275 281l-149 149c-15 15-40 15-55 0s-15-40 0-55L220 226zM507 101L405 4l-55 54 27 27-72 72 54 54 72-72 27 27z"/></svg></span>
           <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
         </Link>
         <h2 className="auth-left-title">{title}</h2>
