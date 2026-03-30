@@ -310,22 +310,22 @@ export function RegisterPage() {
               className={`auth-role-btn ${form.role === 'CUSTOMER' ? 'active' : ''}`}
               onClick={() => setForm({...form, role:'CUSTOMER'})}
             >
-              <span className="auth-role-icon"><FaUser /></span>
-              <div>
-                <div className="auth-role-title">Заказчик</div>
-                <div className="auth-role-sub">Ищу мастера</div>
+              <div className="auth-role-icon-wrap">
+                <span className="auth-role-icon"><FaUser /></span>
               </div>
+              <div className="auth-role-title">Заказчик</div>
+              <div className="auth-role-sub">Ищу мастера</div>
             </button>
             <button
               type="button"
               className={`auth-role-btn ${form.role === 'WORKER' ? 'active' : ''}`}
               onClick={() => setForm({...form, role:'WORKER'})}
             >
-              <span className="auth-role-icon"><FaTools /></span>
-              <div>
-                <div className="auth-role-title">Мастер</div>
-                <div className="auth-role-sub">Выполняю работы</div>
+              <div className="auth-role-icon-wrap">
+                <span className="auth-role-icon"><FaTools /></span>
               </div>
+              <div className="auth-role-title">Мастер</div>
+              <div className="auth-role-sub">Выполняю работы</div>
             </button>
           </div>
 
