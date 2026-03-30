@@ -305,27 +305,27 @@ export function RegisterPage() {
 
           {/* Role picker */}
           <div className="auth-role-picker">
-            <button
-              type="button"
+            <button type="button"
               className={`auth-role-btn ${form.role === 'CUSTOMER' ? 'active' : ''}`}
-              onClick={() => setForm({...form, role:'CUSTOMER'})}
-            >
+              onClick={() => setForm({...form, role:'CUSTOMER'})}>
               <div className="auth-role-icon-wrap">
                 <span className="auth-role-icon"><FaUser /></span>
               </div>
-              <div className="auth-role-title">Заказчик</div>
-              <div className="auth-role-sub">Ищу мастера</div>
+              <div>
+                <div className="auth-role-title">Заказчик</div>
+                <div className="auth-role-sub">Ищу мастера</div>
+              </div>
             </button>
-            <button
-              type="button"
+            <button type="button"
               className={`auth-role-btn ${form.role === 'WORKER' ? 'active' : ''}`}
-              onClick={() => setForm({...form, role:'WORKER'})}
-            >
+              onClick={() => setForm({...form, role:'WORKER'})}>
               <div className="auth-role-icon-wrap">
                 <span className="auth-role-icon"><FaTools /></span>
               </div>
-              <div className="auth-role-title">Мастер</div>
-              <div className="auth-role-sub">Выполняю работы</div>
+              <div>
+                <div className="auth-role-title">Мастер</div>
+                <div className="auth-role-sub">Выполняю работы</div>
+              </div>
             </button>
           </div>
 
