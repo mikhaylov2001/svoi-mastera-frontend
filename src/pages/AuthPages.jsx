@@ -47,7 +47,7 @@ function AuthLeft({ title, subtitle, points, stats }) {
     <div className="auth-left">
       <div className="auth-left-content">
         <Link to="/" className="auth-brand">
-          <span className="auth-brand-icon"><svg width="18" height="18" viewBox="0 0 512 512" fill="#fff"><path d="M368 32h-12c-36 0-64 28-64 64v16l-24 24-89-89a56 56 0 0 0-79 0L56 91a56 56 0 0 0 0 79l89 89-24 24H105C69 283 41 311 41 347v13l101 101h13c36 0 64-28 64-64v-16l24-24 89 89a56 56 0 0 0 79 0l44-44a56 56 0 0 0 0-79l-89-89 24-24h16c36 0 64-28 64-64v-13L368 32z"/></svg></span>
+          <span style={{fontSize:24}}>🔨</span>
           <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
         </Link>
         <h2 className="auth-left-title">{title}</h2>
@@ -145,12 +145,7 @@ export function LoginPage() {
       <div className="auth-right">
         <div className="auth-mobile-header">
           <Link to="/" className="auth-mobile-brand">
-            <span className="auth-mobile-brand-icon">
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M15 12l-8.5 8.5a2.12 2.12 0 0 1-3-3L12 9"/>
-                  <path d="M17.64 15L22 10.36 17 5l-4.5 4.5"/>
-                </svg>
-              </span>
+            <span style={{fontSize:16}}>🔨</span>
             <span className="auth-mobile-brand-text">СвоиМастера</span>
           </Link>
           <p className="auth-mobile-sub">Вход в личный кабинет сервиса</p>
@@ -300,12 +295,7 @@ export function RegisterPage() {
       <div className="auth-right">
         <div className="auth-mobile-header">
           <Link to="/" className="auth-mobile-brand">
-            <span className="auth-mobile-brand-icon">
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M15 12l-8.5 8.5a2.12 2.12 0 0 1-3-3L12 9"/>
-                  <path d="M17.64 15L22 10.36 17 5l-4.5 4.5"/>
-                </svg>
-              </span>
+            <span style={{fontSize:16}}>🔨</span>
             <span className="auth-mobile-brand-text">СвоиМастера</span>
           </Link>
           <p className="auth-mobile-sub">Регистрация в сервисе</p>
