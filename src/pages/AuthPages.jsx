@@ -47,7 +47,7 @@ function AuthLeft({ title, subtitle, points, stats }) {
     <div className="auth-left">
       <div className="auth-left-content">
         <Link to="/" className="auth-brand">
-          <span style={{fontSize:24}}>🔨</span>
+
           <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
         </Link>
         <h2 className="auth-left-title">{title}</h2>
@@ -145,7 +145,7 @@ export function LoginPage() {
       <div className="auth-right">
         <div className="auth-mobile-header">
           <Link to="/" className="auth-mobile-brand">
-            <span style={{fontSize:16}}>🔨</span>
+
             <span className="auth-mobile-brand-text">СвоиМастера</span>
           </Link>
           <p className="auth-mobile-sub">Вход в личный кабинет сервиса</p>
@@ -295,7 +295,7 @@ export function RegisterPage() {
       <div className="auth-right">
         <div className="auth-mobile-header">
           <Link to="/" className="auth-mobile-brand">
-            <span style={{fontSize:16}}>🔨</span>
+
             <span className="auth-mobile-brand-text">СвоиМастера</span>
           </Link>
           <p className="auth-mobile-sub">Регистрация в сервисе</p>
@@ -316,7 +316,7 @@ export function RegisterPage() {
               <div className="auth-role-icon-wrap">🏠</div>
               <div className="auth-role-body">
                 <div className="auth-role-title">Заказчик</div>
-                <div className="auth-role-sub">Ищу мастера для своих задач</div>
+                <div className="auth-role-sub">Ищу мастера</div>
               </div>
             </button>
             <button type="button"
@@ -326,7 +326,7 @@ export function RegisterPage() {
               <div className="auth-role-icon-wrap">🔧</div>
               <div className="auth-role-body">
                 <div className="auth-role-title">Мастер</div>
-                <div className="auth-role-sub">Выполняю заказы и зарабатываю</div>
+                <div className="auth-role-sub">Выполняю заказы</div>
               </div>
             </button>
           </div>
