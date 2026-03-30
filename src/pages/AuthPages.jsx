@@ -47,7 +47,13 @@ function AuthLeft({ title, subtitle, points, stats }) {
     <div className="auth-left">
       <div className="auth-left-content">
         <Link to="/" className="auth-brand">
-          <span className="auth-brand-icon"><FaTools /></span>
+          <span className="auth-brand-icon">
+            <svg width="18" height="18" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <path d="M15 12l-8.5 8.5a2.12 2.12 0 0 1-3-3L12 9"/>
+              <path d="M17.64 15L22 10.36 17 5l-4.5 4.5"/>
+              <path d="M2 2l4.5 4.5"/>
+            </svg>
+          </span>
           <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
         </Link>
         <h2 className="auth-left-title">{title}</h2>
@@ -145,7 +151,12 @@ export function LoginPage() {
       <div className="auth-right">
         <div className="auth-mobile-header">
           <Link to="/" className="auth-mobile-brand">
-            <span className="auth-mobile-brand-icon"><FaTools /></span>
+            <span className="auth-mobile-brand-icon">
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M15 12l-8.5 8.5a2.12 2.12 0 0 1-3-3L12 9"/>
+                  <path d="M17.64 15L22 10.36 17 5l-4.5 4.5"/>
+                </svg>
+              </span>
             <span className="auth-mobile-brand-text">СвоиМастера</span>
           </Link>
           <p className="auth-mobile-sub">Вход в личный кабинет сервиса</p>
@@ -295,7 +306,12 @@ export function RegisterPage() {
       <div className="auth-right">
         <div className="auth-mobile-header">
           <Link to="/" className="auth-mobile-brand">
-            <span className="auth-mobile-brand-icon"><FaTools /></span>
+            <span className="auth-mobile-brand-icon">
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M15 12l-8.5 8.5a2.12 2.12 0 0 1-3-3L12 9"/>
+                  <path d="M17.64 15L22 10.36 17 5l-4.5 4.5"/>
+                </svg>
+              </span>
             <span className="auth-mobile-brand-text">СвоиМастера</span>
           </Link>
           <p className="auth-mobile-sub">Регистрация в сервисе</p>
