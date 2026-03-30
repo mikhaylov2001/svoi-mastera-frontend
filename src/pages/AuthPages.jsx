@@ -114,14 +114,12 @@ export function LoginPage() {
       const userId = user.id || resp.userId;
       const userName = user.displayName || '';
       const userRole = user.hasWorkerProfile ? 'WORKER' : 'CUSTOMER';
-      // Принимаем любой формат — base64 (data:...) или путь (/api/v1/avatar/...)
-      const avatarUrl = user.avatarUrl || '';
 
       if (!userId) {
         throw new Error('Не удалось войти. Попробуйте ещё раз.');
       }
 
-      login(userId, userRole, userName, avatarUrl);
+      login(userId, userRole, userName);
       navigate(userRole === 'WORKER' ? '/worker-profile' : '/profile');
     } catch (err) {
       setError(err.message || 'Неверный email или пароль.');
@@ -139,7 +137,7 @@ export function LoginPage() {
           [<FaChartBar />,'Аналитика и статистика в реальном времени'],
           [<FaShieldAlt />,'Безопасные сделки с гарантией оплаты'],
         ]}
-        stats={[['24/7','Приём заявок'],['15+','Категорий'],['5.0★','Рейтинг']]}
+        stats={[['24/7','Приём заявок'],['9','Категорий'],['5.0★','Рейтинг']]}
       />
 
       <div className="auth-right">
@@ -262,15 +260,14 @@ export function RegisterPage() {
       const user = resp.user || {};
       const userId = user.id || resp.userId;
       const userName = user.displayName || name;
+      // Используем выбранную роль, а не ту что возвращает API
       const userRole = form.role;
-      // Принимаем любой формат — base64 (data:...) или путь (/api/v1/avatar/...)
-      const avatarUrl = user.avatarUrl || '';
 
       if (!userId) {
         throw new Error('Не удалось создать аккаунт. Попробуйте ещё раз.');
       }
 
-      login(userId, userRole, userName, avatarUrl);
+      login(userId, userRole, userName);
       navigate(userRole === 'WORKER' ? '/worker-profile' : '/profile');
     } catch (err) {
       setError(err.message || 'Не удалось создать аккаунт. Попробуйте снова.');
@@ -288,7 +285,7 @@ export function RegisterPage() {
           [<FaBullseye />,'Умное распределение заказов по категориям'],
           [<FaCreditCard />,'Безопасные выплаты с гарантией'],
         ]}
-        stats={[['24/7','Приём заявок'],['15+','Категорий'],['5.0★','Рейтинг']]}
+        stats={[['24/7','Приём заявок'],['9','Категорий'],['5.0★','Рейтинг']]}
       />
 
       <div className="auth-right">
