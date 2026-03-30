@@ -49,11 +49,11 @@ async function apiCall(endpoint, options = {}) {
 }
 
 // ── AUTH ──
-export async function registerUser({ name, email, password, role }) {
+export async function registerUser({ name, lastName, email, password, role }) {
   const isWorker = role === 'WORKER';
   return apiCall('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ displayName: name, email, password, asWorker: isWorker, asCustomer: !isWorker }),
+    body: JSON.stringify({ displayName: name, lastName: lastName || '', email, password, asWorker: isWorker, asCustomer: !isWorker }),
   });
 }
 export async function loginUser({ email, password }) {

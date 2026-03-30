@@ -252,8 +252,9 @@ export function RegisterPage() {
     try {
       const resp = await registerUser({
         name,
+        lastName: form.lastName?.trim() || '',
         email,
-        password: form.password,  // ✅ ИСПРАВЛЕНО
+        password: form.password,
         role: form.role
       });
 
