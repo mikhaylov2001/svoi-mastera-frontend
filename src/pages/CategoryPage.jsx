@@ -23,7 +23,16 @@ export default function CategoryPage() {
   const category   = ALL_CATEGORIES[slug];
   const sectionSlug = CAT_TO_SECTION[slug];
 
-  const [form, setForm] = useState({ title: '', description: '', address: '', budget: '' });
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    address: '',
+    budget: '',
+    photos: [] // ✨ НОВОЕ: массив фотографий
+  });
+
+  // ✨ НОВОЕ: Состояние для drag & drop
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const qp = new URLSearchParams(location.search);
@@ -53,6 +62,75 @@ export default function CategoryPage() {
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
+  // ✨ НОВОЕ: Обработка загрузки фото
+  const handlePhotoUpload = (files) => {
+    const validFiles = Array.from(files).filter(file => {
+      // Проверка типа
+      if (!file.type.startsWith('image/')) {
+        setError('Можно загружать только изображения');
+        return false;
+      }
+      // Проверка размера (макс 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Размер изображения не должен превышать 5MB');
+        return false;
+      }
+      return true;
+    });
+
+    // Ограничение: макс 5 фото
+    const remainingSlots = 5 - form.photos.length;
+    const filesToAdd = validFiles.slice(0, remainingSlots);
+
+    if (filesToAdd.length < validFiles.length) {
+      setError('Максимум 5 фотографий');
+    }
+
+    // Конвертируем в base64
+    filesToAdd.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setForm(prev => ({
+          ...prev,
+          photos: [...prev.photos, {
+            id: Date.now() + Math.random(),
+            data: e.target.result,
+            name: file.name
+          }]
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // ✨ НОВОЕ: Удаление фото
+  const handleRemovePhoto = (photoId) => {
+    setForm(prev => ({
+      ...prev,
+      photos: prev.photos.filter(p => p.id !== photoId)
+    }));
+  };
+
+  // ✨ НОВОЕ: Drag & Drop handlers
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handlePhotoUpload(files);
+    }
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     if (!userId)              { navigate('/login'); return; }
@@ -71,6 +149,8 @@ export default function CategoryPage() {
         description: form.description.trim(),
         address:     form.address.trim(),
         budget:      Number(form.budget),
+        // TODO: В будущем добавить photos в API
+        // photos:      form.photos.map(p => p.data)
       };
       await createJobRequest(userId, data);
       setStatus('success');
@@ -104,7 +184,7 @@ export default function CategoryPage() {
               className="btn btn-outline"
               onClick={() => {
                 setStatus('idle');
-                setForm({ title: '', description: '', address: '', budget: '' });
+                setForm({ title: '', description: '', address: '', budget: '', photos: [] });
               }}
             >
               Создать ещё одну
@@ -158,6 +238,7 @@ export default function CategoryPage() {
                   onChange={handleChange}
                   required
                 />
+                <span className="form-hint">Например: "Установить кондиционер" или "Покрасить стены"</span>
               </div>
 
               <div className="form-field">
@@ -168,8 +249,68 @@ export default function CategoryPage() {
                   placeholder="Подробно опишите что нужно сделать…"
                   value={form.description}
                   onChange={handleChange}
+                  rows="5"
                   required
                 />
+                <span className="form-hint">Укажите детали: размеры, материалы, особые требования</span>
+              </div>
+
+              {/* ✨ НОВОЕ: Загрузка фото */}
+              <div className="form-field">
+                <label className="form-label">Фотографии (необязательно)</label>
+
+                {/* Превью загруженных фото */}
+                {form.photos.length > 0 && (
+                  <div className="photo-preview-grid">
+                    {form.photos.map(photo => (
+                      <div key={photo.id} className="photo-preview-item">
+                        <img src={photo.data} alt={photo.name} />
+                        <button
+                          type="button"
+                          className="photo-remove-btn"
+                          onClick={() => handleRemovePhoto(photo.id)}
+                          title="Удалить"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Drag & Drop зона */}
+                {form.photos.length < 5 && (
+                  <div
+                    className={`photo-upload-zone ${isDragging ? 'dragging' : ''}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() => document.getElementById('photo-input').click()}
+                  >
+                    <div className="photo-upload-icon">📷</div>
+                    <div className="photo-upload-text">
+                      <strong>Перетащите фото сюда</strong> или нажмите для выбора
+                    </div>
+                    <div className="photo-upload-hint">
+                      Максимум 5 фото • До 5MB каждое • PNG, JPG, JPEG
+                    </div>
+                    <input
+                      id="photo-input"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        handlePhotoUpload(e.target.files);
+                        e.target.value = ''; // Сброс для повторной загрузки
+                      }}
+                    />
+                  </div>
+                )}
+
+                <span className="form-hint">
+                  💡 Фото помогут мастерам точнее оценить объём работы
+                </span>
               </div>
 
               <div className="cat-form-row">
@@ -183,6 +324,7 @@ export default function CategoryPage() {
                     onChange={handleChange}
                     required
                   />
+                  <span className="form-hint">📍 Йошкар-Ола</span>
                 </div>
                 <div className="form-field">
                   <label className="form-label">Предварительная цена, ₽ *</label>
@@ -196,6 +338,7 @@ export default function CategoryPage() {
                     onChange={handleChange}
                     required
                   />
+                  <span className="form-hint">💰 Мастера могут предложить свою цену</span>
                 </div>
               </div>
 
