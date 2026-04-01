@@ -1,388 +1,315 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { createJobRequest, getCategories } from '../api';
-import { useAuth } from '../context/AuthContext';
-import { CATEGORIES_BY_SECTION } from './CategoriesPage';
-import './CategoryPage.css';
+.cat-page-breadcrumb { margin-bottom: 2px; }
+.cat-page-back { font-size: 13px; font-weight: 600; color: var(--gray-500); text-decoration: none; transition: color .15s; }
+.cat-page-back:hover { color: var(--primary); }
+.cat-page-icon { width: 52px; height: 52px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
 
-const ALL_CATEGORIES = {};
-const CAT_TO_SECTION = {};
-Object.entries(CATEGORIES_BY_SECTION).forEach(([sectionSlug, cats]) => {
-  cats.forEach(cat => {
-    ALL_CATEGORIES[cat.slug] = cat;
-    CAT_TO_SECTION[cat.slug] = sectionSlug;
-  });
-});
+.cat-page-layout {
+  display: grid; grid-template-columns: 1fr 280px;
+  gap: 24px; padding: 28px 0 56px;
+}
 
-export default function CategoryPage() {
-  const { slug } = useParams();
-  const { userId } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+/* ═══ FORM CARD ═══ */
+.cat-form-card {
+  background: #fff; border: 1.5px solid var(--gray-200);
+  border-radius: var(--r-xl); padding: 32px;
+}
+.cat-form-title { 
+  font-family: var(--font-display); 
+  font-size: 20px; 
+  font-weight: 900; 
+  color: var(--gray-800); 
+  margin-bottom: 24px; 
+}
+.cat-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cat-form-error {
+  background: var(--red-light); border: 1px solid #f5c2c7;
+  border-radius: var(--r-md); padding: 12px 14px;
+  font-size: 13px; color: var(--red);
+  margin-bottom: 16px;
+}
+.cat-form-auth-note { text-align: center; font-size: 13px; color: var(--gray-400); margin-top: 12px; }
+.cat-form-link { color: var(--primary); font-weight: 600; }
 
-  const category   = ALL_CATEGORIES[slug];
-  const sectionSlug = CAT_TO_SECTION[slug];
+/* ✨ НОВОЕ: Подсказки для полей */
+.form-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--gray-400);
+  margin-top: 6px;
+  line-height: 1.4;
+}
 
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    address: '',
-    budget: '',
-    photos: [] // ✨ НОВОЕ: массив фотографий
-  });
+/* ═══ ЗАГРУЗКА ФОТО ═══ */
 
-  // ✨ НОВОЕ: Состояние для drag & drop
-  const [isDragging, setIsDragging] = useState(false);
+/* Превью загруженных фото */
+.photo-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
 
-  useEffect(() => {
-    const qp = new URLSearchParams(location.search);
-    const title       = qp.get('title')       || '';
-    const description = qp.get('description') || '';
-    if (title || description) {
-      setForm(prev => ({
-        ...prev,
-        ...(title       ? { title }       : {}),
-        ...(description ? { description } : {}),
-      }));
-    }
-  }, [location.search]);
+.photo-preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--gray-100);
+  border: 2px solid var(--gray-200);
+  transition: all .2s;
+  animation: photoFadeIn .3s cubic-bezier(.16,1,.3,1);
+}
 
-  const [status,        setStatus]        = useState('idle');
-  const [error,         setError]         = useState('');
-  const [apiCategoryId, setApiCategoryId] = useState(null);
+.photo-preview-item:hover {
+  border-color: var(--primary);
+  transform: scale(1.02);
+}
 
-  useEffect(() => {
-    getCategories()
-      .then(cats => {
-        const found = cats.find(c => c.slug === slug);
-        if (found) setApiCategoryId(found.id);
-      })
-      .catch(() => {});
-  }, [slug]);
+.photo-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+.photo-remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s;
+  opacity: 0;
+}
 
-  // ✨ НОВОЕ: Обработка загрузки фото
-  const handlePhotoUpload = (files) => {
-    const validFiles = Array.from(files).filter(file => {
-      // Проверка типа
-      if (!file.type.startsWith('image/')) {
-        setError('Можно загружать только изображения');
-        return false;
-      }
-      // Проверка размера (макс 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError('Размер изображения не должен превышать 5MB');
-        return false;
-      }
-      return true;
-    });
+.photo-preview-item:hover .photo-remove-btn {
+  opacity: 1;
+}
 
-    // Ограничение: макс 5 фото
-    const remainingSlots = 5 - form.photos.length;
-    const filesToAdd = validFiles.slice(0, remainingSlots);
+.photo-remove-btn:hover {
+  background: var(--red);
+  transform: scale(1.1) rotate(90deg);
+}
 
-    if (filesToAdd.length < validFiles.length) {
-      setError('Максимум 5 фотографий');
-    }
-
-    // Конвертируем в base64
-    filesToAdd.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setForm(prev => ({
-          ...prev,
-          photos: [...prev.photos, {
-            id: Date.now() + Math.random(),
-            data: e.target.result,
-            name: file.name
-          }]
-        }));
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  // ✨ НОВОЕ: Удаление фото
-  const handleRemovePhoto = (photoId) => {
-    setForm(prev => ({
-      ...prev,
-      photos: prev.photos.filter(p => p.id !== photoId)
-    }));
-  };
-
-  // ✨ НОВОЕ: Drag & Drop handlers
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      handlePhotoUpload(files);
-    }
-  };
-
-  const handleSubmit = async e => {
-    e.preventDefault();
-    if (!userId)              { navigate('/login'); return; }
-    if (!form.title.trim())   { setError('Укажите название задачи'); return; }
-    if (!form.description.trim()) { setError('Добавьте подробное описание'); return; }
-    if (!form.address.trim()) { setError('Укажите адрес выполнения работы'); return; }
-    if (!form.budget)         { setError('Укажите предварительную цену'); return; }
-    if (Number(form.budget) <= 0) { setError('Цена должна быть больше нуля'); return; }
-    if (!apiCategoryId)       { setError('Категория не найдена. Обновите страницу.'); return; }
-
-    setStatus('sending'); setError('');
-    try {
-      const data = {
-        categoryId:  apiCategoryId,
-        title:       form.title.trim(),
-        description: form.description.trim(),
-        address:     form.address.trim(),
-        budget:      Number(form.budget),
-        // TODO: В будущем добавить photos в API
-        // photos:      form.photos.map(p => p.data)
-      };
-      await createJobRequest(userId, data);
-      setStatus('success');
-    } catch (err) {
-      setError(err.message || 'Не удалось создать заявку. Попробуйте ещё раз.');
-      setStatus('error');
-    }
-  };
-
-  if (!category) {
-    return (
-      <div className="container" style={{ padding: '60px 24px', textAlign: 'center' }}>
-        <p>Категория не найдена</p>
-        <Link to="/sections" className="btn btn-primary btn-sm" style={{ marginTop: 16 }}>
-          К разделам
-        </Link>
-      </div>
-    );
+@keyframes photoFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
   }
-
-  if (status === 'success') {
-    return (
-      <div className="container">
-        <div className="cat-success">
-          <span className="cat-success-icon">🎉</span>
-          <h2>Заявка отправлена!</h2>
-          <p>Мастера увидят вашу задачу и начнут откликаться. Следите за статусом в разделе «Мои заказы».</p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/deals" className="btn btn-primary">Перейти к заказам</Link>
-            <button
-              className="btn btn-outline"
-              onClick={() => {
-                setStatus('idle');
-                setForm({ title: '', description: '', address: '', budget: '', photos: [] });
-              }}
-            >
-              Создать ещё одну
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
+}
 
-  return (
-    <div>
-      {/* ── ШАПКА ── */}
-      <div className="page-header-bar">
-        <div className="container">
-          <div className="cat-page-breadcrumb">
-            <Link to={`/sections/${sectionSlug}`} className="cat-page-back">
-              ← Назад к категориям
-            </Link>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
-            <div className="cat-page-icon" style={{ background: category.color }}>
-              {category.emoji}
-            </div>
-            <div>
-              <h1>{category.name}</h1>
-              <p>Создайте задачу — мастера откликнутся сами</p>
-            </div>
-          </div>
-        </div>
-      </div>
+/* Drag & Drop зона */
+.photo-upload-zone {
+  position: relative;
+  padding: 36px 24px;
+  border: 2px dashed var(--gray-300);
+  border-radius: var(--r-lg);
+  background: var(--gray-50);
+  text-align: center;
+  cursor: pointer;
+  transition: all .25s cubic-bezier(.16,1,.3,1);
+}
 
-      {/* ── КОНТЕНТ ── */}
-      <div className="container">
-        <div className="cat-page-layout">
+.photo-upload-zone:hover {
+  border-color: var(--primary);
+  background: rgba(232, 65, 10, 0.03);
+  transform: translateY(-2px);
+}
 
-          {/* Форма */}
-          <div className="cat-form-card">
-            <h2 className="cat-form-title">Описание задачи</h2>
+.photo-upload-zone.dragging {
+  border-color: var(--primary);
+  background: rgba(232, 65, 10, 0.08);
+  border-width: 3px;
+  transform: scale(1.02);
+}
 
-            {error && <div className="cat-form-error">⚠️ {error}</div>}
+.photo-upload-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.7;
+  transition: transform .3s;
+}
 
-            <form onSubmit={handleSubmit}>
-              <div className="form-field">
-                <label className="form-label">Название задачи *</label>
-                <input
-                  className="form-input"
-                  name="title"
-                  placeholder="Опишите задачу кратко"
-                  value={form.title}
-                  onChange={handleChange}
-                  required
-                />
-                <span className="form-hint">Например: "Установить кондиционер" или "Покрасить стены"</span>
-              </div>
+.photo-upload-zone:hover .photo-upload-icon {
+  transform: scale(1.1);
+}
 
-              <div className="form-field">
-                <label className="form-label">Подробное описание *</label>
-                <textarea
-                  className="form-input form-textarea"
-                  name="description"
-                  placeholder="Подробно опишите что нужно сделать…"
-                  value={form.description}
-                  onChange={handleChange}
-                  rows="5"
-                  required
-                />
-                <span className="form-hint">Укажите детали: размеры, материалы, особые требования</span>
-              </div>
+.photo-upload-text {
+  font-size: 15px;
+  color: var(--gray-700);
+  margin-bottom: 8px;
+}
 
-              {/* ✨ НОВОЕ: Загрузка фото */}
-              <div className="form-field">
-                <label className="form-label">Фотографии (необязательно)</label>
+.photo-upload-text strong {
+  color: var(--primary);
+  font-weight: 700;
+}
 
-                {/* Превью загруженных фото */}
-                {form.photos.length > 0 && (
-                  <div className="photo-preview-grid">
-                    {form.photos.map(photo => (
-                      <div key={photo.id} className="photo-preview-item">
-                        <img src={photo.data} alt={photo.name} />
-                        <button
-                          type="button"
-                          className="photo-remove-btn"
-                          onClick={() => handleRemovePhoto(photo.id)}
-                          title="Удалить"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+.photo-upload-hint {
+  font-size: 12px;
+  color: var(--gray-400);
+  line-height: 1.5;
+}
 
-                {/* Drag & Drop зона */}
-                {form.photos.length < 5 && (
-                  <div
-                    className={`photo-upload-zone ${isDragging ? 'dragging' : ''}`}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    onClick={() => document.getElementById('photo-input').click()}
-                  >
-                    <div className="photo-upload-icon">📷</div>
-                    <div className="photo-upload-text">
-                      <strong>Перетащите фото сюда</strong> или нажмите для выбора
-                    </div>
-                    <div className="photo-upload-hint">
-                      Максимум 5 фото • До 5MB каждое • PNG, JPG, JPEG
-                    </div>
-                    <input
-                      id="photo-input"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      style={{ display: 'none' }}
-                      onChange={(e) => {
-                        handlePhotoUpload(e.target.files);
-                        e.target.value = ''; // Сброс для повторной загрузки
-                      }}
-                    />
-                  </div>
-                )}
+/* Анимация при загрузке */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
 
-                <span className="form-hint">
-                  💡 Фото помогут мастерам точнее оценить объём работы
-                </span>
-              </div>
+.photo-upload-zone.uploading {
+  animation: pulse 1.5s infinite;
+  pointer-events: none;
+}
 
-              <div className="cat-form-row">
-                <div className="form-field">
-                  <label className="form-label">Адрес *</label>
-                  <input
-                    className="form-input"
-                    name="address"
-                    placeholder="Улица, кв"
-                    value={form.address}
-                    onChange={handleChange}
-                    required
-                  />
-                  <span className="form-hint">📍 Йошкар-Ола</span>
-                </div>
-                <div className="form-field">
-                  <label className="form-label">Предварительная цена, ₽ *</label>
-                  <input
-                    className="form-input"
-                    name="budget"
-                    type="number"
-                    min="1"
-                    placeholder="Например: 3000"
-                    value={form.budget}
-                    onChange={handleChange}
-                    required
-                  />
-                  <span className="form-hint">💰 Мастера могут предложить свою цену</span>
-                </div>
-              </div>
+/* ═══ SIDEBAR ═══ */
+.cat-sidebar { display: flex; flex-direction: column; gap: 14px; }
+.cat-tip-card {
+  background: #fff; border: 1.5px solid var(--gray-200);
+  border-radius: var(--r-lg); padding: 18px;
+  transition: all .2s;
+}
 
-              <button
-                type="submit"
-                className="btn btn-primary btn-full"
-                disabled={status === 'sending'}
-              >
-                {status === 'sending' ? 'Отправляем…' : '📤 Отправить заявку мастерам'}
-              </button>
+.cat-tip-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(232, 65, 10, 0.08);
+  transform: translateY(-1px);
+}
 
-              {!userId && (
-                <p className="cat-form-auth-note">
-                  Для отправки нужно{' '}
-                  <Link to="/login" className="cat-form-link">войти в аккаунт</Link>
-                </p>
-              )}
-            </form>
-          </div>
+.cat-tip-title { 
+  font-size: 14px; 
+  font-weight: 700; 
+  color: var(--gray-700); 
+  margin-bottom: 10px; 
+}
+.cat-tip-list { padding-left: 16px; display: flex; flex-direction: column; gap: 6px; }
+.cat-tip-list li { font-size: 13px; color: var(--gray-500); }
+.cat-tip-text { font-size: 13px; color: var(--gray-500); line-height: 1.6; }
 
-          {/* Сайдбар */}
-          <div className="cat-sidebar">
-            <div className="cat-tip-card">
-              <div className="cat-tip-title">🔒 Безопасная сделка</div>
-              <p className="cat-tip-text">
-                Оплата поступает мастеру только после того, как вы подтвердили выполнение работы.
-              </p>
-            </div>
-            <div className="cat-tip-card">
-              <div className="cat-tip-title">⚡ Быстрый отклик</div>
-              <p className="cat-tip-text">
-                Первые предложения от мастеров поступают в течение 10 минут после публикации задачи.
-              </p>
-            </div>
-            <div className="cat-tip-card">
-              <div className="cat-tip-title">⭐ Проверенные мастера</div>
-              <p className="cat-tip-text">
-                Выбирайте по рейтингу и отзывам — только реальные оценки от реальных заказчиков.
-              </p>
-            </div>
-          </div>
+/* ═══ SUCCESS STATE ═══ */
+.cat-success {
+  text-align: center; padding: 80px 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  animation: successFadeIn .5s cubic-bezier(.16,1,.3,1);
+}
 
-        </div>
-      </div>
-    </div>
-  );
+@keyframes successFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.cat-success-icon { 
+  font-size: 64px; 
+  animation: successBounce 0.6s cubic-bezier(.68,-0.55,.265,1.55);
+}
+
+@keyframes successBounce {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.cat-success h2 { 
+  font-family: var(--font-display); 
+  font-size: 26px; 
+  font-weight: 900; 
+  color: var(--gray-800); 
+}
+.cat-success p { 
+  font-size: 15px; 
+  color: var(--gray-500); 
+  max-width: 460px; 
+  line-height: 1.6; 
+  margin-bottom: 8px; 
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 860px) { 
+  .cat-page-layout { 
+    grid-template-columns: 1fr; 
+  } 
+  .cat-sidebar { 
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) { 
+  .cat-form-row { 
+    grid-template-columns: 1fr; 
+  } 
+  .cat-form-card { 
+    padding: 20px; 
+  }
+  
+  .photo-preview-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+  }
+  
+  .photo-upload-zone {
+    padding: 28px 16px;
+  }
+  
+  .photo-upload-icon {
+    font-size: 40px;
+  }
+  
+  .photo-upload-text {
+    font-size: 14px;
+  }
+}
+
+/* ═══ УЛУЧШЕННЫЕ СТИЛИ ФОРМЫ ═══ */
+
+/* Фокус на инпутах */
+.form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(232, 65, 10, 0.1);
+}
+
+/* Счетчик символов для textarea */
+.form-field:has(textarea) {
+  position: relative;
+}
+
+/* Анимация для лейбла */
+.form-label {
+  transition: color .2s;
+}
+
+.form-field:focus-within .form-label {
+  color: var(--primary);
 }
