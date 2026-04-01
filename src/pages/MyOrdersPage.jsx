@@ -36,6 +36,9 @@ export default function MyOrdersPage() {
   const [offers, setOffers] = useState([]);
   const [offersLoading, setOffersLoading] = useState(false);
 
+  // ✨ НОВОЕ: модальное окно для просмотра фото
+  const [lightboxPhoto, setLightboxPhoto] = useState(null);
+
   // Action loading
   const [actionLoading, setActionLoading] = useState(null);
 
@@ -49,12 +52,15 @@ export default function MyOrdersPage() {
       setRequests(reqs);
       setCategories(cats);
       setStatus('success');
-    } catch {
+    } catch (err) {
+      console.error('Load requests error:', err);
       setStatus('error');
     }
   }, [userId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (userId) load();
+  }, [userId, load]);
 
   const getCategoryName = (catId) => {
     const cat = categories.find(c => c.id === catId);
@@ -64,89 +70,74 @@ export default function MyOrdersPage() {
   const toggleOffers = async (reqId) => {
     if (expandedId === reqId) {
       setExpandedId(null);
+      setOffers([]);
       return;
     }
+
     setExpandedId(reqId);
     setOffersLoading(true);
     try {
-      const data = await getOffersForRequest(reqId);
-      setOffers(data);
-    } catch {
+      const data = await getOffersForRequest(userId, reqId);
+      setOffers(data || []);
+    } catch (err) {
+      console.error('Load offers error:', err);
       setOffers([]);
     }
     setOffersLoading(false);
   };
 
-  const handleAccept = async (req, offer) => {
-    setActionLoading(offer.id);
+  const handleAccept = async (offerId) => {
+    const conf = window.confirm('Принять этот отклик и начать работу с мастером?');
+    if (!conf) return;
+
+    setActionLoading(offerId);
     try {
-      await acceptOffer(userId, req.id, offer.id);
+      await acceptOffer(userId, offerId);
       await load();
       setExpandedId(null);
-    } catch { /* handled by api.js */ }
+      setOffers([]);
+    } catch (err) {
+      alert('Ошибка при принятии отклика: ' + (err.message || ''));
+    }
     setActionLoading(null);
   };
 
   const counts = {
     ALL: requests.length,
     OPEN: requests.filter(r => r.status === 'OPEN').length,
-    IN_PROGRESS: requests.filter(r => ['IN_PROGRESS', 'ASSIGNED', 'IN_NEGOTIATION'].includes(r.status)).length,
+    IN_PROGRESS: requests.filter(r => r.status === 'IN_PROGRESS').length,
     COMPLETED: requests.filter(r => r.status === 'COMPLETED').length,
   };
 
   const filtered = filter === 'ALL'
     ? requests
-    : filter === 'IN_PROGRESS'
-      ? requests.filter(r => ['IN_PROGRESS', 'ASSIGNED', 'IN_NEGOTIATION'].includes(r.status))
-      : requests.filter(r => r.status === filter);
+    : requests.filter(r => r.status === filter);
 
   return (
     <div>
       <div className="page-header-bar">
         <div className="container">
           <h1>Мои заказы</h1>
-          <p>Ваши заявки и отклики мастеров</p>
+          <p>Заявки, активные сделки и завершённые работы</p>
         </div>
       </div>
 
-      <div className="container">
-        <div className="orders-layout">
-
-          {/* Sidebar filters */}
-          <aside className="orders-sidebar">
-            <div className="orders-sidebar-title">Статус</div>
-            {[
-              ['ALL', 'Все заявки'],
-              ['OPEN', 'Открытые'],
-              ['IN_PROGRESS', 'В работе'],
-              ['COMPLETED', 'Выполнены'],
-            ].map(([key, label]) => (
-              <button
-                key={key}
-                className={`orders-filter-btn ${filter === key ? 'active' : ''}`}
-                onClick={() => setFilter(key)}
-              >
-                {label}
-                <span className="orders-filter-count">{counts[key] ?? 0}</span>
-              </button>
-            ))}
-            <div className="orders-sidebar-divider" />
-            <Link to="/sections" className="btn btn-primary btn-full">+ Новая заявка</Link>
-          </aside>
-
-          {/* Main */}
+      <div className="container" style={{ padding: '28px 0 60px' }}>
+        <div className="orders-grid">
           <div className="orders-main">
-
-            {/* Mobile filters */}
-            <div className="orders-mobile-filters">
-              {['ALL', 'OPEN', 'IN_PROGRESS', 'COMPLETED'].map(key => (
+            <div className="orders-filter-tabs">
+              {[
+                ['ALL', 'Все', counts.ALL],
+                ['OPEN', 'Открытые', counts.OPEN],
+                ['IN_PROGRESS', 'В работе', counts.IN_PROGRESS],
+                ['COMPLETED', 'Завершённые', counts.COMPLETED],
+              ].map(([key, label, count]) => (
                 <button
                   key={key}
-                  className={`orders-mobile-filter ${filter === key ? 'active' : ''}`}
+                  className={`filter-tab ${filter === key ? 'active' : ''}`}
                   onClick={() => setFilter(key)}
                 >
-                  {key === 'ALL' ? 'Все' : key === 'OPEN' ? 'Открытые' : key === 'IN_PROGRESS' ? 'В работе' : 'Выполнены'}
-                  <span>{counts[key] ?? 0}</span>
+                  {label} <span className="filter-tab-count">{count}</span>
                 </button>
               ))}
             </div>
@@ -215,6 +206,24 @@ export default function MyOrdersPage() {
                         <p className="order-card-desc">{req.description}</p>
                       )}
 
+                      {/* ✨ НОВОЕ: Отображение фотографий */}
+                      {req.photos && req.photos.length > 0 && (
+                        <div className="order-photos-grid">
+                          {req.photos.map((photo, idx) => (
+                            <div
+                              key={idx}
+                              className="order-photo-item"
+                              onClick={() => setLightboxPhoto(photo)}
+                            >
+                              <img src={photo} alt={`Фото ${idx + 1}`} />
+                              <div className="order-photo-overlay">
+                                <span>🔍</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       <div className="order-card-actions">
                         {req.status === 'OPEN' && (
                           <button
@@ -249,39 +258,22 @@ export default function MyOrdersPage() {
                                   )}
                                   {req.budgetTo && Number(offer.price) !== Number(req.budgetTo) && (
                                     <span className="offer-card-diff">
-                                      {Number(offer.price) <= Number(req.budgetTo) ? ' ✓ дешевле' : ' ↑ дороже'}
+                                      {Number(offer.price) < Number(req.budgetTo)
+                                        ? `−${Number(req.budgetTo) - Number(offer.price)} ₽`
+                                        : `+${Number(offer.price) - Number(req.budgetTo)} ₽`}
                                     </span>
                                   )}
-                                  {req.budgetTo && Number(offer.price) === Number(req.budgetTo) && (
-                                    <span className="offer-card-match"> ✓ ваша цена</span>
-                                  )}
                                 </div>
-                                <span className={`badge ${offer.status === 'ACCEPTED' ? 'badge-done' : 'badge-new'}`}>
-                                  {offer.status === 'ACCEPTED' ? 'Принят' : offer.status === 'REJECTED' ? 'Отклонён' : 'Новый'}
-                                </span>
+                                <button
+                                  className="btn btn-primary btn-sm"
+                                  disabled={actionLoading === offer.id}
+                                  onClick={() => handleAccept(offer.id)}
+                                >
+                                  {actionLoading === offer.id ? '⏳' : 'Принять'}
+                                </button>
                               </div>
-                              {offer.message && <p className="offer-card-msg">{offer.message}</p>}
-                              <div className="offer-card-date">
-                                {offer.createdAt && new Date(offer.createdAt).toLocaleDateString('ru-RU')}
-                              </div>
-                              {offer.status === 'CREATED' && (
-                                <div className="offer-card-actions">
-                                  <button
-                                    className="btn btn-primary btn-sm"
-                                    disabled={actionLoading === offer.id}
-                                    onClick={() => handleAccept(req, offer)}
-                                  >
-                                    {actionLoading === offer.id ? 'Принимаем…' : '✅ Принять'}
-                                  </button>
-                                  {(offer.workerUserId || offer.workerId) && (
-                                    <button
-                                      className="btn btn-outline btn-sm"
-                                      onClick={() => navigate(`/chat/${offer.workerUserId || offer.workerId}?jobRequestId=${req.id}`)}
-                                    >
-                                      💬 Написать
-                                    </button>
-                                  )}
-                                </div>
+                              {offer.message && (
+                                <p className="offer-card-msg">{offer.message}</p>
                               )}
                             </div>
                           ))}
@@ -293,8 +285,36 @@ export default function MyOrdersPage() {
               </div>
             )}
           </div>
+
+          <div className="orders-sidebar">
+            <Link to="/sections" className="btn btn-primary btn-full orders-new-btn">
+              + Новая заявка
+            </Link>
+
+            <div className="card sidebar-tip">
+              <h4>💡 Совет</h4>
+              <p>Добавляйте фотографии к заявкам — это помогает мастерам точнее оценить объём работы и предложить лучшую цену.</p>
+            </div>
+
+            <div className="card sidebar-tip">
+              <h4>⚡ Быстрый отклик</h4>
+              <p>Первые отклики обычно поступают в течение 10 минут после публикации заявки.</p>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* ✨ НОВОЕ: Lightbox для просмотра фото */}
+      {lightboxPhoto && (
+        <div className="photo-lightbox" onClick={() => setLightboxPhoto(null)}>
+          <div className="photo-lightbox-content" onClick={e => e.stopPropagation()}>
+            <button className="photo-lightbox-close" onClick={() => setLightboxPhoto(null)}>
+              ×
+            </button>
+            <img src={lightboxPhoto} alt="Просмотр фото" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
