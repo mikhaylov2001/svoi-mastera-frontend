@@ -165,6 +165,14 @@ export default function CategoryPage() {
         budgetTo:    Number(form.budget),
         photos:      form.photos.map(p => p.data)
       };
+
+      // 🔍 ОТЛАДКА
+      console.log('🚀 ОТПРАВЛЯЕМ НА СЕРВЕР:', {
+        ...data,
+        photos: data.photos.length > 0 ? `✅ ${data.photos.length} фото` : '❌ Нет фото'
+      });
+      console.log('📸 Фото массив:', data.photos);
+
       await createJobRequest(userId, data);
       setStatus('success');
     } catch (err) {
