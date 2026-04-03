@@ -70,8 +70,8 @@ export default function DealsPage() {
   React.useEffect(() => {
     if (!lightbox) return;
     const handler = (e) => {
-      if (e.key === 'ArrowRight') setLightbox(l => l && l.index < l.photos.length - 1 ? {...l, index: l.index + 1} : l);
-      if (e.key === 'ArrowLeft')  setLightbox(l => l && l.index > 0 ? {...l, index: l.index - 1} : l);
+      if (e.key === 'ArrowRight') setLightbox(l => l ? {...l, index: l.index < l.photos.length - 1 ? l.index + 1 : 0} : l);
+      if (e.key === 'ArrowLeft')  setLightbox(l => l ? {...l, index: l.index > 0 ? l.index - 1 : l.photos.length - 1} : l);
       if (e.key === 'Escape')     setLightbox(null);
     };
     window.addEventListener('keydown', handler);
@@ -398,17 +398,17 @@ export default function DealsPage() {
                       style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block', transition:'opacity .2s' }}
                     />
                     {/* Стрелки навигации */}
-                    {activePhotoIndex > 0 && (
-                      <button
-                        onClick={() => setActivePhotoIndex(i => i - 1)}
-                        style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
-                      >‹</button>
-                    )}
-                    {activePhotoIndex < reqDetail.photos.length - 1 && (
-                      <button
-                        onClick={() => setActivePhotoIndex(i => i + 1)}
-                        style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
-                      >›</button>
+                    {reqDetail.photos.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => setActivePhotoIndex(i => i > 0 ? i - 1 : reqDetail.photos.length - 1)}
+                          style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
+                        >‹</button>
+                        <button
+                          onClick={() => setActivePhotoIndex(i => i < reqDetail.photos.length - 1 ? i + 1 : 0)}
+                          style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
+                        >›</button>
+                      </>
                     )}
                     {/* Счётчик + кнопка увеличения */}
                     <div style={{ position:'absolute', bottom:10, right:10, display:'flex', gap:6, alignItems:'center' }}>
