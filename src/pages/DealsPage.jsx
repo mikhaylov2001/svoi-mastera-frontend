@@ -523,62 +523,45 @@ export default function DealsPage() {
               ) : (
                 filteredReqs.map(req => {
                   const st = REQ_STATUSES[req.status] || REQ_STATUSES.OPEN;
+                  const hasPhoto = req.photos && req.photos.length > 0;
                   return (
                     <div
                       key={req.id}
-                      className="dpage-card"
+                      className="dpage-card-avito"
                       onClick={() => { setReqDetail(req); loadOffers(req.id); }}
                     >
-                      <div className="dpage-card-accent" style={{ background: st.color }} />
-                      <div className="dpage-card-body">
-                        <div className="dpage-card-top">
-                          <div className="dpage-card-info">
-                            <h3 className="dpage-card-title">{req.title}</h3>
-                            <div className="dpage-card-meta">
-                              {req.categoryId && <span>🏷 {getCatName(req.categoryId)}</span>}
-                              {req.addressText && <span>📍 {req.addressText}</span>}
-                              <span>🕐 {timeAgo(req.createdAt)}</span>
-                            </div>
-                          </div>
-                          <div className="dpage-card-right">
-                            <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
-                              {st.emoji} {st.label}
-                            </span>
-                            {req.budgetTo && (
-                              <div className="dpage-card-price">
-                                до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽
-                              </div>
+                      <div className="dpage-card-avito-img">
+                        {hasPhoto ? (
+                          <>
+                            <img src={req.photos[0]} alt="" />
+                            {req.photos.length > 1 && (
+                              <div className="dpage-card-avito-img-count">📷 {req.photos.length}</div>
                             )}
-                          </div>
+                          </>
+                        ) : (
+                          <div className="dpage-card-avito-img-placeholder"><span>📋</span></div>
+                        )}
+                      </div>
+                      <div className="dpage-card-avito-body">
+                        <div className="dpage-card-avito-top">
+                          <h3 className="dpage-card-avito-title">{req.title}</h3>
+                          <span className="dp-badge" style={{ color: st.color, background: st.bg, flexShrink:0 }}>
+                            {st.emoji} {st.label}
+                          </span>
                         </div>
-                        {req.photos && req.photos.length > 0 && (
-                          <div style={{ display:'flex', gap:6, marginTop:10, overflow:'hidden' }} onClick={e => e.stopPropagation()}>
-                            {req.photos.slice(0, 4).map((photo, idx) => (
-                              <div
-                                key={idx}
-                                style={{
-                                  width:72, height:72, flexShrink:0,
-                                  borderRadius:8, overflow:'hidden',
-                                  border:'1.5px solid #e5e7eb', cursor:'zoom-in',
-                                  position:'relative',
-                                }}
-                                onClick={() => window.open(photo, '_blank')}
-                              >
-                                <img src={photo} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                                {idx === 3 && req.photos.length > 4 && (
-                                  <div style={{
-                                    position:'absolute', inset:0,
-                                    background:'rgba(0,0,0,0.5)',
-                                    display:'flex', alignItems:'center', justifyContent:'center',
-                                    color:'#fff', fontWeight:800, fontSize:16,
-                                  }}>
-                                    +{req.photos.length - 4}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
+                        {req.budgetTo && (
+                          <div className="dpage-card-avito-price">
+                            до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽
                           </div>
                         )}
+                        {req.description && req.description !== 'Без описания' && (
+                          <p className="dpage-card-avito-desc">{req.description}</p>
+                        )}
+                        <div className="dpage-card-avito-meta">
+                          {req.categoryId && <span>🏷 {getCatName(req.categoryId)}</span>}
+                          {req.addressText && <span>📍 {req.addressText}</span>}
+                          <span>🕐 {timeAgo(req.createdAt)}</span>
+                        </div>
                       </div>
                       <div className="dpage-card-chevron">›</div>
                     </div>
