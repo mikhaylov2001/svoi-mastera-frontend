@@ -65,6 +65,18 @@ export default function DealsPage() {
   // Lightbox для фото
   const [lightbox, setLightbox] = useState(null); // { photos: [], index: 0 }
 
+  // Клавиатурная навигация lightbox
+  React.useEffect(() => {
+    if (!lightbox) return;
+    const handler = (e) => {
+      if (e.key === 'ArrowRight') setLightbox(l => l && l.index < l.photos.length - 1 ? {...l, index: l.index + 1} : l);
+      if (e.key === 'ArrowLeft')  setLightbox(l => l && l.index > 0 ? {...l, index: l.index - 1} : l);
+      if (e.key === 'Escape')     setLightbox(null);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [lightbox]);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -325,7 +337,7 @@ export default function DealsPage() {
               <div style={{ display:'flex', gap:8, marginTop:16 }} onClick={e => e.stopPropagation()}>
                 {lightbox.photos.map((p, i) => (
                   <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))} style={{ width:56, height:56, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
-                    <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                    <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
                   </div>
                 ))}
               </div>
@@ -376,10 +388,10 @@ export default function DealsPage() {
                 <div className="dp-card" style={{ padding:0, overflow:'hidden' }}>
                   {/* Главное фото */}
                   <div
-                    style={{ width:'100%', aspectRatio:'16/9', overflow:'hidden', cursor:'zoom-in', position:'relative' }}
+                    style={{ width:'100%', aspectRatio:'16/9', overflow:'hidden', cursor:'pointer', position:'relative' }}
                     onClick={() => setLightbox({ photos: reqDetail.photos, index: 0 })}
                   >
-                    <img src={reqDetail.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                    <img src={reqDetail.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', pointerEvents:'none' }} />
                     <div style={{ position:'absolute', bottom:10, right:10, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:12, fontWeight:700, padding:'4px 10px', borderRadius:999, backdropFilter:'blur(4px)' }}>
                       📷 {reqDetail.photos.length} фото
                     </div>
@@ -391,9 +403,9 @@ export default function DealsPage() {
                         <div
                           key={i}
                           onClick={() => setLightbox({ photos: reqDetail.photos, index: i })}
-                          style={{ width:64, height:48, flexShrink:0, borderRadius:6, overflow:'hidden', cursor:'zoom-in', border: i === 0 ? '2px solid #e8410a' : '2px solid transparent', opacity: i === 0 ? 1 : 0.7 }}
+                          style={{ width:64, height:48, userSelect:'none', flexShrink:0, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === 0 ? '2px solid #e8410a' : '2px solid transparent', opacity: i === 0 ? 1 : 0.7 }}
                         >
-                          <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                          <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
                         </div>
                       ))}
                     </div>
@@ -511,7 +523,7 @@ export default function DealsPage() {
               <div style={{ display:'flex', gap:8, marginTop:16 }} onClick={e => e.stopPropagation()}>
                 {lightbox.photos.map((p, i) => (
                   <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))} style={{ width:56, height:56, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
-                    <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                    <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
                   </div>
                 ))}
               </div>
@@ -614,11 +626,11 @@ export default function DealsPage() {
                       <div
                         className="dpage-card-avito-img"
                         onClick={hasPhoto ? (e) => { e.stopPropagation(); setLightbox({ photos: req.photos, index: 0 }); } : undefined}
-                        style={hasPhoto ? { cursor:'zoom-in' } : {}}
+                        style={hasPhoto ? { cursor:'pointer' } : {}}
                       >
                         {hasPhoto ? (
                           <>
-                            <img src={req.photos[0]} alt="" />
+                            <img src={req.photos[0]} alt="" style={{ pointerEvents:'none' }} />
                             {req.photos.length > 1 && (
                               <div className="dpage-card-avito-img-count">📷 {req.photos.length}</div>
                             )}
@@ -822,7 +834,7 @@ export default function DealsPage() {
             <div style={{ display:'flex', gap:8, marginTop:16 }} onClick={e => e.stopPropagation()}>
               {lightbox.photos.map((p, i) => (
                 <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))} style={{ width:56, height:56, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
-                  <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                  <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
                 </div>
               ))}
             </div>
