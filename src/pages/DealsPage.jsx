@@ -551,6 +551,34 @@ export default function DealsPage() {
                             )}
                           </div>
                         </div>
+                        {req.photos && req.photos.length > 0 && (
+                          <div style={{ display:'flex', gap:6, marginTop:10, overflow:'hidden' }} onClick={e => e.stopPropagation()}>
+                            {req.photos.slice(0, 4).map((photo, idx) => (
+                              <div
+                                key={idx}
+                                style={{
+                                  width:72, height:72, flexShrink:0,
+                                  borderRadius:8, overflow:'hidden',
+                                  border:'1.5px solid #e5e7eb', cursor:'zoom-in',
+                                  position:'relative',
+                                }}
+                                onClick={() => window.open(photo, '_blank')}
+                              >
+                                <img src={photo} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                                {idx === 3 && req.photos.length > 4 && (
+                                  <div style={{
+                                    position:'absolute', inset:0,
+                                    background:'rgba(0,0,0,0.5)',
+                                    display:'flex', alignItems:'center', justifyContent:'center',
+                                    color:'#fff', fontWeight:800, fontSize:16,
+                                  }}>
+                                    +{req.photos.length - 4}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div className="dpage-card-chevron">›</div>
                     </div>
