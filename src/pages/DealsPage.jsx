@@ -63,7 +63,8 @@ export default function DealsPage() {
   const [reviewStatus, setReviewStatus] = useState('idle');
 
   // Lightbox для фото
-  const [lightbox, setLightbox] = useState(null); // { photos: [], index: 0 }
+  const [lightbox, setLightbox] = useState(null);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0); // { photos: [], index: 0 }
 
   // Клавиатурная навигация lightbox
   React.useEffect(() => {
@@ -390,23 +391,45 @@ export default function DealsPage() {
               {reqDetail.photos && reqDetail.photos.length > 0 && (
                 <div className="dp-card" style={{ padding:0, overflow:'hidden' }}>
                   {/* Главное фото */}
-                  <div
-                    style={{ width:'100%', aspectRatio:'16/9', overflow:'hidden', cursor:'pointer', position:'relative' }}
-                    onClick={() => setLightbox({ photos: reqDetail.photos, index: 0 })}
-                  >
-                    <img src={reqDetail.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', pointerEvents:'none' }} />
-                    <div style={{ position:'absolute', bottom:10, right:10, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:12, fontWeight:700, padding:'4px 10px', borderRadius:999, backdropFilter:'blur(4px)' }}>
-                      📷 {reqDetail.photos.length} фото
+                  <div style={{ width:'100%', aspectRatio:'16/9', overflow:'hidden', position:'relative' }}>
+                    <img
+                      src={reqDetail.photos[activePhotoIndex]}
+                      alt=""
+                      style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block', transition:'opacity .2s' }}
+                    />
+                    {/* Стрелки навигации */}
+                    {activePhotoIndex > 0 && (
+                      <button
+                        onClick={() => setActivePhotoIndex(i => i - 1)}
+                        style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
+                      >‹</button>
+                    )}
+                    {activePhotoIndex < reqDetail.photos.length - 1 && (
+                      <button
+                        onClick={() => setActivePhotoIndex(i => i + 1)}
+                        style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
+                      >›</button>
+                    )}
+                    {/* Счётчик + кнопка увеличения */}
+                    <div style={{ position:'absolute', bottom:10, right:10, display:'flex', gap:6, alignItems:'center' }}>
+                      <div style={{ background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:12, fontWeight:700, padding:'4px 10px', borderRadius:999, backdropFilter:'blur(4px)' }}>
+                        {activePhotoIndex + 1} / {reqDetail.photos.length}
+                      </div>
+                      <button
+                        onClick={() => setLightbox({ photos: reqDetail.photos, index: activePhotoIndex })}
+                        style={{ background:'rgba(0,0,0,0.55)', border:'none', color:'#fff', fontSize:14, padding:'4px 10px', borderRadius:999, cursor:'pointer', backdropFilter:'blur(4px)' }}
+                        title="Открыть на весь экран"
+                      >⛶</button>
                     </div>
                   </div>
                   {/* Полоса миниатюр */}
                   {reqDetail.photos.length > 1 && (
-                    <div style={{ display:'flex', gap:4, padding:'8px 10px', background:'#f9fafb', overflowX:'auto' }}>
+                    <div style={{ display:'flex', gap:6, padding:'10px 12px', background:'#f9fafb', overflowX:'auto' }}>
                       {reqDetail.photos.map((p, i) => (
                         <div
                           key={i}
-                          onClick={() => setLightbox({ photos: reqDetail.photos, index: i })}
-                          style={{ width:64, height:48, userSelect:'none', flexShrink:0, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === 0 ? '2px solid #e8410a' : '2px solid transparent', opacity: i === 0 ? 1 : 0.7 }}
+                          onClick={() => setActivePhotoIndex(i)}
+                          style={{ width:72, height:54, userSelect:'none', flexShrink:0, borderRadius:8, overflow:'hidden', cursor:'pointer', border: i === activePhotoIndex ? '2.5px solid #e8410a' : '2px solid transparent', opacity: i === activePhotoIndex ? 1 : 0.6, transition:'all .15s' }}
                         >
                           <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
                         </div>
@@ -624,7 +647,7 @@ export default function DealsPage() {
                     <div
                       key={req.id}
                       className="dpage-card-avito"
-                      onClick={() => { setReqDetail(req); loadOffers(req.id); }}
+                      onClick={() => { setReqDetail(req); loadOffers(req.id); setActivePhotoIndex(0); }}
                     >
                       <div
                         className="dpage-card-avito-img"
