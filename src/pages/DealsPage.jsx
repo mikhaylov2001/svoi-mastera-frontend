@@ -301,6 +301,36 @@ export default function DealsPage() {
           </div>
         </div>
       </div>
+        {/* ══ LIGHTBOX ══ */}
+        {lightbox && (
+          <div
+            style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
+            onClick={() => setLightbox(null)}
+          >
+            <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
+              <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block' }} />
+              <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
+                {lightbox.index + 1} / {lightbox.photos.length}
+              </div>
+              <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+              {lightbox.index > 0 && (
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index - 1})); }} style={{ position:'absolute', left:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>‹</button>
+              )}
+              {lightbox.index < lightbox.photos.length - 1 && (
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index + 1})); }} style={{ position:'absolute', right:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>›</button>
+              )}
+            </div>
+            {lightbox.photos.length > 1 && (
+              <div style={{ display:'flex', gap:8, marginTop:16 }} onClick={e => e.stopPropagation()}>
+                {lightbox.photos.map((p, i) => (
+                  <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))} style={{ width:56, height:56, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
+                    <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
     );
   }
 
@@ -311,31 +341,22 @@ export default function DealsPage() {
 
     return (
       <div>
+        {/* Шапка */}
         <div className="page-header-bar">
           <div className="container">
             <button className="cats-back-link" onClick={() => { setReqDetail(null); setOffers([]); }}>
               ← Назад к заказам
             </button>
             <div style={{ display:'flex', alignItems:'center', gap:14, marginTop:10 }}>
-              {catName && (
-                <div className="cat-page-icon" style={{ background: '#f3f4f6' }}>
-                  📋
-                </div>
-              )}
+              <div style={{ width:52, height:52, borderRadius:14, background: st.bg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, flexShrink:0 }}>
+                {st.emoji}
+              </div>
               <div>
-                <h1>{reqDetail.title}</h1>
-                <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:4, flexWrap:'wrap' }}>
-                  <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
-                    {st.emoji} {st.label}
-                  </span>
-                  {catName && (
-                    <span style={{ fontSize:13, color:'var(--gray-400)' }}>🏷 {catName}</span>
-                  )}
-                  {reqDetail.budgetTo && (
-                    <span style={{ fontSize:13, color:'var(--gray-500)', fontWeight:700 }}>
-                      💰 до {Number(reqDetail.budgetTo).toLocaleString('ru-RU')} ₽
-                    </span>
-                  )}
+                <h1 style={{ fontSize:22 }}>{reqDetail.title}</h1>
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:4, flexWrap:'wrap' }}>
+                  <span className="dp-badge" style={{ color: st.color, background: st.bg }}>{st.emoji} {st.label}</span>
+                  {catName && <span style={{ fontSize:13, color:'#9ca3af' }}>🏷 {catName}</span>}
+                  {reqDetail.budgetTo && <span style={{ fontSize:14, color:'#111827', fontWeight:800 }}>💰 до {Number(reqDetail.budgetTo).toLocaleString('ru-RU')} ₽</span>}
                 </div>
               </div>
             </div>
@@ -343,45 +364,79 @@ export default function DealsPage() {
         </div>
 
         <div className="container">
-          <div className="dp-grid">
-            <div>
+          <div className="dp-grid" style={{ paddingTop:24 }}>
+            {/* Левая колонка */}
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+
+              {/* Фото — первыми, большие */}
+              {reqDetail.photos && reqDetail.photos.length > 0 && (
+                <div className="dp-card" style={{ padding:0, overflow:'hidden' }}>
+                  {/* Главное фото */}
+                  <div
+                    style={{ width:'100%', aspectRatio:'16/9', overflow:'hidden', cursor:'zoom-in', position:'relative' }}
+                    onClick={() => setLightbox({ photos: reqDetail.photos, index: 0 })}
+                  >
+                    <img src={reqDetail.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                    <div style={{ position:'absolute', bottom:10, right:10, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:12, fontWeight:700, padding:'4px 10px', borderRadius:999, backdropFilter:'blur(4px)' }}>
+                      📷 {reqDetail.photos.length} фото
+                    </div>
+                  </div>
+                  {/* Полоса миниатюр */}
+                  {reqDetail.photos.length > 1 && (
+                    <div style={{ display:'flex', gap:4, padding:'8px 10px', background:'#f9fafb', overflowX:'auto' }}>
+                      {reqDetail.photos.map((p, i) => (
+                        <div
+                          key={i}
+                          onClick={() => setLightbox({ photos: reqDetail.photos, index: i })}
+                          style={{ width:64, height:48, flexShrink:0, borderRadius:6, overflow:'hidden', cursor:'zoom-in', border: i === 0 ? '2px solid #e8410a' : '2px solid transparent', opacity: i === 0 ? 1 : 0.7 }}
+                        >
+                          <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Описание */}
               {reqDetail.description && reqDetail.description !== 'Без описания' && (
                 <div className="dp-card">
-                  <div className="dp-card-label">Описание</div>
+                  <div className="dp-card-label">Описание задачи</div>
                   <p className="dp-desc">{reqDetail.description}</p>
                 </div>
               )}
-              {reqDetail.photos && reqDetail.photos.length > 0 && (
-                <div className="dp-card">
-                  <div className="dp-card-label">Фотографии</div>
-                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(110px, 1fr))', gap:8 }}>
-                    {reqDetail.photos.map((photo, idx) => (
-                      <div
-                        key={idx}
-                        style={{ aspectRatio:'1', borderRadius:8, overflow:'hidden', cursor:'zoom-in', border:'1.5px solid #e5e7eb', position:'relative' }}
-                        onClick={() => setLightbox({ photos: reqDetail.photos, index: idx })}
-                      >
-                        <img src={photo} alt={`Фото ${idx + 1}`} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                        <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0)', transition:'background .15s' }} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {reqDetail.addressText && (
-                <div className="dp-card">
-                  <div className="dp-card-label">Адрес</div>
-                  <p style={{ fontSize:14, color:'#374151' }}>📍 {reqDetail.addressText}</p>
-                </div>
-              )}
+
+              {/* Детали в сетке */}
               <div className="dp-card">
-                <div className="dp-card-label">Информация</div>
-                <div style={{ fontSize:13, color:'#6b7280' }}>
-                  🕐 Создана: {timeAgo(reqDetail.createdAt)}
+                <div className="dp-card-label">Детали заявки</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                  {catName && (
+                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Категория</div>
+                      <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>🏷 {catName}</div>
+                    </div>
+                  )}
+                  {reqDetail.budgetTo && (
+                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Бюджет</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>💰 до {Number(reqDetail.budgetTo).toLocaleString('ru-RU')} ₽</div>
+                    </div>
+                  )}
+                  {reqDetail.addressText && (
+                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Адрес</div>
+                      <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>📍 {reqDetail.addressText}</div>
+                    </div>
+                  )}
+                  <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Создана</div>
+                    <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>🕐 {timeAgo(reqDetail.createdAt)}</div>
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Правая колонка — отклики */}
             <div className="dp-side">
               {reqDetail.status === 'OPEN' ? (
                 <>
@@ -398,31 +453,18 @@ export default function DealsPage() {
                     offers.map(offer => (
                       <div key={offer.id} className="dp-offer">
                         <div className="dp-offer-top">
-                          <span className="dp-offer-price">
-                            {Number(offer.price).toLocaleString('ru-RU')} ₽
-                          </span>
-                          {offer.estimatedDays && (
-                            <span className="dp-offer-days">· {offer.estimatedDays} дн.</span>
-                          )}
+                          <span className="dp-offer-price">{Number(offer.price).toLocaleString('ru-RU')} ₽</span>
+                          {offer.estimatedDays && <span className="dp-offer-days">· {offer.estimatedDays} дн.</span>}
                         </div>
                         {offer.message && <p className="dp-offer-msg">{offer.message}</p>}
                         <div className="dp-offer-date">{timeAgo(offer.createdAt)}</div>
                         {offer.status === 'CREATED' && (
                           <div className="dp-offer-actions">
-                            <button
-                              className="dp-confirm-btn"
-                              disabled={actionId === offer.id}
-                              onClick={() => handleAccept(reqDetail, offer)}
-                            >
+                            <button className="dp-confirm-btn" disabled={actionId === offer.id} onClick={() => handleAccept(reqDetail, offer)}>
                               {actionId === offer.id ? 'Принимаем…' : '✅ Принять'}
                             </button>
                             {(offer.workerUserId || offer.workerId) && (
-                              <button
-                                className="dp-chat-btn"
-                                onClick={() => navigate(
-                                  `/chat/${offer.workerUserId || offer.workerId}?jobRequestId=${reqDetail.id}`
-                                )}
-                              >
+                              <button className="dp-chat-btn" onClick={() => navigate(`/chat/${offer.workerUserId || offer.workerId}?jobRequestId=${reqDetail.id}`)}>
                                 💬 Написать
                               </button>
                             )}
@@ -442,11 +484,42 @@ export default function DealsPage() {
             </div>
           </div>
         </div>
+
+        {/* Lightbox прямо здесь — без конфликта с router */}
+        {lightbox && (
+          <div
+            style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
+            onClick={() => setLightbox(null)}
+          >
+            <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
+              <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block' }} />
+              <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
+                {lightbox.index + 1} / {lightbox.photos.length}
+              </div>
+              <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+              {lightbox.index > 0 && (
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index - 1})); }} style={{ position:'absolute', left:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>‹</button>
+              )}
+              {lightbox.index < lightbox.photos.length - 1 && (
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index + 1})); }} style={{ position:'absolute', right:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>›</button>
+              )}
+            </div>
+            {lightbox.photos.length > 1 && (
+              <div style={{ display:'flex', gap:8, marginTop:16 }} onClick={e => e.stopPropagation()}>
+                {lightbox.photos.map((p, i) => (
+                  <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))} style={{ width:56, height:56, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
+                    <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
 
-  /* ══ LIST ══ */
+    /* ══ LIST ══ */
   return (
     <div>
       <div className="page-header-bar">
@@ -722,62 +795,29 @@ export default function DealsPage() {
           </div>
         </div>
       )}
-
       {/* ══ LIGHTBOX ══ */}
       {lightbox && (
         <div
-          style={{
-            position:'fixed', inset:0, zIndex:9999,
-            background:'rgba(0,0,0,0.92)',
-            display:'flex', flexDirection:'column',
-            alignItems:'center', justifyContent:'center',
-          }}
+          style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
           onClick={() => setLightbox(null)}
         >
-          {/* Главное фото */}
           <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
-            <img
-              src={lightbox.photos[lightbox.index]}
-              alt=""
-              style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block' }}
-            />
-            {/* Счётчик */}
+            <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block' }} />
             <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
               {lightbox.index + 1} / {lightbox.photos.length}
             </div>
-            {/* Закрыть */}
-            <button
-              onClick={() => setLightbox(null)}
-              style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}
-            >×</button>
-            {/* Стрелки */}
+            <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
             {lightbox.index > 0 && (
-              <button
-                onClick={e => { e.stopPropagation(); setLightbox(l => ({ ...l, index: l.index - 1 })); }}
-                style={{ position:'absolute', left:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:24, cursor:'pointer' }}
-              >‹</button>
+              <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index - 1})); }} style={{ position:'absolute', left:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>‹</button>
             )}
             {lightbox.index < lightbox.photos.length - 1 && (
-              <button
-                onClick={e => { e.stopPropagation(); setLightbox(l => ({ ...l, index: l.index + 1 })); }}
-                style={{ position:'absolute', right:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:24, cursor:'pointer' }}
-              >›</button>
+              <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index + 1})); }} style={{ position:'absolute', right:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>›</button>
             )}
           </div>
-          {/* Миниатюры */}
           {lightbox.photos.length > 1 && (
             <div style={{ display:'flex', gap:8, marginTop:16 }} onClick={e => e.stopPropagation()}>
               {lightbox.photos.map((p, i) => (
-                <div
-                  key={i}
-                  onClick={() => setLightbox(l => ({ ...l, index: i }))}
-                  style={{
-                    width:56, height:56, borderRadius:6, overflow:'hidden', cursor:'pointer',
-                    border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)',
-                    opacity: i === lightbox.index ? 1 : 0.6,
-                    transition:'all .15s',
-                  }}
-                >
+                <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))} style={{ width:56, height:56, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
                   <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
                 </div>
               ))}
