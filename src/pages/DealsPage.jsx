@@ -363,8 +363,11 @@ export default function DealsPage() {
               ← Назад к заказам
             </button>
             <div style={{ display:'flex', alignItems:'center', gap:14, marginTop:10 }}>
-              <div style={{ width:52, height:52, borderRadius:14, background: st.bg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, flexShrink:0 }}>
-                {st.emoji}
+              <div style={{ width:52, height:52, borderRadius:14, overflow:'hidden', flexShrink:0, background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>
+                {reqDetail.photos && reqDetail.photos.length > 0
+                  ? <img src={reqDetail.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                  : '📋'
+                }
               </div>
               <div>
                 <h1 style={{ fontSize:22 }}>{reqDetail.title}</h1>
