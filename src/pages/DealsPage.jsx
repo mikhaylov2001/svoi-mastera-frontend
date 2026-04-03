@@ -348,6 +348,22 @@ export default function DealsPage() {
                   <p className="dp-desc">{reqDetail.description}</p>
                 </div>
               )}
+              {reqDetail.photos && reqDetail.photos.length > 0 && (
+                <div className="dp-card">
+                  <div className="dp-card-label">Фотографии</div>
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(100px, 1fr))', gap:8 }}>
+                    {reqDetail.photos.map((photo, idx) => (
+                      <div
+                        key={idx}
+                        style={{ aspectRatio:'1', borderRadius:8, overflow:'hidden', cursor:'pointer', border:'1.5px solid #e5e7eb' }}
+                        onClick={() => window.open(photo, '_blank')}
+                      >
+                        <img src={photo} alt={`Фото ${idx + 1}`} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {reqDetail.addressText && (
                 <div className="dp-card">
                   <div className="dp-card-label">Адрес</div>
