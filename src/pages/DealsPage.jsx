@@ -62,6 +62,9 @@ export default function DealsPage() {
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [reviewStatus, setReviewStatus] = useState('idle');
 
+  // Lightbox для фото
+  const [lightbox, setLightbox] = useState(null); // { photos: [], index: 0 }
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -351,14 +354,15 @@ export default function DealsPage() {
               {reqDetail.photos && reqDetail.photos.length > 0 && (
                 <div className="dp-card">
                   <div className="dp-card-label">Фотографии</div>
-                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(100px, 1fr))', gap:8 }}>
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(110px, 1fr))', gap:8 }}>
                     {reqDetail.photos.map((photo, idx) => (
                       <div
                         key={idx}
-                        style={{ aspectRatio:'1', borderRadius:8, overflow:'hidden', cursor:'pointer', border:'1.5px solid #e5e7eb' }}
-                        onClick={() => window.open(photo, '_blank')}
+                        style={{ aspectRatio:'1', borderRadius:8, overflow:'hidden', cursor:'zoom-in', border:'1.5px solid #e5e7eb', position:'relative' }}
+                        onClick={() => setLightbox({ photos: reqDetail.photos, index: idx })}
                       >
                         <img src={photo} alt={`Фото ${idx + 1}`} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                        <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0)', transition:'background .15s' }} />
                       </div>
                     ))}
                   </div>
@@ -530,7 +534,11 @@ export default function DealsPage() {
                       className="dpage-card-avito"
                       onClick={() => { setReqDetail(req); loadOffers(req.id); }}
                     >
-                      <div className="dpage-card-avito-img">
+                      <div
+                        className="dpage-card-avito-img"
+                        onClick={hasPhoto ? (e) => { e.stopPropagation(); setLightbox({ photos: req.photos, index: 0 }); } : undefined}
+                        style={hasPhoto ? { cursor:'zoom-in' } : {}}
+                      >
                         {hasPhoto ? (
                           <>
                             <img src={req.photos[0]} alt="" />
@@ -712,6 +720,69 @@ export default function DealsPage() {
               </>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ══ LIGHTBOX ══ */}
+      {lightbox && (
+        <div
+          style={{
+            position:'fixed', inset:0, zIndex:9999,
+            background:'rgba(0,0,0,0.92)',
+            display:'flex', flexDirection:'column',
+            alignItems:'center', justifyContent:'center',
+          }}
+          onClick={() => setLightbox(null)}
+        >
+          {/* Главное фото */}
+          <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
+            <img
+              src={lightbox.photos[lightbox.index]}
+              alt=""
+              style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block' }}
+            />
+            {/* Счётчик */}
+            <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
+              {lightbox.index + 1} / {lightbox.photos.length}
+            </div>
+            {/* Закрыть */}
+            <button
+              onClick={() => setLightbox(null)}
+              style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}
+            >×</button>
+            {/* Стрелки */}
+            {lightbox.index > 0 && (
+              <button
+                onClick={e => { e.stopPropagation(); setLightbox(l => ({ ...l, index: l.index - 1 })); }}
+                style={{ position:'absolute', left:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:24, cursor:'pointer' }}
+              >‹</button>
+            )}
+            {lightbox.index < lightbox.photos.length - 1 && (
+              <button
+                onClick={e => { e.stopPropagation(); setLightbox(l => ({ ...l, index: l.index + 1 })); }}
+                style={{ position:'absolute', right:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:24, cursor:'pointer' }}
+              >›</button>
+            )}
+          </div>
+          {/* Миниатюры */}
+          {lightbox.photos.length > 1 && (
+            <div style={{ display:'flex', gap:8, marginTop:16 }} onClick={e => e.stopPropagation()}>
+              {lightbox.photos.map((p, i) => (
+                <div
+                  key={i}
+                  onClick={() => setLightbox(l => ({ ...l, index: i }))}
+                  style={{
+                    width:56, height:56, borderRadius:6, overflow:'hidden', cursor:'pointer',
+                    border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)',
+                    opacity: i === lightbox.index ? 1 : 0.6,
+                    transition:'all .15s',
+                  }}
+                >
+                  <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
