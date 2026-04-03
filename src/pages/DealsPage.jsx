@@ -163,6 +163,7 @@ export default function DealsPage() {
     const otherOk = im ? dealDetail.workerConfirmed   : dealDetail.customerConfirmed;
 
     return (
+      <>
       <div>
         <div className="page-header-bar">
           <div className="container">
@@ -331,6 +332,7 @@ export default function DealsPage() {
             )}
           </div>
         )}
+      </>
     );
   }
 
@@ -340,6 +342,7 @@ export default function DealsPage() {
     const catName = getCatName(reqDetail.categoryId);
 
     return (
+      <>
       <div>
         {/* Шапка */}
         <div className="page-header-bar">
@@ -516,6 +519,7 @@ export default function DealsPage() {
           </div>
         )}
       </div>
+      </>
     );
   }
 
