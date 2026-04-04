@@ -424,12 +424,13 @@ export default function FindWorkPage() {
                   <div
                     key={req.id}
                     className="fw-request-card fade-up"
-                    style={{ animationDelay: `${idx * 0.05}s`, padding:0, overflow:'hidden', display:'flex', flexDirection:'column' }}
+                    style={{ animationDelay: `${idx * 0.05}s`, padding:0, overflow:'hidden', display:'flex', flexDirection:'column', cursor:'pointer' }}
+                    onClick={() => { setSelectedRequest(req); setActivePhotoIdx(0); }}
                   >
                     {/* Фото */}
                     {hasPhoto && (
                       <div style={{ position:'relative', width:'100%', aspectRatio:'16/9', overflow:'hidden', background:'#f3f4f6', cursor:'pointer' }}
-                        onClick={() => setLightbox({ photos: req.photos, index: 0 })}
+                        onClick={e => e.stopPropagation()}
                       >
                         <img src={req.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
                         {req.photos.length > 1 && (
@@ -483,7 +484,7 @@ export default function FindWorkPage() {
                       <button
                         className="btn btn-primary btn-full"
                         style={{ marginTop:'auto' }}
-                        onClick={() => { setSelectedRequest(req); setActivePhotoIdx(0); }}
+                        onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
                       >
                         📩 Откликнуться
                       </button>
