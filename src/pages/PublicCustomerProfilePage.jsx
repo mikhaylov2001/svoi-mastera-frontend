@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './PublicWorkerProfile.css';
 
@@ -35,13 +35,16 @@ export default function PublicCustomerProfilePage() {
   const { customerId } = useParams();
   const navigate = useNavigate();
   const { userId } = useAuth();
+  // Имя может прийти через router state (из FindWorkPage)
+  const location = useLocation();
+  const nameFromQuery = new URLSearchParams(location.search).get('name') || '';
 
   const [customer,  setCustomer]  = useState(null);
   const [requests,  setRequests]  = useState([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState('');
   const [lightbox,  setLightbox]  = useState(null);
-  const [activeTab, setActiveTab] = useState('requests'); // 'requests' | 'reviews'
+  const [activeTab, setActiveTab] = useState('requests');
 
   // Клавиатурная навигация lightbox
   useEffect(() => {
@@ -66,13 +69,20 @@ export default function PublicCustomerProfilePage() {
       fetch(`${API}/customers/${customerId}/requests`).then(r => r.ok ? r.json() : []),
     ])
       .then(([profileData, requestsData]) => {
-        setCustomer(profileData || { id: customerId, displayName: 'Заказчик', city: 'Йошкар-Ола' });
+        setCustomer(profileData || {
+          id: customerId,
+          displayName: nameFromQuery || 'Заказчик',
+          city: 'Йошкар-Ола'
+        });
         setRequests(Array.isArray(requestsData) ? requestsData : []);
         setLoading(false);
       })
       .catch(() => {
-        // Если API нет — показываем заглушку
-        setCustomer({ id: customerId, displayName: 'Заказчик', city: 'Йошкар-Ола' });
+        setCustomer({
+          id: customerId,
+          displayName: nameFromQuery || 'Заказчик',
+          city: 'Йошкар-Ола'
+        });
         setRequests([]);
         setLoading(false);
       });

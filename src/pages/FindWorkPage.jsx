@@ -101,60 +101,41 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
   );
 }
 
-// ═══ Карточка заказчика (отдельный компонент — хуки нельзя в IIFE) ═══
+// ═══ Карточка заказчика ═══
 function CustomerCard({ req }) {
-  const [expanded, setExpanded] = React.useState(false);
   if (!req.customerName && !req.customerId) return null;
+  const initial = (req.customerName || 'А')[0].toUpperCase();
 
   return (
     <div style={{ marginBottom:16 }}>
       <div className="dp-side-title" style={{ marginBottom:10 }}>Заказчик</div>
-      <div
-        onClick={() => setExpanded(e => !e)}
-        style={{ display:'flex', alignItems:'center', gap:12, padding:'14px', background:'#f9fafb', borderRadius:14, border:'1.5px solid #e5e7eb', cursor:'pointer', transition:'all .15s' }}
+
+      {/* Карточка — кликабельна, ведёт на профиль */}
+      <a
+        href={req.customerId ? `/customers/${req.customerId}?name=${encodeURIComponent(req.customerName || '')}` : undefined}
+        style={{ display:'flex', alignItems:'center', gap:12, padding:'14px', background:'#f9fafb', borderRadius:14, border:'1.5px solid #e5e7eb', textDecoration:'none', transition:'all .15s', marginBottom:8 }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor='#6366f1'; e.currentTarget.style.background='rgba(99,102,241,.04)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor='#e5e7eb'; e.currentTarget.style.background='#f9fafb'; }}
       >
-        <div style={{ width:44, height:44, borderRadius:'50%', background: expanded ? '#e8410a' : '#e5e7eb', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0, transition:'background .2s' }}>
-          {expanded ? '✕' : '👤'}
+        <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:18, flexShrink:0 }}>
+          {initial}
         </div>
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{req.customerName || 'Заказчик'}</div>
-          <div style={{ fontSize:12, color:'#9ca3af' }}>{expanded ? 'Скрыть информацию' : 'Нажмите чтобы узнать больше'}</div>
+          <div style={{ fontSize:12, color:'#22c55e', fontWeight:600 }}>● Активный заказчик</div>
         </div>
-        <div style={{ fontSize:18, color:'#9ca3af', transition:'transform .2s', transform: expanded ? 'rotate(180deg)' : 'none' }}>›</div>
-      </div>
-      {expanded && (
-        <div style={{ marginTop:8, padding:'14px', background:'#fff', borderRadius:12, border:'1.5px solid #e5e7eb', display:'flex', flexDirection:'column', gap:10 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <div style={{ width:40, height:40, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16, flexShrink:0 }}>
-              {(req.customerName || 'А')[0].toUpperCase()}
-            </div>
-            <div>
-              <div style={{ fontSize:15, fontWeight:700, color:'#111827' }}>{req.customerName || 'Заказчик'}</div>
-              <div style={{ fontSize:12, color:'#22c55e', fontWeight:600 }}>● Активный заказчик</div>
-            </div>
-          </div>
-          <div style={{ fontSize:13, color:'#6b7280', lineHeight:1.5, background:'#f9fafb', borderRadius:8, padding:'10px 12px' }}>
-            📋 Заявка: <strong>{req.title}</strong>
-            {req.addressText && <><br/>📍 {req.addressText}</>}
-            {req.createdAt && <><br/>🕐 {new Date(req.createdAt).toLocaleDateString('ru-RU')}</>}
-          </div>
-          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-            {req.customerId && (
-              <a href={`/customers/${req.customerId}`}
-                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, padding:'10px', borderRadius:10, background:'rgba(99,102,241,.06)', border:'1.5px solid rgba(99,102,241,.2)', color:'#6366f1', fontWeight:700, fontSize:13, textDecoration:'none' }}
-              >
-                👤 Профиль заказчика
-              </a>
-            )}
-            {req.customerId && (
-              <a href={`/chat/${req.customerId}?jobRequestId=${req.id}`}
-                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, padding:'10px', borderRadius:10, background:'rgba(14,165,233,.06)', border:'1.5px solid rgba(14,165,233,.2)', color:'#0ea5e9', fontWeight:700, fontSize:13, textDecoration:'none' }}
-              >
-                💬 Написать сообщение
-              </a>
-            )}
-          </div>
-        </div>
+        {req.customerId && <div style={{ fontSize:18, color:'#9ca3af' }}>›</div>}
+      </a>
+
+      {/* Кнопка написать */}
+      {req.customerId && (
+        <a href={`/chat/${req.customerId}?jobRequestId=${req.id}`}
+          style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, padding:'11px', borderRadius:10, background:'rgba(14,165,233,.06)', border:'1.5px solid rgba(14,165,233,.2)', color:'#0ea5e9', fontWeight:700, fontSize:13, textDecoration:'none', transition:'all .15s' }}
+          onMouseEnter={e => { e.currentTarget.style.background='rgba(14,165,233,.14)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background='rgba(14,165,233,.06)'; }}
+        >
+          💬 Написать заказчику
+        </a>
       )}
     </div>
   );
