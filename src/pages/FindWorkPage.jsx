@@ -112,6 +112,19 @@ export default function FindWorkPage() {
   const [showOfferModal, setShowOfferModal]     = useState(null);
   const [offerForm, setOfferForm]               = useState({ price: '', comment: '', estimatedDays: '' });
   const [submitting, setSubmitting]             = useState(false);
+  const [lightbox,   setLightbox]               = useState(null); // { photos, index }
+
+  // Клавиатурная навигация lightbox
+  React.useEffect(() => {
+    if (!lightbox) return;
+    const handler = (e) => {
+      if (e.key === 'ArrowRight') setLightbox(l => l ? {...l, index: l.index < l.photos.length - 1 ? l.index + 1 : 0} : l);
+      if (e.key === 'ArrowLeft')  setLightbox(l => l ? {...l, index: l.index > 0 ? l.index - 1 : l.photos.length - 1} : l);
+      if (e.key === 'Escape')     setLightbox(null);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [lightbox]);
 
   useEffect(() => { loadData(); }, [userId]);
 
@@ -197,47 +210,79 @@ export default function FindWorkPage() {
             </div>
           ) : (
             <div className="fw-requests-grid">
-              {catRequests.map((req, idx) => (
-                <div
-                  key={req.id}
-                  className="fw-request-card fade-up"
-                  style={{ animationDelay: `${idx * 0.05}s` }}
-                >
-                  <div className="fw-request-top">
-                    <span className="fw-request-budget">
-                      {req.budgetTo
-                        ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
-                        : req.budgetFrom
-                        ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
-                        : 'Договорная'}
-                    </span>
-                    <span className="fw-request-date">
-                      {new Date(req.createdAt).toLocaleDateString('ru-RU')}
-                    </span>
-                  </div>
-
-                  <h3 className="fw-request-title">{req.title}</h3>
-
-                  {req.description && req.description !== 'Без описания' && (
-                    <p className="fw-request-desc">{req.description}</p>
-                  )}
-
-                  <div className="fw-request-meta">
-                    {req.addressText && <span>📍 {req.addressText}</span>}
-                    {req.city && !req.addressText && <span>🏙️ {req.city}</span>}
-                    {req.scheduledAt && (
-                      <span>📅 {new Date(req.scheduledAt).toLocaleDateString('ru-RU')}</span>
-                    )}
-                  </div>
-
-                  <button
-                    className="btn btn-primary btn-full"
-                    onClick={() => handleOpenOfferModal(req)}
+              {catRequests.map((req, idx) => {
+                const hasPhoto = req.photos && req.photos.length > 0;
+                return (
+                  <div
+                    key={req.id}
+                    className="fw-request-card fade-up"
+                    style={{ animationDelay: `${idx * 0.05}s`, padding:0, overflow:'hidden', display:'flex', flexDirection:'column' }}
                   >
-                    📩 Откликнуться
-                  </button>
-                </div>
-              ))}
+                    {/* Фото */}
+                    {hasPhoto && (
+                      <div style={{ position:'relative', width:'100%', aspectRatio:'16/9', overflow:'hidden', background:'#f3f4f6', cursor:'pointer' }}
+                        onClick={() => setLightbox({ photos: req.photos, index: 0 })}
+                      >
+                        <img src={req.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
+                        {req.photos.length > 1 && (
+                          <div style={{ position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:999, backdropFilter:'blur(4px)' }}>
+                            📷 {req.photos.length}
+                          </div>
+                        )}
+                        {/* Миниатюры */}
+                        <div style={{ position:'absolute', bottom:8, left:8, display:'flex', gap:4 }}>
+                          {req.photos.slice(0,4).map((p, i) => i > 0 && (
+                            <div key={i}
+                              onClick={e => { e.stopPropagation(); setLightbox({ photos: req.photos, index: i }); }}
+                              style={{ width:36, height:28, borderRadius:4, overflow:'hidden', border:'1.5px solid rgba(255,255,255,0.7)', cursor:'pointer' }}
+                            >
+                              <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Контент */}
+                    <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:8, flex:1 }}>
+                      <div className="fw-request-top">
+                        <span className="fw-request-budget">
+                          {req.budgetTo
+                            ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
+                            : req.budgetFrom
+                            ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
+                            : 'Договорная'}
+                        </span>
+                        <span className="fw-request-date">
+                          {new Date(req.createdAt).toLocaleDateString('ru-RU')}
+                        </span>
+                      </div>
+
+                      <h3 className="fw-request-title" style={{ margin:0 }}>{req.title}</h3>
+
+                      {req.description && req.description !== 'Без описания' && (
+                        <p className="fw-request-desc" style={{ margin:0 }}>{req.description}</p>
+                      )}
+
+                      <div className="fw-request-meta">
+                        {req.addressText && <span>📍 {req.addressText}</span>}
+                        {req.city && !req.addressText && <span>🏙️ {req.city}</span>}
+                        {req.scheduledAt && (
+                          <span>📅 {new Date(req.scheduledAt).toLocaleDateString('ru-RU')}</span>
+                        )}
+                      </div>
+
+                      <button
+                        className="btn btn-primary btn-full"
+                        style={{ marginTop:'auto' }}
+                        onClick={() => handleOpenOfferModal(req)}
+                      >
+                        📩 Откликнуться
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -250,6 +295,39 @@ export default function FindWorkPage() {
           onSubmit={handleSubmitOffer}
           submitting={submitting}
         />
+
+      {/* LIGHTBOX */}
+      {lightbox && (
+        <div
+          style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
+          onClick={() => setLightbox(null)}
+        >
+          <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
+            <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block', pointerEvents:'none' }} />
+            <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
+              {lightbox.index + 1} / {lightbox.photos.length}
+            </div>
+            <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+            {lightbox.photos.length > 1 && (
+              <>
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index > 0 ? l.index - 1 : l.photos.length - 1})); }} style={{ position:'absolute', left:-52, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:26, cursor:'pointer' }}>‹</button>
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index < l.photos.length - 1 ? l.index + 1 : 0})); }} style={{ position:'absolute', right:-52, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:26, cursor:'pointer' }}>›</button>
+              </>
+            )}
+          </div>
+          {lightbox.photos.length > 1 && (
+            <div style={{ display:'flex', gap:8, marginTop:14 }} onClick={e => e.stopPropagation()}>
+              {lightbox.photos.map((p, i) => (
+                <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))}
+                  style={{ width:52, height:40, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}
+                >
+                  <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       </div>
     );
   }
