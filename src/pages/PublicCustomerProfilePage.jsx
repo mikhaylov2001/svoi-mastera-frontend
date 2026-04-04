@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './PublicWorkerProfile.css';
-import './PublicCustomerProfile.css';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
