@@ -15,6 +15,7 @@ import { LoginPage, RegisterPage } from './pages/AuthPages';
 import CustomerProfilePage from './pages/CustomerProfilePage';
 import WorkerProfilePage from './pages/WorkerProfilePage';
 import PublicWorkerProfilePage from './pages/PublicWorkerProfilePage';
+import PublicCustomerProfilePage from './pages/PublicCustomerProfilePage';
 import DealsPage from './pages/DealsPage';
 import WorkerDealsPage from './pages/WorkerDealsPage';
 import FindWorkPage from './pages/FindWorkPage';
@@ -68,6 +69,7 @@ function AppContent() {
           <Route path="/find-master"     element={<FindMasterPage />} />
           <Route path="/find-master/:categorySlug" element={<FindMasterPage />} />
           <Route path="/workers/:workerId" element={<PublicWorkerProfilePage />} />
+          <Route path="/customers/:customerId" element={<PublicCustomerProfilePage />} />
           <Route path="/manage-services" element={<ProtectedRoute workerOnly><ManageServicesPage /></ProtectedRoute>} />
           <Route path="/active-clients"  element={<ProtectedRoute workerOnly><ActiveClientsPage /></ProtectedRoute>} />
           <Route path="/chat"            element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />

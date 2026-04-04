@@ -1,0 +1,5 @@
+.pc-req-card:hover {
+  border-color: rgba(232,65,10,.3) !important;
+  box-shadow: 0 6px 20px rgba(232,65,10,.08);
+  transform: translateY(-1px);
+}
