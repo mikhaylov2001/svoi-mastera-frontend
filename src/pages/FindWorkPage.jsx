@@ -109,6 +109,8 @@ export default function FindWorkPage() {
   const [categories, setCategories]             = useState([]);
   const [loading, setLoading]                   = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedRequest,  setSelectedRequest]  = useState(null);
+  const [activePhotoIdx,   setActivePhotoIdx]   = useState(0);
   const [showOfferModal, setShowOfferModal]     = useState(null);
   const [offerForm, setOfferForm]               = useState({ price: '', comment: '', estimatedDays: '' });
   const [submitting, setSubmitting]             = useState(false);
@@ -177,6 +179,212 @@ export default function FindWorkPage() {
       setSubmitting(false);
     }
   };
+
+  // ═══ ЭКРАН 3: детальная заявка ═══
+  if (selectedRequest) {
+    const req = selectedRequest;
+    const hasPhoto = req.photos && req.photos.length > 0;
+    const style = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '📋', color: '#f3f4f6' };
+
+    return (
+      <>
+      <div>
+        <div className="page-header-bar">
+          <div className="container">
+            <button className="cats-back-link" onClick={() => { setSelectedRequest(null); setActivePhotoIdx(0); }}>
+              ← Назад к заявкам
+            </button>
+            <div style={{ display:'flex', alignItems:'center', gap:14, marginTop:10 }}>
+              <div style={{ width:52, height:52, borderRadius:14, overflow:'hidden', flexShrink:0, background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>
+                {hasPhoto
+                  ? <img src={req.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                  : style.emoji}
+              </div>
+              <div>
+                <h1 style={{ fontSize:22 }}>{req.title}</h1>
+                <div style={{ display:'flex', gap:10, marginTop:4, flexWrap:'wrap', alignItems:'center' }}>
+                  <span style={{ fontSize:16, fontWeight:900, color:'#e8410a' }}>
+                    {req.budgetTo ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
+                      : req.budgetFrom ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
+                      : 'Договорная'}
+                  </span>
+                  {selectedCategory && <span style={{ fontSize:13, color:'#9ca3af' }}>🏷 {selectedCategory.name}</span>}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="container">
+          <div className="dp-grid" style={{ paddingTop:24 }}>
+            {/* Левая колонка */}
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+
+              {/* Фото-галерея */}
+              {hasPhoto && (
+                <div className="dp-card" style={{ padding:0, overflow:'hidden' }}>
+                  <div style={{ position:'relative', width:'100%', aspectRatio:'16/9', overflow:'hidden', cursor:'pointer' }}
+                    onClick={() => setLightbox({ photos: req.photos, index: activePhotoIdx })}
+                  >
+                    <img src={req.photos[activePhotoIdx]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
+                    {req.photos.length > 1 && (
+                      <>
+                        <button onClick={e => { e.stopPropagation(); setActivePhotoIdx(i => i > 0 ? i - 1 : req.photos.length - 1); }}
+                          style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', width:36, height:36, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:20, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>‹</button>
+                        <button onClick={e => { e.stopPropagation(); setActivePhotoIdx(i => i < req.photos.length - 1 ? i + 1 : 0); }}
+                          style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', width:36, height:36, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:20, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>›</button>
+                      </>
+                    )}
+                    <div style={{ position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:12, fontWeight:700, padding:'3px 9px', borderRadius:999, backdropFilter:'blur(4px)' }}>
+                      {activePhotoIdx + 1} / {req.photos.length}
+                    </div>
+                  </div>
+                  {req.photos.length > 1 && (
+                    <div style={{ display:'flex', gap:6, padding:'10px 12px', background:'#f9fafb', overflowX:'auto' }}>
+                      {req.photos.map((p, i) => (
+                        <div key={i} onClick={() => setActivePhotoIdx(i)}
+                          style={{ width:72, height:54, flexShrink:0, borderRadius:8, overflow:'hidden', cursor:'pointer', border: i === activePhotoIdx ? '2.5px solid #e8410a' : '2px solid transparent', opacity: i === activePhotoIdx ? 1 : 0.6, transition:'all .15s' }}>
+                          <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Описание */}
+              {req.description && req.description !== 'Без описания' && (
+                <div className="dp-card">
+                  <div className="dp-card-label">Описание задачи</div>
+                  <p className="dp-desc">{req.description}</p>
+                </div>
+              )}
+
+              {/* Детали */}
+              <div className="dp-card">
+                <div className="dp-card-label">Детали заявки</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                  {req.budgetTo && (
+                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Бюджет</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>💰 до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽</div>
+                    </div>
+                  )}
+                  {selectedCategory && (
+                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Категория</div>
+                      <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>🏷 {selectedCategory.name}</div>
+                    </div>
+                  )}
+                  {req.addressText && (
+                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Адрес</div>
+                      <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>📍 {req.addressText}</div>
+                    </div>
+                  )}
+                  <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Опубликована</div>
+                    <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>🕐 {new Date(req.createdAt).toLocaleDateString('ru-RU')}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Правая колонка — действия */}
+            <div className="dp-side">
+              {/* Заказчик */}
+              {(req.customerName || req.customerId) && (
+                <div style={{ marginBottom:16 }}>
+                  <div className="dp-side-title" style={{ marginBottom:10 }}>Заказчик</div>
+                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'14px', background:'#f9fafb', borderRadius:14, border:'1px solid #e5e7eb' }}>
+                    <div style={{ width:44, height:44, borderRadius:'50%', background:'#e5e7eb', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>
+                      👤
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{req.customerName || 'Заказчик'}</div>
+                      <div style={{ fontSize:12, color:'#9ca3af' }}>Частное лицо</div>
+                    </div>
+                  </div>
+                  {req.customerId && (
+                    <a href={`/profile/${req.customerId}`}
+                      style={{ display:'block', marginTop:8, textAlign:'center', fontSize:13, fontWeight:600, color:'#6366f1', textDecoration:'none', padding:'9px', borderRadius:10, border:'1.5px solid rgba(99,102,241,.2)', background:'rgba(99,102,241,.04)', transition:'all .15s' }}
+                    >
+                      👁 Посмотреть профиль
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Написать */}
+              {req.customerId && (
+                <a href={`/chat/${req.customerId}?jobRequestId=${req.id}`}
+                  className="dp-chat-btn"
+                  style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginBottom:12, textDecoration:'none' }}
+                >
+                  💬 Написать заказчику
+                </a>
+              )}
+
+              {/* Откликнуться */}
+              <button
+                className="dp-confirm-btn"
+                onClick={() => handleOpenOfferModal(req)}
+              >
+                📩 Откликнуться
+              </button>
+
+              <p style={{ fontSize:12, color:'#9ca3af', textAlign:'center', marginTop:10, lineHeight:1.5 }}>
+                После принятия отклика заказчиком начнётся сделка
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* LIGHTBOX */}
+      {lightbox && (
+        <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
+          onClick={() => setLightbox(null)}
+        >
+          <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
+            <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block', pointerEvents:'none' }} />
+            <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
+              {lightbox.index + 1} / {lightbox.photos.length}
+            </div>
+            <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer' }}>×</button>
+            {lightbox.photos.length > 1 && (
+              <>
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index > 0 ? l.index - 1 : l.photos.length - 1})); }}
+                  style={{ position:'absolute', left:-52, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:26, cursor:'pointer' }}>‹</button>
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index < l.photos.length - 1 ? l.index + 1 : 0})); }}
+                  style={{ position:'absolute', right:-52, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:26, cursor:'pointer' }}>›</button>
+              </>
+            )}
+          </div>
+          {lightbox.photos.length > 1 && (
+            <div style={{ display:'flex', gap:8, marginTop:14 }} onClick={e => e.stopPropagation()}>
+              {lightbox.photos.map((p, i) => (
+                <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))}
+                  style={{ width:52, height:40, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
+                  <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <OfferModal
+        request={showOfferModal}
+        offerForm={offerForm}
+        setOfferForm={setOfferForm}
+        onClose={handleCloseOfferModal}
+        onSubmit={handleSubmitOffer}
+        submitting={submitting}
+      />
+      </>
+    );
+  }
 
   // ═══ ЭКРАН 2: заявки внутри категории ═══
   if (selectedCategory) {
@@ -275,7 +483,7 @@ export default function FindWorkPage() {
                       <button
                         className="btn btn-primary btn-full"
                         style={{ marginTop:'auto' }}
-                        onClick={() => handleOpenOfferModal(req)}
+                        onClick={() => { setSelectedRequest(req); setActivePhotoIdx(0); }}
                       >
                         📩 Откликнуться
                       </button>
