@@ -514,6 +514,14 @@ export default function FindWorkPage() {
                         {req.addressText || req.city || 'Йошкар-Ола'}
                         {req.createdAt && <span style={{ display:'block' }}>{new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'short' })}</span>}
                       </div>
+                      <button
+                        onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
+                        style={{ width:'100%', padding:'9px', background:'#e8410a', border:'none', borderRadius:6, color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', transition:'background .15s' }}
+                        onMouseEnter={e => e.currentTarget.style.background='#c73208'}
+                        onMouseLeave={e => e.currentTarget.style.background='#e8410a'}
+                      >
+                        📩 Откликнуться
+                      </button>
                     </div>
                   </div>
                 );
