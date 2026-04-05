@@ -438,102 +438,82 @@ export default function FindWorkPage() {
     const catRequests = getRequestsForCategory(selectedCategory);
 
     return (
-      <div>
-        <div className="page-header-bar">
+      <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
+        {/* Хлебная крошка */}
+        <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', padding:'10px 0' }}>
           <div className="container">
             <button className="cats-back-link" onClick={() => setSelectedCategory(null)}>
               ← Все категории
             </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
-              <div className="cat-page-icon" style={{ background: style.color }}>
-                {style.emoji}
-              </div>
+          </div>
+        </div>
+
+        {/* Заголовок */}
+        <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', padding:'16px 0' }}>
+          <div className="container">
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12 }}>
               <div>
-                <h1>{selectedCategory.name}</h1>
-                <p>{pluralRequests(catRequests.length)} от заказчиков</p>
+                <h1 style={{ fontSize:22, fontWeight:800, color:'#111827', margin:'0 0 4px' }}>{selectedCategory.name}</h1>
+                <p style={{ fontSize:13, color:'#9ca3af', margin:0 }}>{pluralRequests(catRequests.length)} от заказчиков</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="container">
+        <div className="container" style={{ padding:'20px 0 56px' }}>
           {catRequests.length === 0 ? (
             <div className="fw-empty">
               <span>📋</span>
               <p>Заявок в этой категории пока нет</p>
             </div>
           ) : (
-            <div className="fw-requests-grid">
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:12 }}>
               {catRequests.map((req, idx) => {
                 const hasPhoto = req.photos && req.photos.length > 0;
+                const budget = req.budgetTo
+                  ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
+                  : req.budgetFrom
+                  ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
+                  : 'Договорная';
                 return (
                   <div
                     key={req.id}
-                    className="fw-request-card fade-up"
-                    style={{ animationDelay: `${idx * 0.05}s`, padding:0, overflow:'hidden', display:'flex', flexDirection:'column', cursor:'pointer' }}
+                    className="fade-up"
+                    style={{ animationDelay:`${idx*0.04}s`, background:'#fff', borderRadius:8, overflow:'hidden', cursor:'pointer', transition:'box-shadow .2s' }}
                     onClick={() => { setSelectedRequest(req); setActivePhotoIdx(0); }}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow='none'}
                   >
                     {/* Фото */}
-                    {hasPhoto && (
-                      <div style={{ position:'relative', width:'100%', aspectRatio:'16/9', overflow:'hidden', background:'#f3f4f6', cursor:'pointer' }}
-                        onClick={e => e.stopPropagation()}
-                      >
+                    <div style={{ position:'relative', aspectRatio:'4/3', overflow:'hidden', background:'#f5f5f5' }}>
+                      {hasPhoto ? (
                         <img src={req.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
-                        {req.photos.length > 1 && (
-                          <div style={{ position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:999, backdropFilter:'blur(4px)' }}>
-                            📷 {req.photos.length}
-                          </div>
-                        )}
-                        {/* Миниатюры */}
-                        <div style={{ position:'absolute', bottom:8, left:8, display:'flex', gap:4 }}>
-                          {req.photos.slice(0,4).map((p, i) => i > 0 && (
-                            <div key={i}
-                              onClick={e => { e.stopPropagation(); setLightbox({ photos: req.photos, index: i }); }}
-                              style={{ width:36, height:28, borderRadius:4, overflow:'hidden', border:'1.5px solid rgba(255,255,255,0.7)', cursor:'pointer' }}
-                            >
-                              <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
-                            </div>
-                          ))}
+                      ) : (
+                        <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:40, color:'#d1d5db' }}>
+                          {CATEGORY_STYLES[selectedCategory?.slug]?.emoji || '📋'}
                         </div>
-                      </div>
-                    )}
+                      )}
+                      {/* Счётчик фото */}
+                      {req.photos && req.photos.length > 1 && (
+                        <div style={{ position:'absolute', bottom:6, right:6, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:11, fontWeight:600, padding:'2px 7px', borderRadius:4, backdropFilter:'blur(4px)' }}>
+                          1/{req.photos.length}
+                        </div>
+                      )}
+                    </div>
 
                     {/* Контент */}
-                    <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:8, flex:1 }}>
-                      <div className="fw-request-top">
-                        <span className="fw-request-budget">
-                          {req.budgetTo
-                            ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
-                            : req.budgetFrom
-                            ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
-                            : 'Договорная'}
-                        </span>
-                        <span className="fw-request-date">
-                          {new Date(req.createdAt).toLocaleDateString('ru-RU')}
-                        </span>
+                    <div style={{ padding:'10px 12px 12px' }}>
+                      <div style={{ fontSize:16, fontWeight:800, color:'#111827', marginBottom:4 }}>
+                        {budget}
                       </div>
-
-                      <h3 className="fw-request-title" style={{ margin:0 }}>{req.title}</h3>
-
-                      {req.description && req.description !== 'Без описания' && (
-                        <p className="fw-request-desc" style={{ margin:0 }}>{req.description}</p>
-                      )}
-
-                      <div className="fw-request-meta">
-                        {req.addressText && <span>📍 {req.addressText}</span>}
-                        {req.city && !req.addressText && <span>🏙️ {req.city}</span>}
-                        {req.scheduledAt && (
-                          <span>📅 {new Date(req.scheduledAt).toLocaleDateString('ru-RU')}</span>
-                        )}
+                      <div style={{ fontSize:13, color:'#374151', fontWeight:500, marginBottom:6, lineHeight:1.35,
+                        overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
+                        {req.title}
                       </div>
-
-                      <button
-                        className="btn btn-primary btn-full"
-                        style={{ marginTop:'auto' }}
-                        onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
-                      >
-                        📩 Откликнуться
-                      </button>
+                      <div style={{ fontSize:12, color:'#9ca3af', marginBottom:10, lineHeight:1.4 }}>
+                        {req.addressText || req.city || 'Йошкар-Ола'}
+                        {req.createdAt && <span style={{ display:'block' }}>{new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'short' })}</span>}
+                      </div>
                     </div>
                   </div>
                 );
