@@ -220,132 +220,162 @@ export default function FindWorkPage() {
     }
   };
 
-  // ═══ ЭКРАН 3: детальная заявка ═══
+  // ═══ ЭКРАН 3: детальная заявка (стиль Авито) ═══
   if (selectedRequest) {
     const req = selectedRequest;
     const hasPhoto = req.photos && req.photos.length > 0;
-    const style = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '📋', color: '#f3f4f6' };
+    const catStyle = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '📋', color: '#f3f4f6' };
+    const budget = req.budgetTo
+      ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
+      : req.budgetFrom
+      ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
+      : 'Договорная';
 
     return (
       <>
-      <div>
-        <div className="page-header-bar">
+      <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
+
+        {/* Хлебная крошка */}
+        <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', padding:'10px 0' }}>
           <div className="container">
             <button className="cats-back-link" onClick={() => { setSelectedRequest(null); setActivePhotoIdx(0); }}>
               ← Назад к заявкам
             </button>
-            <div style={{ display:'flex', alignItems:'center', gap:14, marginTop:10 }}>
-              <div style={{ width:52, height:52, borderRadius:14, overflow:'hidden', flexShrink:0, background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>
-                {hasPhoto
-                  ? <img src={req.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
-                  : style.emoji}
-              </div>
-              <div>
-                <h1 style={{ fontSize:22 }}>{req.title}</h1>
-                <div style={{ display:'flex', gap:10, marginTop:4, flexWrap:'wrap', alignItems:'center' }}>
-                  <span style={{ fontSize:16, fontWeight:900, color:'#e8410a' }}>
-                    {req.budgetTo ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
-                      : req.budgetFrom ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
-                      : 'Договорная'}
-                  </span>
-                  {selectedCategory && <span style={{ fontSize:13, color:'#9ca3af' }}>🏷 {selectedCategory.name}</span>}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
-        <div className="container">
-          <div className="dp-grid" style={{ paddingTop:24 }}>
-            {/* Левая колонка */}
-            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+        <div className="container" style={{ paddingTop:20, paddingBottom:60 }}>
 
-              {/* Фото-галерея */}
-              {hasPhoto && (
-                <div className="dp-card" style={{ padding:0, overflow:'hidden' }}>
-                  <div style={{ position:'relative', width:'100%', aspectRatio:'16/9', overflow:'hidden', cursor:'pointer' }}
-                    onClick={() => setLightbox({ photos: req.photos, index: activePhotoIdx })}
-                  >
-                    <img src={req.photos[activePhotoIdx]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
+          {/* Заголовок */}
+          <div style={{ marginBottom:16 }}>
+            <h1 style={{ fontSize:24, fontWeight:800, color:'#111827', margin:'0 0 6px' }}>{req.title}</h1>
+            <div style={{ display:'flex', gap:12, alignItems:'center', flexWrap:'wrap', fontSize:13, color:'#9ca3af' }}>
+              {selectedCategory && <span>🏷 {selectedCategory.name}</span>}
+              {req.addressText && <span>📍 {req.addressText}</span>}
+              {req.createdAt && <span>📅 {new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</span>}
+            </div>
+          </div>
+
+          {/* Основная сетка */}
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 320px', gap:20, alignItems:'flex-start' }}>
+
+            {/* Левая колонка */}
+            <div>
+              {/* Фото */}
+              <div style={{ background:'#fff', borderRadius:12, overflow:'hidden', marginBottom:16 }}>
+                {hasPhoto ? (
+                  <>
+                    <div style={{ position:'relative', width:'100%', aspectRatio:'4/3', overflow:'hidden', cursor:'pointer', background:'#f3f4f6' }}
+                      onClick={() => setLightbox({ photos: req.photos, index: activePhotoIdx })}
+                    >
+                      <img src={req.photos[activePhotoIdx]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
+                      {req.photos.length > 1 && (
+                        <>
+                          <button onClick={e => { e.stopPropagation(); setActivePhotoIdx(i => i > 0 ? i-1 : req.photos.length-1); }}
+                            style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.85)', border:'none', color:'#111827', fontSize:22, cursor:'pointer', boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }}>‹</button>
+                          <button onClick={e => { e.stopPropagation(); setActivePhotoIdx(i => i < req.photos.length-1 ? i+1 : 0); }}
+                            style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.85)', border:'none', color:'#111827', fontSize:22, cursor:'pointer', boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }}>›</button>
+                        </>
+                      )}
+                    </div>
                     {req.photos.length > 1 && (
-                      <>
-                        <button onClick={e => { e.stopPropagation(); setActivePhotoIdx(i => i > 0 ? i - 1 : req.photos.length - 1); }}
-                          style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', width:36, height:36, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:20, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>‹</button>
-                        <button onClick={e => { e.stopPropagation(); setActivePhotoIdx(i => i < req.photos.length - 1 ? i + 1 : 0); }}
-                          style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', width:36, height:36, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:20, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>›</button>
-                      </>
+                      <div style={{ display:'flex', gap:6, padding:'10px 12px', overflowX:'auto', background:'#fafafa', borderTop:'1px solid #f0f0f0' }}>
+                        {req.photos.map((p, i) => (
+                          <div key={i} onClick={() => setActivePhotoIdx(i)}
+                            style={{ width:80, height:60, flexShrink:0, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === activePhotoIdx ? '2px solid #e8410a' : '2px solid transparent', opacity: i === activePhotoIdx ? 1 : 0.65, transition:'all .15s' }}>
+                            <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                          </div>
+                        ))}
+                      </div>
                     )}
-                    <div style={{ position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:12, fontWeight:700, padding:'3px 9px', borderRadius:999, backdropFilter:'blur(4px)' }}>
-                      {activePhotoIdx + 1} / {req.photos.length}
-                    </div>
+                  </>
+                ) : (
+                  <div style={{ aspectRatio:'4/3', display:'flex', alignItems:'center', justifyContent:'center', fontSize:64, color:'#d1d5db', background:'#f9fafb' }}>
+                    {catStyle.emoji}
                   </div>
-                  {req.photos.length > 1 && (
-                    <div style={{ display:'flex', gap:6, padding:'10px 12px', background:'#f9fafb', overflowX:'auto' }}>
-                      {req.photos.map((p, i) => (
-                        <div key={i} onClick={() => setActivePhotoIdx(i)}
-                          style={{ width:72, height:54, flexShrink:0, borderRadius:8, overflow:'hidden', cursor:'pointer', border: i === activePhotoIdx ? '2.5px solid #e8410a' : '2px solid transparent', opacity: i === activePhotoIdx ? 1 : 0.6, transition:'all .15s' }}>
-                          <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Описание */}
               {req.description && req.description !== 'Без описания' && (
-                <div className="dp-card">
-                  <div className="dp-card-label">Описание задачи</div>
-                  <p className="dp-desc">{req.description}</p>
+                <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
+                  <h2 style={{ fontSize:18, fontWeight:800, color:'#111827', margin:'0 0 12px' }}>Описание</h2>
+                  <p style={{ fontSize:15, color:'#374151', lineHeight:1.7, margin:0, whiteSpace:'pre-wrap' }}>{req.description}</p>
                 </div>
               )}
 
-              {/* Детали */}
-              <div className="dp-card">
-                <div className="dp-card-label">Детали заявки</div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-                  {req.budgetTo && (
-                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
-                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Бюджет</div>
-                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>💰 до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽</div>
+              {/* Подробности */}
+              <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
+                <h2 style={{ fontSize:18, fontWeight:800, color:'#111827', margin:'0 0 16px' }}>Подробности</h2>
+                <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
+                  {[
+                    selectedCategory && ['Категория', selectedCategory.name],
+                    req.addressText  && ['Адрес',     req.addressText],
+                    req.budgetTo     && ['Бюджет',    `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`],
+                    req.createdAt    && ['Опубликована', new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })],
+                  ].filter(Boolean).map(([label, value]) => (
+                    <div key={label} style={{ display:'flex', justifyContent:'space-between', padding:'12px 0', borderBottom:'1px solid #f3f4f6', fontSize:14 }}>
+                      <span style={{ color:'#9ca3af', fontWeight:500 }}>{label}</span>
+                      <span style={{ color:'#111827', fontWeight:600, textAlign:'right', maxWidth:'60%' }}>{value}</span>
                     </div>
-                  )}
-                  {selectedCategory && (
-                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
-                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Категория</div>
-                      <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>🏷 {selectedCategory.name}</div>
-                    </div>
-                  )}
-                  {req.addressText && (
-                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
-                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Адрес</div>
-                      <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>📍 {req.addressText}</div>
-                    </div>
-                  )}
-                  <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
-                    <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Опубликована</div>
-                    <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>🕐 {new Date(req.createdAt).toLocaleDateString('ru-RU')}</div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* Правая колонка — действия */}
-            <div className="dp-side">
-              {/* Заказчик */}
-              <CustomerCard req={req} />
+            {/* Правая колонка — sticky */}
+            <div style={{ position:'sticky', top:72, display:'flex', flexDirection:'column', gap:12 }}>
 
-              {/* Откликнуться */}
-              <button
-                className="dp-confirm-btn"
-                onClick={() => handleOpenOfferModal(req)}
-              >
-                📩 Откликнуться
-              </button>
+              {/* Цена и кнопки */}
+              <div style={{ background:'#fff', borderRadius:12, padding:'20px' }}>
+                <div style={{ fontSize:28, fontWeight:900, color:'#111827', marginBottom:16 }}>
+                  {budget}
+                </div>
 
-              <p style={{ fontSize:12, color:'#9ca3af', textAlign:'center', marginTop:10, lineHeight:1.5 }}>
-                После принятия отклика заказчиком начнётся сделка
-              </p>
+                <button
+                  onClick={() => handleOpenOfferModal(req)}
+                  style={{ width:'100%', padding:'14px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:16, fontWeight:700, cursor:'pointer', marginBottom:10, transition:'background .15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background='#c73208'}
+                  onMouseLeave={e => e.currentTarget.style.background='#e8410a'}
+                >
+                  📩 Откликнуться
+                </button>
+
+                {req.customerId && (
+                  <a href={`/chat/${req.customerId}?jobRequestId=${req.id}`}
+                    style={{ display:'block', width:'100%', padding:'13px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:8, color:'#374151', fontSize:15, fontWeight:600, textAlign:'center', textDecoration:'none', transition:'all .15s', boxSizing:'border-box' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor='#374151'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor='#e5e7eb'; }}
+                  >
+                    💬 Написать сообщение
+                  </a>
+                )}
+              </div>
+
+              {/* Карточка заказчика */}
+              {(req.customerName || req.customerId) && (
+                <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
+                  <div style={{ fontSize:13, color:'#9ca3af', fontWeight:600, marginBottom:12, textTransform:'uppercase', letterSpacing:'.5px' }}>Заказчик</div>
+                  <a href={req.customerId ? `/customers/${req.customerId}?name=${encodeURIComponent(req.customerName||'')}` : undefined}
+                    style={{ display:'flex', alignItems:'center', gap:12, textDecoration:'none' }}>
+                    <div style={{ width:48, height:48, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:18, flexShrink:0 }}>
+                      {(req.customerName||'А')[0].toUpperCase()}
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:15, fontWeight:700, color:'#111827' }}>{req.customerName || 'Заказчик'}</div>
+                      <div style={{ fontSize:12, color:'#22c55e', fontWeight:600 }}>● Активный заказчик</div>
+                    </div>
+                    <div style={{ color:'#9ca3af', fontSize:18 }}>›</div>
+                  </a>
+                </div>
+              )}
+
+              {/* Инфо */}
+              <div style={{ background:'#fff', borderRadius:12, padding:'14px 20px' }}>
+                <div style={{ fontSize:12, color:'#9ca3af', lineHeight:1.6 }}>
+                  ✅ Безопасная сделка — оплата только после выполнения работы
+                </div>
+              </div>
             </div>
           </div>
         </div>
