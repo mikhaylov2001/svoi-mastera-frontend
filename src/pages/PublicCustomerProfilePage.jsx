@@ -1,398 +1,411 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { getOpenJobRequestsForWorker, createJobOffer, getCategories } from '../api';
+import './FindWorkPage.css';
 
-const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
-
-function timeAgo(d) {
-  if (!d) return '';
-  const days = Math.floor((Date.now() - new Date(d)) / 86400000);
-  if (days === 0) return 'сегодня';
-  if (days === 1) return 'вчера';
-  if (days < 30)  return `${days} дн. назад`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months} мес. назад`;
-  return `${Math.floor(months / 12)} г. назад`;
-}
-
-function memberSince(d) {
-  if (!d) return null;
-  return 'На сервисе с ' + new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
-}
-
-const STATUS = {
-  OPEN:        { label: 'Открыта',   color: '#00a86b' },
-  IN_PROGRESS: { label: 'В работе',  color: '#f59e0b' },
-  COMPLETED:   { label: 'Завершена', color: '#6366f1' },
-  CANCELLED:   { label: 'Отменена',  color: '#ef4444' },
+const CATEGORY_STYLES = {
+  'remont-kvartir':       { emoji: '🏠', color: '#fff3e0' },
+  'santehnika':           { emoji: '🔧', color: '#e3f2fd' },
+  'elektrika':            { emoji: '⚡', color: '#fffde7' },
+  'uborka':               { emoji: '🧹', color: '#fce4ec' },
+  'parikhmaher':          { emoji: '💇', color: '#fce4ec' },
+  'manikur':              { emoji: '💅', color: '#fce4ec' },
+  'krasota-i-zdorovie':   { emoji: '✨', color: '#f3e5f5' },
+  'repetitorstvo':        { emoji: '📚', color: '#e3f2fd' },
+  'kompyuternaya-pomosh': { emoji: '💻', color: '#e8f5e9' },
 };
 
-export default function PublicCustomerProfilePage() {
-  const { customerId } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { userId } = useAuth();
+function pluralRequests(n) {
+  if (n % 10 === 1 && n % 100 !== 11) return `${n} заявка`;
+  if ([2,3,4].includes(n % 10) && ![12,13,14].includes(n % 100)) return `${n} заявки`;
+  return `${n} заявок`;
+}
 
-  const nameFromQuery = new URLSearchParams(location.search).get('name') || '';
+// ═══ Модалка вынесена за пределы основного компонента ═══
+// Это критично — иначе при каждом вводе компонент пересоздаётся
+function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submitting }) {
+  if (!request) return null;
 
-  const [customer, setCustomer] = useState(null);
-  const [requests, setRequests] = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [tab,      setTab]      = useState('open');
-  const [lightbox, setLightbox] = useState(null);
-  const [photoIdx, setPhotoIdx] = useState({});
-  const [reviews,  setReviews]  = useState([]);
-  const [showReviews, setShowReviews] = useState(false);
+  return (
+    <div className="fw-modal-overlay" onClick={onClose}>
+      <div className="fw-modal" onClick={e => e.stopPropagation()}>
 
-  useEffect(() => {
-    if (!lightbox) return;
-    const h = e => {
-      if (e.key === 'ArrowRight') setLightbox(l => l ? {...l, index:(l.index+1)%l.photos.length} : l);
-      if (e.key === 'ArrowLeft')  setLightbox(l => l ? {...l, index:(l.index-1+l.photos.length)%l.photos.length} : l);
-      if (e.key === 'Escape')     setLightbox(null);
-    };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [lightbox]);
+        <div className="fw-modal-header">
+          <h3 className="fw-modal-title">📩 Отклик на заявку</h3>
+          <p className="fw-modal-subtitle">{request.title}</p>
+        </div>
 
-  useEffect(() => {
-    if (!customerId) return;
-    setLoading(true);
-    Promise.all([
-      fetch(`${API}/customers/${customerId}/profile`).then(r => r.ok ? r.json() : null),
-      fetch(`${API}/customers/${customerId}/requests`).then(r => r.ok ? r.json() : []),
-      fetch(`${API}/customers/${customerId}/reviews`).then(r => r.ok ? r.json() : []),
-    ]).then(([p, r, rev]) => {
-      setCustomer(p || { displayName: nameFromQuery || 'Заказчик', city: 'Йошкар-Ола' });
-      setRequests(Array.isArray(r) ? r : []);
-      setReviews(Array.isArray(rev) ? rev : []);
-    }).catch(() => {
-      setCustomer({ displayName: nameFromQuery || 'Заказчик', city: 'Йошкар-Ола' });
-      setRequests([]);
-      setReviews([]);
-    }).finally(() => setLoading(false));
-  }, [customerId]);
+        <form onSubmit={onSubmit}>
+          <div className="fw-modal-body">
 
-  if (loading) return (
-    <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center', color:'#9ca3af' }}>
-      <div style={{ textAlign:'center' }}>
-        <div style={{ fontSize:32, marginBottom:8 }}>⏳</div>
-        <p>Загружаем профиль...</p>
+            <div className="fw-modal-field">
+              <label className="fw-modal-label">Ваша цена, ₽ *</label>
+              <input
+                type="number"
+                className="fw-modal-input"
+                placeholder="Например, 5000"
+                value={offerForm.price}
+                onChange={e => setOfferForm(prev => ({ ...prev, price: e.target.value }))}
+                required
+                min="1"
+                autoFocus
+              />
+              {request.budgetTo && (
+                <span className="fw-modal-hint">
+                  Бюджет заказчика: до {Number(request.budgetTo).toLocaleString('ru-RU')} ₽
+                </span>
+              )}
+            </div>
+
+            <div className="fw-modal-field">
+              <label className="fw-modal-label">Срок выполнения (дней)</label>
+              <input
+                type="number"
+                className="fw-modal-input"
+                placeholder="Например, 3"
+                value={offerForm.estimatedDays}
+                onChange={e => setOfferForm(prev => ({ ...prev, estimatedDays: e.target.value }))}
+                min="1"
+              />
+            </div>
+
+            <div className="fw-modal-field">
+              <label className="fw-modal-label">Комментарий</label>
+              <textarea
+                className="fw-modal-input fw-modal-textarea"
+                placeholder="Опишите как вы выполните работу, ваш опыт..."
+                value={offerForm.comment}
+                onChange={e => setOfferForm(prev => ({ ...prev, comment: e.target.value }))}
+              />
+            </div>
+
+          </div>
+
+          <div className="fw-modal-footer">
+            <button type="button" className="fw-modal-cancel" onClick={onClose}>
+              Отмена
+            </button>
+            <button
+              type="submit"
+              className="fw-modal-submit"
+              disabled={submitting || !offerForm.price}
+            >
+              {submitting ? 'Отправка...' : '📩 Отправить отклик'}
+            </button>
+          </div>
+        </form>
+
       </div>
     </div>
   );
+}
 
-  const name      = customer?.displayName || nameFromQuery || 'Заказчик';
-  const lastName  = customer?.lastName || '';
-  const fullName  = lastName ? `${name} ${lastName}` : name;
-  const initials  = fullName.split(' ').map(x => x[0]||'').join('').toUpperCase().slice(0,2) || '?';
-  const since     = memberSince(customer?.registeredAt);
-  const openReqs  = requests.filter(r => r.status === 'OPEN');
-  const allReqs   = requests;
-  const shown     = tab === 'open' ? openReqs : allReqs;
-  const total     = customer?.totalRequests     ?? requests.length;
-  const done      = customer?.completedRequests ?? requests.filter(r => r.status==='COMPLETED').length;
-  const avgRating = reviews.length > 0
-    ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length).toFixed(1)
-    : null;
+// ═══ Карточка заказчика ═══
+function CustomerCard({ req }) {
+  if (!req.customerName && !req.customerId) return null;
+  const initial = (req.customerName || 'А')[0].toUpperCase();
 
   return (
-    <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
+    <div style={{ marginBottom:16 }}>
+      <div className="dp-side-title" style={{ marginBottom:10 }}>Заказчик</div>
 
-      {/* Хлебная крошка */}
-      <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', padding:'10px 0' }}>
-        <div className="container">
-          <button onClick={() => navigate(-1)}
-            style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:'#6b7280', padding:0, display:'flex', alignItems:'center', gap:4 }}>
-            ← Назад
-          </button>
+      {/* Карточка — кликабельна, ведёт на профиль */}
+      <a
+        href={req.customerId ? `/customers/${req.customerId}?name=${encodeURIComponent(req.customerName || '')}` : undefined}
+        style={{ display:'flex', alignItems:'center', gap:12, padding:'14px', background:'#f9fafb', borderRadius:14, border:'1.5px solid #e5e7eb', textDecoration:'none', transition:'all .15s', marginBottom:8 }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor='#6366f1'; e.currentTarget.style.background='rgba(99,102,241,.04)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor='#e5e7eb'; e.currentTarget.style.background='#f9fafb'; }}
+      >
+        <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:18, flexShrink:0 }}>
+          {initial}
         </div>
-      </div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{req.customerName || 'Заказчик'}</div>
+          <div style={{ fontSize:12, color:'#22c55e', fontWeight:600 }}>● Активный заказчик</div>
+        </div>
+        {req.customerId && <div style={{ fontSize:18, color:'#9ca3af' }}>›</div>}
+      </a>
 
-      <div className="container" style={{ paddingTop:24, paddingBottom:60 }}>
-        <div style={{ display:'grid', gridTemplateColumns:'280px 1fr', gap:20, alignItems:'flex-start' }}>
+      {/* Кнопка написать */}
+      {req.customerId && (
+        <a href={`/chat/${req.customerId}?jobRequestId=${req.id}`}
+          style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, padding:'11px', borderRadius:10, background:'rgba(14,165,233,.06)', border:'1.5px solid rgba(14,165,233,.2)', color:'#0ea5e9', fontWeight:700, fontSize:13, textDecoration:'none', transition:'all .15s' }}
+          onMouseEnter={e => { e.currentTarget.style.background='rgba(14,165,233,.14)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background='rgba(14,165,233,.06)'; }}
+        >
+          💬 Написать заказчику
+        </a>
+      )}
+    </div>
+  );
+}
 
-          {/* ══ ЛЕВАЯ КОЛОНКА — профиль ══ */}
-          <div>
-            {/* Карточка профиля */}
-            <div style={{ background:'#fff', borderRadius:12, padding:'24px 20px', marginBottom:12 }}>
+export default function FindWorkPage() {
+  const { userId } = useAuth();
+  const { showToast } = useToast();
 
-              {/* Аватар */}
-              <div style={{ display:'flex', flexDirection:'column', alignItems:'center', marginBottom:16 }}>
-                {customer?.avatarUrl ? (
-                  <img src={customer.avatarUrl} alt={fullName}
-                    style={{ width:80, height:80, borderRadius:'50%', objectFit:'cover', border:'2px solid #e5e7eb' }} />
+  const [requests, setRequests]                 = useState([]);
+  const [categories, setCategories]             = useState([]);
+  const [loading, setLoading]                   = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedRequest,  setSelectedRequest]  = useState(null);
+  const [activePhotoIdx,   setActivePhotoIdx]   = useState(0);
+  const [showOfferModal, setShowOfferModal]     = useState(null);
+  const [offerForm, setOfferForm]               = useState({ price: '', comment: '', estimatedDays: '' });
+  const [submitting, setSubmitting]             = useState(false);
+  const [lightbox,   setLightbox]               = useState(null); // { photos, index }
+
+  // Клавиатурная навигация lightbox
+  React.useEffect(() => {
+    if (!lightbox) return;
+    const handler = (e) => {
+      if (e.key === 'ArrowRight') setLightbox(l => l ? {...l, index: l.index < l.photos.length - 1 ? l.index + 1 : 0} : l);
+      if (e.key === 'ArrowLeft')  setLightbox(l => l ? {...l, index: l.index > 0 ? l.index - 1 : l.photos.length - 1} : l);
+      if (e.key === 'Escape')     setLightbox(null);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [lightbox]);
+
+  useEffect(() => { loadData(); }, [userId]);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [cats, reqs] = await Promise.all([
+        getCategories(),
+        getOpenJobRequestsForWorker(userId),
+      ]);
+      setCategories(cats || []);
+      setRequests(reqs || []);
+    } catch (err) {
+      console.error('Failed to load data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getRequestsForCategory = (cat) =>
+    requests.filter(r => r.categoryId === cat.id);
+
+  const handleOpenOfferModal = (request) => {
+    setShowOfferModal(request);
+    setOfferForm({ price: '', comment: '', estimatedDays: '' });
+  };
+
+  const handleCloseOfferModal = () => {
+    setShowOfferModal(null);
+    setOfferForm({ price: '', comment: '', estimatedDays: '' });
+  };
+
+  const handleSubmitOffer = async (e) => {
+    e.preventDefault();
+    if (!offerForm.price) { showToast('Укажите цену', 'error'); return; }
+    setSubmitting(true);
+    try {
+      await createJobOffer(userId, showOfferModal.id, {
+        price:         Number(offerForm.price),
+        message:       offerForm.comment || 'Готов выполнить работу',
+        estimatedDays: offerForm.estimatedDays ? Number(offerForm.estimatedDays) : null,
+      });
+      showToast('Отклик отправлен!', 'success');
+      handleCloseOfferModal();
+      loadData();
+    } catch (err) {
+      console.error('Failed to create offer:', err);
+      showToast('Не удалось отправить отклик', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ═══ ЭКРАН 3: детальная заявка (стиль Авито) ═══
+  if (selectedRequest) {
+    const req = selectedRequest;
+    const hasPhoto = req.photos && req.photos.length > 0;
+    const catStyle = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '📋', color: '#f3f4f6' };
+    const budget = req.budgetTo
+      ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
+      : req.budgetFrom
+      ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
+      : 'Договорная';
+
+    return (
+      <>
+      <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
+
+        {/* Хлебная крошка */}
+        <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', padding:'10px 0' }}>
+          <div className="container">
+            <button className="cats-back-link" onClick={() => { setSelectedRequest(null); setActivePhotoIdx(0); }}>
+              ← Назад к заявкам
+            </button>
+          </div>
+        </div>
+
+        <div className="container" style={{ paddingTop:20, paddingBottom:60 }}>
+
+          {/* Заголовок */}
+          <div style={{ marginBottom:16 }}>
+            <h1 style={{ fontSize:24, fontWeight:800, color:'#111827', margin:'0 0 6px' }}>{req.title}</h1>
+            <div style={{ display:'flex', gap:12, alignItems:'center', flexWrap:'wrap', fontSize:13, color:'#9ca3af' }}>
+              {selectedCategory && <span>🏷 {selectedCategory.name}</span>}
+              {req.addressText && <span>📍 {req.addressText}</span>}
+              {req.createdAt && <span>📅 {new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</span>}
+            </div>
+          </div>
+
+          {/* Основная сетка */}
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 320px', gap:20, alignItems:'flex-start' }}>
+
+            {/* Левая колонка */}
+            <div>
+              {/* Фото */}
+              <div style={{ background:'#fff', borderRadius:12, overflow:'hidden', marginBottom:16 }}>
+                {hasPhoto ? (
+                  <>
+                    <div style={{ position:'relative', width:'100%', aspectRatio:'4/3', overflow:'hidden', cursor:'pointer', background:'#f3f4f6' }}
+                      onClick={() => setLightbox({ photos: req.photos, index: activePhotoIdx })}
+                    >
+                      <img src={req.photos[activePhotoIdx]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
+                      {req.photos.length > 1 && (
+                        <>
+                          <button onClick={e => { e.stopPropagation(); setActivePhotoIdx(i => i > 0 ? i-1 : req.photos.length-1); }}
+                            style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.85)', border:'none', color:'#111827', fontSize:22, cursor:'pointer', boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }}>‹</button>
+                          <button onClick={e => { e.stopPropagation(); setActivePhotoIdx(i => i < req.photos.length-1 ? i+1 : 0); }}
+                            style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.85)', border:'none', color:'#111827', fontSize:22, cursor:'pointer', boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }}>›</button>
+                        </>
+                      )}
+                    </div>
+                    {req.photos.length > 1 && (
+                      <div style={{ display:'flex', gap:6, padding:'10px 12px', overflowX:'auto', background:'#fafafa', borderTop:'1px solid #f0f0f0' }}>
+                        {req.photos.map((p, i) => (
+                          <div key={i} onClick={() => setActivePhotoIdx(i)}
+                            style={{ width:80, height:60, flexShrink:0, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === activePhotoIdx ? '2px solid #e8410a' : '2px solid transparent', opacity: i === activePhotoIdx ? 1 : 0.65, transition:'all .15s' }}>
+                            <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 ) : (
-                  <div style={{ width:80, height:80, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:26 }}>
-                    {initials}
+                  <div style={{ aspectRatio:'4/3', display:'flex', alignItems:'center', justifyContent:'center', fontSize:64, color:'#d1d5db', background:'#f9fafb' }}>
+                    {catStyle.emoji}
                   </div>
                 )}
               </div>
 
-              {/* Имя */}
-              <h1 style={{ fontSize:18, fontWeight:700, color:'#111827', textAlign:'center', margin:'0 0 4px' }}>{fullName}</h1>
-
-              {/* Рейтинг */}
-              {avgRating && (
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, margin:'4px 0 8px', cursor:'pointer' }}
-                  onClick={() => setShowReviews(true)}
-                >
-                  <span style={{ fontSize:16, fontWeight:900, color:'#111827' }}>{avgRating}</span>
-                  <span style={{ color:'#f59e0b', fontSize:14 }}>{'★'.repeat(Math.round(Number(avgRating)))}</span>
-                  <span style={{ fontSize:12, color:'#6b7280', textDecoration:'underline' }}>{reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}</span>
+              {/* Описание */}
+              {req.description && req.description !== 'Без описания' && (
+                <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
+                  <h2 style={{ fontSize:18, fontWeight:800, color:'#111827', margin:'0 0 12px' }}>Описание</h2>
+                  <p style={{ fontSize:15, color:'#374151', lineHeight:1.7, margin:0, whiteSpace:'pre-wrap' }}>{req.description}</p>
                 </div>
               )}
-              {!avgRating && reviews.length === 0 && (
-                <p style={{ fontSize:12, color:'#9ca3af', textAlign:'center', margin:'0 0 4px' }}>Нет отзывов</p>
-              )}
-              {since && (
-                <p style={{ fontSize:12, color:'#9ca3af', textAlign:'center', margin:'0 0 16px' }}>{since}</p>
-              )}
 
-              {/* Статистика */}
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:16 }}>
-                {[[total,'Заявок'],[done,'Выполнено']].map(([v,l]) => (
-                  <div key={l} style={{ background:'#f9fafb', borderRadius:8, padding:'10px 6px', textAlign:'center' }}>
-                    <div style={{ fontSize:20, fontWeight:900, color:'#111827' }}>{v}</div>
-                    <div style={{ fontSize:11, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.4px' }}>{l}</div>
-                  </div>
-                ))}
+              {/* Подробности */}
+              <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
+                <h2 style={{ fontSize:18, fontWeight:800, color:'#111827', margin:'0 0 16px' }}>Подробности</h2>
+                <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
+                  {[
+                    selectedCategory && ['Категория', selectedCategory.name],
+                    req.addressText  && ['Адрес',     req.addressText],
+                    req.budgetTo     && ['Бюджет',    `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`],
+                    req.createdAt    && ['Опубликована', new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })],
+                  ].filter(Boolean).map(([label, value]) => (
+                    <div key={label} style={{ display:'flex', justifyContent:'space-between', padding:'12px 0', borderBottom:'1px solid #f3f4f6', fontSize:14 }}>
+                      <span style={{ color:'#9ca3af', fontWeight:500 }}>{label}</span>
+                      <span style={{ color:'#111827', fontWeight:600, textAlign:'right', maxWidth:'60%' }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
+            </div>
 
-              {/* Бейджи */}
-              <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:16 }}>
-                {[
-                  ['✓', 'Документы проверены', '#00a86b'],
-                  ['📍', `${customer?.city || 'Йошкар-Ола'}`, '#6b7280'],
-                  total >= 3  ? ['⭐', 'Активный заказчик', '#f59e0b'] : null,
-                  done  >= 1  ? ['🤝', 'Есть завершённые сделки', '#6366f1'] : null,
-                ].filter(Boolean).map(([icon, label, color]) => (
-                  <div key={label} style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 12px', background:'#f9fafb', borderRadius:8, fontSize:13, color:'#374151' }}>
-                    <span style={{ color, fontWeight:700, fontSize:14 }}>{icon}</span>
-                    {label}
-                  </div>
-                ))}
-              </div>
+            {/* Правая колонка — sticky */}
+            <div style={{ position:'sticky', top:72, display:'flex', flexDirection:'column', gap:12 }}>
 
-              {/* Кнопка написать */}
-              {userId && userId !== customerId && (
+              {/* Цена и кнопки */}
+              <div style={{ background:'#fff', borderRadius:12, padding:'20px' }}>
+                <div style={{ fontSize:28, fontWeight:900, color:'#111827', marginBottom:16 }}>
+                  {budget}
+                </div>
+
                 <button
-                  onClick={() => navigate(`/chat/${customerId}`)}
-                  style={{ width:'100%', padding:'12px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', transition:'background .15s' }}
+                  onClick={() => handleOpenOfferModal(req)}
+                  style={{ width:'100%', padding:'14px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:16, fontWeight:700, cursor:'pointer', marginBottom:10, transition:'background .15s' }}
                   onMouseEnter={e => e.currentTarget.style.background='#c73208'}
                   onMouseLeave={e => e.currentTarget.style.background='#e8410a'}
                 >
-                  💬 Написать
+                  📩 Откликнуться
                 </button>
-              )}
-            </div>
-          </div>
 
-          {/* ══ ПРАВАЯ КОЛОНКА — заявки ══ */}
-          <div>
-            {/* Табы */}
-            <div style={{ marginBottom:16 }}>
-              <h2 style={{ fontSize:20, fontWeight:800, color:'#111827', margin:'0 0 12px' }}>
-                Заявки пользователя
-              </h2>
-              <div style={{ display:'flex', gap:0, borderBottom:'2px solid #e5e7eb' }}>
-                {[['open',`Активные`,openReqs.length],['all','Все',allReqs.length]].map(([key,label,count]) => (
-                  <button key={key} onClick={() => setTab(key)}
-                    style={{
-                      padding:'10px 20px', background:'none', border:'none', cursor:'pointer',
-                      fontSize:14, fontWeight:700,
-                      color: tab===key ? '#e8410a' : '#6b7280',
-                      borderBottom: tab===key ? '2px solid #e8410a' : '2px solid transparent',
-                      marginBottom:-2, transition:'all .15s',
-                    }}
+                {req.customerId && (
+                  <a href={`/chat/${req.customerId}?jobRequestId=${req.id}`}
+                    style={{ display:'block', width:'100%', padding:'13px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:8, color:'#374151', fontSize:15, fontWeight:600, textAlign:'center', textDecoration:'none', transition:'all .15s', boxSizing:'border-box' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor='#374151'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor='#e5e7eb'; }}
                   >
-                    {label} <span style={{ fontSize:13, fontWeight:600 }}>{count}</span>
-                  </button>
-                ))}
+                    💬 Написать сообщение
+                  </a>
+                )}
+              </div>
+
+              {/* Карточка заказчика */}
+              {(req.customerName || req.customerId) && (
+                <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
+                  <div style={{ fontSize:13, color:'#9ca3af', fontWeight:600, marginBottom:12, textTransform:'uppercase', letterSpacing:'.5px' }}>Заказчик</div>
+                  <a href={req.customerId ? `/customers/${req.customerId}?name=${encodeURIComponent(req.customerName||'')}` : undefined}
+                    style={{ display:'flex', alignItems:'center', gap:12, textDecoration:'none' }}>
+                    <div style={{ width:48, height:48, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:18, flexShrink:0 }}>
+                      {(req.customerName||'А')[0].toUpperCase()}
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:15, fontWeight:700, color:'#111827' }}>{req.customerName || 'Заказчик'}</div>
+                      <div style={{ fontSize:12, color:'#22c55e', fontWeight:600 }}>● Активный заказчик</div>
+                    </div>
+                    <div style={{ color:'#9ca3af', fontSize:18 }}>›</div>
+                  </a>
+                </div>
+              )}
+
+              {/* Инфо */}
+              <div style={{ background:'#fff', borderRadius:12, padding:'14px 20px' }}>
+                <div style={{ fontSize:12, color:'#9ca3af', lineHeight:1.6 }}>
+                  ✅ Безопасная сделка — оплата только после выполнения работы
+                </div>
               </div>
             </div>
-
-            {/* Сетка заявок */}
-            {shown.length === 0 ? (
-              <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#9ca3af' }}>
-                <div style={{ fontSize:40, marginBottom:10 }}>📋</div>
-                <p style={{ fontWeight:600, fontSize:15 }}>{tab==='open' ? 'Нет активных заявок' : 'Заявок пока нет'}</p>
-              </div>
-            ) : (
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px,1fr))', gap:12 }}>
-                {shown.map(req => {
-                  const st = STATUS[req.status] || STATUS.OPEN;
-                  const hasPhoto = req.photos && req.photos.length > 0;
-                  const pi = photoIdx[req.id] || 0;
-
-                  return (
-                    <div key={req.id}
-                      style={{ background:'#fff', borderRadius:12, overflow:'hidden', transition:'box-shadow .2s', cursor:'default' }}
-                      onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'}
-                      onMouseLeave={e => e.currentTarget.style.boxShadow='none'}
-                    >
-                      {/* Фото */}
-                      {hasPhoto ? (
-                        <div style={{ position:'relative', aspectRatio:'4/3', overflow:'hidden', cursor:'pointer', background:'#f3f4f6' }}
-                          onClick={() => setLightbox({ photos: req.photos, index: pi })}
-                        >
-                          <img src={req.photos[pi]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
-                          {req.photos.length > 1 && (
-                            <>
-                              <button onClick={e => { e.stopPropagation(); setPhotoIdx(p => ({...p,[req.id]:((p[req.id]||0)-1+req.photos.length)%req.photos.length})); }}
-                                style={{ position:'absolute', left:6, top:'50%', transform:'translateY(-50%)', width:28, height:28, borderRadius:'50%', background:'rgba(0,0,0,0.5)', border:'none', color:'#fff', fontSize:16, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>‹</button>
-                              <button onClick={e => { e.stopPropagation(); setPhotoIdx(p => ({...p,[req.id]:((p[req.id]||0)+1)%req.photos.length})); }}
-                                style={{ position:'absolute', right:6, top:'50%', transform:'translateY(-50%)', width:28, height:28, borderRadius:'50%', background:'rgba(0,0,0,0.5)', border:'none', color:'#fff', fontSize:16, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>›</button>
-                              <div style={{ position:'absolute', bottom:6, right:6, background:'rgba(0,0,0,0.6)', color:'#fff', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:999 }}>
-                                {pi+1}/{req.photos.length}
-                              </div>
-                            </>
-                          )}
-                          {/* Статус поверх фото */}
-                          <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color: st.color, fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
-                            {st.label}
-                          </div>
-                        </div>
-                      ) : (
-                        <div style={{ aspectRatio:'4/3', background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, color:'#d1d5db', position:'relative' }}>
-                          📋
-                          <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color: st.color, fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
-                            {st.label}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Контент */}
-                      <div style={{ padding:'12px 14px' }}>
-                        <h3 style={{ fontSize:14, fontWeight:700, color:'#111827', margin:'0 0 6px', lineHeight:1.3,
-                          overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
-                          {req.title}
-                        </h3>
-
-                        {req.budgetTo && (
-                          <div style={{ fontSize:16, fontWeight:900, color:'#111827', margin:'0 0 6px' }}>
-                            до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽
-                          </div>
-                        )}
-
-                        {req.description && req.description !== 'Без описания' && (
-                          <p style={{ fontSize:12, color:'#6b7280', margin:'0 0 8px', lineHeight:1.5,
-                            overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
-                            {req.description}
-                          </p>
-                        )}
-
-                        <div style={{ fontSize:12, color:'#9ca3af', display:'flex', flexDirection:'column', gap:2 }}>
-                          {req.addressText && <span>📍 {req.addressText}</span>}
-                          {req.createdAt   && <span>{timeAgo(req.createdAt)}</span>}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      {/* МОДАЛКА ОТЗЫВОВ */}
-      {showReviews && (
-        <div style={{ position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
-          onClick={() => setShowReviews(false)}>
-          <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:560, maxHeight:'80vh', overflow:'auto', padding:28 }}
-            onClick={e => e.stopPropagation()}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
-              <h2 style={{ fontSize:20, fontWeight:800, margin:0 }}>Отзывы пользователя</h2>
-              <button onClick={() => setShowReviews(false)}
-                style={{ background:'none', border:'none', fontSize:24, cursor:'pointer', color:'#9ca3af', lineHeight:1 }}>×</button>
-            </div>
-
-            {/* Общий рейтинг */}
-            {avgRating && (
-              <div style={{ display:'flex', gap:24, alignItems:'center', padding:'16px 20px', background:'#f9fafb', borderRadius:12, marginBottom:20 }}>
-                <div style={{ textAlign:'center' }}>
-                  <div style={{ fontSize:48, fontWeight:900, color:'#111827', lineHeight:1 }}>{avgRating}</div>
-                  <div style={{ color:'#f59e0b', fontSize:20, marginTop:4 }}>{'★'.repeat(Math.round(Number(avgRating)))}</div>
-                  <div style={{ fontSize:12, color:'#9ca3af', marginTop:4 }}>{reviews.length} отзыв{reviews.length===1?'':reviews.length<5?'а':'ов'}</div>
-                </div>
-                <div style={{ flex:1 }}>
-                  {[5,4,3,2,1].map(star => {
-                    const count = reviews.filter(r => r.rating === star).length;
-                    const pct = reviews.length > 0 ? (count/reviews.length*100) : 0;
-                    return (
-                      <div key={star} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
-                        <span style={{ color:'#f59e0b', fontSize:12, width:12 }}>{'★'.repeat(star)}</span>
-                        <div style={{ flex:1, height:6, background:'#e5e7eb', borderRadius:3, overflow:'hidden' }}>
-                          <div style={{ width:`${pct}%`, height:'100%', background:'#f59e0b', borderRadius:3 }} />
-                        </div>
-                        <span style={{ fontSize:12, color:'#9ca3af', width:16, textAlign:'right' }}>{count}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Список отзывов */}
-            {reviews.length === 0 ? (
-              <p style={{ textAlign:'center', color:'#9ca3af', padding:'20px 0' }}>Отзывов пока нет</p>
-            ) : (
-              <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-                {reviews.map(r => (
-                  <div key={r.id} style={{ borderBottom:'1px solid #f3f4f6', paddingBottom:16 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:8 }}>
-                      {r.workerAvatar ? (
-                        <img src={r.workerAvatar} alt="" style={{ width:40, height:40, borderRadius:'50%', objectFit:'cover' }} />
-                      ) : (
-                        <div style={{ width:40, height:40, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:14 }}>
-                          {(r.workerName||'М')[0].toUpperCase()}
-                        </div>
-                      )}
-                      <div>
-                        <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{r.workerName || 'Мастер'}</div>
-                        <div style={{ fontSize:12, color:'#9ca3af' }}>
-                          {r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}
-                        </div>
-                      </div>
-                      <div style={{ marginLeft:'auto', color:'#f59e0b', fontWeight:700 }}>
-                        {'★'.repeat(r.rating || 0)}{'☆'.repeat(5 - (r.rating || 0))}
-                      </div>
-                    </div>
-                    {r.text && <p style={{ fontSize:14, color:'#374151', margin:0, lineHeight:1.6 }}>{r.text}</p>}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* LIGHTBOX */}
       {lightbox && (
         <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
-          onClick={() => setLightbox(null)}>
+          onClick={() => setLightbox(null)}
+        >
           <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
-            <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:8, display:'block', pointerEvents:'none', boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }} />
-            <div style={{ position:'absolute', top:10, left:10, background:'rgba(0,0,0,0.6)', color:'#fff', fontSize:12, fontWeight:700, padding:'3px 9px', borderRadius:999 }}>
-              {lightbox.index+1} / {lightbox.photos.length}
+            <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block', pointerEvents:'none' }} />
+            <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
+              {lightbox.index + 1} / {lightbox.photos.length}
             </div>
-            <button onClick={() => setLightbox(null)}
-              style={{ position:'absolute', top:10, right:10, width:34, height:34, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:20, cursor:'pointer' }}>×</button>
+            <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer' }}>×</button>
             {lightbox.photos.length > 1 && (
               <>
-                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index:(l.index-1+l.photos.length)%l.photos.length})); }}
-                  style={{ position:'absolute', left:-50, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:24, cursor:'pointer' }}>‹</button>
-                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index:(l.index+1)%l.photos.length})); }}
-                  style={{ position:'absolute', right:-50, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:24, cursor:'pointer' }}>›</button>
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index > 0 ? l.index - 1 : l.photos.length - 1})); }}
+                  style={{ position:'absolute', left:-52, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:26, cursor:'pointer' }}>‹</button>
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index < l.photos.length - 1 ? l.index + 1 : 0})); }}
+                  style={{ position:'absolute', right:-52, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:26, cursor:'pointer' }}>›</button>
               </>
             )}
           </div>
           {lightbox.photos.length > 1 && (
-            <div style={{ display:'flex', gap:6, marginTop:12 }} onClick={e => e.stopPropagation()}>
-              {lightbox.photos.map((p,i) => (
-                <div key={i} onClick={() => setLightbox(l => ({...l, index:i}))}
-                  style={{ width:48, height:36, borderRadius:4, overflow:'hidden', cursor:'pointer', border: i===lightbox.index ? '2px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i===lightbox.index ? 1 : 0.55 }}>
+            <div style={{ display:'flex', gap:8, marginTop:14 }} onClick={e => e.stopPropagation()}>
+              {lightbox.photos.map((p, i) => (
+                <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))}
+                  style={{ width:52, height:40, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
                   <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
                 </div>
               ))}
@@ -401,12 +414,227 @@ export default function PublicCustomerProfilePage() {
         </div>
       )}
 
-      {/* Адаптив */}
-      <style>{`
-        @media (max-width: 768px) {
-          .container > div { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
+      <OfferModal
+        request={showOfferModal}
+        offerForm={offerForm}
+        setOfferForm={setOfferForm}
+        onClose={handleCloseOfferModal}
+        onSubmit={handleSubmitOffer}
+        submitting={submitting}
+      />
+      </>
+    );
+  }
+
+  // ═══ ЭКРАН 2: заявки внутри категории ═══
+  if (selectedCategory) {
+    const style = CATEGORY_STYLES[selectedCategory.slug] || { emoji: '📋', color: '#f3f4f6' };
+    const catRequests = getRequestsForCategory(selectedCategory);
+
+    return (
+      <div>
+        <div className="page-header-bar">
+          <div className="container">
+            <button className="cats-back-link" onClick={() => setSelectedCategory(null)}>
+              ← Все категории
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
+              <div className="cat-page-icon" style={{ background: style.color }}>
+                {style.emoji}
+              </div>
+              <div>
+                <h1>{selectedCategory.name}</h1>
+                <p>{pluralRequests(catRequests.length)} от заказчиков</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="container">
+          {catRequests.length === 0 ? (
+            <div className="fw-empty">
+              <span>📋</span>
+              <p>Заявок в этой категории пока нет</p>
+            </div>
+          ) : (
+            <div className="fw-requests-grid">
+              {catRequests.map((req, idx) => {
+                const hasPhoto = req.photos && req.photos.length > 0;
+                return (
+                  <div
+                    key={req.id}
+                    className="fw-request-card fade-up"
+                    style={{ animationDelay: `${idx * 0.05}s`, padding:0, overflow:'hidden', display:'flex', flexDirection:'column', cursor:'pointer' }}
+                    onClick={() => { setSelectedRequest(req); setActivePhotoIdx(0); }}
+                  >
+                    {/* Фото */}
+                    {hasPhoto && (
+                      <div style={{ position:'relative', width:'100%', aspectRatio:'16/9', overflow:'hidden', background:'#f3f4f6', cursor:'pointer' }}
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <img src={req.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
+                        {req.photos.length > 1 && (
+                          <div style={{ position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:999, backdropFilter:'blur(4px)' }}>
+                            📷 {req.photos.length}
+                          </div>
+                        )}
+                        {/* Миниатюры */}
+                        <div style={{ position:'absolute', bottom:8, left:8, display:'flex', gap:4 }}>
+                          {req.photos.slice(0,4).map((p, i) => i > 0 && (
+                            <div key={i}
+                              onClick={e => { e.stopPropagation(); setLightbox({ photos: req.photos, index: i }); }}
+                              style={{ width:36, height:28, borderRadius:4, overflow:'hidden', border:'1.5px solid rgba(255,255,255,0.7)', cursor:'pointer' }}
+                            >
+                              <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Контент */}
+                    <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:8, flex:1 }}>
+                      <div className="fw-request-top">
+                        <span className="fw-request-budget">
+                          {req.budgetTo
+                            ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
+                            : req.budgetFrom
+                            ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
+                            : 'Договорная'}
+                        </span>
+                        <span className="fw-request-date">
+                          {new Date(req.createdAt).toLocaleDateString('ru-RU')}
+                        </span>
+                      </div>
+
+                      <h3 className="fw-request-title" style={{ margin:0 }}>{req.title}</h3>
+
+                      {req.description && req.description !== 'Без описания' && (
+                        <p className="fw-request-desc" style={{ margin:0 }}>{req.description}</p>
+                      )}
+
+                      <div className="fw-request-meta">
+                        {req.addressText && <span>📍 {req.addressText}</span>}
+                        {req.city && !req.addressText && <span>🏙️ {req.city}</span>}
+                        {req.scheduledAt && (
+                          <span>📅 {new Date(req.scheduledAt).toLocaleDateString('ru-RU')}</span>
+                        )}
+                      </div>
+
+                      <button
+                        className="btn btn-primary btn-full"
+                        style={{ marginTop:'auto' }}
+                        onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
+                      >
+                        📩 Откликнуться
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <OfferModal
+          request={showOfferModal}
+          offerForm={offerForm}
+          setOfferForm={setOfferForm}
+          onClose={handleCloseOfferModal}
+          onSubmit={handleSubmitOffer}
+          submitting={submitting}
+        />
+
+      {/* LIGHTBOX */}
+      {lightbox && (
+        <div
+          style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
+          onClick={() => setLightbox(null)}
+        >
+          <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
+            <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block', pointerEvents:'none' }} />
+            <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
+              {lightbox.index + 1} / {lightbox.photos.length}
+            </div>
+            <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+            {lightbox.photos.length > 1 && (
+              <>
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index > 0 ? l.index - 1 : l.photos.length - 1})); }} style={{ position:'absolute', left:-52, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:26, cursor:'pointer' }}>‹</button>
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index < l.photos.length - 1 ? l.index + 1 : 0})); }} style={{ position:'absolute', right:-52, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:26, cursor:'pointer' }}>›</button>
+              </>
+            )}
+          </div>
+          {lightbox.photos.length > 1 && (
+            <div style={{ display:'flex', gap:8, marginTop:14 }} onClick={e => e.stopPropagation()}>
+              {lightbox.photos.map((p, i) => (
+                <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))}
+                  style={{ width:52, height:40, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}
+                >
+                  <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      </div>
+    );
+  }
+
+  // ═══ ЭКРАН 1: сетка категорий ═══
+  return (
+    <div>
+      <div className="page-header-bar">
+        <div className="container">
+          <h1>Найти работу</h1>
+          <p>Выберите категорию — откликайтесь на заявки заказчиков</p>
+        </div>
+      </div>
+
+      <div className="container">
+        {loading ? (
+          <div className="cats-grid">
+            {[1,2,3,4,5,6,7,8,9].map(i => (
+              <div key={i} className="cat-skeleton">
+                <div className="skeleton" style={{ width: 52, height: 52, borderRadius: 'var(--r-md)' }} />
+                <div style={{ flex: 1 }}>
+                  <div className="skeleton" style={{ width: '60%', height: 16, marginBottom: 8 }} />
+                  <div className="skeleton" style={{ width: '85%', height: 13 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="fw-empty">
+            <span>📋</span>
+            <p>Категории не загружены</p>
+          </div>
+        ) : (
+          <div className="cats-grid">
+            {categories.map((cat, idx) => {
+              const style = CATEGORY_STYLES[cat.slug] || { emoji: '📋', color: '#f3f4f6' };
+              const count = getRequestsForCategory(cat).length;
+              return (
+                <button
+                  key={cat.id}
+                  className="cat-card fade-up"
+                  onClick={() => setSelectedCategory(cat)}
+                  style={{ animationDelay: `${idx * 0.05}s` }}
+                >
+                  <div className="cat-card-icon" style={{ background: style.color }}>
+                    {style.emoji}
+                  </div>
+                  <div className="cat-card-body">
+                    <h2>{cat.name}</h2>
+                    <p>{count > 0 ? pluralRequests(count) : 'Нет активных заявок'}</p>
+                  </div>
+                  <div className="cat-card-arrow">›</div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
