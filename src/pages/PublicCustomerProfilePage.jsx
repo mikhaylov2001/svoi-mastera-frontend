@@ -41,6 +41,8 @@ export default function PublicCustomerProfilePage() {
   const [tab,      setTab]      = useState('open');
   const [lightbox, setLightbox] = useState(null);
   const [photoIdx, setPhotoIdx] = useState({});
+  const [reviews,  setReviews]  = useState([]);
+  const [showReviews, setShowReviews] = useState(false);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -59,12 +61,15 @@ export default function PublicCustomerProfilePage() {
     Promise.all([
       fetch(`${API}/customers/${customerId}/profile`).then(r => r.ok ? r.json() : null),
       fetch(`${API}/customers/${customerId}/requests`).then(r => r.ok ? r.json() : []),
-    ]).then(([p, r]) => {
+      fetch(`${API}/customers/${customerId}/reviews`).then(r => r.ok ? r.json() : []),
+    ]).then(([p, r, rev]) => {
       setCustomer(p || { displayName: nameFromQuery || 'Заказчик', city: 'Йошкар-Ола' });
       setRequests(Array.isArray(r) ? r : []);
+      setReviews(Array.isArray(rev) ? rev : []);
     }).catch(() => {
       setCustomer({ displayName: nameFromQuery || 'Заказчик', city: 'Йошкар-Ола' });
       setRequests([]);
+      setReviews([]);
     }).finally(() => setLoading(false));
   }, [customerId]);
 
@@ -87,6 +92,9 @@ export default function PublicCustomerProfilePage() {
   const shown     = tab === 'open' ? openReqs : allReqs;
   const total     = customer?.totalRequests     ?? requests.length;
   const done      = customer?.completedRequests ?? requests.filter(r => r.status==='COMPLETED').length;
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length).toFixed(1)
+    : null;
 
   return (
     <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
@@ -124,6 +132,19 @@ export default function PublicCustomerProfilePage() {
               {/* Имя */}
               <h1 style={{ fontSize:18, fontWeight:700, color:'#111827', textAlign:'center', margin:'0 0 4px' }}>{fullName}</h1>
 
+              {/* Рейтинг */}
+              {avgRating && (
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, margin:'4px 0 8px', cursor:'pointer' }}
+                  onClick={() => setShowReviews(true)}
+                >
+                  <span style={{ fontSize:16, fontWeight:900, color:'#111827' }}>{avgRating}</span>
+                  <span style={{ color:'#f59e0b', fontSize:14 }}>{'★'.repeat(Math.round(Number(avgRating)))}</span>
+                  <span style={{ fontSize:12, color:'#6b7280', textDecoration:'underline' }}>{reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}</span>
+                </div>
+              )}
+              {!avgRating && reviews.length === 0 && (
+                <p style={{ fontSize:12, color:'#9ca3af', textAlign:'center', margin:'0 0 4px' }}>Нет отзывов</p>
+              )}
               {since && (
                 <p style={{ fontSize:12, color:'#9ca3af', textAlign:'center', margin:'0 0 16px' }}>{since}</p>
               )}
@@ -274,6 +295,78 @@ export default function PublicCustomerProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* МОДАЛКА ОТЗЫВОВ */}
+      {showReviews && (
+        <div style={{ position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+          onClick={() => setShowReviews(false)}>
+          <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:560, maxHeight:'80vh', overflow:'auto', padding:28 }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+              <h2 style={{ fontSize:20, fontWeight:800, margin:0 }}>Отзывы пользователя</h2>
+              <button onClick={() => setShowReviews(false)}
+                style={{ background:'none', border:'none', fontSize:24, cursor:'pointer', color:'#9ca3af', lineHeight:1 }}>×</button>
+            </div>
+
+            {/* Общий рейтинг */}
+            {avgRating && (
+              <div style={{ display:'flex', gap:24, alignItems:'center', padding:'16px 20px', background:'#f9fafb', borderRadius:12, marginBottom:20 }}>
+                <div style={{ textAlign:'center' }}>
+                  <div style={{ fontSize:48, fontWeight:900, color:'#111827', lineHeight:1 }}>{avgRating}</div>
+                  <div style={{ color:'#f59e0b', fontSize:20, marginTop:4 }}>{'★'.repeat(Math.round(Number(avgRating)))}</div>
+                  <div style={{ fontSize:12, color:'#9ca3af', marginTop:4 }}>{reviews.length} отзыв{reviews.length===1?'':reviews.length<5?'а':'ов'}</div>
+                </div>
+                <div style={{ flex:1 }}>
+                  {[5,4,3,2,1].map(star => {
+                    const count = reviews.filter(r => r.rating === star).length;
+                    const pct = reviews.length > 0 ? (count/reviews.length*100) : 0;
+                    return (
+                      <div key={star} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
+                        <span style={{ color:'#f59e0b', fontSize:12, width:12 }}>{'★'.repeat(star)}</span>
+                        <div style={{ flex:1, height:6, background:'#e5e7eb', borderRadius:3, overflow:'hidden' }}>
+                          <div style={{ width:`${pct}%`, height:'100%', background:'#f59e0b', borderRadius:3 }} />
+                        </div>
+                        <span style={{ fontSize:12, color:'#9ca3af', width:16, textAlign:'right' }}>{count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Список отзывов */}
+            {reviews.length === 0 ? (
+              <p style={{ textAlign:'center', color:'#9ca3af', padding:'20px 0' }}>Отзывов пока нет</p>
+            ) : (
+              <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                {reviews.map(r => (
+                  <div key={r.id} style={{ borderBottom:'1px solid #f3f4f6', paddingBottom:16 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:8 }}>
+                      {r.workerAvatar ? (
+                        <img src={r.workerAvatar} alt="" style={{ width:40, height:40, borderRadius:'50%', objectFit:'cover' }} />
+                      ) : (
+                        <div style={{ width:40, height:40, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:14 }}>
+                          {(r.workerName||'М')[0].toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{r.workerName || 'Мастер'}</div>
+                        <div style={{ fontSize:12, color:'#9ca3af' }}>
+                          {r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}
+                        </div>
+                      </div>
+                      <div style={{ marginLeft:'auto', color:'#f59e0b', fontWeight:700 }}>
+                        {'★'.repeat(r.rating || 0)}{'☆'.repeat(5 - (r.rating || 0))}
+                      </div>
+                    </div>
+                    {r.text && <p style={{ fontSize:14, color:'#374151', margin:0, lineHeight:1.6 }}>{r.text}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* LIGHTBOX */}
       {lightbox && (
