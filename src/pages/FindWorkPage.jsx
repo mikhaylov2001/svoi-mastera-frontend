@@ -358,11 +358,17 @@ export default function FindWorkPage() {
                   <div style={{ fontSize:13, color:'#9ca3af', fontWeight:600, marginBottom:12, textTransform:'uppercase', letterSpacing:'.5px' }}>Заказчик</div>
                   <a href={req.customerId ? `/customers/${req.customerId}?name=${encodeURIComponent(req.customerName||'')}` : undefined}
                     style={{ display:'flex', alignItems:'center', gap:12, textDecoration:'none' }}>
-                    <div style={{ width:48, height:48, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:18, flexShrink:0 }}>
-                      {(req.customerName||'А')[0].toUpperCase()}
-                    </div>
+                    {req.customerAvatar ? (
+                      <img src={req.customerAvatar} alt="" style={{ width:48, height:48, borderRadius:'50%', objectFit:'cover', flexShrink:0, border:'2px solid #f3f4f6' }} />
+                    ) : (
+                      <div style={{ width:48, height:48, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:18, flexShrink:0 }}>
+                        {(req.customerName||'А')[0].toUpperCase()}
+                      </div>
+                    )}
                     <div style={{ flex:1 }}>
-                      <div style={{ fontSize:15, fontWeight:700, color:'#111827' }}>{req.customerName || 'Заказчик'}</div>
+                      <div style={{ fontSize:15, fontWeight:700, color:'#111827' }}>
+                        {[req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
+                      </div>
                       <div style={{ fontSize:12, color:'#22c55e', fontWeight:600 }}>● Активный заказчик</div>
                     </div>
                     <div style={{ color:'#9ca3af', fontSize:18 }}>›</div>
