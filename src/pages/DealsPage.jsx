@@ -178,11 +178,15 @@ export default function DealsPage() {
     return (
       <>
       <div>
-        <div className="page-header-bar">
+        <div style={{ background:'#fff', borderBottom:'1.5px solid #e5e7eb', padding:'12px 0' }}>
           <div className="container">
             <button className="cats-back-link" onClick={() => setDealDetail(null)}>
               ← Назад к заказам
             </button>
+          </div>
+        </div>
+        <div className="page-header-bar">
+          <div className="container">
             <div style={{ display:'flex', alignItems:'center', gap:14, marginTop:10 }}>
               <div className="dp-status-icon" style={{ background: st.bg }}>
                 <span>{st.emoji}</span>
@@ -357,12 +361,15 @@ export default function DealsPage() {
     return (
       <>
       <div>
-        {/* Шапка */}
-        <div className="page-header-bar">
+        <div style={{ background:'#fff', borderBottom:'1.5px solid #e5e7eb', padding:'12px 0' }}>
           <div className="container">
             <button className="cats-back-link" onClick={() => { setReqDetail(null); setOffers([]); }}>
               ← Назад к заказам
             </button>
+          </div>
+        </div>
+        <div className="page-header-bar">
+          <div className="container">
             <div style={{ display:'flex', alignItems:'center', gap:14, marginTop:10 }}>
               <div style={{ width:52, height:52, borderRadius:14, overflow:'hidden', flexShrink:0, background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>
                 {reqDetail.photos && reqDetail.photos.length > 0

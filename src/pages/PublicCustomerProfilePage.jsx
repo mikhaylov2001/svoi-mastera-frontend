@@ -99,11 +99,14 @@ export default function PublicCustomerProfilePage() {
   return (
     <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
 
-      {/* Хлебная крошка */}
-      <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', padding:'10px 0' }}>
+      {/* Навигация назад */}
+      <div style={{ background:'#fff', borderBottom:'1.5px solid #e5e7eb', padding:'12px 0' }}>
         <div className="container">
           <button onClick={() => navigate(-1)}
-            style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:'#6b7280', padding:0, display:'flex', alignItems:'center', gap:4 }}>
+            style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:600, color:'#6b7280', padding:0, display:'flex', alignItems:'center', gap:6, transition:'color .15s' }}
+            onMouseEnter={e => e.currentTarget.style.color='#111827'}
+            onMouseLeave={e => e.currentTarget.style.color='#6b7280'}
+          >
             ← Назад
           </button>
         </div>
