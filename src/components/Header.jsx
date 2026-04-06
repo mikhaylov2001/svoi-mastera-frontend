@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUnreadCount } from '../api';
-const NOTIF_API = 'https://svoi-mastera-backend.onrender.com/api/v1/notifications';
 import './Header.css';
+
+const NOTIF_API = 'https://svoi-mastera-backend.onrender.com/api/v1/notifications';
 
 function SearchIcon() {
   return (
@@ -34,6 +35,15 @@ function Header() {
   const [notifCount,     setNotifCount]     = useState(0);
   const [notifOpen,      setNotifOpen]      = useState(false);
   const [notifs,         setNotifs]         = useState([]);
+  const [inAppToasts,    setInAppToasts]    = useState([]); // ВК-стиль тосты
+  const prevNotifCount = useRef(0);
+  const isFirstLoad    = useRef(true);
+
+  const showInAppToast = useCallback((notif) => {
+    const id = `${Date.now()}-${Math.random()}`;
+    setInAppToasts(prev => [...prev, { ...notif, toastId: id }]);
+    setTimeout(() => setInAppToasts(prev => prev.filter(t => t.toastId !== id)), 5000);
+  }, []);
 
   useEffect(() => {
     let iv;
@@ -45,13 +55,32 @@ function Header() {
       } catch { setUnread(0); }
       try {
         const r = await fetch(`${NOTIF_API}/unread-count`, { headers: { 'X-User-Id': userId } });
-        if (r.ok) { const d = await r.json(); setNotifCount(d.count || 0); }
+        if (r.ok) {
+          const d = await r.json();
+          const newCount = d.count || 0;
+          setNotifCount(newCount);
+
+          // Показываем тост если появились новые уведомления
+          if (!isFirstLoad.current && newCount > prevNotifCount.current) {
+            // Загружаем новые уведомления для показа тоста
+            try {
+              const nr = await fetch(NOTIF_API, { headers: { 'X-User-Id': userId } });
+              if (nr.ok) {
+                const all = await nr.json();
+                const fresh = all.filter(n => !n.isRead).slice(0, newCount - prevNotifCount.current);
+                fresh.forEach(n => showInAppToast(n));
+              }
+            } catch {}
+          }
+          prevNotifCount.current = newCount;
+          isFirstLoad.current = false;
+        }
       } catch { setNotifCount(0); }
     }
     loadUnread();
     iv = setInterval(loadUnread, 15000);
     return () => clearInterval(iv);
-  }, [userId]);
+  }, [userId, showInAppToast]);
 
   const openNotifs = async () => {
     setNotifOpen(v => !v);
@@ -127,6 +156,7 @@ function Header() {
     : 'SM';
 
   return (
+    <>
     <header className="header">
       <div className="container">
         <div className="header-inner">
@@ -440,6 +470,52 @@ function Header() {
         </div>
       </div>
     </header>
+
+    {/* ВК-стиль тосты — поверх всего */}
+    {inAppToasts.length > 0 && (
+      <div style={{ position:'fixed', top:76, right:20, zIndex:9999, display:'flex', flexDirection:'column', gap:10, maxWidth:360 }}>
+        {inAppToasts.map(toast => (
+          <div key={toast.toastId}
+            onClick={() => {
+              markOneRead(toast, navigate);
+              setInAppToasts(prev => prev.filter(t => t.toastId !== toast.toastId));
+            }}
+            style={{
+              display:'flex', alignItems:'flex-start', gap:12,
+              background:'#fff', borderRadius:14, padding:'14px 16px',
+              boxShadow:'0 8px 32px rgba(0,0,0,0.18)', cursor:'pointer',
+              borderLeft:'4px solid #e8410a',
+              animation:'slideInRight .3s cubic-bezier(.16,1,.3,1)',
+              minWidth:300,
+            }}
+          >
+            <span style={{ fontSize:22, flexShrink:0, lineHeight:1.2 }}>
+              {({'NEW_OFFER':'📩','OFFER_ACCEPTED':'🎉','DEAL_CONFIRMED':'✅','DEAL_COMPLETED':'🏆','NEW_MESSAGE':'💬'})[toast.type] || '🔔'}
+            </span>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:13, fontWeight:800, color:'#111827', marginBottom:3 }}>{toast.title}</div>
+              <p style={{ fontSize:12, color:'#6b7280', margin:0, lineHeight:1.5,
+                overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
+                {toast.body}
+              </p>
+            </div>
+            <button
+              onClick={e => { e.stopPropagation(); setInAppToasts(prev => prev.filter(t => t.toastId !== toast.toastId)); }}
+              style={{ background:'none', border:'none', color:'#9ca3af', cursor:'pointer', fontSize:18, padding:0, flexShrink:0, lineHeight:1 }}>
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
+
+    <style>{`
+      @keyframes slideInRight {
+        from { opacity:0; transform:translateX(40px); }
+        to   { opacity:1; transform:translateX(0); }
+      }
+    `}</style>
+    </>
   );
 }
 
