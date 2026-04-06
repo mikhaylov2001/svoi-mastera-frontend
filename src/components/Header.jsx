@@ -104,14 +104,17 @@ function Header() {
   };
 
   const markOneRead = (notif) => {
-    // Optimistic update — точка пропадает СРАЗУ, никаких перезагрузок
-    setNotifs(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
+    console.log('markOneRead called, notif.id=', notif.id, 'isRead=', notif.isRead);
+    // Обновляем state напрямую
+    setNotifs(prev => {
+      const updated = prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n);
+      console.log('updated notifs:', updated.map(n => ({id:n.id, isRead:n.isRead})));
+      return updated;
+    });
     if (!notif.isRead) {
       setNotifCount(prev => Math.max(0, prev - 1));
     }
-    // Сервер в фоне
     fetch(`${NOTIF_API}/${notif.id}/read`, { method: 'POST' }).catch(() => {});
-    // Навигация
     if (notif.link) {
       setNotifOpen(false);
       navigate(notif.link);
