@@ -83,8 +83,9 @@ function Header() {
   }, [userId, showInAppToast]);
 
   const openNotifs = async () => {
-    setNotifOpen(v => !v);
-    if (!notifOpen && userId) {
+    const opening = !notifOpen;
+    setNotifOpen(opening);
+    if (opening && userId) {
       try {
         const r = await fetch(NOTIF_API, { headers: { 'X-User-Id': userId } });
         if (r.ok) setNotifs(await r.json());
@@ -102,11 +103,13 @@ function Header() {
   };
 
   const markOneRead = async (notif, navigate_fn) => {
-    try {
-      await fetch(`${NOTIF_API}/${notif.id}/read`, { method: 'POST' });
+    // Сразу убираем точку в UI — не ждём ответа сервера
+    if (!notif.isRead) {
       setNotifs(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
-      setNotifCount(prev => Math.max(0, prev - (notif.isRead ? 0 : 1)));
-    } catch {}
+      setNotifCount(prev => Math.max(0, prev - 1));
+    }
+    // Отправляем на сервер в фоне
+    fetch(`${NOTIF_API}/${notif.id}/read`, { method: 'POST' }).catch(() => {});
     if (notif.link) navigate_fn(notif.link);
     setNotifOpen(false);
   };
@@ -471,9 +474,9 @@ function Header() {
       </div>
     </header>
 
-    {/* ВК-стиль тосты — поверх всего */}
+    {/* ВК-стиль тосты — правый нижний угол */}
     {inAppToasts.length > 0 && (
-      <div style={{ position:'fixed', top:76, right:20, zIndex:9999, display:'flex', flexDirection:'column', gap:10, maxWidth:360 }}>
+      <div style={{ position:'fixed', bottom:24, right:24, zIndex:9999, display:'flex', flexDirection:'column-reverse', gap:10, maxWidth:360 }}>
         {inAppToasts.map(toast => (
           <div key={toast.toastId}
             onClick={() => {
