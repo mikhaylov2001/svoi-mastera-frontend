@@ -67,7 +67,7 @@ function Header() {
               const nr = await fetch(NOTIF_API, { headers: { 'X-User-Id': userId } });
               if (nr.ok) {
                 const all = await nr.json();
-                const fresh = all.filter(n => !n.isRead).slice(0, newCount - prevNotifCount.current);
+                const fresh = all.filter(n => !(n.isRead ?? n.read)).slice(0, newCount - prevNotifCount.current);
                 fresh.forEach(n => showInAppToast(n));
               }
             } catch {}
@@ -112,7 +112,7 @@ function Header() {
       if (r.ok) {
         const fresh = await r.json();
         setNotifs(fresh);
-        setNotifCount(fresh.filter(n => !n.isRead).length);
+        setNotifCount(fresh.filter(n => !(n.isRead ?? n.read)).length);
       }
     } catch {}
     // 3. Навигация
@@ -320,7 +320,7 @@ function Header() {
                           onClick={() => markOneRead(n)}
                           style={{
                             display:'flex', gap:12, padding:'12px 16px', cursor:'pointer',
-                            background: n.isRead ? '#fff' : 'rgba(232,65,10,0.04)',
+                            background: (n.isRead ?? n.read) ? '#fff' : 'rgba(232,65,10,0.04)',
                             borderBottom:'1px solid #f9fafb', transition:'background .15s',
                           }}
                           onMouseEnter={e => e.currentTarget.style.background='#f9fafb'}
@@ -331,10 +331,10 @@ function Header() {
                           </div>
                           <div style={{ flex:1, minWidth:0 }}>
                             <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8, marginBottom:3 }}>
-                              <span style={{ fontSize:13, fontWeight: n.isRead ? 600 : 800, color:'#111827', lineHeight:1.3 }}>
+                              <span style={{ fontSize:13, fontWeight: (n.isRead ?? n.read) ? 600 : 800, color:'#111827', lineHeight:1.3 }}>
                                 {n.title}
                               </span>
-                              {!n.isRead && (
+                              {!(n.isRead ?? n.read) && (
                                 <div style={{ width:8, height:8, borderRadius:'50%', background:'#e8410a', flexShrink:0, marginTop:4 }} />
                               )}
                             </div>
