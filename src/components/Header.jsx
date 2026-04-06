@@ -102,16 +102,23 @@ function Header() {
     } catch {}
   };
 
-  const markOneRead = async (notif, navigate_fn) => {
-    // Сразу убираем точку в UI — не ждём ответа сервера
+  const markOneRead = (notif) => {
+    // Сразу убираем точку — optimistic update
+    setNotifs(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
     if (!notif.isRead) {
-      setNotifs(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
       setNotifCount(prev => Math.max(0, prev - 1));
     }
-    // Отправляем на сервер в фоне
+    // Сервер в фоне
     fetch(`${NOTIF_API}/${notif.id}/read`, { method: 'POST' }).catch(() => {});
-    if (notif.link) navigate_fn(notif.link);
-    setNotifOpen(false);
+    // Навигация через небольшую задержку чтобы state успел обновиться
+    if (notif.link) {
+      setTimeout(() => {
+        navigate(notif.link);
+        setNotifOpen(false);
+      }, 150);
+    } else {
+      setNotifOpen(false);
+    }
   };
 
   const NOTIF_ICONS = {
@@ -313,14 +320,14 @@ function Header() {
                         </div>
                       ) : notifs.map(n => (
                         <div key={n.id}
-                          onClick={() => markOneRead(n, navigate)}
+                          onClick={() => markOneRead(n)}
                           style={{
                             display:'flex', gap:12, padding:'12px 16px', cursor:'pointer',
                             background: n.isRead ? '#fff' : 'rgba(232,65,10,0.04)',
                             borderBottom:'1px solid #f9fafb', transition:'background .15s',
                           }}
                           onMouseEnter={e => e.currentTarget.style.background='#f9fafb'}
-                          onMouseLeave={e => e.currentTarget.style.background = n.isRead ? '#fff' : 'rgba(232,65,10,0.04)'}
+                          onMouseLeave={e => e.currentTarget.style.background='#fff'}
                         >
                           <div style={{ fontSize:20, flexShrink:0, lineHeight:1.3 }}>
                             {NOTIF_ICONS[n.type] || '🔔'}
@@ -480,7 +487,7 @@ function Header() {
         {inAppToasts.map(toast => (
           <div key={toast.toastId}
             onClick={() => {
-              markOneRead(toast, navigate);
+              markOneRead(toast);
               setInAppToasts(prev => prev.filter(t => t.toastId !== toast.toastId));
             }}
             style={{
