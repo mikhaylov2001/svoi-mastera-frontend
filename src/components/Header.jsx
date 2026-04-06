@@ -104,20 +104,18 @@ function Header() {
   };
 
   const markOneRead = (notif) => {
-    console.log('markOneRead called, notif.id=', notif.id, 'isRead=', notif.isRead);
-    // Обновляем state напрямую
-    setNotifs(prev => {
-      const updated = prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n);
-      console.log('updated notifs:', updated.map(n => ({id:n.id, isRead:n.isRead})));
-      return updated;
-    });
+    // Обновляем state напрямую — НЕ закрываем дропдаун, НЕ навигируем
+    setNotifs(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
     if (!notif.isRead) {
       setNotifCount(prev => Math.max(0, prev - 1));
     }
     fetch(`${NOTIF_API}/${notif.id}/read`, { method: 'POST' }).catch(() => {});
+    // Навигация только если есть link — закрываем дропдаун через 300ms
     if (notif.link) {
-      setNotifOpen(false);
-      navigate(notif.link);
+      setTimeout(() => {
+        setNotifOpen(false);
+        navigate(notif.link);
+      }, 300);
     }
   };
 
