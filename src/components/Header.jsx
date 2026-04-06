@@ -85,11 +85,19 @@ function Header() {
   const openNotifs = async () => {
     const opening = !notifOpen;
     setNotifOpen(opening);
-    // Загружаем только если список пустой
-    if (opening && userId && notifs.length === 0) {
+    if (opening && userId) {
       try {
+        // Загружаем список
         const r = await fetch(NOTIF_API, { headers: { 'X-User-Id': userId } });
-        if (r.ok) setNotifs(await r.json());
+        if (r.ok) {
+          const list = await r.json();
+          setNotifs(list);
+          // Сразу помечаем все прочитанными на сервере
+          await fetch(`${NOTIF_API}/read-all`, { method: 'POST', headers: { 'X-User-Id': userId } }).catch(() => {});
+          // Обновляем UI
+          setNotifs(list.map(n => ({ ...n, isRead: true })));
+          setNotifCount(0);
+        }
       } catch {}
     }
   };
