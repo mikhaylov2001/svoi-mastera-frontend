@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUnreadCount } from '../api';
+const NOTIF_API = 'https://svoi-mastera-backend.onrender.com/api/v1/notifications';
 import './Header.css';
 
 function SearchIcon() {
@@ -30,22 +31,74 @@ function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm,     setSearchTerm]     = useState('');
   const [unread,         setUnread]         = useState(0);
+  const [notifCount,     setNotifCount]     = useState(0);
+  const [notifOpen,      setNotifOpen]      = useState(false);
+  const [notifs,         setNotifs]         = useState([]);
 
   useEffect(() => {
     let iv;
     async function loadUnread() {
-      if (!userId) { setUnread(0); return; }
+      if (!userId) { setUnread(0); setNotifCount(0); return; }
       try {
         const count = await getUnreadCount(userId);
         setUnread(count || 0);
-      } catch {
-        setUnread(0);
-      }
+      } catch { setUnread(0); }
+      try {
+        const r = await fetch(`${NOTIF_API}/unread-count`, { headers: { 'X-User-Id': userId } });
+        if (r.ok) { const d = await r.json(); setNotifCount(d.count || 0); }
+      } catch { setNotifCount(0); }
     }
     loadUnread();
-    iv = setInterval(loadUnread, 10000);
+    iv = setInterval(loadUnread, 15000);
     return () => clearInterval(iv);
   }, [userId]);
+
+  const openNotifs = async () => {
+    setNotifOpen(v => !v);
+    if (!notifOpen && userId) {
+      try {
+        const r = await fetch(NOTIF_API, { headers: { 'X-User-Id': userId } });
+        if (r.ok) setNotifs(await r.json());
+      } catch {}
+    }
+  };
+
+  const markAllRead = async () => {
+    if (!userId) return;
+    try {
+      await fetch(`${NOTIF_API}/read-all`, { method: 'POST', headers: { 'X-User-Id': userId } });
+      setNotifCount(0);
+      setNotifs(prev => prev.map(n => ({ ...n, isRead: true })));
+    } catch {}
+  };
+
+  const markOneRead = async (notif, navigate_fn) => {
+    try {
+      await fetch(`${NOTIF_API}/${notif.id}/read`, { method: 'POST' });
+      setNotifs(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
+      setNotifCount(prev => Math.max(0, prev - (notif.isRead ? 0 : 1)));
+    } catch {}
+    if (notif.link) navigate_fn(notif.link);
+    setNotifOpen(false);
+  };
+
+  const NOTIF_ICONS = {
+    NEW_OFFER:      '📩',
+    OFFER_ACCEPTED: '🎉',
+    DEAL_CONFIRMED: '✅',
+    DEAL_COMPLETED: '🏆',
+    NEW_MESSAGE:    '💬',
+  };
+
+  function timeAgoShort(d) {
+    if (!d) return '';
+    const m = Math.floor((Date.now() - new Date(d)) / 60000);
+    if (m < 1) return 'только что';
+    if (m < 60) return `${m} мин`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h} ч`;
+    return `${Math.floor(h / 24)} дн`;
+  }
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -55,6 +108,14 @@ function Header() {
     setSearchTerm('');
     setMobileMenuOpen(false);
   };
+
+  // Закрывать дропдаун при клике вне
+  React.useEffect(() => {
+    if (!notifOpen) return;
+    const handler = () => setNotifOpen(false);
+    setTimeout(() => document.addEventListener('click', handler), 0);
+    return () => document.removeEventListener('click', handler);
+  }, [notifOpen]);
 
   const handleLogout = () => {
     logout();
@@ -172,6 +233,87 @@ function Header() {
               <>
                 {/* ══ ДЛЯ НЕАВТОРИЗОВАННЫХ — только Войти/Регистрация ══ */}
               </>
+            )}
+
+            {/* 🔔 Колокольчик уведомлений */}
+            {userId && (
+              <div style={{ position:'relative' }}>
+                <button
+                  onClick={openNotifs}
+                  style={{ background:'none', border:'none', cursor:'pointer', padding:'6px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', color:'var(--gray-600)', transition:'color .15s' }}
+                  title="Уведомления"
+                >
+                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                  </svg>
+                  {notifCount > 0 && (
+                    <span style={{ position:'absolute', top:2, right:2, minWidth:16, height:16, borderRadius:999, background:'#e8410a', color:'#fff', fontSize:10, fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 3px', lineHeight:1 }}>
+                      {notifCount > 99 ? '99+' : notifCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Дропдаун уведомлений */}
+                {notifOpen && (
+                  <div
+                    style={{ position:'absolute', right:0, top:'calc(100% + 8px)', width:360, maxHeight:480, background:'#fff', borderRadius:16, boxShadow:'0 8px 40px rgba(0,0,0,0.18)', border:'1px solid #e5e7eb', zIndex:1000, overflow:'hidden', display:'flex', flexDirection:'column' }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {/* Шапка */}
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px 10px', borderBottom:'1px solid #f3f4f6' }}>
+                      <span style={{ fontSize:15, fontWeight:800, color:'#111827' }}>Уведомления</span>
+                      {notifCount > 0 && (
+                        <button onClick={markAllRead}
+                          style={{ background:'none', border:'none', cursor:'pointer', fontSize:12, color:'#e8410a', fontWeight:600 }}>
+                          Прочитать все
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Список */}
+                    <div style={{ overflowY:'auto', flex:1 }}>
+                      {notifs.length === 0 ? (
+                        <div style={{ textAlign:'center', padding:'32px 16px', color:'#9ca3af' }}>
+                          <div style={{ fontSize:32, marginBottom:8 }}>🔔</div>
+                          <p style={{ fontSize:13, margin:0 }}>Уведомлений пока нет</p>
+                        </div>
+                      ) : notifs.map(n => (
+                        <div key={n.id}
+                          onClick={() => markOneRead(n, navigate)}
+                          style={{
+                            display:'flex', gap:12, padding:'12px 16px', cursor:'pointer',
+                            background: n.isRead ? '#fff' : 'rgba(232,65,10,0.04)',
+                            borderBottom:'1px solid #f9fafb', transition:'background .15s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background='#f9fafb'}
+                          onMouseLeave={e => e.currentTarget.style.background = n.isRead ? '#fff' : 'rgba(232,65,10,0.04)'}
+                        >
+                          <div style={{ fontSize:20, flexShrink:0, lineHeight:1.3 }}>
+                            {NOTIF_ICONS[n.type] || '🔔'}
+                          </div>
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8, marginBottom:3 }}>
+                              <span style={{ fontSize:13, fontWeight: n.isRead ? 600 : 800, color:'#111827', lineHeight:1.3 }}>
+                                {n.title}
+                              </span>
+                              {!n.isRead && (
+                                <div style={{ width:8, height:8, borderRadius:'50%', background:'#e8410a', flexShrink:0, marginTop:4 }} />
+                              )}
+                            </div>
+                            <p style={{ fontSize:12, color:'#6b7280', margin:0, lineHeight:1.5, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>
+                              {n.body}
+                            </p>
+                            <span style={{ fontSize:11, color:'#9ca3af', marginTop:3, display:'block' }}>
+                              {timeAgoShort(n.createdAt)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {userId ? (

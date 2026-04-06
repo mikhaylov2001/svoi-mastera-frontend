@@ -68,7 +68,6 @@ export async function createJobRequest(userId, data) {
   const body = { categoryId: data.categoryId, title: data.title, description: data.description || 'Без описания' };
   if (data.address) body.addressText = data.address;
   if (data.budget) body.budgetTo = data.budget;
-  if (data.photos && data.photos.length > 0) body.photos = data.photos;
   return apiCall('/job-requests', { method: 'POST', headers: { 'X-User-Id': userId }, body: JSON.stringify(body) });
 }
 export async function getMyJobRequests(userId) {
@@ -243,6 +242,20 @@ export async function uploadFile(userId, file) {
     }
     throw error;
   }
+}
+
+// ── NOTIFICATIONS ──
+export async function getNotifications(userId) {
+  return apiCall('/notifications', { headers: { 'X-User-Id': userId } });
+}
+export async function getNotificationsUnreadCount(userId) {
+  return apiCall('/notifications/unread-count', { headers: { 'X-User-Id': userId } });
+}
+export async function markNotificationRead(notificationId) {
+  return apiCall(`/notifications/${notificationId}/read`, { method: 'POST' });
+}
+export async function markAllNotificationsRead(userId) {
+  return apiCall('/notifications/read-all', { method: 'POST', headers: { 'X-User-Id': userId } });
 }
 
 // ── NOTIFICATION SETTINGS ──
