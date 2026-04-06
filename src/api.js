@@ -68,6 +68,7 @@ export async function createJobRequest(userId, data) {
   const body = { categoryId: data.categoryId, title: data.title, description: data.description || 'Без описания' };
   if (data.address) body.addressText = data.address;
   if (data.budget) body.budgetTo = data.budget;
+  if (data.photos && data.photos.length > 0) body.photos = data.photos;
   return apiCall('/job-requests', { method: 'POST', headers: { 'X-User-Id': userId }, body: JSON.stringify(body) });
 }
 export async function getMyJobRequests(userId) {
