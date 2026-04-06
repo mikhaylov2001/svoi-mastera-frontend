@@ -103,19 +103,22 @@ function Header() {
     } catch {}
   };
 
-  const markOneRead = (notif) => {
-    // Обновляем state напрямую — НЕ закрываем дропдаун, НЕ навигируем
-    setNotifs(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
-    if (!notif.isRead) {
-      setNotifCount(prev => Math.max(0, prev - 1));
-    }
-    fetch(`${NOTIF_API}/${notif.id}/read`, { method: 'POST' }).catch(() => {});
-    // Навигация только если есть link — закрываем дропдаун через 300ms
+  const markOneRead = async (notif) => {
+    // 1. Отправляем на сервер
+    await fetch(`${NOTIF_API}/${notif.id}/read`, { method: 'POST' }).catch(() => {});
+    // 2. Перезагружаем список с сервера
+    try {
+      const r = await fetch(NOTIF_API, { headers: { 'X-User-Id': userId } });
+      if (r.ok) {
+        const fresh = await r.json();
+        setNotifs(fresh);
+        setNotifCount(fresh.filter(n => !n.isRead).length);
+      }
+    } catch {}
+    // 3. Навигация
     if (notif.link) {
-      setTimeout(() => {
-        setNotifOpen(false);
-        navigate(notif.link);
-      }, 300);
+      setNotifOpen(false);
+      navigate(notif.link);
     }
   };
 
