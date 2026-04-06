@@ -102,21 +102,24 @@ function Header() {
     } catch {}
   };
 
-  const markOneRead = (notif) => {
-    // Сразу убираем точку — optimistic update
+  const markOneRead = async (notif) => {
+    // 1. Optimistic update — точка пропадает сразу
     setNotifs(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
     if (!notif.isRead) {
       setNotifCount(prev => Math.max(0, prev - 1));
     }
-    // Сервер в фоне
-    fetch(`${NOTIF_API}/${notif.id}/read`, { method: 'POST' }).catch(() => {});
-    // Навигация через небольшую задержку чтобы state успел обновиться
+    // 2. Сервер
+    await fetch(`${NOTIF_API}/${notif.id}/read`, { method: 'POST' }).catch(() => {});
+    // 3. Перезагружаем свежий список с сервера
+    if (userId) {
+      try {
+        const r = await fetch(NOTIF_API, { headers: { 'X-User-Id': userId } });
+        if (r.ok) setNotifs(await r.json());
+      } catch {}
+    }
+    // 4. Навигация
     if (notif.link) {
-      setTimeout(() => {
-        navigate(notif.link);
-        setNotifOpen(false);
-      }, 150);
-    } else {
+      navigate(notif.link);
       setNotifOpen(false);
     }
   };
@@ -318,7 +321,7 @@ function Header() {
                           <div style={{ fontSize:32, marginBottom:8 }}>🔔</div>
                           <p style={{ fontSize:13, margin:0 }}>Уведомлений пока нет</p>
                         </div>
-                      ) : notifs.map(n => (
+                      ) : notifs.slice(0, 20).map(n => (
                         <div key={n.id}
                           onClick={() => markOneRead(n)}
                           style={{
