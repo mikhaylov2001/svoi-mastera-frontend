@@ -149,13 +149,7 @@ function Header() {
     setMobileMenuOpen(false);
   };
 
-  // Закрывать дропдаун при клике вне
-  React.useEffect(() => {
-    if (!notifOpen) return;
-    const handler = () => setNotifOpen(false);
-    setTimeout(() => document.addEventListener('click', handler), 0);
-    return () => document.removeEventListener('click', handler);
-  }, [notifOpen]);
+  // Закрывать дропдаун при клике вне — через ref
 
   const handleLogout = () => {
     logout();
@@ -278,7 +272,9 @@ function Header() {
 
             {/* 🔔 Колокольчик уведомлений */}
             {userId && (
-              <div style={{ position:'relative' }}>
+              <div style={{ position:'relative' }} tabIndex={-1}
+                onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setNotifOpen(false); }}
+              >
                 <button
                   onClick={openNotifs}
                   style={{ background:'none', border:'none', cursor:'pointer', padding:'6px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', color:'var(--gray-600)', transition:'color .15s' }}
