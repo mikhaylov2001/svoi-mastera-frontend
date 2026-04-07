@@ -244,9 +244,11 @@ export default function PublicWorkerProfilePage() {
                   const hasPhoto = work.photos && work.photos.length > 0;
                   const pi = photoIdx[work.id] || 0;
                   return (
-                    <div key={work.id} style={{ background:'#fff', borderRadius:12, overflow:'hidden', transition:'box-shadow .2s' }}
+                    <div key={work.id}
+                      style={{ background:'#fff', borderRadius:12, overflow:'hidden', transition:'box-shadow .2s', cursor:'default' }}
                       onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'}
                       onMouseLeave={e => e.currentTarget.style.boxShadow='none'}>
+                      {/* Фото */}
                       {hasPhoto ? (
                         <div style={{ position:'relative', aspectRatio:'4/3', overflow:'hidden', cursor:'pointer', background:'#f3f4f6' }}
                           onClick={() => setLightbox({ photos: work.photos, index: pi })}>
@@ -257,24 +259,48 @@ export default function PublicWorkerProfilePage() {
                                 style={{ position:'absolute', left:6, top:'50%', transform:'translateY(-50%)', width:28, height:28, borderRadius:'50%', background:'rgba(0,0,0,0.5)', border:'none', color:'#fff', fontSize:16, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>‹</button>
                               <button onClick={e => { e.stopPropagation(); setPhotoIdx(p => ({...p,[work.id]:((p[work.id]||0)+1)%work.photos.length})); }}
                                 style={{ position:'absolute', right:6, top:'50%', transform:'translateY(-50%)', width:28, height:28, borderRadius:'50%', background:'rgba(0,0,0,0.5)', border:'none', color:'#fff', fontSize:16, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>›</button>
-                              <div style={{ position:'absolute', bottom:6, right:6, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:10, fontWeight:700, padding:'2px 6px', borderRadius:999 }}>
+                              <div style={{ position:'absolute', bottom:6, right:6, background:'rgba(0,0,0,0.6)', color:'#fff', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:999 }}>
                                 {pi+1}/{work.photos.length}
                               </div>
                             </>
                           )}
+                          {/* Категория поверх фото */}
+                          {work.categoryName && (
+                            <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color:'#6366f1', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
+                              {work.categoryName}
+                            </div>
+                          )}
                         </div>
                       ) : (
-                        <div style={{ aspectRatio:'4/3', background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, color:'#d1d5db' }}>🔨</div>
+                        <div style={{ aspectRatio:'4/3', background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, color:'#d1d5db', position:'relative' }}>
+                          🔨
+                          {work.categoryName && (
+                            <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color:'#6366f1', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
+                              {work.categoryName}
+                            </div>
+                          )}
+                        </div>
                       )}
+                      {/* Контент */}
                       <div style={{ padding:'12px 14px' }}>
-                        <div style={{ fontSize:14, fontWeight:700, color:'#111827', marginBottom:4 }}>{work.title}</div>
-                        {work.categoryName && <span style={{ fontSize:11, fontWeight:600, color:'#6366f1', background:'rgba(99,102,241,.08)', padding:'2px 7px', borderRadius:999, display:'inline-block', marginBottom:6 }}>{work.categoryName}</span>}
-                        {work.description && work.description !== 'Без описания' && (
-                          <p style={{ fontSize:12, color:'#6b7280', margin:'0 0 8px', lineHeight:1.5, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{work.description}</p>
+                        <h3 style={{ fontSize:14, fontWeight:700, color:'#111827', margin:'0 0 6px', lineHeight:1.3,
+                          overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
+                          {work.title}
+                        </h3>
+                        {work.price && (
+                          <div style={{ fontSize:16, fontWeight:900, color:'#111827', margin:'0 0 6px' }}>
+                            {Number(work.price).toLocaleString('ru-RU')} ₽
+                          </div>
                         )}
-                        <div style={{ fontSize:12, color:'#9ca3af', display:'flex', justifyContent:'space-between' }}>
-                          {work.price && <span style={{ fontWeight:700, color:'#22c55e' }}>{Number(work.price).toLocaleString('ru-RU')} ₽</span>}
-                          {work.completedAt && <span>{timeAgo(work.completedAt)}</span>}
+                        {work.description && work.description !== 'Без описания' && (
+                          <p style={{ fontSize:12, color:'#6b7280', margin:'0 0 8px', lineHeight:1.5,
+                            overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
+                            {work.description}
+                          </p>
+                        )}
+                        <div style={{ fontSize:12, color:'#9ca3af', display:'flex', flexDirection:'column', gap:2 }}>
+                          {work.customerName && <span>👤 {work.customerName}</span>}
+                          {work.completedAt  && <span>{timeAgo(work.completedAt)}</span>}
                         </div>
                       </div>
                     </div>
