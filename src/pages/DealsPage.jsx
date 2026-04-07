@@ -171,186 +171,191 @@ export default function DealsPage() {
 
   /* ══ DEAL DETAIL ══ */
   if (dealDetail) {
-    const st      = DEAL_STATUSES[dealDetail.status] || DEAL_STATUSES.NEW;
-    const im      = isCust(dealDetail);
-    const myOk    = im ? dealDetail.customerConfirmed : dealDetail.workerConfirmed;
-    const otherOk = im ? dealDetail.workerConfirmed   : dealDetail.customerConfirmed;
+    const st       = DEAL_STATUSES[dealDetail.status] || DEAL_STATUSES.NEW;
+    const im       = isCust(dealDetail);
+    const myOk     = im ? dealDetail.customerConfirmed : dealDetail.workerConfirmed;
+    const otherOk  = im ? dealDetail.workerConfirmed   : dealDetail.customerConfirmed;
+    const hasPhoto = dealDetail.photos && dealDetail.photos.length > 0;
 
     return (
-      <>
-      <div>
+      <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
+        {/* Навигация */}
         <div style={{ background:'#fff', borderBottom:'1.5px solid #e5e7eb', padding:'12px 0' }}>
           <div className="container">
             <button className="cats-back-link" onClick={() => setDealDetail(null)}>
-              ← Назад к заказам
+              ← Назад к сделкам
             </button>
           </div>
         </div>
-        <div className="page-header-bar">
-          <div className="container">
-            <div style={{ display:'flex', alignItems:'center', gap:14, marginTop:10 }}>
-              <div className="dp-status-icon" style={{ background: st.bg }}>
-                <span>{st.emoji}</span>
-              </div>
-              <div>
-                <h1>{dealDetail.title || 'Задача'}</h1>
-                <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:4, flexWrap:'wrap' }}>
-                  <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
-                    {st.emoji} {st.label}
-                  </span>
-                  {dealDetail.category && (
-                    <span style={{ fontSize:13, color:'var(--gray-400)' }}>{dealDetail.category}</span>
-                  )}
-                  {dealDetail.agreedPrice && (
-                    <span style={{ fontSize:13, color:'var(--gray-500)', fontWeight:700 }}>
-                      💰 {Number(dealDetail.agreedPrice).toLocaleString('ru-RU')} ₽
-                    </span>
-                  )}
-                </div>
-              </div>
+
+        <div className="container" style={{ paddingTop:20, paddingBottom:60 }}>
+          {/* Заголовок */}
+          <div style={{ marginBottom:16 }}>
+            <h1 style={{ fontSize:22, fontWeight:800, color:'#111827', margin:'0 0 6px' }}>{dealDetail.title || 'Задача'}</h1>
+            <div style={{ display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
+              <span className="dp-badge" style={{ color:st.color, background:st.bg }}>{st.emoji} {st.label}</span>
+              {dealDetail.category && <span style={{ fontSize:13, color:'#9ca3af' }}>🏷 {dealDetail.category}</span>}
+              {dealDetail.createdAt && <span style={{ fontSize:13, color:'#9ca3af' }}>🕐 {timeAgo(dealDetail.createdAt)}</span>}
             </div>
           </div>
-        </div>
 
-        <div className="container">
-          <div className="dp-grid">
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 320px', gap:20, alignItems:'flex-start' }}>
+            {/* Левая колонка */}
             <div>
+              {/* Фото */}
+              {hasPhoto && (
+                <div style={{ background:'#fff', borderRadius:12, overflow:'hidden', marginBottom:16 }}>
+                  <div style={{ position:'relative', aspectRatio:'16/9', overflow:'hidden', cursor:'pointer' }}
+                    onClick={() => setLightbox({ photos: dealDetail.photos, index:0 })}>
+                    <img src={dealDetail.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', pointerEvents:'none' }} />
+                    {dealDetail.photos.length > 1 && (
+                      <div style={{ position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:999 }}>
+                        📷 {dealDetail.photos.length}
+                      </div>
+                    )}
+                  </div>
+                  {dealDetail.photos.length > 1 && (
+                    <div style={{ display:'flex', gap:6, padding:'10px 12px', overflowX:'auto', background:'#fafafa' }}>
+                      {dealDetail.photos.map((p,i) => (
+                        <div key={i} onClick={() => setLightbox({ photos: dealDetail.photos, index:i })}
+                          style={{ width:72, height:54, flexShrink:0, borderRadius:6, overflow:'hidden', cursor:'pointer', border:`2px solid ${i===0?'#e8410a':'transparent'}` }}>
+                          <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Описание */}
               {dealDetail.description && dealDetail.description !== 'Без описания' && (
-                <div className="dp-card">
-                  <div className="dp-card-label">Описание</div>
-                  <p className="dp-desc">{dealDetail.description}</p>
+                <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:10 }}>Описание задачи</div>
+                  <p style={{ fontSize:14, color:'#374151', lineHeight:1.7, margin:0 }}>{dealDetail.description}</p>
                 </div>
               )}
-              <div className="dp-card">
-                <div className="dp-card-label">Участники</div>
-                <div className="dp-people">
-                  <div className="dp-person">
-                    <div className="dp-person-role">👤 Заказчик</div>
-                    <div className="dp-person-name">
-                      {dealDetail.customerName || '—'}
-                      {im && <span className="dp-you"> • вы</span>}
-                    </div>
+
+              {/* Подробности */}
+              <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px' }}>
+                <div style={{ fontSize:12, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:14 }}>Подробности</div>
+                {[
+                  dealDetail.category    && ['Категория', dealDetail.category],
+                  dealDetail.agreedPrice && ['Стоимость', `${Number(dealDetail.agreedPrice).toLocaleString('ru-RU')} ₽`],
+                  dealDetail.createdAt   && ['Создана',   timeAgo(dealDetail.createdAt)],
+                ].filter(Boolean).map(([label, value]) => (
+                  <div key={label} style={{ display:'flex', justifyContent:'space-between', padding:'11px 0', borderBottom:'1px solid #f3f4f6', fontSize:14 }}>
+                    <span style={{ color:'#9ca3af', fontWeight:500 }}>{label}</span>
+                    <span style={{ color:'#111827', fontWeight:600 }}>{value}</span>
                   </div>
-                  <div className="dp-person">
-                    <div className="dp-person-role">🔨 Мастер</div>
-                    <div className="dp-person-name">
-                      {dealDetail.workerName || 'Не назначен'}
-                      {!im && dealDetail.workerName && <span className="dp-you"> • вы</span>}
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
-              {dealDetail.createdAt && (
-                <div className="dp-card">
-                  <div className="dp-card-label">Информация</div>
-                  <div style={{ fontSize:13, color:'#6b7280' }}>
-                    🕐 Создана: {timeAgo(dealDetail.createdAt)}
-                  </div>
-                </div>
-              )}
             </div>
 
-            <div className="dp-side">
-              {dealDetail.status === 'NEW' && (
-                <div className="dp-state">
-                  <span>📋</span>
-                  <h3>Заявка создана</h3>
-                  <p>Ожидаем когда мастер примет задачу в работу</p>
+            {/* Правая колонка */}
+            <div style={{ display:'flex', flexDirection:'column', gap:12, position:'sticky', top:72 }}>
+
+              {/* Цена */}
+              {dealDetail.agreedPrice && (
+                <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
+                  <div style={{ fontSize:26, fontWeight:900, color:'#111827' }}>
+                    {Number(dealDetail.agreedPrice).toLocaleString('ru-RU')} ₽
+                  </div>
+                  <div style={{ fontSize:12, color:'#9ca3af', marginTop:4 }}>Договорная стоимость</div>
                 </div>
               )}
-              {dealDetail.status === 'COMPLETED' && (
-                <>
-                  <div className="dp-state">
-                    <span>✅</span>
-                    <h3>Сделка завершена</h3>
-                    <p>Обе стороны подтвердили выполнение</p>
-                  </div>
 
-                  {/* ✅ ДОБАВЛЕНО: Кнопка отзыва */}
-                  {im && !dealDetail.hasReview && (
-                    <button
-                      className="dp-review-btn"
-                      onClick={() => setReviewDeal(dealDetail)}
-                    >
-                      ⭐ Оставить отзыв мастеру
-                    </button>
-                  )}
-                  {im && dealDetail.hasReview && (
-                    <div className="dp-review-left">
-                      ✓ Вы оставили отзыв
+              {/* Карточка мастера */}
+              {dealDetail.workerName && (
+                <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
+                  <div style={{ fontSize:12, color:'#9ca3af', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:12 }}>Мастер</div>
+                  <div style={{ display:'flex', alignItems:'center', gap:12, cursor:'pointer', marginBottom:12 }}
+                    onClick={() => dealDetail.workerId && navigate(`/workers/${dealDetail.workerId}`)}>
+                    <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16, flexShrink:0 }}>
+                      {(dealDetail.workerName||'М')[0].toUpperCase()}
                     </div>
-                  )}
-                </>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{dealDetail.workerName}</div>
+                      <div style={{ fontSize:12, color:'#6366f1', fontWeight:600 }}>● Мастер</div>
+                    </div>
+                    <div style={{ color:'#9ca3af', fontSize:18 }}>›</div>
+                  </div>
+                  <button onClick={() => navigate(`/chat/${dealDetail.workerId}`)}
+                    style={{ width:'100%', padding:'10px', background:'rgba(14,165,233,.07)', border:'1.5px solid rgba(14,165,233,.2)', borderRadius:8, color:'#0ea5e9', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+                    💬 Написать мастеру
+                  </button>
+                </div>
               )}
+
+              {/* Подтверждение */}
               {dealDetail.status === 'IN_PROGRESS' && (
-                <>
-                  <div className="dp-side-title">Подтверждение</div>
-                  <p className="dp-side-hint">Завершится когда обе стороны подтвердят</p>
-                  <div className="dp-ci-list">
+                <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
+                  <div style={{ fontSize:14, fontWeight:800, color:'#111827', marginBottom:6 }}>Подтверждение выполнения</div>
+                  <p style={{ fontSize:12, color:'#9ca3af', margin:'0 0 14px', lineHeight:1.5 }}>
+                    Нажмите кнопку когда работа выполнена. Сделка завершится после подтверждения обеих сторон.
+                  </p>
+                  <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:14 }}>
                     {[
                       { confirmed: dealDetail.customerConfirmed, name: `Заказчик${im ? ' (вы)' : ''}` },
                       { confirmed: dealDetail.workerConfirmed,   name: `Мастер${!im ? ' (вы)' : ''}` },
                     ].map(({ confirmed, name }) => (
-                      <div key={name} className={`dp-ci ${confirmed ? 'ok' : ''}`}>
-                        <span>{confirmed ? '✅' : '⏳'}</span>
+                      <div key={name} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', borderRadius:8, background: confirmed ? 'rgba(34,197,94,.07)' : '#f9fafb', border:`1px solid ${confirmed ? 'rgba(34,197,94,.2)' : '#e5e7eb'}` }}>
+                        <span style={{ fontSize:16 }}>{confirmed ? '✅' : '⏳'}</span>
                         <div>
-                          <div className="dp-ci-name">{name}</div>
-                          <div className="dp-ci-status">{confirmed ? 'Подтвердил' : 'Ожидание'}</div>
+                          <div style={{ fontSize:13, fontWeight:700, color:'#111827' }}>{name}</div>
+                          <div style={{ fontSize:11, color: confirmed ? '#22c55e' : '#9ca3af' }}>
+                            {confirmed ? 'Подтвердил выполнение' : 'Ожидание подтверждения'}
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                   {!myOk ? (
-                    <button
-                      className="dp-confirm-btn"
-                      disabled={actionId === dealDetail.id}
-                      onClick={() => handleConfirm(dealDetail.id)}
-                    >
+                    <button className="dp-confirm-btn" disabled={actionId === dealDetail.id} onClick={() => handleConfirm(dealDetail.id)}>
                       {actionId === dealDetail.id ? 'Подтверждаем…' : '✅ Подтвердить выполнение'}
                     </button>
                   ) : (
-                    <div className="dp-wait">
-                      ✓ Вы подтвердили{!otherOk && ' — ожидаем другую сторону…'}
-                    </div>
+                    <div className="dp-wait">✓ Вы подтвердили{!otherOk && ' — ожидаем другую сторону…'}</div>
                   )}
-                  <Link to="/chat" className="dp-chat-btn">💬 Написать сообщение</Link>
-                </>
+                </div>
+              )}
+
+              {dealDetail.status === 'COMPLETED' && (
+                <div style={{ background:'rgba(34,197,94,.07)', borderRadius:12, padding:'16px 20px', border:'1px solid rgba(34,197,94,.2)', textAlign:'center' }}>
+                  <div style={{ fontSize:28, marginBottom:6 }}>🏆</div>
+                  <div style={{ fontSize:14, fontWeight:800, color:'#111827', marginBottom:4 }}>Сделка завершена!</div>
+                  <div style={{ fontSize:12, color:'#6b7280', marginBottom:12 }}>Обе стороны подтвердили выполнение</div>
+                  {im && !dealDetail.hasReview && (
+                    <button className="dp-review-btn" onClick={() => setReviewDeal(dealDetail)}>⭐ Оставить отзыв мастеру</button>
+                  )}
+                  {im && dealDetail.hasReview && (
+                    <div className="dp-review-left">✓ Вы оставили отзыв</div>
+                  )}
+                </div>
               )}
             </div>
           </div>
         </div>
-      </div>
-        {/* ══ LIGHTBOX ══ */}
+
+        {/* LIGHTBOX */}
         {lightbox && (
-          <div
-            style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
-            onClick={() => setLightbox(null)}
-          >
+          <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
+            onClick={() => setLightbox(null)}>
             <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
-              <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block' }} />
-              <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
-                {lightbox.index + 1} / {lightbox.photos.length}
+              <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block', pointerEvents:'none' }} />
+              <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:12, fontWeight:700, padding:'3px 9px', borderRadius:999 }}>
+                {lightbox.index+1} / {lightbox.photos.length}
               </div>
-              <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
-              {lightbox.index > 0 && (
-                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index - 1})); }} style={{ position:'absolute', left:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>‹</button>
-              )}
-              {lightbox.index < lightbox.photos.length - 1 && (
-                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index + 1})); }} style={{ position:'absolute', right:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>›</button>
-              )}
+              <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:34, height:34, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:20, cursor:'pointer' }}>×</button>
+              {lightbox.photos.length > 1 && (<>
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index:(l.index-1+l.photos.length)%l.photos.length})); }}
+                  style={{ position:'absolute', left:-50, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:24, cursor:'pointer' }}>‹</button>
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index:(l.index+1)%l.photos.length})); }}
+                  style={{ position:'absolute', right:-50, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:24, cursor:'pointer' }}>›</button>
+              </>)}
             </div>
-            {lightbox.photos.length > 1 && (
-              <div style={{ display:'flex', gap:8, marginTop:16 }} onClick={e => e.stopPropagation()}>
-                {lightbox.photos.map((p, i) => (
-                  <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))} style={{ width:56, height:56, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
-                    <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
-      </>
+      </div>
     );
   }
 
