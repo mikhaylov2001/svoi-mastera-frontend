@@ -177,7 +177,7 @@ export default function PublicWorkerProfilePage() {
 
               {/* Статистика */}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:16 }}>
-                {[[completedWorks.length,'Заказов'],[exp||'—','Стаж']].map(([v,l]) => (
+                {[[completedWorks.length,'Заказов'],[reviews.length||0,'Отзывов']].map(([v,l]) => (
                   <div key={l} style={{ background:'#f9fafb', borderRadius:8, padding:'10px 6px', textAlign:'center' }}>
                     <div style={{ fontSize:20, fontWeight:900, color:'#111827' }}>{v}</div>
                     <div style={{ fontSize:11, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.4px' }}>{l}</div>
@@ -191,7 +191,6 @@ export default function PublicWorkerProfilePage() {
                   ['✓', 'Документы проверены', '#00a86b'],
                   ['📍', worker?.city || 'Йошкар-Ола', '#6b7280'],
                   completedWorks.length >= 1 ? ['⭐', 'Активный мастер', '#f59e0b'] : null,
-                  completedWorks.length >= 5 ? ['🏆', 'Опытный специалист', '#6366f1'] : null,
                 ].filter(Boolean).map(([icon, label, color]) => (
                   <div key={label} style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 12px', background:'#f9fafb', borderRadius:8, fontSize:13, color:'#374151' }}>
                     <span style={{ color, fontWeight:700, fontSize:14 }}>{icon}</span>{label}
@@ -222,7 +221,7 @@ export default function PublicWorkerProfilePage() {
             <div style={{ marginBottom:16 }}>
               <h2 style={{ fontSize:20, fontWeight:800, color:'#111827', margin:'0 0 12px' }}>Профиль мастера</h2>
               <div style={{ display:'flex', gap:0, borderBottom:'2px solid #e5e7eb' }}>
-                {[['works','Работы',completedWorks.length],['services','Услуги',services.length],['reviews','Отзывы',reviews.length]].map(([key,label,count]) => (
+                {[['works','Работы',completedWorks.length],['reviews','Отзывы',reviews.length]].map(([key,label,count]) => (
                   <button key={key} onClick={() => setTab(key)}
                     style={{ padding:'10px 20px', background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:700,
                       color:tab===key?'#e8410a':'#6b7280', borderBottom:tab===key?'2px solid #e8410a':'2px solid transparent', marginBottom:-2, transition:'all .15s' }}>
