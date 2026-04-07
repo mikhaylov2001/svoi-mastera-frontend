@@ -48,6 +48,7 @@ export default function DealsPage() {
   const [tab,        setTab]        = useState('requests');
   const [reqFilter,  setReqFilter]  = useState('ALL');
   const [dealFilter, setDealFilter] = useState('ALL');
+  const [unifiedFilter, setUnifiedFilter] = useState('ALL');
 
   const [dealDetail, setDealDetail] = useState(null);
   const [reqDetail,  setReqDetail]  = useState(null);
@@ -573,217 +574,141 @@ export default function DealsPage() {
     <div>
       <div className="page-header-bar">
         <div className="container">
-          <h1>Мои заказы</h1>
-          <p>Заявки, активные сделки и завершённые работы</p>
+          <h1>Мои сделки</h1>
+          <p>Активные сделки и завершённые работы</p>
         </div>
       </div>
 
       <div className="container" style={{ padding:'28px 0 60px' }}>
 
-        {/* Tabs */}
-        <div className="dpage-tabs">
-          <button
-            className={`dpage-tab ${tab === 'requests' ? 'active' : ''}`}
-            onClick={() => setTab('requests')}
-          >
-            📋 Мои заявки
-            <span className="dpage-tab-count">{activeRequests.length}</span>
-          </button>
-          <button
-            className={`dpage-tab ${tab === 'deals' ? 'active' : ''}`}
-            onClick={() => setTab('deals')}
-          >
-            🤝 Сделки
-            <span className="dpage-tab-count">{deals.length}</span>
-          </button>
+        {/* Единые фильтры */}
+        <div className="dpage-filters">
+          {[
+            ['ALL',         'Все',          deals.length + activeRequests.length],
+            ['IN_PROGRESS', 'В работе',     dealCounts.IN_PROGRESS],
+            ['REQUESTS',    'Мои заявки',   activeRequests.length],
+            ['COMPLETED',   'Завершены',    dealCounts.COMPLETED],
+          ].map(([key, label, count]) => (
+            <button
+              key={key}
+              className={`dpage-filter-btn ${unifiedFilter === key ? 'active' : ''}`}
+              onClick={() => setUnifiedFilter(key)}
+            >
+              {label} <span>{count}</span>
+            </button>
+          ))}
+          <Link to="/sections" style={{
+            marginLeft: 'auto', display:'inline-flex', alignItems:'center', gap:6,
+            padding:'8px 16px', borderRadius:999, fontSize:13, fontWeight:700,
+            color:'#e8410a', background:'rgba(232,65,10,.08)',
+            border:'1.5px solid rgba(232,65,10,.2)', textDecoration:'none', whiteSpace:'nowrap',
+          }}>
+            <svg width="14" height="14" fill="none" stroke="#e8410a" strokeWidth="2.2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            Найти мастера
+          </Link>
         </div>
 
-        {/* ── REQUESTS TAB ── */}
-        {tab === 'requests' && (
-          <>
-            <div className="dpage-filters">
-              {[
-                ['ALL',         'Все',       reqCounts.ALL],
-                ['IN_PROGRESS', 'В работе',  reqCounts.IN_PROGRESS],
-              ].map(([key, label, count]) => (
-                <button
-                  key={key}
-                  className={`dpage-filter-btn ${reqFilter === key ? 'active' : ''}`}
-                  onClick={() => setReqFilter(key)}
-                >
-                  {label} <span>{count}</span>
-                </button>
-              ))}
-              <Link to="/sections" style={{
-                marginLeft: 'auto',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '8px 16px',
-                borderRadius: 999,
-                fontSize: 13,
-                fontWeight: 700,
-                color: '#e8410a',
-                background: 'rgba(232,65,10,.08)',
-                border: '1.5px solid rgba(232,65,10,.2)',
-                textDecoration: 'none',
-                whiteSpace: 'nowrap',
-              }}>
-                <svg width="14" height="14" fill="none" stroke="#e8410a" strokeWidth="2.2" viewBox="0 0 24 24">
-                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                </svg>
-                Найти мастера
-              </Link>
-            </div>
-
-            <div className="dpage-list">
-              {loading ? (
-                [1,2,3].map(i => <div key={i} className="dp-skeleton" style={{ height:88 }} />)
-              ) : filteredReqs.length === 0 ? (
-                <div className="dpage-empty">
-                  <span>📋</span>
-                  <h3>Заявок нет</h3>
-                  <p>Создайте заявку — мастера откликнутся в течение 10 минут</p>
-                  <Link to="/sections" className="btn btn-primary btn-sm">Найти мастера</Link>
-                </div>
-              ) : (
-                filteredReqs.map(req => {
-                  const st = REQ_STATUSES[req.status] || REQ_STATUSES.OPEN;
-                  const hasPhoto = req.photos && req.photos.length > 0;
-                  return (
-                    <div
-                      key={req.id}
-                      className="dpage-card-avito"
-                      onClick={() => { setReqDetail(req); loadOffers(req.id); setActivePhotoIndex(0); }}
-                    >
-                      <div
-                        className="dpage-card-avito-img"
-                        onClick={hasPhoto ? (e) => { e.stopPropagation(); setLightbox({ photos: req.photos, index: 0 }); } : undefined}
-                        style={hasPhoto ? { cursor:'pointer' } : {}}
-                      >
-                        {hasPhoto ? (
-                          <>
-                            <img src={req.photos[0]} alt="" style={{ pointerEvents:'none' }} />
-                            {req.photos.length > 1 && (
-                              <div className="dpage-card-avito-img-count">📷 {req.photos.length}</div>
-                            )}
-                          </>
-                        ) : (
-                          <div className="dpage-card-avito-img-placeholder"><span>📋</span></div>
-                        )}
-                      </div>
-                      <div className="dpage-card-avito-body">
-                        <div className="dpage-card-avito-top">
-                          <h3 className="dpage-card-avito-title">{req.title}</h3>
-                          <span className="dp-badge" style={{ color: st.color, background: st.bg, flexShrink:0 }}>
-                            {st.emoji} {st.label}
-                          </span>
-                        </div>
-                        {req.budgetTo && (
-                          <div className="dpage-card-avito-price">
-                            до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽
-                          </div>
-                        )}
-                        {req.description && req.description !== 'Без описания' && (
-                          <p className="dpage-card-avito-desc">{req.description}</p>
-                        )}
-                        <div className="dpage-card-avito-meta">
-                          {req.categoryId && <span>🏷 {getCatName(req.categoryId)}</span>}
-                          {req.addressText && <span>📍 {req.addressText}</span>}
-                          <span>🕐 {timeAgo(req.createdAt)}</span>
-                        </div>
-                      </div>
-                      <div className="dpage-card-chevron">›</div>
+        {/* ── ЕДИНЫЙ СПИСОК ── */}
+        <div className="dpage-list">
+          {loading ? (
+            [1,2,3].map(i => <div key={i} className="dp-skeleton" style={{ height:88 }} />)
+          ) : (() => {
+            let items = [];
+            if (unifiedFilter === 'ALL') {
+              items = [
+                ...deals.map(d => ({ _type:'deal', ...d })),
+                ...activeRequests.map(r => ({ _type:'req', ...r })),
+              ].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+            } else if (unifiedFilter === 'IN_PROGRESS') {
+              items = deals.filter(d => d.status === 'IN_PROGRESS').map(d => ({ _type:'deal', ...d }));
+            } else if (unifiedFilter === 'REQUESTS') {
+              items = activeRequests.map(r => ({ _type:'req', ...r }));
+            } else if (unifiedFilter === 'COMPLETED') {
+              items = deals.filter(d => d.status === 'COMPLETED').map(d => ({ _type:'deal', ...d }));
+            }
+            if (items.length === 0) return (
+              <div className="dpage-empty">
+                <span>📋</span>
+                <h3>Ничего нет</h3>
+                <p>Здесь появятся ваши заявки и сделки</p>
+                <Link to="/sections" className="btn btn-primary btn-sm">Найти мастера</Link>
+              </div>
+            );
+            return items.map(item => {
+              if (item._type === 'req') {
+                const req = item;
+                const st = REQ_STATUSES[req.status] || REQ_STATUSES.OPEN;
+                const hasPhoto = req.photos && req.photos.length > 0;
+                return (
+                  <div key={`req-${req.id}`} className="dpage-card-avito"
+                    onClick={() => { setReqDetail(req); loadOffers(req.id); setActivePhotoIndex(0); }}>
+                    <div className="dpage-card-avito-img"
+                      onClick={hasPhoto ? e => { e.stopPropagation(); setLightbox({ photos: req.photos, index:0 }); } : undefined}
+                      style={hasPhoto ? { cursor:'pointer' } : {}}>
+                      {hasPhoto ? (
+                        <><img src={req.photos[0]} alt="" style={{ pointerEvents:'none' }} />
+                          {req.photos.length > 1 && <div className="dpage-card-avito-img-count">📷 {req.photos.length}</div>}
+                        </>
+                      ) : <div className="dpage-card-avito-img-placeholder"><span>📋</span></div>}
                     </div>
-                  );
-                })
-              )}
-            </div>
-          </>
-        )}
-
-        {/* ── DEALS TAB ── */}
-        {tab === 'deals' && (
-          <>
-            <div className="dpage-filters">
-              {[
-                ['ALL',         'Все',       dealCounts.ALL],
-                ['IN_PROGRESS', 'В работе',  dealCounts.IN_PROGRESS],
-                ['COMPLETED',   'Завершены', dealCounts.COMPLETED],
-              ].map(([key, label, count]) => (
-                <button
-                  key={key}
-                  className={`dpage-filter-btn ${dealFilter === key ? 'active' : ''}`}
-                  onClick={() => setDealFilter(key)}
-                >
-                  {label} <span>{count}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="dpage-list">
-              {loading ? (
-                [1,2,3].map(i => <div key={i} className="dp-skeleton" style={{ height:88 }} />)
-              ) : filteredDeals.length === 0 ? (
-                <div className="dpage-empty">
-                  <span>🤝</span>
-                  <h3>Сделок пока нет</h3>
-                  <p>Сделки появятся после того как вы примете отклик мастера</p>
-                  <button className="btn btn-primary btn-sm" onClick={() => setTab('requests')}>
-                    Перейти к заявкам
-                  </button>
-                </div>
-              ) : (
-                filteredDeals.map(d => {
-                  const st = DEAL_STATUSES[d.status] || DEAL_STATUSES.NEW;
-                  const im = isCust(d);
-                  return (
-                    <div key={d.id} className="dpage-card" onClick={() => setDealDetail(d)}>
-                      <div className="dpage-card-accent" style={{ background: st.color }} />
-                      <div className="dpage-card-body">
-                        <div className="dpage-card-top">
-                          <div className="dpage-card-info">
-                            <h3 className="dpage-card-title">{d.title || 'Задача'}</h3>
-                            <div className="dpage-card-meta">
-                              {d.category && <span>🏷 {d.category}</span>}
-                              <span>👤 {im ? (d.workerName || 'Мастер не назначен') : d.customerName}</span>
-                              <span>🕐 {timeAgo(d.createdAt)}</span>
-                            </div>
-                          </div>
-                          <div className="dpage-card-right">
-                            <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
-                              {st.emoji} {st.label}
-                            </span>
-                            {d.agreedPrice && (
-                              <div className="dpage-card-price">
-                                {Number(d.agreedPrice).toLocaleString('ru-RU')} ₽
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        {d.status === 'IN_PROGRESS' && (
-                          <div className="dpage-card-progress">
-                            <div className={`dp-prog ${d.customerConfirmed ? 'ok' : ''}`}>
-                              {d.customerConfirmed ? '✅' : '⏳'} Заказчик
-                            </div>
-                            <span className="dp-prog-arrow">→</span>
-                            <div className={`dp-prog ${d.workerConfirmed ? 'ok' : ''}`}>
-                              {d.workerConfirmed ? '✅' : '⏳'} Мастер
-                            </div>
-                          </div>
-                        )}
+                    <div className="dpage-card-avito-body">
+                      <div className="dpage-card-avito-top">
+                        <h3 className="dpage-card-avito-title">{req.title}</h3>
+                        <span className="dp-badge" style={{ color:st.color, background:st.bg, flexShrink:0 }}>{st.emoji} {st.label}</span>
                       </div>
-                      <div className="dpage-card-chevron">›</div>
+                      {req.budgetTo && <div className="dpage-card-avito-price">до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽</div>}
+                      {req.description && req.description !== 'Без описания' && <p className="dpage-card-avito-desc">{req.description}</p>}
+                      <div className="dpage-card-avito-meta">
+                        {req.categoryId && <span>🏷 {getCatName(req.categoryId)}</span>}
+                        {req.addressText && <span>📍 {req.addressText}</span>}
+                        <span>🕐 {timeAgo(req.createdAt)}</span>
+                      </div>
                     </div>
-                  );
-                })
-              )}
-            </div>
-          </>
-        )}
+                    <div className="dpage-card-chevron">›</div>
+                  </div>
+                );
+              } else {
+                const d = item;
+                const st = DEAL_STATUSES[d.status] || DEAL_STATUSES.NEW;
+                const im = isCust(d);
+                const hasPhoto = d.photos && d.photos.length > 0;
+                return (
+                  <div key={`deal-${d.id}`} className="dpage-card-avito" onClick={() => setDealDetail(d)}>
+                    <div className="dpage-card-avito-img">
+                      {hasPhoto ? <img src={d.photos[0]} alt="" style={{ pointerEvents:'none' }} />
+                        : <div className="dpage-card-avito-img-placeholder"><span>🤝</span></div>}
+                    </div>
+                    <div className="dpage-card-avito-body">
+                      <div className="dpage-card-avito-top">
+                        <h3 className="dpage-card-avito-title">{d.title || 'Задача'}</h3>
+                        <span className="dp-badge" style={{ color:st.color, background:st.bg, flexShrink:0 }}>{st.emoji} {st.label}</span>
+                      </div>
+                      {d.agreedPrice && <div className="dpage-card-avito-price">{Number(d.agreedPrice).toLocaleString('ru-RU')} ₽</div>}
+                      <div className="dpage-card-avito-meta">
+                        {d.category && <span>🏷 {d.category}</span>}
+                        <span>👤 {im ? (d.workerName || 'Мастер') : d.customerName}</span>
+                        <span>🕐 {timeAgo(d.createdAt)}</span>
+                      </div>
+                      {d.status === 'IN_PROGRESS' && (
+                        <div className="dpage-card-progress" style={{ marginTop:8 }}>
+                          <div className={`dp-prog ${d.customerConfirmed ? 'ok' : ''}`}>{d.customerConfirmed ? '✅' : '⏳'} Заказчик</div>
+                          <span className="dp-prog-arrow">→</span>
+                          <div className={`dp-prog ${d.workerConfirmed ? 'ok' : ''}`}>{d.workerConfirmed ? '✅' : '⏳'} Мастер</div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="dpage-card-chevron">›</div>
+                  </div>
+                );
+              }
+            });
+          })()}
+        </div>
       </div>
 
-      {/* ✅ ДОБАВЛЕНО: Модалка отзыва */}
+            {/* ✅ ДОБАВЛЕНО: Модалка отзыва */}
       {reviewDeal && (
         <div className="modal-overlay" onClick={() => setReviewDeal(null)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
