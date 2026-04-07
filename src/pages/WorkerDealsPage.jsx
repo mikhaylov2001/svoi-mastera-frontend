@@ -301,38 +301,35 @@ export default function WorkerDealsPage() {
           ) : (
             filtered.map(d => {
               const st = DEAL_STATUSES[d.status] || DEAL_STATUSES.NEW;
+              const hasPhoto = d.photos && d.photos.length > 0;
               return (
-                <div
-                  key={d.id}
-                  className="dpage-card"
-                  onClick={() => setDealDetail(d)}
-                >
-                  <div className="dpage-card-accent" style={{ background: st.color }} />
-                  <div className="dpage-card-body">
-                    <div className="dpage-card-top">
-                      <div className="dpage-card-info">
-                        <h3 className="dpage-card-title">{d.title || 'Задача'}</h3>
-                        <div className="dpage-card-meta">
-                          {d.category && <span>🏷 {d.category}</span>}
-                          <span>👤 {d.customerName || 'Заказчик'}</span>
-                          <span>🕐 {timeAgo(d.createdAt)}</span>
-                        </div>
-                      </div>
-                      <div className="dpage-card-right">
-                        <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
-                          {st.emoji} {st.label}
-                        </span>
-                        {d.agreedPrice && (
-                          <div className="dpage-card-price">
-                            {Number(d.agreedPrice).toLocaleString('ru-RU')} ₽
-                          </div>
-                        )}
-                      </div>
+                <div key={d.id} className="dpage-card-avito" onClick={() => setDealDetail(d)}>
+                  <div className="dpage-card-avito-img">
+                    {hasPhoto ? (
+                      <img src={d.photos[0]} alt="" style={{ pointerEvents:'none' }} />
+                    ) : (
+                      <div className="dpage-card-avito-img-placeholder"><span>🔨</span></div>
+                    )}
+                  </div>
+                  <div className="dpage-card-avito-body">
+                    <div className="dpage-card-avito-top">
+                      <h3 className="dpage-card-avito-title">{d.title || 'Задача'}</h3>
+                      <span className="dp-badge" style={{ color: st.color, background: st.bg, flexShrink:0 }}>
+                        {st.emoji} {st.label}
+                      </span>
                     </div>
-
-                    {/* Прогресс подтверждения */}
+                    {d.agreedPrice && (
+                      <div className="dpage-card-avito-price">
+                        {Number(d.agreedPrice).toLocaleString('ru-RU')} ₽
+                      </div>
+                    )}
+                    <div className="dpage-card-avito-meta">
+                      {d.category && <span>🏷 {d.category}</span>}
+                      <span>👤 {d.customerName || 'Заказчик'}</span>
+                      <span>🕐 {timeAgo(d.createdAt)}</span>
+                    </div>
                     {d.status === 'IN_PROGRESS' && (
-                      <div className="dpage-card-progress">
+                      <div className="dpage-card-progress" style={{ marginTop:8 }}>
                         <div className={`dp-prog ${d.customerConfirmed ? 'ok' : ''}`}>
                           {d.customerConfirmed ? '✅' : '⏳'} Заказчик
                         </div>

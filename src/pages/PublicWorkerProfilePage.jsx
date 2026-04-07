@@ -1,448 +1,875 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  getMyDeals, completeDeal,
+  getMyJobRequests, getOffersForRequest, acceptOffer, getCategories,
+  createReview,
+} from '../api';
 import { useAuth } from '../context/AuthContext';
-import './PublicWorkerProfile.css';
+import './DealsPage.css';
 
-const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
+const DEAL_STATUSES = {
+  NEW:         { label: 'Новая',     emoji: '📋', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
+  IN_PROGRESS: { label: 'В работе',  emoji: '⚙️',  color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
+  COMPLETED:   { label: 'Завершена', emoji: '✅',  color: '#22c55e', bg: 'rgba(34,197,94,.12)'   },
+  CANCELLED:   { label: 'Отменена',  emoji: '❌',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'   },
+};
+
+const REQ_STATUSES = {
+  DRAFT:          { label: 'Черновик',   emoji: '📝', color: '#9ca3af', bg: 'rgba(156,163,175,.12)' },
+  OPEN:           { label: 'Открыта',    emoji: '🟢', color: '#22c55e', bg: 'rgba(34,197,94,.12)'   },
+  IN_NEGOTIATION: { label: 'Обсуждение', emoji: '💬', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
+  ASSIGNED:       { label: 'Назначена',  emoji: '👷', color: '#f59e0b', bg: 'rgba(245,158,11,.12)'  },
+  IN_PROGRESS:    { label: 'В работе',   emoji: '⚙️',  color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
+  COMPLETED:      { label: 'Выполнена',  emoji: '✅',  color: '#22c55e', bg: 'rgba(34,197,94,.12)'  },
+  CANCELLED:      { label: 'Отменена',   emoji: '❌',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
+  EXPIRED:        { label: 'Истекла',    emoji: '⏰',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
+};
 
 function timeAgo(d) {
   if (!d) return '';
-  const days = Math.floor((Date.now() - new Date(d)) / 86400000);
-  if (days === 0) return 'сегодня';
-  if (days === 1) return 'вчера';
-  if (days < 30) return `${days} дн. назад`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months} мес. назад`;
-  return `${Math.floor(months / 12)} г. назад`;
+  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (m < 1)  return 'только что';
+  if (m < 60) return `${m} мин. назад`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} ч. назад`;
+  return `${Math.floor(h / 24)} дн. назад`;
 }
 
-function getMemberSince(d) {
-  if (!d) return null;
-  return new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
-}
-
-function renderStars(rating) {
-  const full = Math.floor(rating);
-  const half = rating % 1 >= 0.5;
-  return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - (half ? 1 : 0));
-}
-
-function getExperience(registeredAt) {
-  if (!registeredAt) return null;
-  const days = Math.floor((Date.now() - new Date(registeredAt)) / 86400000);
-  const years = Math.floor(days / 365);
-  const months = Math.floor(days / 30);
-  if (years >= 1) return `${years} ${years === 1 ? 'год' : years < 5 ? 'года' : 'лет'}`;
-  if (months >= 1) return `${months} ${months === 1 ? 'месяц' : months < 5 ? 'месяца' : 'месяцев'}`;
-  return 'Новичок';
-}
-
-export default function PublicWorkerProfilePage() {
-  const { workerId } = useParams();
-  const navigate = useNavigate();
+export default function DealsPage() {
   const { userId } = useAuth();
+  const navigate   = useNavigate();
 
-  const [worker,         setWorker]         = useState(null);
-  const [services,       setServices]       = useState([]);
-  const [reviews,        setReviews]        = useState([]);
-  const [completedWorks, setCompletedWorks] = useState([]);
-  const [loading,        setLoading]        = useState(true);
-  const [error,          setError]          = useState('');
-  const [lightbox,       setLightbox]       = useState(null);
-  const [activeTab,      setActiveTab]      = useState('services'); // services | works | reviews
-  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [deals,      setDeals]      = useState([]);
+  const [requests,   setRequests]   = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading,    setLoading]    = useState(true);
 
-  useEffect(() => {
+  const [tab,        setTab]        = useState('requests');
+  const [reqFilter,  setReqFilter]  = useState('ALL');
+  const [dealFilter, setDealFilter] = useState('ALL');
+
+  const [dealDetail, setDealDetail] = useState(null);
+  const [reqDetail,  setReqDetail]  = useState(null);
+
+  const [offers,        setOffers]        = useState([]);
+  const [offersLoading, setOffersLoading] = useState(false);
+
+  const [actionId, setActionId] = useState(null);
+
+  // ✅ ДОБАВЛЕНО: Стейты для отзыва
+  const [reviewDeal, setReviewDeal] = useState(null);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
+  const [reviewStatus, setReviewStatus] = useState('idle');
+
+  // Lightbox для фото
+  const [lightbox, setLightbox] = useState(null);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0); // { photos: [], index: 0 }
+
+  // Клавиатурная навигация lightbox
+  React.useEffect(() => {
     if (!lightbox) return;
-    const h = e => {
-      if (e.key === 'ArrowRight') setLightbox(l => l ? {...l, index:(l.index+1)%l.photos.length} : l);
-      if (e.key === 'ArrowLeft')  setLightbox(l => l ? {...l, index:(l.index-1+l.photos.length)%l.photos.length} : l);
+    const handler = (e) => {
+      if (e.key === 'ArrowRight') setLightbox(l => l ? {...l, index: l.index < l.photos.length - 1 ? l.index + 1 : 0} : l);
+      if (e.key === 'ArrowLeft')  setLightbox(l => l ? {...l, index: l.index > 0 ? l.index - 1 : l.photos.length - 1} : l);
       if (e.key === 'Escape')     setLightbox(null);
     };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
   }, [lightbox]);
 
-  useEffect(() => {
-    if (!workerId) return;
+  const load = useCallback(async () => {
     setLoading(true);
-    Promise.all([
-      fetch(`${API}/workers/${workerId}/services`).then(r => r.ok ? r.json() : []),
-      fetch(`${API}/workers/${workerId}/stats`).then(r => r.ok ? r.json() : {}),
-      fetch(`${API}/reviews/worker/${workerId}`).then(r => r.ok ? r.json() : []),
-      fetch(`${API}/workers/${workerId}/completed-works`).then(r => r.ok ? r.json() : []),
-    ]).then(([svc, stats, rev, works]) => {
-      setServices(Array.isArray(svc) ? svc : []);
-      setReviews(Array.isArray(rev) ? rev : []);
-      setCompletedWorks(Array.isArray(works) ? works : []);
-      setWorker({
-        id: workerId,
-        name: svc?.[0]?.workerName || stats?.displayName || 'Мастер',
-        lastName: stats?.lastName || '',
-        avatarUrl: stats?.avatarUrl || null,
-        city: stats?.city || 'Йошкар-Ола',
-        rating: stats?.averageRating || 0,
-        reviewsCount: stats?.reviewsCount || 0,
-        registeredAt: stats?.registeredAt || null,
-        description: stats?.description || null,
-      });
-    }).catch(err => {
+    try {
+      const [d, r, c] = await Promise.all([
+        getMyDeals(userId),
+        getMyJobRequests(userId),
+        getCategories(),
+      ]);
+      setDeals(d);
+      setRequests(r);
+      setCategories(c);
+    } catch {}
+    setLoading(false);
+  }, [userId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (dealDetail?.id) {
+      const fresh = deals.find(d => d.id === dealDetail.id);
+      if (fresh && JSON.stringify(fresh) !== JSON.stringify(dealDetail)) setDealDetail(fresh);
+    }
+  }, [deals, dealDetail]);
+
+  const getCatName = (id) => categories.find(c => c.id === id)?.name || '';
+
+  const loadOffers = async (reqId) => {
+    setOffersLoading(true);
+    try { setOffers(await getOffersForRequest(reqId)); } catch { setOffers([]); }
+    setOffersLoading(false);
+  };
+
+  const handleAccept = async (req, offer) => {
+    setActionId(offer.id);
+    try {
+      await acceptOffer(userId, req.id, offer.id);
+      await load();
+      setReqDetail(null);
+      setOffers([]);
+      setTab('deals');
+    } catch {}
+    setActionId(null);
+  };
+
+  const handleConfirm = async (dealId) => {
+    setActionId(dealId);
+    try { await completeDeal(userId, dealId); await load(); } catch {}
+    setActionId(null);
+  };
+
+  // ✅ ДОБАВЛЕНО: Обработчик отправки отзыва
+  const handleReviewSubmit = async () => {
+    if (!reviewDeal) return;
+    setReviewStatus('sending');
+    try {
+      await createReview(userId, reviewDeal.id, reviewForm);
+      setReviewStatus('done');
+      await load();
+    } catch (err) {
       console.error(err);
-      setError('Не удалось загрузить профиль');
-    }).finally(() => setLoading(false));
-  }, [workerId]);
+      setReviewStatus('error');
+    }
+  };
 
-  if (loading) return (
-    <div className="container" style={{ padding:'80px 24px', textAlign:'center', color:'#9ca3af' }}>
-      <div style={{ fontSize:32, marginBottom:12 }}>⏳</div>
-      <p>Загружаем профиль...</p>
-    </div>
-  );
+  const isCust = (d) => d.customerId === userId;
 
-  if (error || !worker) return (
-    <div className="container" style={{ padding:'80px 24px', textAlign:'center' }}>
-      <p>{error || 'Мастер не найден'}</p>
-      <Link to="/find-master" className="btn btn-primary" style={{ marginTop:16 }}>К поиску</Link>
-    </div>
-  );
+  // Заявки у которых уже есть сделка — скрываем из таба заявок
+  const dealsJobRequestIds = new Set(deals.map(d => d.jobRequestId).filter(Boolean));
+  const activeRequests = requests.filter(r => !dealsJobRequestIds.has(r.id));
 
-  const fullName = [worker.name, worker.lastName].filter(Boolean).join(' ');
-  const initials = fullName.split(' ').map(x => x[0]||'').join('').toUpperCase().slice(0,2) || '?';
-  const since = getMemberSince(worker.registeredAt);
-  const exp   = getExperience(worker.registeredAt);
+  const reqCounts = {
+    ALL:         activeRequests.length,
+    OPEN:        activeRequests.filter(r => r.status === 'OPEN').length,
+    IN_PROGRESS: activeRequests.filter(r => ['IN_PROGRESS','ASSIGNED','IN_NEGOTIATION'].includes(r.status)).length,
+    COMPLETED:   activeRequests.filter(r => r.status === 'COMPLETED').length,
+  };
+  const dealCounts = {
+    ALL:         deals.length,
+    IN_PROGRESS: deals.filter(d => d.status === 'IN_PROGRESS').length,
+    COMPLETED:   deals.filter(d => d.status === 'COMPLETED').length,
+  };
 
-  // Собираем все фото из выполненных работ для галереи
-  const allPhotos = completedWorks.filter(w => w.photos && w.photos.length > 0)
-    .flatMap(w => w.photos.map(p => ({ url: p, title: w.title })));
+  const filteredReqs = reqFilter === 'ALL' ? activeRequests
+    : reqFilter === 'IN_PROGRESS'
+      ? activeRequests.filter(r => ['IN_PROGRESS','ASSIGNED','IN_NEGOTIATION'].includes(r.status))
+      : activeRequests.filter(r => r.status === reqFilter);
 
-  return (
-    <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
+  const filteredDeals = dealFilter === 'ALL' ? deals
+    : deals.filter(d => d.status === dealFilter);
 
-      {/* Хлебная крошка */}
-      <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', padding:'12px 0' }}>
-        <div className="container">
-          <button onClick={() => navigate(-1)} className="cats-back-link">← Назад</button>
+  /* ══ DEAL DETAIL ══ */
+  if (dealDetail) {
+    const st      = DEAL_STATUSES[dealDetail.status] || DEAL_STATUSES.NEW;
+    const im      = isCust(dealDetail);
+    const myOk    = im ? dealDetail.customerConfirmed : dealDetail.workerConfirmed;
+    const otherOk = im ? dealDetail.workerConfirmed   : dealDetail.customerConfirmed;
+
+    return (
+      <>
+      <div>
+        <div style={{ background:'#fff', borderBottom:'1.5px solid #e5e7eb', padding:'12px 0' }}>
+          <div className="container">
+            <button className="cats-back-link" onClick={() => setDealDetail(null)}>
+              ← Назад к заказам
+            </button>
+          </div>
         </div>
-      </div>
-
-      <div className="container" style={{ paddingTop:24, paddingBottom:60 }}>
-        <div style={{ display:'grid', gridTemplateColumns:'300px 1fr', gap:20, alignItems:'flex-start' }}>
-
-          {/* ══ ЛЕВАЯ КОЛОНКА ══ */}
-          <div style={{ position:'sticky', top:72 }}>
-
-            {/* Карточка профиля */}
-            <div style={{ background:'#fff', borderRadius:12, padding:'24px 20px', marginBottom:12 }}>
-              {worker.avatarUrl ? (
-                <img src={worker.avatarUrl} alt={fullName}
-                  style={{ width:88, height:88, borderRadius:'50%', objectFit:'cover', margin:'0 auto 14px', display:'block', border:'3px solid #f3f4f6' }} />
-              ) : (
-                <div style={{ width:88, height:88, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:28, margin:'0 auto 14px' }}>
-                  {initials}
-                </div>
-              )}
-
-              <h1 style={{ fontSize:18, fontWeight:800, color:'#111827', textAlign:'center', margin:'0 0 4px' }}>{fullName}</h1>
-              <p style={{ fontSize:13, color:'#9ca3af', textAlign:'center', margin:'0 0 10px' }}>📍 {worker.city}</p>
-
-              {/* Рейтинг */}
-              {worker.rating > 0 && (
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, marginBottom:12, cursor:'pointer' }}
-                  onClick={() => setActiveTab('reviews')}
-                >
-                  <span style={{ color:'#f59e0b', fontSize:15 }}>{renderStars(worker.rating)}</span>
-                  <span style={{ fontSize:15, fontWeight:800, color:'#111827' }}>{worker.rating.toFixed(1)}</span>
-                  <span style={{ fontSize:12, color:'#6b7280', textDecoration:'underline' }}>
-                    {worker.reviewsCount} {worker.reviewsCount === 1 ? 'отзыв' : worker.reviewsCount < 5 ? 'отзыва' : 'отзывов'}
+        <div className="page-header-bar">
+          <div className="container">
+            <div style={{ display:'flex', alignItems:'center', gap:14, marginTop:10 }}>
+              <div className="dp-status-icon" style={{ background: st.bg }}>
+                <span>{st.emoji}</span>
+              </div>
+              <div>
+                <h1>{dealDetail.title || 'Задача'}</h1>
+                <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:4, flexWrap:'wrap' }}>
+                  <span className="dp-badge" style={{ color: st.color, background: st.bg }}>
+                    {st.emoji} {st.label}
                   </span>
+                  {dealDetail.category && (
+                    <span style={{ fontSize:13, color:'var(--gray-400)' }}>{dealDetail.category}</span>
+                  )}
+                  {dealDetail.agreedPrice && (
+                    <span style={{ fontSize:13, color:'var(--gray-500)', fontWeight:700 }}>
+                      💰 {Number(dealDetail.agreedPrice).toLocaleString('ru-RU')} ₽
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="container">
+          <div className="dp-grid">
+            <div>
+              {dealDetail.description && dealDetail.description !== 'Без описания' && (
+                <div className="dp-card">
+                  <div className="dp-card-label">Описание</div>
+                  <p className="dp-desc">{dealDetail.description}</p>
                 </div>
               )}
-
-              {since && <p style={{ fontSize:12, color:'#9ca3af', textAlign:'center', margin:'0 0 14px' }}>На сервисе с {since}</p>}
-
-              {/* Статистика */}
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:14 }}>
-                {[
-                  [completedWorks.length, 'Заказов', '#e8410a'],
-                  [exp || '—', 'Стаж', '#22c55e'],
-                ].map(([v, l, c]) => (
-                  <div key={l} style={{ background:'#f9fafb', borderRadius:8, padding:'10px 6px', textAlign:'center', border:'1px solid #e5e7eb' }}>
-                    <div style={{ fontSize:18, fontWeight:900, color:c }}>{v}</div>
-                    <div style={{ fontSize:11, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.4px' }}>{l}</div>
+              <div className="dp-card">
+                <div className="dp-card-label">Участники</div>
+                <div className="dp-people">
+                  <div className="dp-person">
+                    <div className="dp-person-role">👤 Заказчик</div>
+                    <div className="dp-person-name">
+                      {dealDetail.customerName || '—'}
+                      {im && <span className="dp-you"> • вы</span>}
+                    </div>
                   </div>
-                ))}
-              </div>
-
-              {/* Бейджи */}
-              <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:16 }}>
-                {[
-                  ['✓', 'Документы проверены', '#22c55e'],
-                  ['⚡', 'Быстрый отклик', '#f59e0b'],
-                  ['🛡️', 'Гарантия качества', '#6366f1'],
-                ].map(([icon, label, color]) => (
-                  <div key={label} style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 12px', background:'#f9fafb', borderRadius:8, fontSize:13, color:'#374151', border:'1px solid #e5e7eb' }}>
-                    <span style={{ color, fontWeight:700 }}>{icon}</span>
-                    {label}
+                  <div className="dp-person">
+                    <div className="dp-person-role">🔨 Мастер</div>
+                    <div className="dp-person-name">
+                      {dealDetail.workerName || 'Не назначен'}
+                      {!im && dealDetail.workerName && <span className="dp-you"> • вы</span>}
+                    </div>
                   </div>
-                ))}
+                </div>
               </div>
-
-              {/* Кнопки */}
-              {userId !== workerId && (
-                <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                  <button onClick={() => navigate(`/chat/${workerId}`)}
-                    style={{ width:'100%', padding:'12px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', transition:'background .15s' }}
-                    onMouseEnter={e => e.currentTarget.style.background='#c73208'}
-                    onMouseLeave={e => e.currentTarget.style.background='#e8410a'}
-                  >
-                    💬 Написать мастеру
-                  </button>
+              {dealDetail.createdAt && (
+                <div className="dp-card">
+                  <div className="dp-card-label">Информация</div>
+                  <div style={{ fontSize:13, color:'#6b7280' }}>
+                    🕐 Создана: {timeAgo(dealDetail.createdAt)}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Услуги в левой колонке (краткий список) */}
-            {services.length > 0 && (
-              <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
-                <div style={{ fontSize:13, color:'#9ca3af', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:10 }}>Услуги</div>
-                {services.slice(0,4).map(s => (
-                  <div key={s.id} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid #f3f4f6', fontSize:13 }}>
-                    <span style={{ color:'#374151', fontWeight:500 }}>{s.title}</span>
-                    <span style={{ color:'#e8410a', fontWeight:700, flexShrink:0 }}>
-                      {s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
-                    </span>
+            <div className="dp-side">
+              {dealDetail.status === 'NEW' && (
+                <div className="dp-state">
+                  <span>📋</span>
+                  <h3>Заявка создана</h3>
+                  <p>Ожидаем когда мастер примет задачу в работу</p>
+                </div>
+              )}
+              {dealDetail.status === 'COMPLETED' && (
+                <>
+                  <div className="dp-state">
+                    <span>✅</span>
+                    <h3>Сделка завершена</h3>
+                    <p>Обе стороны подтвердили выполнение</p>
+                  </div>
+
+                  {/* ✅ ДОБАВЛЕНО: Кнопка отзыва */}
+                  {im && !dealDetail.hasReview && (
+                    <button
+                      className="dp-review-btn"
+                      onClick={() => setReviewDeal(dealDetail)}
+                    >
+                      ⭐ Оставить отзыв мастеру
+                    </button>
+                  )}
+                  {im && dealDetail.hasReview && (
+                    <div className="dp-review-left">
+                      ✓ Вы оставили отзыв
+                    </div>
+                  )}
+                </>
+              )}
+              {dealDetail.status === 'IN_PROGRESS' && (
+                <>
+                  <div className="dp-side-title">Подтверждение</div>
+                  <p className="dp-side-hint">Завершится когда обе стороны подтвердят</p>
+                  <div className="dp-ci-list">
+                    {[
+                      { confirmed: dealDetail.customerConfirmed, name: `Заказчик${im ? ' (вы)' : ''}` },
+                      { confirmed: dealDetail.workerConfirmed,   name: `Мастер${!im ? ' (вы)' : ''}` },
+                    ].map(({ confirmed, name }) => (
+                      <div key={name} className={`dp-ci ${confirmed ? 'ok' : ''}`}>
+                        <span>{confirmed ? '✅' : '⏳'}</span>
+                        <div>
+                          <div className="dp-ci-name">{name}</div>
+                          <div className="dp-ci-status">{confirmed ? 'Подтвердил' : 'Ожидание'}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {!myOk ? (
+                    <button
+                      className="dp-confirm-btn"
+                      disabled={actionId === dealDetail.id}
+                      onClick={() => handleConfirm(dealDetail.id)}
+                    >
+                      {actionId === dealDetail.id ? 'Подтверждаем…' : '✅ Подтвердить выполнение'}
+                    </button>
+                  ) : (
+                    <div className="dp-wait">
+                      ✓ Вы подтвердили{!otherOk && ' — ожидаем другую сторону…'}
+                    </div>
+                  )}
+                  <Link to="/chat" className="dp-chat-btn">💬 Написать сообщение</Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+        {/* ══ LIGHTBOX ══ */}
+        {lightbox && (
+          <div
+            style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
+            onClick={() => setLightbox(null)}
+          >
+            <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
+              <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block' }} />
+              <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
+                {lightbox.index + 1} / {lightbox.photos.length}
+              </div>
+              <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+              {lightbox.index > 0 && (
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index - 1})); }} style={{ position:'absolute', left:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>‹</button>
+              )}
+              {lightbox.index < lightbox.photos.length - 1 && (
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index + 1})); }} style={{ position:'absolute', right:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>›</button>
+              )}
+            </div>
+            {lightbox.photos.length > 1 && (
+              <div style={{ display:'flex', gap:8, marginTop:16 }} onClick={e => e.stopPropagation()}>
+                {lightbox.photos.map((p, i) => (
+                  <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))} style={{ width:56, height:56, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
+                    <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
                   </div>
                 ))}
-                {services.length > 4 && (
-                  <button onClick={() => setActiveTab('services')}
-                    style={{ background:'none', border:'none', color:'#e8410a', fontSize:12, fontWeight:600, cursor:'pointer', marginTop:8, padding:0 }}>
-                    Ещё {services.length - 4} услуг →
-                  </button>
-                )}
               </div>
             )}
           </div>
+        )}
+      </>
+    );
+  }
 
-          {/* ══ ПРАВАЯ КОЛОНКА ══ */}
-          <div>
+  /* ══ REQUEST DETAIL ══ */
+  if (reqDetail) {
+    const st      = REQ_STATUSES[reqDetail.status] || REQ_STATUSES.OPEN;
+    const catName = getCatName(reqDetail.categoryId);
 
-            {/* Описание */}
-            {worker.description && (
-              <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
-                <h2 style={{ fontSize:18, fontWeight:800, color:'#111827', margin:'0 0 12px' }}>О мастере</h2>
-                <p style={{ fontSize:14, color:'#374151', lineHeight:1.7, margin:0, whiteSpace:'pre-wrap' }}>{worker.description}</p>
+    return (
+      <>
+      <div>
+        <div style={{ background:'#fff', borderBottom:'1.5px solid #e5e7eb', padding:'12px 0' }}>
+          <div className="container">
+            <button className="cats-back-link" onClick={() => { setReqDetail(null); setOffers([]); }}>
+              ← Назад к заказам
+            </button>
+          </div>
+        </div>
+        <div className="page-header-bar">
+          <div className="container">
+            <div style={{ display:'flex', alignItems:'center', gap:14, marginTop:10 }}>
+              <div style={{ width:52, height:52, borderRadius:14, overflow:'hidden', flexShrink:0, background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>
+                {reqDetail.photos && reqDetail.photos.length > 0
+                  ? <img src={reqDetail.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                  : '📋'
+                }
+              </div>
+              <div>
+                <h1 style={{ fontSize:22 }}>{reqDetail.title}</h1>
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:4, flexWrap:'wrap' }}>
+                  <span className="dp-badge" style={{ color: st.color, background: st.bg }}>{st.emoji} {st.label}</span>
+                  {catName && <span style={{ fontSize:13, color:'#9ca3af' }}>🏷 {catName}</span>}
+                  {reqDetail.budgetTo && <span style={{ fontSize:14, color:'#111827', fontWeight:800 }}>💰 до {Number(reqDetail.budgetTo).toLocaleString('ru-RU')} ₽</span>}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="container">
+          <div className="dp-grid" style={{ paddingTop:24 }}>
+            {/* Левая колонка */}
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+
+              {/* Фото — первыми, большие */}
+              {reqDetail.photos && reqDetail.photos.length > 0 && (
+                <div className="dp-card" style={{ padding:0, overflow:'hidden' }}>
+                  {/* Главное фото */}
+                  <div style={{ width:'100%', aspectRatio:'16/9', overflow:'hidden', position:'relative' }}>
+                    <img
+                      src={reqDetail.photos[activePhotoIndex]}
+                      alt=""
+                      style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block', transition:'opacity .2s' }}
+                    />
+                    {/* Стрелки навигации */}
+                    {reqDetail.photos.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => setActivePhotoIndex(i => i > 0 ? i - 1 : reqDetail.photos.length - 1)}
+                          style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
+                        >‹</button>
+                        <button
+                          onClick={() => setActivePhotoIndex(i => i < reqDetail.photos.length - 1 ? i + 1 : 0)}
+                          style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
+                        >›</button>
+                      </>
+                    )}
+                    {/* Счётчик + кнопка увеличения */}
+                    <div style={{ position:'absolute', bottom:10, right:10, display:'flex', gap:6, alignItems:'center' }}>
+                      <div style={{ background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:12, fontWeight:700, padding:'4px 10px', borderRadius:999, backdropFilter:'blur(4px)' }}>
+                        {activePhotoIndex + 1} / {reqDetail.photos.length}
+                      </div>
+                      <button
+                        onClick={() => setLightbox({ photos: reqDetail.photos, index: activePhotoIndex })}
+                        style={{ background:'rgba(0,0,0,0.55)', border:'none', color:'#fff', fontSize:14, padding:'4px 10px', borderRadius:999, cursor:'pointer', backdropFilter:'blur(4px)' }}
+                        title="Открыть на весь экран"
+                      >⛶</button>
+                    </div>
+                  </div>
+                  {/* Полоса миниатюр */}
+                  {reqDetail.photos.length > 1 && (
+                    <div style={{ display:'flex', gap:6, padding:'10px 12px', background:'#f9fafb', overflowX:'auto' }}>
+                      {reqDetail.photos.map((p, i) => (
+                        <div
+                          key={i}
+                          onClick={() => setActivePhotoIndex(i)}
+                          style={{ width:72, height:54, userSelect:'none', flexShrink:0, borderRadius:8, overflow:'hidden', cursor:'pointer', border: i === activePhotoIndex ? '2.5px solid #e8410a' : '2px solid transparent', opacity: i === activePhotoIndex ? 1 : 0.6, transition:'all .15s' }}
+                        >
+                          <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Описание */}
+              {reqDetail.description && reqDetail.description !== 'Без описания' && (
+                <div className="dp-card">
+                  <div className="dp-card-label">Описание задачи</div>
+                  <p className="dp-desc">{reqDetail.description}</p>
+                </div>
+              )}
+
+              {/* Детали в сетке */}
+              <div className="dp-card">
+                <div className="dp-card-label">Детали заявки</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                  {catName && (
+                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Категория</div>
+                      <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>🏷 {catName}</div>
+                    </div>
+                  )}
+                  {reqDetail.budgetTo && (
+                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Бюджет</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>💰 до {Number(reqDetail.budgetTo).toLocaleString('ru-RU')} ₽</div>
+                    </div>
+                  )}
+                  {reqDetail.addressText && (
+                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Адрес</div>
+                      <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>📍 {reqDetail.addressText}</div>
+                    </div>
+                  )}
+                  <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Создана</div>
+                    <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>🕐 {timeAgo(reqDetail.createdAt)}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Правая колонка — отклики */}
+            <div className="dp-side">
+              {reqDetail.status === 'OPEN' ? (
+                <>
+                  <div className="dp-side-title">Отклики мастеров</div>
+                  <p className="dp-side-hint">Примите подходящий отклик — и начнётся сделка</p>
+                  {offersLoading ? (
+                    <div className="dp-skeleton" style={{ height:64, borderRadius:12 }} />
+                  ) : offers.length === 0 ? (
+                    <div className="dp-empty-offers">
+                      <span>⏳</span>
+                      <p>Мастера ещё не откликнулись. Обычно первые отклики приходят в течение 10 минут.</p>
+                    </div>
+                  ) : (
+                    offers.map(offer => (
+                      <div key={offer.id} className="dp-offer">
+                        <div className="dp-offer-top">
+                          <span className="dp-offer-price">{Number(offer.price).toLocaleString('ru-RU')} ₽</span>
+                          {offer.estimatedDays && <span className="dp-offer-days">· {offer.estimatedDays} дн.</span>}
+                        </div>
+                        {offer.message && <p className="dp-offer-msg">{offer.message}</p>}
+                        <div className="dp-offer-date">{timeAgo(offer.createdAt)}</div>
+                        {offer.status === 'CREATED' && (
+                          <div className="dp-offer-actions">
+                            <button className="dp-confirm-btn" disabled={actionId === offer.id} onClick={() => handleAccept(reqDetail, offer)}>
+                              {actionId === offer.id ? 'Принимаем…' : '✅ Принять'}
+                            </button>
+                            {(offer.workerUserId || offer.workerId) && (
+                              <button className="dp-chat-btn" onClick={() => navigate(`/chat/${offer.workerUserId || offer.workerId}?jobRequestId=${reqDetail.id}`)}>
+                                💬 Написать
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </>
+              ) : (
+                <div className="dp-state">
+                  <span>{st.emoji}</span>
+                  <h3>{st.label}</h3>
+                  <p>Статус заявки обновлён</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Lightbox прямо здесь — без конфликта с router */}
+        {lightbox && (
+          <div
+            style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
+            onClick={() => setLightbox(null)}
+          >
+            <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
+              <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block' }} />
+              <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
+                {lightbox.index + 1} / {lightbox.photos.length}
+              </div>
+              <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+              {lightbox.index > 0 && (
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index - 1})); }} style={{ position:'absolute', left:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>‹</button>
+              )}
+              {lightbox.index < lightbox.photos.length - 1 && (
+                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index + 1})); }} style={{ position:'absolute', right:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>›</button>
+              )}
+            </div>
+            {lightbox.photos.length > 1 && (
+              <div style={{ display:'flex', gap:8, marginTop:16 }} onClick={e => e.stopPropagation()}>
+                {lightbox.photos.map((p, i) => (
+                  <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))} style={{ width:56, height:56, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
+                    <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
+                  </div>
+                ))}
               </div>
             )}
+          </div>
+        )}
+      </div>
+      </>
+    );
+  }
 
-            {/* Табы */}
-            <div style={{ display:'flex', gap:0, borderBottom:'2px solid #e5e7eb', marginBottom:16, background:'#fff', borderRadius:'12px 12px 0 0', padding:'0 20px' }}>
+    /* ══ LIST ══ */
+  return (
+    <div>
+      <div className="page-header-bar">
+        <div className="container">
+          <h1>Мои заказы</h1>
+          <p>Заявки, активные сделки и завершённые работы</p>
+        </div>
+      </div>
+
+      <div className="container" style={{ padding:'28px 0 60px' }}>
+
+        {/* Tabs */}
+        <div className="dpage-tabs">
+          <button
+            className={`dpage-tab ${tab === 'requests' ? 'active' : ''}`}
+            onClick={() => setTab('requests')}
+          >
+            📋 Мои заявки
+            <span className="dpage-tab-count">{activeRequests.length}</span>
+          </button>
+          <button
+            className={`dpage-tab ${tab === 'deals' ? 'active' : ''}`}
+            onClick={() => setTab('deals')}
+          >
+            🤝 Сделки
+            <span className="dpage-tab-count">{deals.length}</span>
+          </button>
+        </div>
+
+        {/* ── REQUESTS TAB ── */}
+        {tab === 'requests' && (
+          <>
+            <div className="dpage-filters">
               {[
-                ['services', `Услуги (${services.length})`],
-                ['works',    `Работы (${completedWorks.length})`],
-                ['reviews',  `Отзывы (${reviews.length})`],
-                ...(allPhotos.length > 0 ? [['photos', `Фото (${allPhotos.length})`]] : []),
-              ].map(([key, label]) => (
-                <button key={key} onClick={() => setActiveTab(key)}
-                  style={{
-                    padding:'14px 18px', background:'none', border:'none', cursor:'pointer',
-                    fontSize:14, fontWeight:700, whiteSpace:'nowrap',
-                    color: activeTab===key ? '#e8410a' : '#6b7280',
-                    borderBottom: activeTab===key ? '2px solid #e8410a' : '2px solid transparent',
-                    marginBottom:-2, transition:'all .15s',
-                  }}
-                >{label}</button>
+                ['ALL',         'Все',       reqCounts.ALL],
+                ['IN_PROGRESS', 'В работе',  reqCounts.IN_PROGRESS],
+              ].map(([key, label, count]) => (
+                <button
+                  key={key}
+                  className={`dpage-filter-btn ${reqFilter === key ? 'active' : ''}`}
+                  onClick={() => setReqFilter(key)}
+                >
+                  {label} <span>{count}</span>
+                </button>
+              ))}
+              <Link to="/sections" style={{
+                marginLeft: 'auto',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '8px 16px',
+                borderRadius: 999,
+                fontSize: 13,
+                fontWeight: 700,
+                color: '#e8410a',
+                background: 'rgba(232,65,10,.08)',
+                border: '1.5px solid rgba(232,65,10,.2)',
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+              }}>
+                <svg width="14" height="14" fill="none" stroke="#e8410a" strokeWidth="2.2" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                Найти мастера
+              </Link>
+            </div>
+
+            <div className="dpage-list">
+              {loading ? (
+                [1,2,3].map(i => <div key={i} className="dp-skeleton" style={{ height:88 }} />)
+              ) : filteredReqs.length === 0 ? (
+                <div className="dpage-empty">
+                  <span>📋</span>
+                  <h3>Заявок нет</h3>
+                  <p>Создайте заявку — мастера откликнутся в течение 10 минут</p>
+                  <Link to="/sections" className="btn btn-primary btn-sm">Найти мастера</Link>
+                </div>
+              ) : (
+                filteredReqs.map(req => {
+                  const st = REQ_STATUSES[req.status] || REQ_STATUSES.OPEN;
+                  const hasPhoto = req.photos && req.photos.length > 0;
+                  return (
+                    <div
+                      key={req.id}
+                      className="dpage-card-avito"
+                      onClick={() => { setReqDetail(req); loadOffers(req.id); setActivePhotoIndex(0); }}
+                    >
+                      <div
+                        className="dpage-card-avito-img"
+                        onClick={hasPhoto ? (e) => { e.stopPropagation(); setLightbox({ photos: req.photos, index: 0 }); } : undefined}
+                        style={hasPhoto ? { cursor:'pointer' } : {}}
+                      >
+                        {hasPhoto ? (
+                          <>
+                            <img src={req.photos[0]} alt="" style={{ pointerEvents:'none' }} />
+                            {req.photos.length > 1 && (
+                              <div className="dpage-card-avito-img-count">📷 {req.photos.length}</div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="dpage-card-avito-img-placeholder"><span>📋</span></div>
+                        )}
+                      </div>
+                      <div className="dpage-card-avito-body">
+                        <div className="dpage-card-avito-top">
+                          <h3 className="dpage-card-avito-title">{req.title}</h3>
+                          <span className="dp-badge" style={{ color: st.color, background: st.bg, flexShrink:0 }}>
+                            {st.emoji} {st.label}
+                          </span>
+                        </div>
+                        {req.budgetTo && (
+                          <div className="dpage-card-avito-price">
+                            до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽
+                          </div>
+                        )}
+                        {req.description && req.description !== 'Без описания' && (
+                          <p className="dpage-card-avito-desc">{req.description}</p>
+                        )}
+                        <div className="dpage-card-avito-meta">
+                          {req.categoryId && <span>🏷 {getCatName(req.categoryId)}</span>}
+                          {req.addressText && <span>📍 {req.addressText}</span>}
+                          <span>🕐 {timeAgo(req.createdAt)}</span>
+                        </div>
+                      </div>
+                      <div className="dpage-card-chevron">›</div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ── DEALS TAB ── */}
+        {tab === 'deals' && (
+          <>
+            <div className="dpage-filters">
+              {[
+                ['ALL',         'Все',       dealCounts.ALL],
+                ['IN_PROGRESS', 'В работе',  dealCounts.IN_PROGRESS],
+                ['COMPLETED',   'Завершены', dealCounts.COMPLETED],
+              ].map(([key, label, count]) => (
+                <button
+                  key={key}
+                  className={`dpage-filter-btn ${dealFilter === key ? 'active' : ''}`}
+                  onClick={() => setDealFilter(key)}
+                >
+                  {label} <span>{count}</span>
+                </button>
               ))}
             </div>
 
-            {/* ── УСЛУГИ ── */}
-            {activeTab === 'services' && (
-              <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                {services.length === 0 ? (
-                  <div style={{ background:'#fff', borderRadius:12, padding:'48px 24px', textAlign:'center', color:'#9ca3af' }}>
-                    <div style={{ fontSize:40, marginBottom:10 }}>🔧</div>
-                    <p style={{ fontWeight:600 }}>Мастер пока не добавил услуги</p>
-                  </div>
-                ) : services.map(s => (
-                  <div key={s.id} style={{ background:'#fff', borderRadius:12, padding:'18px 20px', transition:'box-shadow .2s' }}
-                    onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.08)'}
-                    onMouseLeave={e => e.currentTarget.style.boxShadow='none'}
-                  >
-                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
-                      <div style={{ flex:1 }}>
-                        <h3 style={{ fontSize:16, fontWeight:700, color:'#111827', margin:'0 0 8px' }}>{s.title}</h3>
-                        {s.description && <p style={{ fontSize:13, color:'#6b7280', margin:'0 0 10px', lineHeight:1.6 }}>{s.description}</p>}
-                      </div>
-                      <div style={{ textAlign:'right', flexShrink:0 }}>
-                        <div style={{ fontSize:18, fontWeight:900, color:'#111827' }}>
-                          {s.priceTo ? `до ${Number(s.priceTo).toLocaleString('ru-RU')} ₽`
-                            : s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽`
-                            : 'Договорная'}
-                        </div>
-                        {userId !== workerId && (
-                          <button onClick={() => navigate(`/chat/${workerId}`)}
-                            style={{ marginTop:8, padding:'8px 16px', background:'#e8410a', border:'none', borderRadius:6, color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer' }}>
-                            Заказать
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* ── ВЫПОЛНЕННЫЕ РАБОТЫ ── */}
-            {activeTab === 'works' && (
-              <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                {completedWorks.length === 0 ? (
-                  <div style={{ background:'#fff', borderRadius:12, padding:'48px 24px', textAlign:'center', color:'#9ca3af' }}>
-                    <div style={{ fontSize:40, marginBottom:10 }}>🏆</div>
-                    <p style={{ fontWeight:600 }}>Выполненных работ пока нет</p>
-                  </div>
-                ) : completedWorks.map(work => (
-                  <div key={work.id} style={{ background:'#fff', borderRadius:12, overflow:'hidden', transition:'box-shadow .2s' }}
-                    onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.08)'}
-                    onMouseLeave={e => e.currentTarget.style.boxShadow='none'}
-                  >
-                    {/* Фото работы */}
-                    {work.photos && work.photos.length > 0 && (
-                      <div style={{ position:'relative', aspectRatio:'16/9', overflow:'hidden', cursor:'pointer' }}
-                        onClick={() => setLightbox({ photos: work.photos, index: 0 })}
-                      >
-                        <img src={work.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
-                        {work.photos.length > 1 && (
-                          <div style={{ position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:999 }}>
-                            📷 {work.photos.length}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    <div style={{ padding:'16px 20px' }}>
-                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:10, marginBottom:8 }}>
-                        <h3 style={{ fontSize:15, fontWeight:700, color:'#111827', margin:0 }}>{work.title}</h3>
-                        {work.categoryName && (
-                          <span style={{ fontSize:11, fontWeight:600, color:'#6366f1', background:'rgba(99,102,241,.08)', padding:'3px 8px', borderRadius:999, flexShrink:0 }}>
-                            {work.categoryName}
-                          </span>
-                        )}
-                      </div>
-                      {work.description && work.description !== 'Без описания' && (
-                        <p style={{ fontSize:13, color:'#6b7280', margin:'0 0 12px', lineHeight:1.6 }}>{work.description}</p>
-                      )}
-                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8, paddingTop:10, borderTop:'1px solid #f3f4f6', fontSize:12, color:'#9ca3af' }}>
-                        <span>👤 {work.customerName}</span>
-                        {work.price && <span style={{ fontWeight:800, color:'#22c55e', fontSize:14 }}>{Number(work.price).toLocaleString('ru-RU')} ₽</span>}
-                        {work.completedAt && <span>{new Date(work.completedAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</span>}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* ── ФОТО ГАЛЕРЕЯ ── */}
-            {activeTab === 'photos' && (
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px,1fr))', gap:8 }}>
-                {allPhotos.map((p, i) => (
-                  <div key={i} style={{ position:'relative', aspectRatio:'1', borderRadius:8, overflow:'hidden', cursor:'pointer', background:'#f3f4f6' }}
-                    onClick={() => setLightbox({ photos: allPhotos.map(x => x.url), index: i })}
-                    onMouseEnter={e => e.currentTarget.querySelector('.overlay').style.opacity='1'}
-                    onMouseLeave={e => e.currentTarget.querySelector('.overlay').style.opacity='0'}
-                  >
-                    <img src={p.url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
-                    <div className="overlay" style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'center', justifyContent:'center', opacity:0, transition:'opacity .2s', fontSize:24 }}>
-                      🔍
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* ── ОТЗЫВЫ ── */}
-            {activeTab === 'reviews' && (
-              <div>
-                {/* Сводка рейтинга */}
-                {reviews.length > 0 && (
-                  <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:12, display:'flex', gap:24, alignItems:'center' }}>
-                    <div style={{ textAlign:'center', flexShrink:0 }}>
-                      <div style={{ fontSize:48, fontWeight:900, color:'#111827', lineHeight:1 }}>{worker.rating.toFixed(1)}</div>
-                      <div style={{ color:'#f59e0b', fontSize:20, marginTop:4 }}>{renderStars(worker.rating)}</div>
-                      <div style={{ fontSize:12, color:'#9ca3af', marginTop:4 }}>{reviews.length} отзыв{reviews.length===1?'':reviews.length<5?'а':'ов'}</div>
-                    </div>
-                    <div style={{ flex:1 }}>
-                      {[5,4,3,2,1].map(star => {
-                        const count = reviews.filter(r => r.rating === star).length;
-                        const pct = reviews.length > 0 ? count/reviews.length*100 : 0;
-                        return (
-                          <div key={star} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:5 }}>
-                            <span style={{ color:'#f59e0b', fontSize:12, width:14 }}>{'★'.repeat(star)}</span>
-                            <div style={{ flex:1, height:6, background:'#e5e7eb', borderRadius:3, overflow:'hidden' }}>
-                              <div style={{ width:`${pct}%`, height:'100%', background:'#f59e0b', borderRadius:3, transition:'width .5s' }} />
-                            </div>
-                            <span style={{ fontSize:12, color:'#9ca3af', width:16, textAlign:'right' }}>{count}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                  {reviews.length === 0 ? (
-                    <div style={{ background:'#fff', borderRadius:12, padding:'48px 24px', textAlign:'center', color:'#9ca3af' }}>
-                      <div style={{ fontSize:40, marginBottom:10 }}>⭐</div>
-                      <p style={{ fontWeight:600 }}>Отзывов пока нет</p>
-                    </div>
-                  ) : reviews.map(r => (
-                    <div key={r.id} style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
-                        <div style={{ width:40, height:40, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:15, flexShrink:0 }}>
-                          {(r.authorName||'К')[0].toUpperCase()}
-                        </div>
-                        <div style={{ flex:1 }}>
-                          <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{r.authorName || 'Клиент'}</div>
-                          <div style={{ fontSize:12, color:'#9ca3af' }}>
-                            {r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}
-                          </div>
-                        </div>
-                        <div style={{ color:'#f59e0b', fontSize:14, fontWeight:700 }}>
-                          {'★'.repeat(r.rating||0)}{'☆'.repeat(5-(r.rating||0))}
-                        </div>
-                      </div>
-                      {r.text && <p style={{ fontSize:14, color:'#374151', margin:0, lineHeight:1.6 }}>{r.text}</p>}
-                    </div>
-                  ))}
+            <div className="dpage-list">
+              {loading ? (
+                [1,2,3].map(i => <div key={i} className="dp-skeleton" style={{ height:88 }} />)
+              ) : filteredDeals.length === 0 ? (
+                <div className="dpage-empty">
+                  <span>🤝</span>
+                  <h3>Сделок пока нет</h3>
+                  <p>Сделки появятся после того как вы примете отклик мастера</p>
+                  <button className="btn btn-primary btn-sm" onClick={() => setTab('requests')}>
+                    Перейти к заявкам
+                  </button>
                 </div>
-              </div>
-            )}
-          </div>
-        </div>
+              ) : (
+                filteredDeals.map(d => {
+                  const st = DEAL_STATUSES[d.status] || DEAL_STATUSES.NEW;
+                  const im = isCust(d);
+                  const hasPhoto = d.photos && d.photos.length > 0;
+                  return (
+                    <div key={d.id} className="dpage-card-avito" onClick={() => setDealDetail(d)}>
+                      <div className="dpage-card-avito-img">
+                        {hasPhoto ? (
+                          <img src={d.photos[0]} alt="" style={{ pointerEvents:'none' }} />
+                        ) : (
+                          <div className="dpage-card-avito-img-placeholder"><span>🤝</span></div>
+                        )}
+                      </div>
+                      <div className="dpage-card-avito-body">
+                        <div className="dpage-card-avito-top">
+                          <h3 className="dpage-card-avito-title">{d.title || 'Задача'}</h3>
+                          <span className="dp-badge" style={{ color: st.color, background: st.bg, flexShrink:0 }}>
+                            {st.emoji} {st.label}
+                          </span>
+                        </div>
+                        {d.agreedPrice && (
+                          <div className="dpage-card-avito-price">
+                            {Number(d.agreedPrice).toLocaleString('ru-RU')} ₽
+                          </div>
+                        )}
+                        <div className="dpage-card-avito-meta">
+                          {d.category && <span>🏷 {d.category}</span>}
+                          <span>👤 {im ? (d.workerName || 'Мастер') : d.customerName}</span>
+                          <span>🕐 {timeAgo(d.createdAt)}</span>
+                        </div>
+                        {d.status === 'IN_PROGRESS' && (
+                          <div className="dpage-card-progress" style={{ marginTop:8 }}>
+                            <div className={`dp-prog ${d.customerConfirmed ? 'ok' : ''}`}>
+                              {d.customerConfirmed ? '✅' : '⏳'} Заказчик
+                            </div>
+                            <span className="dp-prog-arrow">→</span>
+                            <div className={`dp-prog ${d.workerConfirmed ? 'ok' : ''}`}>
+                              {d.workerConfirmed ? '✅' : '⏳'} Мастер
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="dpage-card-chevron">›</div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </>
+        )}
       </div>
 
-      {/* LIGHTBOX */}
-      {lightbox && (
-        <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
-          onClick={() => setLightbox(null)}>
-          <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
-            <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:8, display:'block', pointerEvents:'none', boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }} />
-            <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:12, fontWeight:700, padding:'3px 9px', borderRadius:999 }}>
-              {lightbox.index+1} / {lightbox.photos.length}
-            </div>
-            <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:34, height:34, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:20, cursor:'pointer' }}>×</button>
-            {lightbox.photos.length > 1 && (
+      {/* ✅ ДОБАВЛЕНО: Модалка отзыва */}
+      {reviewDeal && (
+        <div className="modal-overlay" onClick={() => setReviewDeal(null)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            {reviewStatus === 'done' ? (
+              <div className="modal-success">
+                <span>🎉</span>
+                <h3>Отзыв отправлен!</h3>
+                <button className="btn btn-primary btn-sm" onClick={() => setReviewDeal(null)}>Закрыть</button>
+              </div>
+            ) : (
               <>
-                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index:(l.index-1+l.photos.length)%l.photos.length})); }}
-                  style={{ position:'absolute', left:-50, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:24, cursor:'pointer' }}>‹</button>
-                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index:(l.index+1)%l.photos.length})); }}
-                  style={{ position:'absolute', right:-50, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:24, cursor:'pointer' }}>›</button>
+                <h3 className="modal-title">Оставить отзыв</h3>
+                <p className="modal-sub">Мастер: {reviewDeal.workerName}</p>
+
+                <div className="form-field">
+                  <label className="form-label">Оценка</label>
+                  <div className="rating-row">
+                    {[1,2,3,4,5].map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        className={`rating-star ${reviewForm.rating >= s ? 'active' : ''}`}
+                        onClick={() => setReviewForm({...reviewForm, rating: s})}
+                      >★</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-field">
+                  <label className="form-label">Комментарий</label>
+                  <textarea
+                    className="form-input form-textarea"
+                    placeholder="Расскажите о работе мастера…"
+                    value={reviewForm.comment}
+                    onChange={e => setReviewForm({...reviewForm, comment: e.target.value})}
+                  />
+                </div>
+
+                {reviewStatus === 'error' && (
+                  <div className="cat-form-error">Не удалось отправить отзыв</div>
+                )}
+
+                <div style={{display:'flex',gap:10}}>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleReviewSubmit}
+                    disabled={reviewStatus === 'sending'}
+                  >
+                    {reviewStatus === 'sending' ? 'Отправляем…' : 'Отправить'}
+                  </button>
+                  <button type="button" className="btn btn-outline" onClick={() => setReviewDeal(null)}>
+                    Отмена
+                  </button>
+                </div>
               </>
             )}
           </div>
+        </div>
+      )}
+      {/* ══ LIGHTBOX ══ */}
+      {lightbox && (
+        <div
+          style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
+          onClick={() => setLightbox(null)}
+        >
+          <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
+            <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block' }} />
+            <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
+              {lightbox.index + 1} / {lightbox.photos.length}
+            </div>
+            <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+            {lightbox.index > 0 && (
+              <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index - 1})); }} style={{ position:'absolute', left:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>‹</button>
+            )}
+            {lightbox.index < lightbox.photos.length - 1 && (
+              <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index + 1})); }} style={{ position:'absolute', right:-56, top:'50%', transform:'translateY(-50%)', width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:28, cursor:'pointer' }}>›</button>
+            )}
+          </div>
           {lightbox.photos.length > 1 && (
-            <div style={{ display:'flex', gap:6, marginTop:12 }} onClick={e => e.stopPropagation()}>
-              {lightbox.photos.map((p,i) => (
-                <div key={i} onClick={() => setLightbox(l => ({...l, index:i}))}
-                  style={{ width:48, height:36, borderRadius:4, overflow:'hidden', cursor:'pointer', border: i===lightbox.index ? '2px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i===lightbox.index ? 1 : 0.55 }}>
+            <div style={{ display:'flex', gap:8, marginTop:16 }} onClick={e => e.stopPropagation()}>
+              {lightbox.photos.map((p, i) => (
+                <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))} style={{ width:56, height:56, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
                   <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
                 </div>
               ))}
@@ -450,13 +877,6 @@ export default function PublicWorkerProfilePage() {
           )}
         </div>
       )}
-
-      {/* Адаптив */}
-      <style>{`
-        @media (max-width: 900px) {
-          .container > div { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </div>
   );
 }
