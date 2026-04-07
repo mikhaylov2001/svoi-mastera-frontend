@@ -44,6 +44,10 @@ export default function PublicWorkerProfilePage() {
   const [lightbox,       setLightbox]       = useState(null);
   const [photoIdx,       setPhotoIdx]       = useState({});
   const [showReviews,    setShowReviews]    = useState(false);
+  const [reviewModal,    setReviewModal]    = useState(false);
+  const [reviewForm,     setReviewForm]     = useState({ rating: 5, text: '' });
+  const [reviewSending,  setReviewSending]  = useState(false);
+  const [reviewDone,     setReviewDone]     = useState(false);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -98,6 +102,28 @@ export default function PublicWorkerProfilePage() {
 
   const badgeIcons  = { polite:'😊', fast:'⚡', quality:'💎', price:'💰' };
   const badgeLabels = { polite:'Вежливый', fast:'Быстро', quality:'Качественно', price:'Цена/качество' };
+
+  const handleReviewSubmit = async () => {
+    if (!reviewForm.text.trim()) return;
+    setReviewSending(true);
+    try {
+      // Ищем dealId — последнюю завершённую сделку с этим мастером
+      const res = await fetch(`${API}/deals`, { headers: { 'X-User-Id': userId } });
+      const deals = res.ok ? await res.json() : [];
+      const completedDeal = deals.find(d => d.workerId === workerId && d.status === 'COMPLETED' && !d.hasReview);
+      if (!completedDeal) { alert('Нет завершённых сделок для отзыва'); setReviewSending(false); return; }
+      await fetch(`${API}/deals/${completedDeal.id}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
+        body: JSON.stringify({ rating: reviewForm.rating, text: reviewForm.text }),
+      });
+      setReviewDone(true);
+      // Перезагружаем отзывы
+      const r = await fetch(`${API}/reviews/worker/${workerId}`);
+      if (r.ok) setReviews(await r.json());
+    } catch (e) { console.error(e); }
+    setReviewSending(false);
+  };
 
   return (
     <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
@@ -175,11 +201,18 @@ export default function PublicWorkerProfilePage() {
 
               {/* Кнопка написать */}
               {userId && userId !== workerId && (
-                <button onClick={() => navigate(`/chat/${workerId}`)}
-                  style={{ width:'100%', padding:'12px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}
-                  onMouseEnter={e => e.currentTarget.style.background='#c73208'}
-                  onMouseLeave={e => e.currentTarget.style.background='#e8410a'}
-                >💬 Написать</button>
+                <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                  <button onClick={() => navigate(`/chat/${workerId}`)}
+                    style={{ width:'100%', padding:'12px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}
+                    onMouseEnter={e => e.currentTarget.style.background='#c73208'}
+                    onMouseLeave={e => e.currentTarget.style.background='#e8410a'}
+                  >💬 Написать</button>
+                  <button onClick={() => { setReviewModal(true); setReviewDone(false); setReviewForm({ rating:5, text:'' }); }}
+                    style={{ width:'100%', padding:'11px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:8, color:'#374151', fontSize:14, fontWeight:700, cursor:'pointer' }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor='#374151'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor='#e5e7eb'}
+                  >⭐ Оставить отзыв</button>
+                </div>
               )}
             </div>
           </div>
@@ -398,6 +431,82 @@ export default function PublicWorkerProfilePage() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* МОДАЛКА ОТЗЫВА */}
+      {reviewModal && (
+        <div style={{ position:'fixed', inset:0, zIndex:2000, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+          onClick={() => setReviewModal(false)}>
+          <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:460, padding:28 }}
+            onClick={e => e.stopPropagation()}>
+            {reviewDone ? (
+              <div style={{ textAlign:'center', padding:'20px 0' }}>
+                <div style={{ fontSize:48, marginBottom:12 }}>🎉</div>
+                <h3 style={{ fontSize:20, fontWeight:800, color:'#111827', margin:'0 0 8px' }}>Отзыв отправлен!</h3>
+                <p style={{ color:'#6b7280', margin:'0 0 20px' }}>Спасибо за вашу оценку</p>
+                <button onClick={() => setReviewModal(false)}
+                  style={{ padding:'10px 28px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>
+                  Закрыть
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+                  <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Отзыв о мастере</h2>
+                  <button onClick={() => setReviewModal(false)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#9ca3af' }}>×</button>
+                </div>
+
+                {/* Мастер */}
+                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#f9fafb', borderRadius:10, marginBottom:20 }}>
+                  {worker?.avatarUrl ? (
+                    <img src={worker.avatarUrl} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} />
+                  ) : (
+                    <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>
+                      {initials}
+                    </div>
+                  )}
+                  <div>
+                    <div style={{ fontSize:15, fontWeight:700, color:'#111827' }}>{fullName}</div>
+                    <div style={{ fontSize:12, color:'#9ca3af' }}>Мастер</div>
+                  </div>
+                </div>
+
+                {/* Звёзды */}
+                <div style={{ marginBottom:16 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:'#374151', marginBottom:8 }}>Оценка</div>
+                  <div style={{ display:'flex', gap:8 }}>
+                    {[1,2,3,4,5].map(star => (
+                      <button key={star} onClick={() => setReviewForm(p => ({...p, rating:star}))}
+                        style={{ background:'none', border:'none', cursor:'pointer', fontSize:32, padding:0, opacity: star <= reviewForm.rating ? 1 : 0.25, transition:'opacity .15s' }}>
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Текст */}
+                <div style={{ marginBottom:20 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:'#374151', marginBottom:8 }}>Комментарий</div>
+                  <textarea
+                    value={reviewForm.text}
+                    onChange={e => setReviewForm(p => ({...p, text: e.target.value}))}
+                    placeholder="Расскажите о качестве работы, пунктуальности, общении..."
+                    style={{ width:'100%', padding:'12px', borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box' }}
+                    onFocus={e => e.target.style.borderColor='#e8410a'}
+                    onBlur={e => e.target.style.borderColor='#e5e7eb'}
+                  />
+                </div>
+
+                <button
+                  onClick={handleReviewSubmit}
+                  disabled={reviewSending || !reviewForm.text.trim()}
+                  style={{ width:'100%', padding:'13px', background: reviewForm.text.trim() ? '#e8410a' : '#e5e7eb', border:'none', borderRadius:8, color: reviewForm.text.trim() ? '#fff' : '#9ca3af', fontSize:15, fontWeight:700, cursor: reviewForm.text.trim() ? 'pointer' : 'not-allowed', transition:'background .15s' }}>
+                  {reviewSending ? 'Отправляем...' : '⭐ Отправить отзыв'}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
 
