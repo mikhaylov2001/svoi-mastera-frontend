@@ -270,11 +270,17 @@ export default function DealsPage() {
                   <div style={{ fontSize:12, color:'#9ca3af', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:12 }}>Мастер</div>
                   <div style={{ display:'flex', alignItems:'center', gap:12, cursor:'pointer', marginBottom:12 }}
                     onClick={() => dealDetail.workerId && navigate(`/workers/${dealDetail.workerId}`)}>
-                    <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16, flexShrink:0 }}>
-                      {(dealDetail.workerName||'М')[0].toUpperCase()}
-                    </div>
+                    {dealDetail.workerAvatar ? (
+                      <img src={dealDetail.workerAvatar} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0, border:'2px solid #f3f4f6' }} />
+                    ) : (
+                      <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16, flexShrink:0 }}>
+                        {(dealDetail.workerName||'М')[0].toUpperCase()}
+                      </div>
+                    )}
                     <div style={{ flex:1 }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{dealDetail.workerName}</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>
+                        {[dealDetail.workerName, dealDetail.workerLastName].filter(Boolean).join(' ')}
+                      </div>
                       <div style={{ fontSize:12, color:'#6366f1', fontWeight:600 }}>● Мастер</div>
                     </div>
                     <div style={{ color:'#9ca3af', fontSize:18 }}>›</div>
