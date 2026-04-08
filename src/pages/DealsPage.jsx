@@ -45,10 +45,8 @@ export default function DealsPage() {
   const [categories, setCategories] = useState([]);
   const [loading,    setLoading]    = useState(true);
 
-  const [tab,        setTab]        = useState('requests');
-  const [reqFilter,  setReqFilter]  = useState('ALL');
-  const [dealFilter, setDealFilter] = useState('ALL');
-  const [unifiedFilter, setUnifiedFilter] = useState('ALL');
+  // tab: 'requests' | 'active' | 'completed'
+  const [tab, setTab] = useState('requests');
 
   const [dealDetail, setDealDetail] = useState(null);
   const [reqDetail,  setReqDetail]  = useState(null);
@@ -58,16 +56,13 @@ export default function DealsPage() {
 
   const [actionId, setActionId] = useState(null);
 
-  // ✅ ДОБАВЛЕНО: Стейты для отзыва
-  const [reviewDeal, setReviewDeal] = useState(null);
-  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
+  const [reviewDeal,   setReviewDeal]   = useState(null);
+  const [reviewForm,   setReviewForm]   = useState({ rating: 5, comment: '' });
   const [reviewStatus, setReviewStatus] = useState('idle');
 
-  // Lightbox для фото
-  const [lightbox, setLightbox] = useState(null);
-  const [activePhotoIndex, setActivePhotoIndex] = useState(0); // { photos: [], index: 0 }
+  const [lightbox,        setLightbox]        = useState(null);
+  const [activePhotoIndex,setActivePhotoIndex] = useState(0);
 
-  // Клавиатурная навигация lightbox
   React.useEffect(() => {
     if (!lightbox) return;
     const handler = (e) => {
@@ -118,7 +113,7 @@ export default function DealsPage() {
       await load();
       setReqDetail(null);
       setOffers([]);
-      setTab('deals');
+      setTab('active');
     } catch {}
     setActionId(null);
   };
@@ -129,7 +124,6 @@ export default function DealsPage() {
     setActionId(null);
   };
 
-  // ✅ ДОБАВЛЕНО: Обработчик отправки отзыва
   const handleReviewSubmit = async () => {
     if (!reviewDeal) return;
     setReviewStatus('sending');
@@ -145,29 +139,10 @@ export default function DealsPage() {
 
   const isCust = (d) => d.customerId === userId;
 
-  // Заявки у которых уже есть сделка — скрываем из таба заявок
   const dealsJobRequestIds = new Set(deals.map(d => d.jobRequestId).filter(Boolean));
   const activeRequests = requests.filter(r => !dealsJobRequestIds.has(r.id));
-
-  const reqCounts = {
-    ALL:         activeRequests.length,
-    OPEN:        activeRequests.filter(r => r.status === 'OPEN').length,
-    IN_PROGRESS: activeRequests.filter(r => ['IN_PROGRESS','ASSIGNED','IN_NEGOTIATION'].includes(r.status)).length,
-    COMPLETED:   activeRequests.filter(r => r.status === 'COMPLETED').length,
-  };
-  const dealCounts = {
-    ALL:         deals.length,
-    IN_PROGRESS: deals.filter(d => d.status === 'IN_PROGRESS').length,
-    COMPLETED:   deals.filter(d => d.status === 'COMPLETED').length,
-  };
-
-  const filteredReqs = reqFilter === 'ALL' ? activeRequests
-    : reqFilter === 'IN_PROGRESS'
-      ? activeRequests.filter(r => ['IN_PROGRESS','ASSIGNED','IN_NEGOTIATION'].includes(r.status))
-      : activeRequests.filter(r => r.status === reqFilter);
-
-  const filteredDeals = dealFilter === 'ALL' ? deals
-    : deals.filter(d => d.status === dealFilter);
+  const activeDeals    = deals.filter(d => d.status === 'IN_PROGRESS' || d.status === 'NEW');
+  const completedDeals = deals.filter(d => d.status === 'COMPLETED');
 
   /* ══ DEAL DETAIL ══ */
   if (dealDetail) {
@@ -179,7 +154,6 @@ export default function DealsPage() {
 
     return (
       <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
-        {/* Навигация */}
         <div style={{ background:'#fff', borderBottom:'1.5px solid #e5e7eb', padding:'12px 0' }}>
           <div className="container">
             <button className="cats-back-link" onClick={() => setDealDetail(null)}>
@@ -189,7 +163,6 @@ export default function DealsPage() {
         </div>
 
         <div className="container" style={{ paddingTop:20, paddingBottom:60 }}>
-          {/* Заголовок */}
           <div style={{ marginBottom:16 }}>
             <h1 style={{ fontSize:22, fontWeight:800, color:'#111827', margin:'0 0 6px' }}>{dealDetail.title || 'Задача'}</h1>
             <div style={{ display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
@@ -200,9 +173,7 @@ export default function DealsPage() {
           </div>
 
           <div style={{ display:'grid', gridTemplateColumns:'1fr 320px', gap:20, alignItems:'flex-start' }}>
-            {/* Левая колонка */}
             <div>
-              {/* Фото */}
               {hasPhoto && (
                 <div style={{ background:'#fff', borderRadius:12, overflow:'hidden', marginBottom:16 }}>
                   <div style={{ position:'relative', aspectRatio:'16/9', overflow:'hidden', cursor:'pointer' }}
@@ -227,7 +198,6 @@ export default function DealsPage() {
                 </div>
               )}
 
-              {/* Описание */}
               {dealDetail.description && dealDetail.description !== 'Без описания' && (
                 <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
                   <div style={{ fontSize:12, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:10 }}>Описание задачи</div>
@@ -235,7 +205,6 @@ export default function DealsPage() {
                 </div>
               )}
 
-              {/* Подробности */}
               <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px' }}>
                 <div style={{ fontSize:12, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:14 }}>Подробности</div>
                 {[
@@ -251,10 +220,7 @@ export default function DealsPage() {
               </div>
             </div>
 
-            {/* Правая колонка */}
             <div style={{ display:'flex', flexDirection:'column', gap:12, position:'sticky', top:72 }}>
-
-              {/* Цена */}
               {dealDetail.agreedPrice && (
                 <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
                   <div style={{ fontSize:26, fontWeight:900, color:'#111827' }}>
@@ -264,7 +230,6 @@ export default function DealsPage() {
                 </div>
               )}
 
-              {/* Карточка мастера */}
               {dealDetail.workerName && (
                 <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
                   <div style={{ fontSize:12, color:'#9ca3af', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:12 }}>Мастер</div>
@@ -292,7 +257,6 @@ export default function DealsPage() {
                 </div>
               )}
 
-              {/* Подтверждение */}
               {dealDetail.status === 'IN_PROGRESS' && (
                 <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
                   <div style={{ fontSize:14, fontWeight:800, color:'#111827', marginBottom:6 }}>Подтверждение выполнения</div>
@@ -347,7 +311,6 @@ export default function DealsPage() {
           </div>
         </div>
 
-        {/* LIGHTBOX */}
         {lightbox && (
           <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
             onClick={() => setLightbox(null)}>
@@ -408,33 +371,25 @@ export default function DealsPage() {
 
         <div className="container">
           <div className="dp-grid" style={{ paddingTop:24 }}>
-            {/* Левая колонка */}
             <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-
-              {/* Фото — первыми, большие */}
               {reqDetail.photos && reqDetail.photos.length > 0 && (
-                <div className="dp-card" style={{ padding:0, overflow:'hidden' }}>
-                  {/* Главное фото */}
-                  <div style={{ width:'100%', aspectRatio:'16/9', overflow:'hidden', position:'relative' }}>
+                <div style={{ background:'#fff', borderRadius:12, overflow:'hidden' }}>
+                  <div style={{ position:'relative', aspectRatio:'16/9', overflow:'hidden', cursor:'pointer', background:'#000' }}>
                     <img
                       src={reqDetail.photos[activePhotoIndex]}
                       alt=""
-                      style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block', transition:'opacity .2s' }}
+                      style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', pointerEvents:'none' }}
                     />
-                    {/* Стрелки навигации */}
-                    {reqDetail.photos.length > 1 && (
-                      <>
-                        <button
-                          onClick={() => setActivePhotoIndex(i => i > 0 ? i - 1 : reqDetail.photos.length - 1)}
-                          style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
-                        >‹</button>
-                        <button
-                          onClick={() => setActivePhotoIndex(i => i < reqDetail.photos.length - 1 ? i + 1 : 0)}
-                          style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
-                        >›</button>
-                      </>
-                    )}
-                    {/* Счётчик + кнопка увеличения */}
+                    {reqDetail.photos.length > 1 && (<>
+                      <button
+                        onClick={() => setActivePhotoIndex(i => i > 0 ? i - 1 : reqDetail.photos.length - 1)}
+                        style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
+                      >‹</button>
+                      <button
+                        onClick={() => setActivePhotoIndex(i => i < reqDetail.photos.length - 1 ? i + 1 : 0)}
+                        style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', width:38, height:38, borderRadius:'50%', background:'rgba(0,0,0,0.45)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}
+                      >›</button>
+                    </>)}
                     <div style={{ position:'absolute', bottom:10, right:10, display:'flex', gap:6, alignItems:'center' }}>
                       <div style={{ background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:12, fontWeight:700, padding:'4px 10px', borderRadius:999, backdropFilter:'blur(4px)' }}>
                         {activePhotoIndex + 1} / {reqDetail.photos.length}
@@ -442,19 +397,14 @@ export default function DealsPage() {
                       <button
                         onClick={() => setLightbox({ photos: reqDetail.photos, index: activePhotoIndex })}
                         style={{ background:'rgba(0,0,0,0.55)', border:'none', color:'#fff', fontSize:14, padding:'4px 10px', borderRadius:999, cursor:'pointer', backdropFilter:'blur(4px)' }}
-                        title="Открыть на весь экран"
                       >⛶</button>
                     </div>
                   </div>
-                  {/* Полоса миниатюр */}
                   {reqDetail.photos.length > 1 && (
                     <div style={{ display:'flex', gap:6, padding:'10px 12px', background:'#f9fafb', overflowX:'auto' }}>
                       {reqDetail.photos.map((p, i) => (
-                        <div
-                          key={i}
-                          onClick={() => setActivePhotoIndex(i)}
-                          style={{ width:72, height:54, userSelect:'none', flexShrink:0, borderRadius:8, overflow:'hidden', cursor:'pointer', border: i === activePhotoIndex ? '2.5px solid #e8410a' : '2px solid transparent', opacity: i === activePhotoIndex ? 1 : 0.6, transition:'all .15s' }}
-                        >
+                        <div key={i} onClick={() => setActivePhotoIndex(i)}
+                          style={{ width:72, height:54, userSelect:'none', flexShrink:0, borderRadius:8, overflow:'hidden', cursor:'pointer', border: i === activePhotoIndex ? '2.5px solid #e8410a' : '2px solid transparent', opacity: i === activePhotoIndex ? 1 : 0.6, transition:'all .15s' }}>
                           <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
                         </div>
                       ))}
@@ -463,7 +413,6 @@ export default function DealsPage() {
                 </div>
               )}
 
-              {/* Описание */}
               {reqDetail.description && reqDetail.description !== 'Без описания' && (
                 <div className="dp-card">
                   <div className="dp-card-label">Описание задачи</div>
@@ -471,7 +420,6 @@ export default function DealsPage() {
                 </div>
               )}
 
-              {/* Детали в сетке */}
               <div className="dp-card">
                 <div className="dp-card-label">Детали заявки</div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
@@ -501,7 +449,6 @@ export default function DealsPage() {
               </div>
             </div>
 
-            {/* Правая колонка — отклики */}
             <div className="dp-side">
               {reqDetail.status === 'OPEN' ? (
                 <>
@@ -550,12 +497,9 @@ export default function DealsPage() {
           </div>
         </div>
 
-        {/* Lightbox прямо здесь — без конфликта с router */}
         {lightbox && (
-          <div
-            style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
-            onClick={() => setLightbox(null)}
-          >
+          <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
+            onClick={() => setLightbox(null)}>
             <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
               <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block' }} />
               <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
@@ -585,73 +529,114 @@ export default function DealsPage() {
     );
   }
 
-    /* ══ LIST ══ */
+  /* ══ ГЛАВНЫЙ СПИСОК ══ */
   return (
-    <div>
-      <div className="page-header-bar">
+    <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
+      <div className="page-header-bar dpage-header">
         <div className="container">
           <h1>Мои сделки</h1>
           <p>Активные сделки и завершённые работы</p>
         </div>
       </div>
 
-      <div className="container" style={{ padding:'28px 0 60px' }}>
+      <div className="container" style={{ padding:'24px 0 60px' }}>
 
-        {/* Единые фильтры */}
-        <div className="dpage-filters">
-          {[
-            ['ALL',         'Все',          deals.length + activeRequests.length],
-            ['IN_PROGRESS', 'В работе',     dealCounts.IN_PROGRESS],
-            ['REQUESTS',    'Мои заявки',   activeRequests.length],
-            ['COMPLETED',   'Завершены',    dealCounts.COMPLETED],
-          ].map(([key, label, count]) => (
-            <button
-              key={key}
-              className={`dpage-filter-btn ${unifiedFilter === key ? 'active' : ''}`}
-              onClick={() => setUnifiedFilter(key)}
-            >
-              {label} <span>{count}</span>
-            </button>
-          ))}
-          <Link to="/sections" style={{
-            marginLeft: 'auto', display:'inline-flex', alignItems:'center', gap:6,
-            padding:'8px 16px', borderRadius:999, fontSize:13, fontWeight:700,
-            color:'#e8410a', background:'rgba(232,65,10,.08)',
-            border:'1.5px solid rgba(232,65,10,.2)', textDecoration:'none', whiteSpace:'nowrap',
-          }}>
-            <svg width="14" height="14" fill="none" stroke="#e8410a" strokeWidth="2.2" viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-            Найти мастера
-          </Link>
+        {/* ── Статистика (как у мастера) ── */}
+        <div className="dpage-stats-row">
+          <div className="dpage-stat-box">
+            <div className="dpage-stat-num">{activeRequests.length}</div>
+            <div className="dpage-stat-label">ЗАЯВОК</div>
+          </div>
+          <div className="dpage-stat-divider" />
+          <div className="dpage-stat-box">
+            <div className="dpage-stat-num">{completedDeals.length}</div>
+            <div className="dpage-stat-label">ВЫПОЛНЕНО</div>
+          </div>
+          {activeDeals.length > 0 && (
+            <>
+              <div className="dpage-stat-divider" />
+              <div className="dpage-stat-box">
+                <div className="dpage-stat-num">{activeDeals.length}</div>
+                <div className="dpage-stat-label">В РАБОТЕ</div>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* ── ЕДИНЫЙ СПИСОК ── */}
+        {/* ── Бейджи доверия ── */}
+        <div className="dpage-trust-badges">
+          <div className="dpage-trust-badge dpage-trust-green">
+            <span>✔</span> Документы проверены
+          </div>
+          <div className="dpage-trust-badge">
+            <span>📍</span> Йошкар-Ола
+          </div>
+          {(activeRequests.length > 0 || activeDeals.length > 0) && (
+            <div className="dpage-trust-badge dpage-trust-yellow">
+              <span>⭐</span> Активный заказчик
+            </div>
+          )}
+          {completedDeals.length > 0 && (
+            <div className="dpage-trust-badge dpage-trust-orange">
+              <span>🤝</span> Есть завершённые сделки
+            </div>
+          )}
+        </div>
+
+        {/* ── Вкладки ── */}
+        <div className="dpage-profile-tabs">
+          <button
+            className={`dpage-profile-tab ${tab === 'requests' ? 'active' : ''}`}
+            onClick={() => setTab('requests')}
+          >
+            Заявки
+            {activeRequests.length > 0 && <span className="dpage-profile-tab-count">{activeRequests.length}</span>}
+          </button>
+          <button
+            className={`dpage-profile-tab ${tab === 'active' ? 'active' : ''}`}
+            onClick={() => setTab('active')}
+          >
+            В работе
+            {activeDeals.length > 0 && <span className="dpage-profile-tab-count">{activeDeals.length}</span>}
+          </button>
+          <button
+            className={`dpage-profile-tab ${tab === 'completed' ? 'active' : ''}`}
+            onClick={() => setTab('completed')}
+          >
+            Завершённые
+            {completedDeals.length > 0 && <span className="dpage-profile-tab-count">{completedDeals.length}</span>}
+          </button>
+        </div>
+
+        {/* ── Список ── */}
         <div className="dpage-list">
           {loading ? (
-            [1,2,3].map(i => <div key={i} className="dp-skeleton" style={{ height:88 }} />)
+            [1,2,3].map(i => <div key={i} className="dp-skeleton" style={{ height:100, borderRadius:16 }} />)
           ) : (() => {
             let items = [];
-            if (unifiedFilter === 'ALL') {
-              items = [
-                ...deals.map(d => ({ _type:'deal', ...d })),
-                ...activeRequests.map(r => ({ _type:'req', ...r })),
-              ].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-            } else if (unifiedFilter === 'IN_PROGRESS') {
-              items = deals.filter(d => d.status === 'IN_PROGRESS').map(d => ({ _type:'deal', ...d }));
-            } else if (unifiedFilter === 'REQUESTS') {
-              items = activeRequests.map(r => ({ _type:'req', ...r }));
-            } else if (unifiedFilter === 'COMPLETED') {
-              items = deals.filter(d => d.status === 'COMPLETED').map(d => ({ _type:'deal', ...d }));
-            }
+            if (tab === 'requests') items = activeRequests.map(r => ({ _type:'req', ...r }));
+            if (tab === 'active')   items = activeDeals.map(d => ({ _type:'deal', ...d }));
+            if (tab === 'completed') items = completedDeals.map(d => ({ _type:'deal', ...d }));
+
             if (items.length === 0) return (
               <div className="dpage-empty">
-                <span>📋</span>
-                <h3>Ничего нет</h3>
-                <p>Здесь появятся ваши заявки и сделки</p>
-                <Link to="/sections" className="btn btn-primary btn-sm">Найти мастера</Link>
+                <span>{tab === 'requests' ? '📋' : tab === 'active' ? '⚙️' : '✅'}</span>
+                <h3>
+                  {tab === 'requests' ? 'Заявок пока нет' :
+                   tab === 'active'   ? 'Нет активных сделок' :
+                                        'Нет завершённых сделок'}
+                </h3>
+                <p>
+                  {tab === 'requests' ? 'Создайте заявку — мастера откликнутся' :
+                   tab === 'active'   ? 'Примите отклик мастера, чтобы началась сделка' :
+                                        'Завершённые сделки появятся здесь'}
+                </p>
+                {tab === 'requests' && (
+                  <Link to="/sections" className="btn btn-primary btn-sm">Найти мастера</Link>
+                )}
               </div>
             );
+
             return items.map(item => {
               if (item._type === 'req') {
                 const req = item;
@@ -722,6 +707,23 @@ export default function DealsPage() {
             });
           })()}
         </div>
+
+        {/* Кнопка найти мастера */}
+        {!loading && (
+          <div style={{ marginTop:20, textAlign:'center' }}>
+            <Link to="/sections" style={{
+              display:'inline-flex', alignItems:'center', gap:6,
+              padding:'10px 20px', borderRadius:999, fontSize:13, fontWeight:700,
+              color:'#e8410a', background:'rgba(232,65,10,.08)',
+              border:'1.5px solid rgba(232,65,10,.2)', textDecoration:'none',
+            }}>
+              <svg width="14" height="14" fill="none" stroke="#e8410a" strokeWidth="2.2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              Найти мастера
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Модалка отзыва */}
@@ -746,8 +748,6 @@ export default function DealsPage() {
                   <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Отзыв о мастере</h2>
                   <button onClick={() => setReviewDeal(null)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#9ca3af' }}>×</button>
                 </div>
-
-                {/* Карточка мастера */}
                 <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#f9fafb', borderRadius:10, marginBottom:20 }}>
                   {reviewDeal.workerAvatar ? (
                     <img src={reviewDeal.workerAvatar} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} />
@@ -763,8 +763,6 @@ export default function DealsPage() {
                     <div style={{ fontSize:12, color:'#9ca3af' }}>Мастер</div>
                   </div>
                 </div>
-
-                {/* Звёзды */}
                 <div style={{ marginBottom:16 }}>
                   <div style={{ fontSize:13, fontWeight:600, color:'#374151', marginBottom:8 }}>Оценка</div>
                   <div style={{ display:'flex', gap:8 }}>
@@ -776,8 +774,6 @@ export default function DealsPage() {
                     ))}
                   </div>
                 </div>
-
-                {/* Текст */}
                 <div style={{ marginBottom:20 }}>
                   <div style={{ fontSize:13, fontWeight:600, color:'#374151', marginBottom:8 }}>Комментарий</div>
                   <textarea
@@ -789,11 +785,9 @@ export default function DealsPage() {
                     onBlur={e => e.target.style.borderColor='#e5e7eb'}
                   />
                 </div>
-
                 {reviewStatus === 'error' && (
                   <div style={{ color:'#ef4444', fontSize:13, marginBottom:12 }}>Не удалось отправить отзыв. Попробуйте ещё раз.</div>
                 )}
-
                 <button
                   onClick={handleReviewSubmit}
                   disabled={reviewStatus === 'sending' || !reviewForm.comment?.trim()}
@@ -805,12 +799,11 @@ export default function DealsPage() {
           </div>
         </div>
       )}
-      {/* ══ LIGHTBOX ══ */}
+
+      {/* Lightbox */}
       {lightbox && (
-        <div
-          style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
-          onClick={() => setLightbox(null)}
-        >
+        <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
+          onClick={() => setLightbox(null)}>
           <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
             <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block' }} />
             <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
