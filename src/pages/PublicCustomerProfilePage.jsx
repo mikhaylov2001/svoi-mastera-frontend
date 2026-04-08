@@ -37,12 +37,18 @@ export default function PublicCustomerProfilePage() {
 
   const [customer, setCustomer] = useState(null);
   const [requests, setRequests] = useState([]);
+  const [deals,    setDeals]    = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [tab,      setTab]      = useState('open');
   const [lightbox, setLightbox] = useState(null);
   const [photoIdx, setPhotoIdx] = useState({});
   const [reviews,  setReviews]  = useState([]);
   const [showReviews, setShowReviews] = useState(false);
+  const [reviewModal,   setReviewModal]   = useState(false);
+  const [reviewDeal,    setReviewDeal]    = useState(null);
+  const [reviewForm,    setReviewForm]    = useState({ rating: 5, text: '' });
+  const [reviewSending, setReviewSending] = useState(false);
+  const [reviewDone,    setReviewDone]    = useState(false);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -62,16 +68,35 @@ export default function PublicCustomerProfilePage() {
       fetch(`${API}/customers/${customerId}/profile`).then(r => r.ok ? r.json() : null),
       fetch(`${API}/customers/${customerId}/requests`).then(r => r.ok ? r.json() : []),
       fetch(`${API}/customers/${customerId}/reviews`).then(r => r.ok ? r.json() : []),
-    ]).then(([p, r, rev]) => {
+      fetch(`${API}/deals`, { headers: { 'X-User-Id': customerId } }).then(r => r.ok ? r.json() : []),
+    ]).then(([p, r, rev, d]) => {
       setCustomer(p || { displayName: nameFromQuery || 'Заказчик', city: 'Йошкар-Ола' });
       setRequests(Array.isArray(r) ? r : []);
       setReviews(Array.isArray(rev) ? rev : []);
+      setDeals(Array.isArray(d) ? d.filter(deal => deal.customerId === customerId) : []);
     }).catch(() => {
       setCustomer({ displayName: nameFromQuery || 'Заказчик', city: 'Йошкар-Ола' });
       setRequests([]);
       setReviews([]);
+      setDeals([]);
     }).finally(() => setLoading(false));
   }, [customerId]);
+
+  const handleReviewSubmit = async () => {
+    if (!reviewForm.text.trim() || !reviewDeal) return;
+    setReviewSending(true);
+    try {
+      await fetch(`${API}/deals/${reviewDeal.id}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
+        body: JSON.stringify({ rating: reviewForm.rating, text: reviewForm.text }),
+      });
+      setReviewDone(true);
+      const rev = await fetch(`${API}/customers/${customerId}/reviews`);
+      if (rev.ok) setReviews(await rev.json());
+    } catch(e) { console.error(e); }
+    setReviewSending(false);
+  };
 
   if (loading) return (
     <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center', color:'#9ca3af' }}>
@@ -89,10 +114,11 @@ export default function PublicCustomerProfilePage() {
   const since     = memberSince(customer?.registeredAt);
   const openReqs      = requests.filter(r => r.status === 'OPEN' || r.status === 'IN_NEGOTIATION' || r.status === 'ASSIGNED');
   const completedReqs = requests.filter(r => r.status === 'COMPLETED');
+  const completedDealsData = deals.filter(d => d.status === 'COMPLETED');
   const allReqs       = requests;
   const shown = tab === 'open' ? openReqs : tab === 'completed' ? completedReqs : allReqs;
-  const total     = customer?.totalRequests     ?? requests.length;
-  const done      = customer?.completedRequests ?? requests.filter(r => r.status==='COMPLETED').length;
+  const total = customer?.totalRequests ?? requests.length;
+  const done  = customer?.completedRequests ?? (completedReqs.length || completedDealsData.length);
   const avgRating = reviews.length > 0
     ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length).toFixed(1)
     : null;
@@ -209,7 +235,7 @@ export default function PublicCustomerProfilePage() {
               <div style={{ display:'flex', gap:0, borderBottom:'2px solid #e5e7eb' }}>
                 {[
                   ['open',      'Активные',    openReqs.length],
-                  ['completed', 'Завершённые', completedReqs.length],
+                  ['completed', 'Завершённые', completedReqs.length || completedDealsData.length],
                   ['reviews',   'Отзывы',      reviews.length],
                 ].map(([key,label,count]) => (
                   <button key={key} onClick={() => setTab(key)}
@@ -253,11 +279,72 @@ export default function PublicCustomerProfilePage() {
               </div>
             ))}
 
-            {/* Сетка заявок */}
-            {tab !== 'reviews' && (shown.length === 0 ? (
+            {/* Завершённые — deals */}
+            {tab === 'completed' && (() => {
+              const items = completedReqs.length > 0 ? completedReqs : completedDealsData;
+              if (items.length === 0) return (
+                <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#9ca3af' }}>
+                  <div style={{ fontSize:40, marginBottom:10 }}>✅</div>
+                  <p style={{ fontWeight:600, fontSize:15 }}>Завершённых заказов нет</p>
+                </div>
+              );
+              return (
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px,1fr))', gap:12 }}>
+                  {items.map(item => {
+                    const isDeal = !!item.workerId;
+                    const hasPhoto = item.photos && item.photos.length > 0;
+                    const pi = photoIdx[item.id] || 0;
+                    return (
+                      <div key={item.id} style={{ background:'#fff', borderRadius:12, overflow:'hidden', transition:'box-shadow .2s' }}
+                        onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'}
+                        onMouseLeave={e => e.currentTarget.style.boxShadow='none'}>
+                        {hasPhoto ? (
+                          <div style={{ position:'relative', aspectRatio:'4/3', overflow:'hidden', cursor:'pointer', background:'#f3f4f6' }}
+                            onClick={() => setLightbox({ photos: item.photos, index: pi })}>
+                            <img src={item.photos[pi]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
+                            <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color:'#22c55e', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>Завершена</div>
+                          </div>
+                        ) : (
+                          <div style={{ aspectRatio:'4/3', background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, color:'#d1d5db', position:'relative' }}>
+                            ✅
+                            <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color:'#22c55e', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>Завершена</div>
+                          </div>
+                        )}
+                        <div style={{ padding:'12px 14px' }}>
+                          <h3 style={{ fontSize:14, fontWeight:700, color:'#111827', margin:'0 0 6px' }}>{item.title || 'Задача'}</h3>
+                          {(item.agreedPrice || item.budgetTo) && (
+                            <div style={{ fontSize:15, fontWeight:900, color:'#111827', margin:'0 0 6px' }}>
+                              {item.agreedPrice ? `${Number(item.agreedPrice).toLocaleString('ru-RU')} ₽` : `до ${Number(item.budgetTo).toLocaleString('ru-RU')} ₽`}
+                            </div>
+                          )}
+                          {isDeal && item.workerName && (
+                            <div style={{ fontSize:12, color:'#9ca3af', marginBottom:8 }}>👤 {item.workerName}</div>
+                          )}
+                          {item.createdAt && <div style={{ fontSize:12, color:'#9ca3af', marginBottom:8 }}>{timeAgo(item.createdAt)}</div>}
+                          {/* Кнопка отзыва — только для заказчика, только для deals без отзыва */}
+                          {userId === customerId && isDeal && !item.hasReview && (
+                            <button
+                              onClick={() => { setReviewDeal(item); setReviewModal(true); setReviewDone(false); setReviewForm({ rating:5, text:'' }); }}
+                              style={{ width:'100%', padding:'9px', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', border:'none', borderRadius:8, color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', marginTop:4 }}>
+                              ⭐ Оставить отзыв
+                            </button>
+                          )}
+                          {userId === customerId && isDeal && item.hasReview && (
+                            <div style={{ fontSize:12, color:'#22c55e', fontWeight:600, textAlign:'center', marginTop:4 }}>✓ Отзыв оставлен</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* Сетка активных заявок */}
+            {tab === 'open' && (shown.length === 0 ? (
               <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#9ca3af' }}>
                 <div style={{ fontSize:40, marginBottom:10 }}>📋</div>
-                <p style={{ fontWeight:600, fontSize:15 }}>{tab==='open' ? 'Нет активных заявок' : 'Завершённых заявок нет'}</p>
+                <p style={{ fontWeight:600, fontSize:15 }}>Нет активных заявок</p>
               </div>
             ) : (
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px,1fr))', gap:12 }}>
@@ -432,6 +519,69 @@ export default function PublicCustomerProfilePage() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* МОДАЛКА ОТЗЫВА */}
+      {reviewModal && (
+        <div style={{ position:'fixed', inset:0, zIndex:2000, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+          onClick={() => setReviewModal(false)}>
+          <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:460, padding:28 }}
+            onClick={e => e.stopPropagation()}>
+            {reviewDone ? (
+              <div style={{ textAlign:'center', padding:'20px 0' }}>
+                <div style={{ fontSize:48, marginBottom:12 }}>🎉</div>
+                <h3 style={{ fontSize:20, fontWeight:800, color:'#111827', margin:'0 0 8px' }}>Отзыв отправлен!</h3>
+                <p style={{ color:'#6b7280', margin:'0 0 20px' }}>Спасибо за вашу оценку</p>
+                <button onClick={() => setReviewModal(false)}
+                  style={{ padding:'10px 28px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>
+                  Закрыть
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+                  <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Отзыв о мастере</h2>
+                  <button onClick={() => setReviewModal(false)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#9ca3af' }}>×</button>
+                </div>
+                {reviewDeal?.workerName && (
+                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#f9fafb', borderRadius:10, marginBottom:20 }}>
+                    <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>
+                      {reviewDeal.workerName[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <div style={{ fontSize:15, fontWeight:700, color:'#111827' }}>{reviewDeal.workerName}</div>
+                      <div style={{ fontSize:12, color:'#9ca3af' }}>Мастер</div>
+                    </div>
+                  </div>
+                )}
+                <div style={{ marginBottom:16 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:'#374151', marginBottom:8 }}>Оценка</div>
+                  <div style={{ display:'flex', gap:8 }}>
+                    {[1,2,3,4,5].map(star => (
+                      <button key={star} onClick={() => setReviewForm(p => ({...p, rating:star}))}
+                        style={{ background:'none', border:'none', cursor:'pointer', fontSize:32, padding:0, opacity: star <= reviewForm.rating ? 1 : 0.25, color:'#f59e0b' }}>★</button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ marginBottom:20 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:'#374151', marginBottom:8 }}>Комментарий</div>
+                  <textarea value={reviewForm.text}
+                    onChange={e => setReviewForm(p => ({...p, text: e.target.value}))}
+                    placeholder="Расскажите о качестве работы, пунктуальности, общении..."
+                    style={{ width:'100%', padding:'12px', borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box' }}
+                    onFocus={e => e.target.style.borderColor='#e8410a'}
+                    onBlur={e => e.target.style.borderColor='#e5e7eb'}
+                  />
+                </div>
+                <button onClick={handleReviewSubmit}
+                  disabled={reviewSending || !reviewForm.text.trim()}
+                  style={{ width:'100%', padding:'13px', background: reviewForm.text.trim() ? '#e8410a' : '#e5e7eb', border:'none', borderRadius:8, color: reviewForm.text.trim() ? '#fff' : '#9ca3af', fontSize:15, fontWeight:700, cursor: reviewForm.text.trim() ? 'pointer' : 'not-allowed' }}>
+                  {reviewSending ? 'Отправляем...' : '⭐ Отправить отзыв'}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
 
