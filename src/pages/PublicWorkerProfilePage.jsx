@@ -176,7 +176,7 @@ export default function PublicWorkerProfilePage() {
               {since && <p style={{ fontSize:12, color:'#9ca3af', textAlign:'center', margin:'0 0 16px' }}>{since}</p>}
 
               {/* Статистика */}
-              <div style={{ display:'flex', alignItems:'center', background:'#f9fafb', borderRadius:12, padding:'16px 8px', marginBottom:16 }}>
+              <div style={{ display:'flex', alignItems:'center', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, padding:'16px 8px', marginBottom:16 }}>
                 <div style={{ flex:1, textAlign:'center' }}>
                   <div style={{ fontSize:26, fontWeight:900, color:'#111827', lineHeight:1, marginBottom:4 }}>{completedWorks.length}</div>
                   <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px' }}>ЗАКАЗОВ</div>
@@ -190,23 +190,23 @@ export default function PublicWorkerProfilePage() {
 
               {/* Бейджи */}
               <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151' }}>
-                  <span style={{ color:'#22c55e', fontWeight:700, fontSize:16, width:20, textAlign:'center' }}>✔</span>
+                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151', whiteSpace:'nowrap' }}>
+                  <span style={{ color:'#22c55e', fontWeight:700, fontSize:16, flexShrink:0 }}>✔</span>
                   Документы проверены
                 </div>
-                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151' }}>
-                  <span style={{ fontSize:16, width:20, textAlign:'center' }}>📍</span>
+                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151', whiteSpace:'nowrap' }}>
+                  <span style={{ fontSize:16, flexShrink:0 }}>📍</span>
                   {worker?.city || 'Йошкар-Ола'}
                 </div>
                 {completedWorks.length >= 1 && (
-                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151' }}>
-                    <span style={{ fontSize:16, width:20, textAlign:'center' }}>⭐</span>
+                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151', whiteSpace:'nowrap' }}>
+                    <span style={{ fontSize:16, flexShrink:0 }}>⭐</span>
                     Активный мастер
                   </div>
                 )}
                 {completedWorks.length >= 1 && (
-                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151' }}>
-                    <span style={{ fontSize:16, width:20, textAlign:'center' }}>🤝</span>
+                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151', whiteSpace:'nowrap' }}>
+                    <span style={{ fontSize:16, flexShrink:0 }}>🤝</span>
                     Есть завершённые работы
                   </div>
                 )}
