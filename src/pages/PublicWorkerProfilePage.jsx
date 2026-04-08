@@ -176,7 +176,7 @@ export default function PublicWorkerProfilePage() {
               {since && <p style={{ fontSize:12, color:'#9ca3af', textAlign:'center', margin:'0 0 16px' }}>{since}</p>}
 
               {/* Статистика */}
-              <div style={{ display:'flex', alignItems:'center', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, padding:'16px 8px', marginBottom:16 }}>
+              <div style={{ display:'flex', alignItems:'center', borderRadius:12, padding:'16px 8px', marginBottom:12 }}>
                 <div style={{ flex:1, textAlign:'center' }}>
                   <div style={{ fontSize:26, fontWeight:900, color:'#111827', lineHeight:1, marginBottom:4 }}>{completedWorks.length}</div>
                   <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px' }}>ЗАКАЗОВ</div>
@@ -190,24 +190,20 @@ export default function PublicWorkerProfilePage() {
 
               {/* Бейджи */}
               <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151', whiteSpace:'nowrap' }}>
-                  <span style={{ color:'#22c55e', fontWeight:700, fontSize:16, flexShrink:0 }}>✔</span>
-                  Документы проверены
+                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0', fontSize:14, fontWeight:600, color:'#374151' }}>
+                  <span style={{ color:'#22c55e', fontSize:15 }}>✔</span> Документы проверены
                 </div>
-                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151', whiteSpace:'nowrap' }}>
-                  <span style={{ fontSize:16, flexShrink:0 }}>📍</span>
-                  {worker?.city || 'Йошкар-Ола'}
+                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0', fontSize:14, fontWeight:600, color:'#374151', borderTop:'1px solid #f3f4f6' }}>
+                  <span style={{ fontSize:15 }}>📍</span> {worker?.city || 'Йошкар-Ола'}
                 </div>
                 {completedWorks.length >= 1 && (
-                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151', whiteSpace:'nowrap' }}>
-                    <span style={{ fontSize:16, flexShrink:0 }}>⭐</span>
-                    Активный мастер
+                  <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0', fontSize:14, fontWeight:600, color:'#374151', borderTop:'1px solid #f3f4f6' }}>
+                    <span style={{ fontSize:15 }}>⭐</span> Активный мастер
                   </div>
                 )}
                 {completedWorks.length >= 1 && (
-                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151', whiteSpace:'nowrap' }}>
-                    <span style={{ fontSize:16, flexShrink:0 }}>🤝</span>
-                    Есть завершённые работы
+                  <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0', fontSize:14, fontWeight:600, color:'#374151', borderTop:'1px solid #f3f4f6' }}>
+                    <span style={{ fontSize:15 }}>🤝</span> Есть завершённые работы
                   </div>
                 )}
               </div>
@@ -235,7 +231,11 @@ export default function PublicWorkerProfilePage() {
             <div style={{ marginBottom:16 }}>
               <h2 style={{ fontSize:20, fontWeight:800, color:'#111827', margin:'0 0 12px' }}>Профиль мастера</h2>
               <div style={{ display:'flex', gap:0, borderBottom:'2px solid #e5e7eb' }}>
-                {[['works','Работы',completedWorks.length],['reviews','Отзывы',reviews.length]].map(([key,label,count]) => (
+                {[
+                  ['active', 'Активные', services.length],
+                  ['works',  'Завершённые', completedWorks.length],
+                  ['reviews','Отзывы', reviews.length],
+                ].map(([key,label,count]) => (
                   <button key={key} onClick={() => setTab(key)}
                     style={{ padding:'10px 20px', background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:700,
                       color:tab===key?'#e8410a':'#6b7280', borderBottom:tab===key?'2px solid #e8410a':'2px solid transparent', marginBottom:-2, transition:'all .15s' }}>
@@ -245,7 +245,32 @@ export default function PublicWorkerProfilePage() {
               </div>
             </div>
 
-            {/* РАБОТЫ */}
+            {/* АКТИВНЫЕ */}
+            {tab === 'active' && (services.length === 0 ? (
+              <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#9ca3af' }}>
+                <div style={{ fontSize:40, marginBottom:10 }}>⚙️</div>
+                <p style={{ fontWeight:600, fontSize:15 }}>Нет активных заказов</p>
+              </div>
+            ) : (
+              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                {services.map(s => (
+                  <div key={s.id} style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
+                      <div>
+                        <div style={{ fontSize:15, fontWeight:700, color:'#111827', marginBottom:6 }}>{s.title}</div>
+                        {s.description && <p style={{ fontSize:13, color:'#6b7280', margin:0, lineHeight:1.6 }}>{s.description}</p>}
+                      </div>
+                      <div style={{ fontSize:16, fontWeight:800, color:'#111827', flexShrink:0 }}>
+                        {s.priceTo ? `до ${Number(s.priceTo).toLocaleString('ru-RU')} ₽`
+                          : s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽`
+                          : 'Договорная'}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+
             {tab === 'works' && (completedWorks.length === 0 ? (
               <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#9ca3af' }}>
                 <div style={{ fontSize:40, marginBottom:10 }}>🔨</div>
@@ -319,34 +344,6 @@ export default function PublicWorkerProfilePage() {
                     </div>
                   );
                 })}
-              </div>
-            ))}
-
-            {/* УСЛУГИ */}
-            {tab === 'services' && (services.length === 0 ? (
-              <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#9ca3af' }}>
-                <div style={{ fontSize:40, marginBottom:10 }}>🔧</div>
-                <p style={{ fontWeight:600, fontSize:15 }}>Услуги пока не добавлены</p>
-              </div>
-            ) : (
-              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                {services.map(s => (
-                  <div key={s.id} style={{ background:'#fff', borderRadius:12, padding:'16px 20px', transition:'box-shadow .2s' }}
-                    onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.08)'}
-                    onMouseLeave={e => e.currentTarget.style.boxShadow='none'}>
-                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
-                      <div>
-                        <div style={{ fontSize:15, fontWeight:700, color:'#111827', marginBottom:6 }}>{s.title}</div>
-                        {s.description && <p style={{ fontSize:13, color:'#6b7280', margin:0, lineHeight:1.6 }}>{s.description}</p>}
-                      </div>
-                      <div style={{ fontSize:16, fontWeight:800, color:'#111827', flexShrink:0, textAlign:'right' }}>
-                        {s.priceTo ? `до ${Number(s.priceTo).toLocaleString('ru-RU')} ₽`
-                          : s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽`
-                          : 'Договорная'}
-                      </div>
-                    </div>
-                  </div>
-                ))}
               </div>
             ))}
 
