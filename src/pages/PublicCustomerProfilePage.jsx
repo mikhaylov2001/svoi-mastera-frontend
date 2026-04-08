@@ -87,9 +87,10 @@ export default function PublicCustomerProfilePage() {
   const fullName  = lastName ? `${name} ${lastName}` : name;
   const initials  = fullName.split(' ').map(x => x[0]||'').join('').toUpperCase().slice(0,2) || '?';
   const since     = memberSince(customer?.registeredAt);
-  const openReqs  = requests.filter(r => r.status === 'OPEN');
-  const allReqs   = requests;
-  const shown     = tab === 'open' ? openReqs : allReqs;
+  const openReqs      = requests.filter(r => r.status === 'OPEN' || r.status === 'IN_NEGOTIATION' || r.status === 'ASSIGNED');
+  const completedReqs = requests.filter(r => r.status === 'COMPLETED');
+  const allReqs       = requests;
+  const shown = tab === 'open' ? openReqs : tab === 'completed' ? completedReqs : allReqs;
   const total     = customer?.totalRequests     ?? requests.length;
   const done      = customer?.completedRequests ?? requests.filter(r => r.status==='COMPLETED').length;
   const avgRating = reviews.length > 0
@@ -153,28 +154,36 @@ export default function PublicCustomerProfilePage() {
               )}
 
               {/* Статистика */}
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:16 }}>
-                {[[total,'Заявок'],[done,'Выполнено']].map(([v,l]) => (
-                  <div key={l} style={{ background:'#f9fafb', borderRadius:8, padding:'10px 6px', textAlign:'center' }}>
-                    <div style={{ fontSize:20, fontWeight:900, color:'#111827' }}>{v}</div>
-                    <div style={{ fontSize:11, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.4px' }}>{l}</div>
-                  </div>
-                ))}
+              <div style={{ display:'flex', alignItems:'center', borderRadius:12, padding:'16px 8px', marginBottom:12 }}>
+                <div style={{ flex:1, textAlign:'center' }}>
+                  <div style={{ fontSize:26, fontWeight:900, color:'#111827', lineHeight:1, marginBottom:4 }}>{total}</div>
+                  <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px' }}>ЗАЯВОК</div>
+                </div>
+                <div style={{ width:1.5, height:36, background:'#e5e7eb', flexShrink:0 }} />
+                <div style={{ flex:1, textAlign:'center' }}>
+                  <div style={{ fontSize:26, fontWeight:900, color:'#111827', lineHeight:1, marginBottom:4 }}>{done}</div>
+                  <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px' }}>ВЫПОЛНЕНО</div>
+                </div>
               </div>
 
               {/* Бейджи */}
-              <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:16 }}>
-                {[
-                  ['✓', 'Документы проверены', '#00a86b'],
-                  ['📍', `${customer?.city || 'Йошкар-Ола'}`, '#6b7280'],
-                  total >= 3  ? ['⭐', 'Активный заказчик', '#f59e0b'] : null,
-                  done  >= 1  ? ['🤝', 'Есть завершённые сделки', '#6366f1'] : null,
-                ].filter(Boolean).map(([icon, label, color]) => (
-                  <div key={label} style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 12px', background:'#f9fafb', borderRadius:8, fontSize:13, color:'#374151' }}>
-                    <span style={{ color, fontWeight:700, fontSize:14 }}>{icon}</span>
-                    {label}
+              <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0', fontSize:14, fontWeight:600, color:'#374151' }}>
+                  <span style={{ color:'#22c55e', fontSize:15 }}>✔</span> Документы проверены
+                </div>
+                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0', fontSize:14, fontWeight:600, color:'#374151', borderTop:'1px solid #f3f4f6' }}>
+                  <span style={{ fontSize:15 }}>📍</span> {customer?.city || 'Йошкар-Ола'}
+                </div>
+                {total >= 1 && (
+                  <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0', fontSize:14, fontWeight:600, color:'#374151', borderTop:'1px solid #f3f4f6' }}>
+                    <span style={{ fontSize:15 }}>⭐</span> Активный заказчик
                   </div>
-                ))}
+                )}
+                {done >= 1 && (
+                  <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0', fontSize:14, fontWeight:600, color:'#374151', borderTop:'1px solid #f3f4f6' }}>
+                    <span style={{ fontSize:15 }}>🤝</span> Есть завершённые сделки
+                  </div>
+                )}
               </div>
 
               {/* Кнопка написать */}
@@ -193,13 +202,16 @@ export default function PublicCustomerProfilePage() {
 
           {/* ══ ПРАВАЯ КОЛОНКА — заявки ══ */}
           <div>
-            {/* Табы */}
             <div style={{ marginBottom:16 }}>
               <h2 style={{ fontSize:20, fontWeight:800, color:'#111827', margin:'0 0 12px' }}>
                 Заявки пользователя
               </h2>
               <div style={{ display:'flex', gap:0, borderBottom:'2px solid #e5e7eb' }}>
-                {[['open',`Активные`,openReqs.length],['all','Все',allReqs.length]].map(([key,label,count]) => (
+                {[
+                  ['open',      'Активные',    openReqs.length],
+                  ['completed', 'Завершённые', completedReqs.length],
+                  ['reviews',   'Отзывы',      reviews.length],
+                ].map(([key,label,count]) => (
                   <button key={key} onClick={() => setTab(key)}
                     style={{
                       padding:'10px 20px', background:'none', border:'none', cursor:'pointer',
@@ -215,11 +227,37 @@ export default function PublicCustomerProfilePage() {
               </div>
             </div>
 
+            {/* Отзывы */}
+            {tab === 'reviews' && (reviews.length === 0 ? (
+              <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#9ca3af' }}>
+                <div style={{ fontSize:40, marginBottom:10 }}>⭐</div>
+                <p style={{ fontWeight:600, fontSize:15 }}>Отзывов пока нет</p>
+              </div>
+            ) : (
+              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                {reviews.map(r => (
+                  <div key={r.id} style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
+                      <div style={{ width:40, height:40, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:15, flexShrink:0 }}>
+                        {(r.workerName||'М')[0].toUpperCase()}
+                      </div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{r.workerName || 'Мастер'}</div>
+                        <div style={{ fontSize:12, color:'#9ca3af' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
+                      </div>
+                      <div style={{ color:'#f59e0b', fontWeight:700 }}>{'★'.repeat(r.rating||0)}{'☆'.repeat(5-(r.rating||0))}</div>
+                    </div>
+                    {r.text && <p style={{ fontSize:14, color:'#374151', margin:0, lineHeight:1.6 }}>{r.text}</p>}
+                  </div>
+                ))}
+              </div>
+            ))}
+
             {/* Сетка заявок */}
-            {shown.length === 0 ? (
+            {tab !== 'reviews' && (shown.length === 0 ? (
               <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#9ca3af' }}>
                 <div style={{ fontSize:40, marginBottom:10 }}>📋</div>
-                <p style={{ fontWeight:600, fontSize:15 }}>{tab==='open' ? 'Нет активных заявок' : 'Заявок пока нет'}</p>
+                <p style={{ fontWeight:600, fontSize:15 }}>{tab==='open' ? 'Нет активных заявок' : 'Завершённых заявок нет'}</p>
               </div>
             ) : (
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px,1fr))', gap:12 }}>
@@ -234,7 +272,6 @@ export default function PublicCustomerProfilePage() {
                       onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'}
                       onMouseLeave={e => e.currentTarget.style.boxShadow='none'}
                     >
-                      {/* Фото */}
                       {hasPhoto ? (
                         <div style={{ position:'relative', aspectRatio:'4/3', overflow:'hidden', cursor:'pointer', background:'#f3f4f6' }}
                           onClick={() => setLightbox({ photos: req.photos, index: pi })}
@@ -251,7 +288,6 @@ export default function PublicCustomerProfilePage() {
                               </div>
                             </>
                           )}
-                          {/* Статус поверх фото */}
                           <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color: st.color, fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
                             {st.label}
                           </div>
@@ -264,27 +300,22 @@ export default function PublicCustomerProfilePage() {
                           </div>
                         </div>
                       )}
-
-                      {/* Контент */}
                       <div style={{ padding:'12px 14px' }}>
                         <h3 style={{ fontSize:14, fontWeight:700, color:'#111827', margin:'0 0 6px', lineHeight:1.3,
                           overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
                           {req.title}
                         </h3>
-
                         {req.budgetTo && (
                           <div style={{ fontSize:16, fontWeight:900, color:'#111827', margin:'0 0 6px' }}>
                             до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽
                           </div>
                         )}
-
                         {req.description && req.description !== 'Без описания' && (
                           <p style={{ fontSize:12, color:'#6b7280', margin:'0 0 8px', lineHeight:1.5,
                             overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
                             {req.description}
                           </p>
                         )}
-
                         <div style={{ fontSize:12, color:'#9ca3af', display:'flex', flexDirection:'column', gap:2 }}>
                           {req.addressText && <span>📍 {req.addressText}</span>}
                           {req.createdAt   && <span>{timeAgo(req.createdAt)}</span>}
@@ -294,7 +325,7 @@ export default function PublicCustomerProfilePage() {
                   );
                 })}
               </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
