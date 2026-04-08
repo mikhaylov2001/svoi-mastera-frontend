@@ -388,6 +388,9 @@ export default function PublicCustomerProfilePage() {
                           <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color: st.color, fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
                             {st.label}
                           </div>
+                          {req.categoryName && (
+                            <div style={{ position:'absolute', top:8, right:8, background:'rgba(255,255,255,0.92)', color:'#6366f1', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>{req.categoryName}</div>
+                          )}
                         </div>
                       ) : (
                         <div style={{ aspectRatio:'4/3', background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, color:'#d1d5db', position:'relative' }}>
@@ -395,6 +398,9 @@ export default function PublicCustomerProfilePage() {
                           <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color: st.color, fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
                             {st.label}
                           </div>
+                          {req.categoryName && (
+                            <div style={{ position:'absolute', top:8, right:8, background:'rgba(255,255,255,0.92)', color:'#6366f1', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>{req.categoryName}</div>
+                          )}
                         </div>
                       )}
                       <div style={{ padding:'12px 14px' }}>
@@ -406,6 +412,9 @@ export default function PublicCustomerProfilePage() {
                           <div style={{ fontSize:16, fontWeight:900, color:'#111827', margin:'0 0 6px' }}>
                             до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽
                           </div>
+                        )}
+                        {req.categoryName && (
+                          <div style={{ fontSize:12, color:'#6366f1', fontWeight:600, marginBottom:4 }}>🏷 {req.categoryName}</div>
                         )}
                         {req.description && req.description !== 'Без описания' && (
                           <p style={{ fontSize:12, color:'#6b7280', margin:'0 0 8px', lineHeight:1.5,
