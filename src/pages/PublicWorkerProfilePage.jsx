@@ -176,26 +176,40 @@ export default function PublicWorkerProfilePage() {
               {since && <p style={{ fontSize:12, color:'#9ca3af', textAlign:'center', margin:'0 0 16px' }}>{since}</p>}
 
               {/* Статистика */}
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:16 }}>
-                {[[completedWorks.length,'Заказов'],[reviews.length||0,'Отзывов']].map(([v,l]) => (
-                  <div key={l} style={{ background:'#f9fafb', borderRadius:8, padding:'10px 6px', textAlign:'center' }}>
-                    <div style={{ fontSize:20, fontWeight:900, color:'#111827' }}>{v}</div>
-                    <div style={{ fontSize:11, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.4px' }}>{l}</div>
-                  </div>
-                ))}
+              <div style={{ display:'flex', alignItems:'center', background:'#f9fafb', borderRadius:12, padding:'16px 8px', marginBottom:16 }}>
+                <div style={{ flex:1, textAlign:'center' }}>
+                  <div style={{ fontSize:26, fontWeight:900, color:'#111827', lineHeight:1, marginBottom:4 }}>{completedWorks.length}</div>
+                  <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px' }}>ЗАКАЗОВ</div>
+                </div>
+                <div style={{ width:1.5, height:36, background:'#e5e7eb', flexShrink:0 }} />
+                <div style={{ flex:1, textAlign:'center' }}>
+                  <div style={{ fontSize:26, fontWeight:900, color:'#111827', lineHeight:1, marginBottom:4 }}>{reviews.length || 0}</div>
+                  <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px' }}>ОТЗЫВОВ</div>
+                </div>
               </div>
 
               {/* Бейджи */}
-              <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:16 }}>
-                {[
-                  ['✓', 'Документы проверены', '#00a86b'],
-                  ['📍', worker?.city || 'Йошкар-Ола', '#6b7280'],
-                  completedWorks.length >= 1 ? ['⭐', 'Активный мастер', '#f59e0b'] : null,
-                ].filter(Boolean).map(([icon, label, color]) => (
-                  <div key={label} style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 12px', background:'#f9fafb', borderRadius:8, fontSize:13, color:'#374151' }}>
-                    <span style={{ color, fontWeight:700, fontSize:14 }}>{icon}</span>{label}
+              <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151' }}>
+                  <span style={{ color:'#22c55e', fontWeight:700, fontSize:16, width:20, textAlign:'center' }}>✔</span>
+                  Документы проверены
+                </div>
+                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151' }}>
+                  <span style={{ fontSize:16, width:20, textAlign:'center' }}>📍</span>
+                  {worker?.city || 'Йошкар-Ола'}
+                </div>
+                {completedWorks.length >= 1 && (
+                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151' }}>
+                    <span style={{ fontSize:16, width:20, textAlign:'center' }}>⭐</span>
+                    Активный мастер
                   </div>
-                ))}
+                )}
+                {completedWorks.length >= 1 && (
+                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:12, fontSize:14, fontWeight:600, color:'#374151' }}>
+                    <span style={{ fontSize:16, width:20, textAlign:'center' }}>🤝</span>
+                    Есть завершённые работы
+                  </div>
+                )}
               </div>
 
               {/* Кнопка написать */}
