@@ -302,12 +302,22 @@ export default function PublicCustomerProfilePage() {
                           <div style={{ position:'relative', aspectRatio:'4/3', overflow:'hidden', cursor:'pointer', background:'#f3f4f6' }}
                             onClick={() => setLightbox({ photos: item.photos, index: pi })}>
                             <img src={item.photos[pi]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
-                            <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color:'#22c55e', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>Завершена</div>
+                            <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color:'#22c55e', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>✅ Завершена</div>
+                            {(item.category || item.categoryName) && (
+                              <div style={{ position:'absolute', top:8, right:8, background:'rgba(255,255,255,0.92)', color:'#6366f1', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
+                                {item.category || item.categoryName}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div style={{ aspectRatio:'4/3', background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, color:'#d1d5db', position:'relative' }}>
                             ✅
-                            <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color:'#22c55e', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>Завершена</div>
+                            <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color:'#22c55e', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>✅ Завершена</div>
+                            {(item.category || item.categoryName) && (
+                              <div style={{ position:'absolute', top:8, right:8, background:'rgba(255,255,255,0.92)', color:'#6366f1', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
+                                {item.category || item.categoryName}
+                              </div>
+                            )}
                           </div>
                         )}
                         <div style={{ padding:'12px 14px' }}>
