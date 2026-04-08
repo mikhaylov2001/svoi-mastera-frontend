@@ -115,7 +115,7 @@ export default function PublicWorkerProfilePage() {
       await fetch(`${API}/deals/${completedDeal.id}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
-        body: JSON.stringify({ rating: reviewForm.rating, text: reviewForm.text }),
+        body: JSON.stringify({ rating: reviewForm.rating, text: reviewForm.text, comment: reviewForm.text }),
       });
       setReviewDone(true);
       // Перезагружаем отзывы
@@ -362,7 +362,9 @@ export default function PublicWorkerProfilePage() {
                         {(r.authorName||'К')[0].toUpperCase()}
                       </div>
                       <div style={{ flex:1 }}>
-                        <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{r.authorName || 'Клиент'}</div>
+                        <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>
+                          {[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Клиент'}
+                        </div>
                         <div style={{ fontSize:12, color:'#9ca3af' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
                       </div>
                       <div style={{ color:'#f59e0b', fontWeight:700 }}>{'★'.repeat(r.rating||0)}{'☆'.repeat(5-(r.rating||0))}</div>
@@ -376,7 +378,7 @@ export default function PublicWorkerProfilePage() {
                         ))}
                       </div>
                     )}
-                    {r.text && <p style={{ fontSize:14, color:'#374151', margin:0, lineHeight:1.6 }}>{r.text}</p>}
+                    {(r.text || r.comment) && <p style={{ fontSize:14, color:'#374151', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
                   </div>
                 ))}
               </div>
@@ -427,12 +429,14 @@ export default function PublicWorkerProfilePage() {
                       {(r.authorName||'К')[0].toUpperCase()}
                     </div>
                     <div>
-                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{r.authorName || 'Клиент'}</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>
+                        {[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Клиент'}
+                      </div>
                       <div style={{ fontSize:12, color:'#9ca3af' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
                     </div>
                     <div style={{ marginLeft:'auto', color:'#f59e0b', fontWeight:700 }}>{'★'.repeat(r.rating||0)}{'☆'.repeat(5-(r.rating||0))}</div>
                   </div>
-                  {r.text && <p style={{ fontSize:14, color:'#374151', margin:0, lineHeight:1.6 }}>{r.text}</p>}
+                  {(r.text || r.comment) && <p style={{ fontSize:14, color:'#374151', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
                 </div>
               ))}
             </div>
