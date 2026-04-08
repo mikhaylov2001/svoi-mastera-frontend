@@ -256,8 +256,11 @@ export default function PublicWorkerProfilePage() {
                 {services.map(s => (
                   <div key={s.id} style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
                     <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
-                      <div>
-                        <div style={{ fontSize:15, fontWeight:700, color:'#111827', marginBottom:6 }}>{s.title}</div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
+                          <div style={{ fontSize:15, fontWeight:700, color:'#111827' }}>{s.title}</div>
+                          <span style={{ background:'rgba(245,158,11,.12)', color:'#f59e0b', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4, whiteSpace:'nowrap' }}>⚙️ В работе</span>
+                        </div>
                         {s.description && <p style={{ fontSize:13, color:'#6b7280', margin:0, lineHeight:1.6 }}>{s.description}</p>}
                       </div>
                       <div style={{ fontSize:16, fontWeight:800, color:'#111827', flexShrink:0 }}>
@@ -302,9 +305,12 @@ export default function PublicWorkerProfilePage() {
                               </div>
                             </>
                           )}
-                          {/* Категория поверх фото */}
+                          {/* Статус поверх фото */}
+                          <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color:'#22c55e', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
+                            ✅ Завершена
+                          </div>
                           {work.categoryName && (
-                            <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color:'#6366f1', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
+                            <div style={{ position:'absolute', top:8, right:8, background:'rgba(255,255,255,0.92)', color:'#6366f1', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
                               {work.categoryName}
                             </div>
                           )}
@@ -312,8 +318,11 @@ export default function PublicWorkerProfilePage() {
                       ) : (
                         <div style={{ aspectRatio:'4/3', background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, color:'#d1d5db', position:'relative' }}>
                           🔨
+                          <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color:'#22c55e', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
+                            ✅ Завершена
+                          </div>
                           {work.categoryName && (
-                            <div style={{ position:'absolute', top:8, left:8, background:'rgba(255,255,255,0.92)', color:'#6366f1', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
+                            <div style={{ position:'absolute', top:8, right:8, background:'rgba(255,255,255,0.92)', color:'#6366f1', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:4 }}>
                               {work.categoryName}
                             </div>
                           )}
