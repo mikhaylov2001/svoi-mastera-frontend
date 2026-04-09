@@ -9,7 +9,7 @@ function timeAgo(d) {
   const days = Math.floor((Date.now() - new Date(d)) / 86400000);
   if (days === 0) return 'сегодня';
   if (days === 1) return 'вчера';
-  if (days < 30)  return `${days} дн. назад`;
+  if (days < 30) return `${days} дн. назад`;
   const months = Math.floor(days / 30);
   if (months < 12) return `${months} мес. назад`;
   return `${Math.floor(months / 12)} г. назад`;
@@ -22,11 +22,11 @@ function memberSince(d) {
 
 const STATUS = {
   OPEN:           { label: 'Открыта',    color: '#1a8c3a', bg: 'rgba(76,217,100,.15)' },
-  IN_NEGOTIATION: { label: 'Обсуждение', color: '#1a5cbf', bg: 'rgba(37,122,244,.12)' },
-  ASSIGNED:       { label: 'Назначена',  color: '#b45309', bg: 'rgba(245,158,11,.12)'  },
-  IN_PROGRESS:    { label: 'В работе',   color: '#b45309', bg: 'rgba(245,158,11,.12)'  },
-  COMPLETED:      { label: 'Завершена',  color: '#1a8c3a', bg: 'rgba(76,217,100,.15)'  },
-  CANCELLED:      { label: 'Отменена',   color: '#c0392b', bg: 'rgba(239,68,68,.12)'   },
+  IN_NEGOTIATION: { label: 'Обсуждение', color: '#0088cc', bg: 'rgba(0,170,255,.12)'  },
+  ASSIGNED:       { label: 'Назначена',  color: '#b45309', bg: 'rgba(245,158,11,.12)' },
+  IN_PROGRESS:    { label: 'В работе',   color: '#b45309', bg: 'rgba(245,158,11,.12)' },
+  COMPLETED:      { label: 'Завершена',  color: '#1a8c3a', bg: 'rgba(76,217,100,.15)' },
+  CANCELLED:      { label: 'Отменена',   color: '#c0392b', bg: 'rgba(239,68,68,.12)'  },
 };
 
 export default function PublicCustomerProfilePage() {
@@ -77,7 +77,9 @@ export default function PublicCustomerProfilePage() {
       setDeals(Array.isArray(d) ? d.filter(deal => deal.customerId === customerId) : []);
     }).catch(() => {
       setCustomer({ displayName: nameFromQuery || 'Заказчик', city: 'Йошкар-Ола' });
-      setRequests([]); setReviews([]); setDeals([]);
+      setRequests([]);
+      setReviews([]);
+      setDeals([]);
     }).finally(() => setLoading(false));
   }, [customerId]);
 
@@ -101,118 +103,90 @@ export default function PublicCustomerProfilePage() {
   };
 
   if (loading) return (
-    <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
-      <div style={{ textAlign:'center', color:'#8f8f8f' }}>
-        <div style={{ fontSize:32, marginBottom:8 }}>⏳</div><p>Загружаем профиль...</p>
-      </div>
+    <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center', color:'#8f8f8f' }}>
+      <div style={{ textAlign:'center' }}><div style={{ fontSize:32, marginBottom:8 }}>⏳</div><p>Загружаем профиль...</p></div>
     </div>
   );
 
-  const name     = customer?.displayName || nameFromQuery || 'Заказчик';
-  const lastName = customer?.lastName || '';
-  const fullName = lastName ? `${name} ${lastName}` : name;
-  const initials = fullName.split(' ').map(x => x[0]||'').join('').toUpperCase().slice(0,2) || '?';
-  const since    = memberSince(customer?.registeredAt);
+  const name      = customer?.displayName || nameFromQuery || 'Заказчик';
+  const lastName  = customer?.lastName || '';
+  const fullName  = lastName ? `${name} ${lastName}` : name;
+  const initials  = fullName.split(' ').map(x => x[0]||'').join('').toUpperCase().slice(0,2) || '?';
+  const since     = memberSince(customer?.registeredAt || customer?.createdAt);
   const avatarUrl = customer?.avatarUrl || null;
 
-  const openReqs       = requests.filter(r => r.status === 'OPEN' || r.status === 'IN_NEGOTIATION' || r.status === 'ASSIGNED');
+  const openReqs       = requests.filter(r => ['OPEN','IN_NEGOTIATION','ASSIGNED','IN_PROGRESS'].includes(r.status));
   const completedReqs  = requests.filter(r => r.status === 'COMPLETED');
-  const completedDealsData = deals.filter(d => d.status === 'COMPLETED');
+  const completedDeals = deals.filter(d => d.status === 'COMPLETED');
   const total = customer?.totalRequests ?? requests.length;
-  const done  = customer?.completedRequests ?? (completedReqs.length || completedDealsData.length);
+  const done  = customer?.completedRequests ?? (completedReqs.length || completedDeals.length);
   const avgRating = reviews.length > 0
-    ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length).toFixed(1)
+    ? (reviews.reduce((s, r) => s + (r.rating||0), 0) / reviews.length).toFixed(1)
     : null;
 
-  const css = `
-    .pcp-page{background:#f2f3f5;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .pcp-topbar{background:#fff;border-bottom:1px solid #e8e8e8;padding:10px 0}
-    .pcp-container{max-width:1060px;margin:0 auto;padding:0 16px}
-    .pcp-grid{display:grid;grid-template-columns:300px 1fr;gap:16px;padding:16px 0 60px;align-items:flex-start}
-    .pcp-card{background:#fff;border-radius:12px;padding:20px;margin-bottom:12px}
-    .pcp-panel{background:#fff;border-radius:12px;overflow:hidden}
-    .pcp-tabbar{display:flex;border-bottom:1px solid #f0f0f0;padding:0 8px}
-    .pcp-tab{padding:14px 16px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;font-size:14px;font-weight:700;color:#8f8f8f;transition:all .15s;white-space:nowrap}
-    .pcp-tab.active{color:#e8410a;border-bottom-color:#e8410a}
-    .pcp-content{padding:16px}
-    .pcp-item{background:#f8f9fa;border-radius:10px;display:flex;overflow:hidden;margin-bottom:10px;border:1px solid #eee;transition:box-shadow .2s}
-    .pcp-item:hover{box-shadow:0 2px 12px rgba(0,0,0,.1)}
-    .pcp-thumb{width:130px;min-width:130px;height:100px;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:28px;color:#ccc;position:relative;flex-shrink:0;overflow:hidden}
-    .pcp-body{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:4}
-    .pcp-review{background:#f8f9fa;border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid #eee}
-    .pcp-empty{text-align:center;padding:50px 24px;color:#8f8f8f}
-    .pcp-inforow{display:flex;align-items:center;gap:10;padding:10px 0;font-size:14px;color:#333;border-bottom:1px solid #f5f5f5}
-    .pcp-inforow:last-child{border-bottom:none}
-    .pcp-statrow{display:flex;padding-top:16px;margin-top:16px;border-top:1px solid #f0f0f0}
-    .pcp-stat{flex:1;text-align:center}
-    .pcp-statnum{font-size:22px;font-weight:800;color:#1a1a1a;line-height:1}
-    .pcp-statlabel{font-size:11px;color:#8f8f8f;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
-    .pcp-statdiv{width:1px;background:#f0f0f0;margin:4px 0}
-    .pcp-btn{width:100%;padding:13px;background:#e8410a;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s}
-    .pcp-btn:hover{opacity:.88}
-    @media(max-width:768px){.pcp-grid{grid-template-columns:1fr!important}}
-  `;
+  const tabs = [
+    { key: 'open',      label: 'Активные',    count: openReqs.length },
+    { key: 'completed', label: 'Завершённые', count: completedReqs.length || completedDeals.length },
+    { key: 'reviews',   label: 'Отзывы',      count: reviews.length },
+  ];
 
-  const renderItem = (item, isDeal) => {
+  const renderCard = (item, isDeal) => {
     const st = isDeal ? { label:'Завершена', color:'#1a8c3a', bg:'rgba(76,217,100,.15)' } : (STATUS[item.status] || STATUS.OPEN);
     const hasPhoto = item.photos && item.photos.length > 0;
     const pi = photoIdx[item.id] || 0;
     const cat = item.categoryName || item.category || null;
+
     return (
-      <div key={`${isDeal?'d':'r'}-${item.id}`} className="pcp-item">
-        <div className="pcp-thumb"
-          onClick={hasPhoto ? () => setLightbox({ photos: item.photos, index: pi }) : undefined}
-          style={{ cursor: hasPhoto ? 'pointer' : 'default' }}>
+      <div key={`${isDeal?'d':'r'}-${item.id}`}
+        style={{ background:'#fff', borderRadius:12, overflow:'hidden', border:'1px solid #e5e5e5', cursor: hasPhoto ? 'pointer' : 'default', transition:'box-shadow .2s' }}
+        onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'}
+        onMouseLeave={e => e.currentTarget.style.boxShadow='none'}
+        onClick={hasPhoto ? () => setLightbox({ photos: item.photos, index: pi }) : undefined}>
+        {/* Фото */}
+        <div style={{ position:'relative', aspectRatio:'4/3', background:'#f0f0f0', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, color:'#ccc' }}>
           {hasPhoto
-            ? <img src={item.photos[pi]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
-            : <span>{isDeal ? '🤝' : '📋'}</span>
+            ? <img src={item.photos[pi]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', pointerEvents:'none' }} />
+            : (isDeal ? '🤝' : '📋')
           }
-          <div style={{ position:'absolute', top:6, left:6 }}>
-            <span style={{ background: isDeal ? 'rgba(76,217,100,.85)' : 'rgba(0,0,0,.5)', color:'#fff', fontSize:10, fontWeight:700, padding:'2px 7px', borderRadius:4 }}>
+          <div style={{ position:'absolute', top:8, left:8 }}>
+            <span style={{ background: isDeal ? 'rgba(76,217,100,.9)' : 'rgba(0,0,0,.55)', color:'#fff', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:6 }}>
               {isDeal ? '✅ Завершена' : st.label}
             </span>
           </div>
-          {cat && <div style={{ position:'absolute', top:6, right:6, background:'rgba(37,122,244,.85)', color:'#fff', fontSize:10, fontWeight:700, padding:'2px 7px', borderRadius:4 }}>{cat}</div>}
-          {hasPhoto && item.photos.length > 1 && <div style={{ position:'absolute', bottom:4, right:4, background:'rgba(0,0,0,.5)', color:'#fff', fontSize:10, padding:'2px 6px', borderRadius:4 }}>📷 {item.photos.length}</div>}
+          {cat && <div style={{ position:'absolute', top:8, right:8, background:'rgba(0,0,0,.55)', color:'#fff', fontSize:11, fontWeight:600, padding:'3px 8px', borderRadius:6 }}>{cat}</div>}
+          {hasPhoto && item.photos.length > 1 && <div style={{ position:'absolute', bottom:6, right:6, background:'rgba(0,0,0,.5)', color:'#fff', fontSize:11, padding:'2px 6px', borderRadius:4 }}>📷 {item.photos.length}</div>}
         </div>
-        <div className="pcp-body">
-          <div style={{ fontSize:15, fontWeight:700, color:'#1a1a1a' }}>{item.title || 'Задача'}</div>
-          <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
-            <span style={{ background: isDeal ? 'rgba(76,217,100,.15)' : st.bg, color: isDeal ? '#1a8c3a' : st.color, fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:4 }}>
-              {isDeal ? '✅ Завершена' : st.label}
-            </span>
-            {cat && <span style={{ background:'rgba(37,122,244,.12)', color:'#1a5cbf', fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:4 }}>🏷 {cat}</span>}
-          </div>
+        {/* Контент */}
+        <div style={{ padding:'12px' }}>
+          <div style={{ fontSize:14, fontWeight:700, color:'#1a1a1a', marginBottom:4, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{item.title || 'Задача'}</div>
           {(item.agreedPrice || item.budgetTo) && (
-            <div style={{ fontSize:16, fontWeight:800, color:'#1a1a1a' }}>
+            <div style={{ fontSize:16, fontWeight:800, color:'#1a1a1a', marginBottom:4 }}>
               {item.agreedPrice ? `${Number(item.agreedPrice).toLocaleString('ru-RU')} ₽` : `до ${Number(item.budgetTo).toLocaleString('ru-RU')} ₽`}
             </div>
           )}
-          {!isDeal && item.description && item.description !== 'Без описания' && (
-            <p style={{ fontSize:13, color:'#666', margin:0, lineHeight:1.5, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{item.description}</p>
-          )}
-          <div style={{ fontSize:12, color:'#8f8f8f', display:'flex', gap:10, flexWrap:'wrap', marginTop:'auto' }}>
+          <div style={{ fontSize:12, color:'#8f8f8f', display:'flex', gap:8, flexWrap:'wrap', marginBottom: isDeal ? 8 : 0 }}>
             {isDeal && item.workerName && <span>👤 {item.workerName}</span>}
             {!isDeal && item.addressText && <span>📍 {item.addressText}</span>}
             {item.createdAt && <span>{timeAgo(item.createdAt)}</span>}
           </div>
+          {/* Кнопки отзыва */}
           {isDeal && userId === customerId && !item.hasReview && (
-            <button onClick={() => { setReviewDeal({...item, _reviewByWorker:false}); setReviewModal(true); setReviewDone(false); setReviewForm({rating:5,text:''}); }}
-              style={{ padding:'7px 12px', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', border:'none', borderRadius:8, color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer', marginTop:4, alignSelf:'flex-start' }}>
+            <button onClick={e => { e.stopPropagation(); setReviewDeal({...item, _reviewByWorker:false}); setReviewModal(true); setReviewDone(false); setReviewForm({rating:5,text:''}); }}
+              style={{ padding:'7px 12px', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', border:'none', borderRadius:8, color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer' }}>
               ⭐ Оставить отзыв
             </button>
           )}
           {isDeal && userId === customerId && item.hasReview && (
-            <div style={{ fontSize:12, color:'#4cd964', fontWeight:600, marginTop:4 }}>✓ Отзыв оставлен</div>
+            <div style={{ fontSize:12, color:'#4cd964', fontWeight:600 }}>✓ Отзыв оставлен</div>
           )}
           {isDeal && userId !== customerId && item.workerId === userId && !item.hasWorkerReview && (
-            <button onClick={() => { setReviewDeal({...item, _reviewByWorker:true}); setReviewModal(true); setReviewDone(false); setReviewForm({rating:5,text:''}); }}
-              style={{ padding:'7px 12px', background:'linear-gradient(135deg,#e8410a,#ff7043)', border:'none', borderRadius:8, color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer', marginTop:4, alignSelf:'flex-start' }}>
+            <button onClick={e => { e.stopPropagation(); setReviewDeal({...item, _reviewByWorker:true}); setReviewModal(true); setReviewDone(false); setReviewForm({rating:5,text:''}); }}
+              style={{ padding:'7px 12px', background:'linear-gradient(135deg,#e8410a,#ff7043)', border:'none', borderRadius:8, color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer' }}>
               ⭐ Отзыв заказчику
             </button>
           )}
           {isDeal && userId !== customerId && item.workerId === userId && item.hasWorkerReview && (
-            <div style={{ fontSize:12, color:'#4cd964', fontWeight:600, marginTop:4 }}>✓ Отзыв оставлен</div>
+            <div style={{ fontSize:12, color:'#4cd964', fontWeight:600 }}>✓ Отзыв оставлен</div>
           )}
         </div>
       </div>
@@ -220,106 +194,162 @@ export default function PublicCustomerProfilePage() {
   };
 
   return (
-    <div className="pcp-page">
-      <style>{css}</style>
-      <div className="pcp-topbar">
-        <div className="pcp-container">
-          <button style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, color:'#257af4', fontWeight:500, display:'flex', alignItems:'center', gap:4, padding:0 }} onClick={() => navigate(-1)}>
-            <span style={{ fontSize:18 }}>‹</span> Назад
+    <div style={{ background:'#f4f4f4', minHeight:'100vh', fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif' }}>
+
+      {/* Топбар */}
+      <div style={{ background:'#fff', borderBottom:'1px solid #e5e5e5', padding:'10px 0' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 20px' }}>
+          <button onClick={() => navigate(-1)}
+            style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, color:'#00aaff', fontWeight:500, display:'flex', alignItems:'center', gap:4, padding:0 }}>
+            ← Назад
           </button>
         </div>
       </div>
 
-      <div className="pcp-container">
-        <div className="pcp-grid">
-          {/* ЛЕВАЯ */}
-          <div>
-            <div className="pcp-card">
-              <div style={{ display:'flex', gap:14, alignItems:'flex-start', marginBottom:12 }}>
-                <div style={{ flexShrink:0 }}>
-                  {avatarUrl
-                    ? <img src={avatarUrl} alt={fullName} style={{ width:76, height:76, borderRadius:'50%', objectFit:'cover' }} />
-                    : <div style={{ width:76, height:76, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:26 }}>{initials}</div>
-                  }
+      <div style={{ maxWidth:1100, margin:'0 auto', padding:'24px 20px 60px', display:'grid', gridTemplateColumns:'280px 1fr', gap:24, alignItems:'flex-start' }}>
+
+        {/* ══ ЛЕВАЯ КОЛОНКА ══ */}
+        <div>
+          <div style={{ background:'#fff', borderRadius:16, padding:'24px 20px', marginBottom:12, border:'1px solid #e5e5e5' }}>
+            {/* Аватар */}
+            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', marginBottom:16 }}>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={fullName} style={{ width:120, height:120, borderRadius:'50%', objectFit:'cover', border:'3px solid #f0f0f0' }} />
+              ) : (
+                <div style={{ width:120, height:120, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:40 }}>
+                  {initials}
                 </div>
-                <div style={{ flex:1 }}>
-                  <h1 style={{ fontSize:20, fontWeight:700, color:'#1a1a1a', margin:'0 0 2px' }}>{fullName}</h1>
-                  <div style={{ fontSize:13, color:'#8f8f8f', marginBottom:6 }}>Заказчик</div>
-                  {avgRating ? (
-                    <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
-                      <span style={{ fontSize:16, fontWeight:800, color:'#1a1a1a' }}>{avgRating}</span>
-                      <span style={{ color:'#ffb800', fontSize:14 }}>{'★'.repeat(Math.round(Number(avgRating)))}</span>
-                      <span style={{ fontSize:12, color:'#257af4' }}>{reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}</span>
-                    </div>
-                  ) : <div style={{ fontSize:12, color:'#8f8f8f', marginBottom:4 }}>Нет отзывов</div>}
-                  {since && <div style={{ fontSize:12, color:'#8f8f8f' }}>{since}</div>}
+              )}
+              <h1 style={{ fontSize:22, fontWeight:700, color:'#1a1a1a', margin:'14px 0 4px', textAlign:'center' }}>{fullName}</h1>
+              <div style={{ fontSize:14, color:'#8f8f8f', marginBottom:8 }}>Заказчик</div>
+              {avgRating && (
+                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                  <span style={{ color:'#ffb800', fontSize:18 }}>★</span>
+                  <span style={{ fontSize:16, fontWeight:700, color:'#1a1a1a' }}>{avgRating}</span>
+                  <span style={{ fontSize:13, color:'#8f8f8f' }}>· {reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}</span>
                 </div>
+              )}
+              {since && <div style={{ fontSize:12, color:'#8f8f8f', marginTop:6 }}>{since}</div>}
+            </div>
+
+            {/* Статы */}
+            <div style={{ display:'flex', justifyContent:'center', gap:24, padding:'14px 0', borderTop:'1px solid #f0f0f0', borderBottom:'1px solid #f0f0f0', marginBottom:16 }}>
+              <div style={{ textAlign:'center' }}>
+                <div style={{ fontSize:20, fontWeight:800, color:'#1a1a1a' }}>{total}</div>
+                <div style={{ fontSize:11, color:'#8f8f8f', textTransform:'uppercase', letterSpacing:.5 }}>заявок</div>
               </div>
-              <div className="pcp-statrow">
-                <div className="pcp-stat"><div className="pcp-statnum">{total}</div><div className="pcp-statlabel">Заявок</div></div>
-                <div className="pcp-statdiv" />
-                <div className="pcp-stat"><div className="pcp-statnum">{done}</div><div className="pcp-statlabel">Выполнено</div></div>
-                {avgRating && <><div className="pcp-statdiv" /><div className="pcp-stat"><div className="pcp-statnum">{avgRating}</div><div className="pcp-statlabel">Рейтинг</div></div></>}
+              <div style={{ textAlign:'center' }}>
+                <div style={{ fontSize:20, fontWeight:800, color:'#1a1a1a' }}>{done}</div>
+                <div style={{ fontSize:11, color:'#8f8f8f', textTransform:'uppercase', letterSpacing:.5 }}>выполнено</div>
               </div>
             </div>
-            <div className="pcp-card">
-              <div className="pcp-inforow"><span style={{ color:'#4cd964', fontSize:16 }}>✔</span> Документы проверены</div>
-              <div className="pcp-inforow"><span style={{ fontSize:16 }}>📍</span> {customer?.city || 'Йошкар-Ола'}</div>
-              {total >= 1 && <div className="pcp-inforow"><span style={{ fontSize:16 }}>⭐</span> Активный заказчик</div>}
-              {done >= 1 && <div className="pcp-inforow"><span style={{ fontSize:16 }}>🤝</span> Есть завершённые сделки</div>}
+
+            {/* Бейджи */}
+            <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
+                <span style={{ color:'#4cd964' }}>✔</span> Документы проверены
+              </div>
+              <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
+                <span>📍</span> {customer?.city || 'Йошкар-Ола'}
+              </div>
+              {total >= 1 && (
+                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
+                  <span>⭐</span> Активный заказчик
+                </div>
+              )}
+              {done >= 1 && (
+                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
+                  <span>🤝</span> Есть завершённые сделки
+                </div>
+              )}
             </div>
+
+            {/* Кнопка написать */}
             {userId && userId !== customerId && (
-              <button className="pcp-btn" onClick={() => navigate(`/chat/${customerId}`)}>💬 Написать</button>
+              <button onClick={() => navigate(`/chat/${customerId}`)}
+                style={{ width:'100%', padding:'13px', background:'#00aaff', border:'none', borderRadius:10, color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer' }}>
+                Написать
+              </button>
             )}
           </div>
+        </div>
 
-          {/* ПРАВАЯ */}
-          <div>
-            <div className="pcp-panel">
-              <div className="pcp-tabbar">
-                {[
-                  ['open',      'Активные',    openReqs.length],
-                  ['completed', 'Завершённые', completedReqs.length || completedDealsData.length],
-                  ['reviews',   'Отзывы',      reviews.length],
-                ].map(([key, label, count]) => (
-                  <button key={key} className={`pcp-tab${tab===key?' active':''}`} onClick={() => setTab(key)}>
-                    {label} <span style={{ fontSize:13, fontWeight:600, color: tab===key ? '#e8410a' : '#bbb' }}>{count}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="pcp-content">
-                {tab === 'open' && (openReqs.length === 0
-                  ? <div className="pcp-empty"><div style={{ fontSize:40, marginBottom:10 }}>📋</div><p style={{ fontWeight:600 }}>Нет активных заявок</p></div>
-                  : openReqs.map(r => renderItem(r, false))
-                )}
-                {tab === 'completed' && (() => {
-                  const items = completedReqs.length > 0 ? completedReqs.map(r=>({...r,_isDeal:false})) : completedDealsData.map(d=>({...d,_isDeal:true}));
-                  return items.length === 0
-                    ? <div className="pcp-empty"><div style={{ fontSize:40, marginBottom:10 }}>✅</div><p style={{ fontWeight:600 }}>Завершённых заказов нет</p></div>
-                    : items.map(item => renderItem(item, item._isDeal));
-                })()}
-                {tab === 'reviews' && (reviews.length === 0
-                  ? <div className="pcp-empty"><div style={{ fontSize:40, marginBottom:10 }}>⭐</div><p style={{ fontWeight:600 }}>Отзывов пока нет</p></div>
-                  : reviews.map(r => (
-                    <div key={r.id} className="pcp-review">
-                      <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:8 }}>
-                        {r.authorAvatarUrl
-                          ? <img src={r.authorAvatarUrl} alt="" style={{ width:40, height:40, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
-                          : <div style={{ width:40, height:40, borderRadius:'50%', background:'linear-gradient(135deg,#257af4,#1a5cbf)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:15, flexShrink:0 }}>{(r.authorName||'М')[0].toUpperCase()}</div>
-                        }
-                        <div style={{ flex:1 }}>
-                          <div style={{ fontSize:14, fontWeight:700, color:'#1a1a1a' }}>{[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Мастер'}</div>
-                          <div style={{ fontSize:12, color:'#8f8f8f' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
-                        </div>
-                        <div style={{ color:'#ffb800', fontSize:16 }}>{'★'.repeat(r.rating||0)}<span style={{ color:'#e0e0e0' }}>{'★'.repeat(5-(r.rating||0))}</span></div>
-                      </div>
-                      {(r.text || r.comment) && <p style={{ fontSize:14, color:'#333', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+        {/* ══ ПРАВАЯ КОЛОНКА ══ */}
+        <div>
+          {/* Вкладки как авито */}
+          <div style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'2px solid #e5e5e5' }}>
+            {tabs.map(({ key, label, count }) => (
+              <button key={key} onClick={() => setTab(key)}
+                style={{
+                  padding:'12px 20px', background:'none', border:'none',
+                  borderBottom: tab===key ? '2px solid #000' : '2px solid transparent',
+                  marginBottom:-2, cursor:'pointer',
+                  fontSize:16, fontWeight: tab===key ? 700 : 500,
+                  color: tab===key ? '#1a1a1a' : '#8f8f8f',
+                  transition:'all .15s',
+                }}>
+                {label} <span style={{ fontSize:14 }}>{count}</span>
+              </button>
+            ))}
           </div>
+
+          {/* АКТИВНЫЕ */}
+          {tab === 'open' && (openReqs.length === 0 ? (
+            <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#8f8f8f', border:'1px solid #e5e5e5' }}>
+              <div style={{ fontSize:40, marginBottom:10 }}>📋</div>
+              <p style={{ fontWeight:600, fontSize:16 }}>Нет активных заявок</p>
+            </div>
+          ) : (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px,1fr))', gap:12 }}>
+              {openReqs.map(r => renderCard(r, false))}
+            </div>
+          ))}
+
+          {/* ЗАВЕРШЁННЫЕ */}
+          {tab === 'completed' && (() => {
+            const items = completedReqs.length > 0
+              ? completedReqs.map(r => ({...r, _isDeal: false}))
+              : completedDeals.map(d => ({...d, _isDeal: true}));
+            return items.length === 0 ? (
+              <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#8f8f8f', border:'1px solid #e5e5e5' }}>
+                <div style={{ fontSize:40, marginBottom:10 }}>✅</div>
+                <p style={{ fontWeight:600, fontSize:16 }}>Завершённых заказов нет</p>
+              </div>
+            ) : (
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px,1fr))', gap:12 }}>
+                {items.map(item => renderCard(item, item._isDeal))}
+              </div>
+            );
+          })()}
+
+          {/* ОТЗЫВЫ */}
+          {tab === 'reviews' && (reviews.length === 0 ? (
+            <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#8f8f8f', border:'1px solid #e5e5e5' }}>
+              <div style={{ fontSize:40, marginBottom:10 }}>⭐</div>
+              <p style={{ fontWeight:600, fontSize:16 }}>Отзывов пока нет</p>
+            </div>
+          ) : (
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {reviews.map(r => (
+                <div key={r.id} style={{ background:'#fff', borderRadius:12, padding:'16px 20px', border:'1px solid #e5e5e5' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
+                    {r.authorAvatarUrl
+                      ? <img src={r.authorAvatarUrl} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
+                      : <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#257af4,#1a5cbf)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:16, flexShrink:0 }}>{(r.authorName||'М')[0].toUpperCase()}</div>
+                    }
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:15, fontWeight:700, color:'#1a1a1a' }}>{[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Мастер'}</div>
+                      <div style={{ fontSize:12, color:'#8f8f8f' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
+                    </div>
+                    <div style={{ display:'flex', gap:2 }}>
+                      {[1,2,3,4,5].map(s => <span key={s} style={{ fontSize:18, color: s <= (r.rating||0) ? '#ffb800' : '#e0e0e0' }}>★</span>)}
+                    </div>
+                  </div>
+                  {(r.text || r.comment) && <p style={{ fontSize:14, color:'#333', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -330,9 +360,8 @@ export default function PublicCustomerProfilePage() {
             {reviewDone ? (
               <div style={{ textAlign:'center', padding:'20px 0' }}>
                 <div style={{ fontSize:48, marginBottom:12 }}>🎉</div>
-                <h3 style={{ fontSize:20, fontWeight:800, color:'#1a1a1a', margin:'0 0 8px' }}>Отзыв отправлен!</h3>
-                <p style={{ color:'#8f8f8f', margin:'0 0 20px' }}>Спасибо за вашу оценку</p>
-                <button onClick={() => setReviewModal(false)} style={{ padding:'10px 28px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>Закрыть</button>
+                <h3 style={{ fontSize:20, fontWeight:800, margin:'0 0 8px' }}>Отзыв отправлен!</h3>
+                <button onClick={() => setReviewModal(false)} style={{ marginTop:16, padding:'10px 28px', background:'#00aaff', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>Закрыть</button>
               </div>
             ) : (
               <>
@@ -340,12 +369,12 @@ export default function PublicCustomerProfilePage() {
                   <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>{reviewDeal?._reviewByWorker ? 'Отзыв о заказчике' : 'Отзыв о мастере'}</h2>
                   <button onClick={() => setReviewModal(false)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#8f8f8f' }}>×</button>
                 </div>
-                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#f8f9fa', borderRadius:10, marginBottom:20 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#f7f7f7', borderRadius:10, marginBottom:20 }}>
                   <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>
                     {reviewDeal?._reviewByWorker ? (initials||'З') : (reviewDeal?.workerName?.[0]?.toUpperCase()||'М')}
                   </div>
                   <div>
-                    <div style={{ fontSize:15, fontWeight:700, color:'#1a1a1a' }}>{reviewDeal?._reviewByWorker ? fullName : reviewDeal?.workerName}</div>
+                    <div style={{ fontSize:15, fontWeight:700 }}>{reviewDeal?._reviewByWorker ? fullName : reviewDeal?.workerName}</div>
                     <div style={{ fontSize:12, color:'#8f8f8f' }}>{reviewDeal?._reviewByWorker ? 'Заказчик' : 'Мастер'}</div>
                   </div>
                 </div>
@@ -354,20 +383,17 @@ export default function PublicCustomerProfilePage() {
                   <div style={{ display:'flex', gap:6 }}>
                     {[1,2,3,4,5].map(star => (
                       <button key={star} onClick={() => setReviewForm(p => ({...p, rating:star}))}
-                        style={{ background:'none', border:'none', cursor:'pointer', fontSize:36, padding:0, color: star <= reviewForm.rating ? '#ffb800' : '#e0e0e0', transition:'color .1s' }}>★</button>
+                        style={{ background:'none', border:'none', cursor:'pointer', fontSize:36, padding:0, color: star <= reviewForm.rating ? '#ffb800' : '#e0e0e0' }}>★</button>
                     ))}
                   </div>
                 </div>
-                <div style={{ marginBottom:20 }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:'#333', marginBottom:8 }}>Комментарий</div>
-                  <textarea value={reviewForm.text} onChange={e => setReviewForm(p => ({...p, text: e.target.value}))}
-                    placeholder="Расскажите об опыте работы..."
-                    style={{ width:'100%', padding:'12px', borderRadius:10, border:'1.5px solid #e0e0e0', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box', fontFamily:'inherit' }}
-                    onFocus={e => e.target.style.borderColor='#257af4'} onBlur={e => e.target.style.borderColor='#e0e0e0'} />
-                </div>
+                <textarea value={reviewForm.text} onChange={e => setReviewForm(p => ({...p, text: e.target.value}))}
+                  placeholder="Расскажите об опыте работы..."
+                  style={{ width:'100%', padding:'12px', borderRadius:10, border:'1.5px solid #e0e0e0', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box', marginBottom:16, fontFamily:'inherit' }}
+                  onFocus={e => e.target.style.borderColor='#00aaff'} onBlur={e => e.target.style.borderColor='#e0e0e0'} />
                 <button onClick={handleReviewSubmit} disabled={reviewSending || !reviewForm.text.trim()}
-                  style={{ width:'100%', padding:'13px', background: reviewForm.text.trim() ? '#e8410a' : '#e0e0e0', border:'none', borderRadius:10, color: reviewForm.text.trim() ? '#fff' : '#999', fontSize:15, fontWeight:700, cursor: reviewForm.text.trim() ? 'pointer' : 'not-allowed' }}>
-                  {reviewSending ? 'Отправляем...' : '⭐ Отправить отзыв'}
+                  style={{ width:'100%', padding:'13px', background: reviewForm.text.trim() ? '#00aaff' : '#e0e0e0', border:'none', borderRadius:10, color: reviewForm.text.trim() ? '#fff' : '#999', fontSize:15, fontWeight:700, cursor: reviewForm.text.trim() ? 'pointer' : 'not-allowed' }}>
+                  {reviewSending ? 'Отправляем...' : 'Отправить отзыв'}
                 </button>
               </>
             )}

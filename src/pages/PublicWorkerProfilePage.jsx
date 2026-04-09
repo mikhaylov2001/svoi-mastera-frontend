@@ -9,7 +9,7 @@ function timeAgo(d) {
   const days = Math.floor((Date.now() - new Date(d)) / 86400000);
   if (days === 0) return 'сегодня';
   if (days === 1) return 'вчера';
-  if (days < 30)  return `${days} дн. назад`;
+  if (days < 30) return `${days} дн. назад`;
   const months = Math.floor(days / 30);
   if (months < 12) return `${months} мес. назад`;
   return `${Math.floor(months / 12)} г. назад`;
@@ -25,19 +25,18 @@ export default function PublicWorkerProfilePage() {
   const navigate = useNavigate();
   const { userId } = useAuth();
 
-  const [worker,         setWorker]         = useState(null);
-  const [services,       setServices]       = useState([]);
-  const [reviews,        setReviews]        = useState([]);
-  const [completedWorks, setCompletedWorks] = useState([]);
-  const [loading,        setLoading]        = useState(true);
-  const [tab,            setTab]            = useState('works');
-  const [lightbox,       setLightbox]       = useState(null);
-  const [photoIdx,       setPhotoIdx]       = useState({});
-  const [showReviews,    setShowReviews]    = useState(false);
-  const [reviewModal,    setReviewModal]    = useState(false);
-  const [reviewForm,     setReviewForm]     = useState({ rating: 5, text: '' });
-  const [reviewSending,  setReviewSending]  = useState(false);
-  const [reviewDone,     setReviewDone]     = useState(false);
+  const [worker,         setWorker]        = useState(null);
+  const [services,       setServices]      = useState([]);
+  const [reviews,        setReviews]       = useState([]);
+  const [completedWorks, setCompletedWorks]= useState([]);
+  const [loading,        setLoading]       = useState(true);
+  const [tab,            setTab]           = useState('works');
+  const [lightbox,       setLightbox]      = useState(null);
+  const [photoIdx,       setPhotoIdx]      = useState({});
+  const [reviewModal,    setReviewModal]   = useState(false);
+  const [reviewForm,     setReviewForm]    = useState({ rating: 5, text: '' });
+  const [reviewSending,  setReviewSending] = useState(false);
+  const [reviewDone,     setReviewDone]    = useState(false);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -77,10 +76,8 @@ export default function PublicWorkerProfilePage() {
   }, [workerId]);
 
   if (loading) return (
-    <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
-      <div style={{ textAlign:'center', color:'#8f8f8f' }}>
-        <div style={{ fontSize:32, marginBottom:8 }}>⏳</div><p>Загружаем профиль...</p>
-      </div>
+    <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center', color:'#8f8f8f' }}>
+      <div style={{ textAlign:'center' }}><div style={{ fontSize:32, marginBottom:8 }}>⏳</div><p>Загружаем профиль...</p></div>
     </div>
   );
 
@@ -107,254 +104,222 @@ export default function PublicWorkerProfilePage() {
       setReviewDone(true);
       const r = await fetch(`${API}/reviews/worker/${workerId}`);
       if (r.ok) setReviews((await r.json()).filter(r => r.status === 'APPROVED'));
-    } catch (e) { console.error(e); }
+    } catch(e) { console.error(e); }
     setReviewSending(false);
   };
 
-  const css = `
-    .pwp-page { background:#f2f3f5; min-height:100vh; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-    .pwp-topbar { background:#fff; border-bottom:1px solid #e8e8e8; padding:10px 0; }
-    .pwp-container { max-width:1060px; margin:0 auto; padding:0 16px; }
-    .pwp-grid { display:grid; grid-template-columns:300px 1fr; gap:16px; padding-top:16px; padding-bottom:60px; align-items:flex-start; }
-    .pwp-card { background:#fff; border-radius:12px; padding:20px; margin-bottom:12px; }
-    .pwp-tab-panel { background:#fff; border-radius:12px; overflow:hidden; }
-    .pwp-tab-bar { display:flex; border-bottom:1px solid #f0f0f0; padding:0 8px; }
-    .pwp-tab { padding:14px 16px; background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-1px; cursor:pointer; font-size:14px; font-weight:700; color:#8f8f8f; transition:all .15s; white-space:nowrap; }
-    .pwp-tab.active { color:#e8410a; border-bottom-color:#e8410a; }
-    .pwp-tab-content { padding:16px; }
-    .pwp-work-card { background:#f8f9fa; border-radius:10px; display:flex; overflow:hidden; margin-bottom:10px; border:1px solid #eee; transition:box-shadow .2s; }
-    .pwp-work-card:hover { box-shadow:0 2px 12px rgba(0,0,0,.1); }
-    .pwp-work-img { width:130px; min-width:130px; height:100px; object-fit:cover; background:#e8e8e8; display:flex; align-items:center; justify-content:center; font-size:28px; color:#ccc; position:relative; flex-shrink:0; overflow:hidden; }
-    .pwp-work-body { flex:1; padding:12px 14px; display:flex; flex-direction:column; gap:4; }
-    .pwp-badge-row { display:flex; align-items:center; gap:6; flex-wrap:wrap; }
-    .pwp-badge-green { background:rgba(76,217,100,.15); color:#1a8c3a; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; }
-    .pwp-badge-blue { background:rgba(37,122,244,.12); color:#1a5cbf; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; }
-    .pwp-badge-orange { background:rgba(245,158,11,.12); color:#b45309; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; }
-    .pwp-review-card { background:#f8f9fa; border-radius:10px; padding:14px 16px; margin-bottom:10px; border:1px solid #eee; }
-    .pwp-empty { text-align:center; padding:50px 24px; color:#8f8f8f; }
-    .pwp-info-row { display:flex; align-items:center; gap:10; padding:10px 0; font-size:14px; color:#333; border-bottom:1px solid #f5f5f5; }
-    .pwp-info-row:last-child { border-bottom:none; }
-    .pwp-btn-primary { width:100%; padding:13px; background:#e8410a; border:none; border-radius:10px; color:#fff; font-size:15px; font-weight:700; cursor:pointer; margin-bottom:8px; transition:opacity .15s; }
-    .pwp-btn-primary:hover { opacity:.88; }
-    .pwp-btn-secondary { width:100%; padding:12px; background:#fff; border:1.5px solid #e0e0e0; border-radius:10px; color:#333; font-size:14px; font-weight:600; cursor:pointer; transition:border-color .15s; }
-    .pwp-btn-secondary:hover { border-color:#333; }
-    .pwp-stat-row { display:flex; padding-top:16px; margin-top:16px; border-top:1px solid #f0f0f0; }
-    .pwp-stat { flex:1; text-align:center; }
-    .pwp-stat-num { font-size:22px; font-weight:800; color:#1a1a1a; line-height:1; }
-    .pwp-stat-label { font-size:11px; color:#8f8f8f; text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
-    .pwp-stat-divider { width:1px; background:#f0f0f0; margin:4px 0; }
-    @media(max-width:768px){ .pwp-grid{ grid-template-columns:1fr!important; } }
-  `;
+  const tabs = [
+    { key: 'works',   label: 'Работы',    count: completedWorks.length },
+    { key: 'active',  label: 'Активные',  count: services.length },
+    { key: 'reviews', label: 'Отзывы',    count: reviews.length },
+  ];
 
   return (
-    <div className="pwp-page">
-      <style>{css}</style>
+    <div style={{ background:'#f4f4f4', minHeight:'100vh', fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif' }}>
 
-      <div className="pwp-topbar">
-        <div className="pwp-container">
-          <button style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, color:'#257af4', fontWeight:500, display:'flex', alignItems:'center', gap:4, padding:0 }}
-            onClick={() => navigate(-1)}>
-            <span style={{ fontSize:18 }}>‹</span> Назад
+      {/* Топбар */}
+      <div style={{ background:'#fff', borderBottom:'1px solid #e5e5e5', padding:'10px 0' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 20px' }}>
+          <button onClick={() => navigate(-1)}
+            style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, color:'#00aaff', fontWeight:500, display:'flex', alignItems:'center', gap:4, padding:0 }}>
+            ← Назад
           </button>
         </div>
       </div>
 
-      <div className="pwp-container">
-        <div className="pwp-grid">
+      <div style={{ maxWidth:1100, margin:'0 auto', padding:'24px 20px 60px', display:'grid', gridTemplateColumns:'280px 1fr', gap:24, alignItems:'flex-start' }}>
 
-          {/* ══ ЛЕВАЯ КОЛОНКА ══ */}
-          <div>
-            <div className="pwp-card">
-              {/* Аватар + имя */}
-              <div style={{ display:'flex', gap:14, alignItems:'flex-start', marginBottom:12 }}>
-                <div style={{ position:'relative', flexShrink:0 }}>
-                  {worker?.avatarUrl
-                    ? <img src={worker.avatarUrl} alt={fullName} style={{ width:76, height:76, borderRadius:'50%', objectFit:'cover' }} />
-                    : <div style={{ width:76, height:76, borderRadius:'50%', background:'linear-gradient(135deg,#257af4,#1a5cbf)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:26 }}>{initials}</div>
-                  }
-                  <div style={{ position:'absolute', bottom:2, right:2, width:14, height:14, borderRadius:'50%', background:'#4cd964', border:'2px solid #fff' }} />
+        {/* ══ ЛЕВАЯ КОЛОНКА (как авито) ══ */}
+        <div>
+          {/* Аватар */}
+          <div style={{ background:'#fff', borderRadius:16, padding:'24px 20px', marginBottom:12, border:'1px solid #e5e5e5' }}>
+            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', marginBottom:16 }}>
+              {worker?.avatarUrl ? (
+                <img src={worker.avatarUrl} alt={fullName}
+                  style={{ width:120, height:120, borderRadius:'50%', objectFit:'cover', border:'3px solid #f0f0f0' }} />
+              ) : (
+                <div style={{ width:120, height:120, borderRadius:'50%', background:'linear-gradient(135deg,#257af4,#1a5cbf)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:40 }}>
+                  {initials}
                 </div>
-                <div style={{ flex:1 }}>
-                  <h1 style={{ fontSize:20, fontWeight:700, color:'#1a1a1a', margin:'0 0 2px' }}>{fullName}</h1>
-                  <div style={{ fontSize:13, color:'#8f8f8f', marginBottom:6 }}>Мастер</div>
-                  {avgRating ? (
-                    <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4, cursor:'pointer' }} onClick={() => setShowReviews(true)}>
-                      <span style={{ fontSize:16, fontWeight:800, color:'#1a1a1a' }}>{avgRating}</span>
-                      <span style={{ color:'#ffb800', fontSize:14 }}>{'★'.repeat(Math.round(Number(avgRating)))}</span>
-                      <span style={{ fontSize:12, color:'#257af4', textDecoration:'underline' }}>
-                        {reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}
-                      </span>
-                    </div>
-                  ) : (
-                    <div style={{ fontSize:12, color:'#8f8f8f', marginBottom:4 }}>Нет отзывов</div>
-                  )}
-                  {since && <div style={{ fontSize:12, color:'#8f8f8f' }}>{since}</div>}
+              )}
+              <h1 style={{ fontSize:22, fontWeight:700, color:'#1a1a1a', margin:'14px 0 4px', textAlign:'center' }}>{fullName}</h1>
+              <div style={{ fontSize:14, color:'#8f8f8f', marginBottom:8 }}>Мастер</div>
+              {avgRating && (
+                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                  <span style={{ color:'#ffb800', fontSize:18 }}>★</span>
+                  <span style={{ fontSize:16, fontWeight:700, color:'#1a1a1a' }}>{avgRating}</span>
+                  <span style={{ fontSize:13, color:'#8f8f8f' }}>· {reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}</span>
                 </div>
+              )}
+              {since && <div style={{ fontSize:12, color:'#8f8f8f', marginTop:6 }}>{since}</div>}
+            </div>
+
+            {/* Статы */}
+            <div style={{ display:'flex', justifyContent:'center', gap:24, padding:'14px 0', borderTop:'1px solid #f0f0f0', borderBottom:'1px solid #f0f0f0', marginBottom:16 }}>
+              <div style={{ textAlign:'center' }}>
+                <div style={{ fontSize:20, fontWeight:800, color:'#1a1a1a' }}>{completedWorks.length}</div>
+                <div style={{ fontSize:11, color:'#8f8f8f', textTransform:'uppercase', letterSpacing:.5 }}>заказов</div>
               </div>
-
-              {/* Статистика */}
-              <div className="pwp-stat-row">
-                <div className="pwp-stat">
-                  <div className="pwp-stat-num">{completedWorks.length}</div>
-                  <div className="pwp-stat-label">Заказов</div>
-                </div>
-                <div className="pwp-stat-divider" />
-                <div className="pwp-stat">
-                  <div className="pwp-stat-num">{reviews.length}</div>
-                  <div className="pwp-stat-label">Отзывов</div>
-                </div>
-                {avgRating && <>
-                  <div className="pwp-stat-divider" />
-                  <div className="pwp-stat">
-                    <div className="pwp-stat-num">{avgRating}</div>
-                    <div className="pwp-stat-label">Рейтинг</div>
-                  </div>
-                </>}
+              <div style={{ textAlign:'center' }}>
+                <div style={{ fontSize:20, fontWeight:800, color:'#1a1a1a' }}>{reviews.length}</div>
+                <div style={{ fontSize:11, color:'#8f8f8f', textTransform:'uppercase', letterSpacing:.5 }}>отзывов</div>
               </div>
             </div>
 
             {/* Бейджи */}
-            <div className="pwp-card">
-              <div className="pwp-info-row"><span style={{ color:'#4cd964', fontSize:16 }}>✔</span> Документы проверены</div>
-              <div className="pwp-info-row"><span style={{ fontSize:16 }}>📍</span> {worker?.city || 'Йошкар-Ола'}</div>
-              {completedWorks.length >= 1 && <div className="pwp-info-row"><span style={{ fontSize:16 }}>⭐</span> Активный мастер</div>}
-              {completedWorks.length >= 1 && <div className="pwp-info-row"><span style={{ fontSize:16 }}>🤝</span> Есть завершённые работы</div>}
+            <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
+                <span style={{ color:'#4cd964', fontSize:16 }}>✔</span> Документы проверены
+              </div>
+              <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
+                <span>📍</span> {worker?.city || 'Йошкар-Ола'}
+              </div>
+              {completedWorks.length >= 1 && (
+                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
+                  <span>⭐</span> Активный мастер
+                </div>
+              )}
+              {completedWorks.length >= 1 && (
+                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
+                  <span>🤝</span> Есть завершённые работы
+                </div>
+              )}
             </div>
 
             {/* Кнопки */}
             {userId && userId !== workerId && (
-              <div>
-                <button className="pwp-btn-primary" onClick={() => navigate(`/chat/${workerId}`)}>💬 Написать</button>
-                <button className="pwp-btn-secondary" onClick={() => { setReviewModal(true); setReviewDone(false); setReviewForm({ rating:5, text:'' }); }}>⭐ Оставить отзыв</button>
+              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                <button onClick={() => navigate(`/chat/${workerId}`)}
+                  style={{ width:'100%', padding:'13px', background:'#00aaff', border:'none', borderRadius:10, color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer' }}>
+                  Написать
+                </button>
+                <button onClick={() => { setReviewModal(true); setReviewDone(false); setReviewForm({ rating:5, text:'' }); }}
+                  style={{ width:'100%', padding:'12px', background:'#fff', border:'1.5px solid #d0d0d0', borderRadius:10, color:'#333', fontSize:14, fontWeight:600, cursor:'pointer' }}>
+                  ⭐ Оставить отзыв
+                </button>
               </div>
             )}
           </div>
-
-          {/* ══ ПРАВАЯ КОЛОНКА ══ */}
-          <div>
-            <div className="pwp-tab-panel">
-              <div className="pwp-tab-bar">
-                {[
-                  ['works',   `Работы`,   completedWorks.length],
-                  ['active',  `Активные`, services.length],
-                  ['reviews', `Отзывы`,   reviews.length],
-                ].map(([key, label, count]) => (
-                  <button key={key} className={`pwp-tab${tab===key?' active':''}`} onClick={() => setTab(key)}>
-                    {label} <span style={{ fontSize:13, fontWeight:600, color: tab===key ? '#e8410a' : '#bbb' }}>{count}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="pwp-tab-content">
-
-                {/* РАБОТЫ */}
-                {tab === 'works' && (completedWorks.length === 0 ? (
-                  <div className="pwp-empty"><div style={{ fontSize:40, marginBottom:10 }}>🔨</div><p style={{ fontWeight:600 }}>Выполненных работ пока нет</p></div>
-                ) : completedWorks.map(work => {
-                  const hasPhoto = work.photos && work.photos.length > 0;
-                  const pi = photoIdx[work.id] || 0;
-                  return (
-                    <div key={work.id} className="pwp-work-card">
-                      <div className="pwp-work-img" onClick={hasPhoto ? () => setLightbox({ photos: work.photos, index: pi }) : undefined}
-                        style={{ cursor: hasPhoto ? 'pointer' : 'default' }}>
-                        {hasPhoto
-                          ? <img src={work.photos[pi]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
-                          : <span>🔨</span>
-                        }
-                        <div style={{ position:'absolute', top:6, left:6 }}>
-                          <span style={{ background:'rgba(76,217,100,.9)', color:'#fff', fontSize:10, fontWeight:700, padding:'2px 7px', borderRadius:4 }}>✅ Завершена</span>
-                        </div>
-                        {work.categoryName && <div style={{ position:'absolute', top:6, right:6, background:'rgba(37,122,244,.9)', color:'#fff', fontSize:10, fontWeight:700, padding:'2px 7px', borderRadius:4 }}>{work.categoryName}</div>}
-                        {hasPhoto && work.photos.length > 1 && <div style={{ position:'absolute', bottom:4, right:4, background:'rgba(0,0,0,.5)', color:'#fff', fontSize:10, padding:'2px 6px', borderRadius:4 }}>📷 {work.photos.length}</div>}
-                      </div>
-                      <div className="pwp-work-body">
-                        <div style={{ fontSize:15, fontWeight:700, color:'#1a1a1a' }}>{work.title || 'Работа'}</div>
-                        {work.price && <div style={{ fontSize:16, fontWeight:800, color:'#1a1a1a' }}>{Number(work.price).toLocaleString('ru-RU')} ₽</div>}
-                        {work.description && work.description !== 'Без описания' && (
-                          <p style={{ fontSize:13, color:'#666', margin:0, lineHeight:1.5, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{work.description}</p>
-                        )}
-                        <div style={{ fontSize:12, color:'#8f8f8f', display:'flex', gap:10, flexWrap:'wrap', marginTop:'auto' }}>
-                          {work.customerName && <span>👤 {work.customerName}</span>}
-                          {work.completedAt && <span>{timeAgo(work.completedAt)}</span>}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }))}
-
-                {/* АКТИВНЫЕ */}
-                {tab === 'active' && (services.length === 0 ? (
-                  <div className="pwp-empty"><div style={{ fontSize:40, marginBottom:10 }}>⚙️</div><p style={{ fontWeight:600 }}>Нет активных заказов</p></div>
-                ) : services.map(s => (
-                  <div key={s.id} style={{ background:'#f8f9fa', borderRadius:10, padding:'14px 16px', border:'1px solid #eee', marginBottom:10 }}>
-                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:14, fontWeight:700, color:'#1a1a1a', marginBottom:6 }}>{s.title}</div>
-                        <div className="pwp-badge-row" style={{ marginBottom: s.description ? 6 : 0 }}>
-                          <span className="pwp-badge-orange">⚙️ В работе</span>
-                          {s.categoryName && <span className="pwp-badge-blue">🏷 {s.categoryName}</span>}
-                        </div>
-                        {s.description && <p style={{ fontSize:13, color:'#666', margin:0, lineHeight:1.5 }}>{s.description}</p>}
-                      </div>
-                      <div style={{ fontSize:16, fontWeight:800, color:'#1a1a1a', flexShrink:0 }}>
-                        {s.priceTo ? `до ${Number(s.priceTo).toLocaleString('ru-RU')} ₽` : s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
-                      </div>
-                    </div>
-                  </div>
-                )))}
-
-                {/* ОТЗЫВЫ */}
-                {tab === 'reviews' && (reviews.length === 0 ? (
-                  <div className="pwp-empty"><div style={{ fontSize:40, marginBottom:10 }}>⭐</div><p style={{ fontWeight:600 }}>Отзывов пока нет</p></div>
-                ) : reviews.map(r => (
-                  <div key={r.id} className="pwp-review-card">
-                    <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:8 }}>
-                      {r.authorAvatarUrl
-                        ? <img src={r.authorAvatarUrl} alt="" style={{ width:40, height:40, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
-                        : <div style={{ width:40, height:40, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:15, flexShrink:0 }}>{(r.authorName||'К')[0].toUpperCase()}</div>
-                      }
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:14, fontWeight:700, color:'#1a1a1a' }}>{[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Клиент'}</div>
-                        <div style={{ fontSize:12, color:'#8f8f8f' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
-                      </div>
-                      <div style={{ color:'#ffb800', fontSize:16 }}>{'★'.repeat(r.rating||0)}<span style={{ color:'#e0e0e0' }}>{'★'.repeat(5-(r.rating||0))}</span></div>
-                    </div>
-                    {(r.text || r.comment) && <p style={{ fontSize:14, color:'#333', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
-                  </div>
-                )))}
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
 
-      {/* МОДАЛКА ОТЗЫВОВ */}
-      {showReviews && (
-        <div style={{ position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,.5)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={() => setShowReviews(false)}>
-          <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:520, maxHeight:'80vh', overflow:'auto', padding:28 }} onClick={e => e.stopPropagation()}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
-              <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Отзывы о мастере</h2>
-              <button onClick={() => setShowReviews(false)} style={{ background:'none', border:'none', fontSize:24, cursor:'pointer', color:'#8f8f8f' }}>×</button>
-            </div>
-            {reviews.map(r => (
-              <div key={r.id} style={{ borderBottom:'1px solid #f0f0f0', paddingBottom:16, marginBottom:16 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:8 }}>
-                  {r.authorAvatarUrl
-                    ? <img src={r.authorAvatarUrl} alt="" style={{ width:40, height:40, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
-                    : <div style={{ width:40, height:40, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:15, flexShrink:0 }}>{(r.authorName||'К')[0].toUpperCase()}</div>
-                  }
-                  <div>
-                    <div style={{ fontSize:14, fontWeight:700, color:'#1a1a1a' }}>{[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Клиент'}</div>
-                    <div style={{ fontSize:12, color:'#8f8f8f' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
-                  </div>
-                  <div style={{ marginLeft:'auto', color:'#ffb800', fontWeight:700 }}>{'★'.repeat(r.rating||0)}</div>
-                </div>
-                {(r.text || r.comment) && <p style={{ fontSize:14, color:'#333', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
-              </div>
+        {/* ══ ПРАВАЯ КОЛОНКА ══ */}
+        <div>
+          {/* Вкладки как авито */}
+          <div style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'2px solid #e5e5e5' }}>
+            {tabs.map(({ key, label, count }) => (
+              <button key={key} onClick={() => setTab(key)}
+                style={{
+                  padding:'12px 20px', background:'none', border:'none',
+                  borderBottom: tab===key ? '2px solid #000' : '2px solid transparent',
+                  marginBottom:-2, cursor:'pointer',
+                  fontSize:16, fontWeight: tab===key ? 700 : 500,
+                  color: tab===key ? '#1a1a1a' : '#8f8f8f',
+                  transition:'all .15s',
+                }}>
+                {label} <span style={{ fontSize:14 }}>{count}</span>
+              </button>
             ))}
           </div>
+
+          {/* РАБОТЫ — сетка как авито */}
+          {tab === 'works' && (completedWorks.length === 0 ? (
+            <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#8f8f8f', border:'1px solid #e5e5e5' }}>
+              <div style={{ fontSize:40, marginBottom:10 }}>🔨</div>
+              <p style={{ fontWeight:600, fontSize:16 }}>Выполненных работ пока нет</p>
+            </div>
+          ) : (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px,1fr))', gap:12 }}>
+              {completedWorks.map(work => {
+                const hasPhoto = work.photos && work.photos.length > 0;
+                const pi = photoIdx[work.id] || 0;
+                return (
+                  <div key={work.id} style={{ background:'#fff', borderRadius:12, overflow:'hidden', border:'1px solid #e5e5e5', cursor:'pointer', transition:'box-shadow .2s' }}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow='none'}
+                    onClick={hasPhoto ? () => setLightbox({ photos: work.photos, index: pi }) : undefined}>
+                    {/* Фото */}
+                    <div style={{ position:'relative', aspectRatio:'4/3', background:'#f0f0f0', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, color:'#ccc' }}>
+                      {hasPhoto
+                        ? <img src={work.photos[pi]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', pointerEvents:'none' }} />
+                        : '🔨'
+                      }
+                      <div style={{ position:'absolute', top:8, left:8, background:'rgba(76,217,100,.9)', color:'#fff', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:6 }}>✅ Завершена</div>
+                      {work.categoryName && <div style={{ position:'absolute', top:8, right:8, background:'rgba(0,0,0,.55)', color:'#fff', fontSize:11, fontWeight:600, padding:'3px 8px', borderRadius:6 }}>{work.categoryName}</div>}
+                      {hasPhoto && work.photos.length > 1 && <div style={{ position:'absolute', bottom:6, right:6, background:'rgba(0,0,0,.5)', color:'#fff', fontSize:11, padding:'2px 6px', borderRadius:4 }}>📷 {work.photos.length}</div>}
+                    </div>
+                    {/* Контент */}
+                    <div style={{ padding:'12px' }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:'#1a1a1a', marginBottom:4, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{work.title || 'Работа'}</div>
+                      {work.price && <div style={{ fontSize:16, fontWeight:800, color:'#1a1a1a', marginBottom:4 }}>{Number(work.price).toLocaleString('ru-RU')} ₽</div>}
+                      <div style={{ fontSize:12, color:'#8f8f8f', display:'flex', gap:8, flexWrap:'wrap' }}>
+                        {work.customerName && <span>👤 {work.customerName}</span>}
+                        {work.completedAt && <span>{timeAgo(work.completedAt)}</span>}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+
+          {/* АКТИВНЫЕ */}
+          {tab === 'active' && (services.length === 0 ? (
+            <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#8f8f8f', border:'1px solid #e5e5e5' }}>
+              <div style={{ fontSize:40, marginBottom:10 }}>⚙️</div>
+              <p style={{ fontWeight:600, fontSize:16 }}>Нет активных заказов</p>
+            </div>
+          ) : (
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {services.map(s => (
+                <div key={s.id} style={{ background:'#fff', borderRadius:12, padding:'16px 20px', border:'1px solid #e5e5e5' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
+                    <div style={{ flex:1 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6, flexWrap:'wrap' }}>
+                        <span style={{ fontSize:15, fontWeight:700, color:'#1a1a1a' }}>{s.title}</span>
+                        <span style={{ background:'rgba(245,158,11,.12)', color:'#b45309', fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:6 }}>⚙️ В работе</span>
+                        {s.categoryName && <span style={{ background:'rgba(0,170,255,.1)', color:'#0088cc', fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:6 }}>{s.categoryName}</span>}
+                      </div>
+                      {s.description && <p style={{ fontSize:13, color:'#666', margin:0, lineHeight:1.5 }}>{s.description}</p>}
+                    </div>
+                    <div style={{ fontSize:16, fontWeight:800, color:'#1a1a1a', flexShrink:0 }}>
+                      {s.priceTo ? `до ${Number(s.priceTo).toLocaleString('ru-RU')} ₽` : s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+
+          {/* ОТЗЫВЫ */}
+          {tab === 'reviews' && (reviews.length === 0 ? (
+            <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#8f8f8f', border:'1px solid #e5e5e5' }}>
+              <div style={{ fontSize:40, marginBottom:10 }}>⭐</div>
+              <p style={{ fontWeight:600, fontSize:16 }}>Отзывов пока нет</p>
+            </div>
+          ) : (
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {reviews.map(r => (
+                <div key={r.id} style={{ background:'#fff', borderRadius:12, padding:'16px 20px', border:'1px solid #e5e5e5' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
+                    {r.authorAvatarUrl
+                      ? <img src={r.authorAvatarUrl} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
+                      : <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:16, flexShrink:0 }}>{(r.authorName||'К')[0].toUpperCase()}</div>
+                    }
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:15, fontWeight:700, color:'#1a1a1a' }}>{[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Клиент'}</div>
+                      <div style={{ fontSize:12, color:'#8f8f8f' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
+                    </div>
+                    <div style={{ display:'flex', gap:2 }}>
+                      {[1,2,3,4,5].map(s => <span key={s} style={{ fontSize:18, color: s <= (r.rating||0) ? '#ffb800' : '#e0e0e0' }}>★</span>)}
+                    </div>
+                  </div>
+                  {(r.text || r.comment) && <p style={{ fontSize:14, color:'#333', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* МОДАЛКА ОТЗЫВА */}
       {reviewModal && (
@@ -363,9 +328,8 @@ export default function PublicWorkerProfilePage() {
             {reviewDone ? (
               <div style={{ textAlign:'center', padding:'20px 0' }}>
                 <div style={{ fontSize:48, marginBottom:12 }}>🎉</div>
-                <h3 style={{ fontSize:20, fontWeight:800, color:'#1a1a1a', margin:'0 0 8px' }}>Отзыв отправлен!</h3>
-                <p style={{ color:'#8f8f8f', margin:'0 0 20px' }}>Спасибо за вашу оценку</p>
-                <button onClick={() => setReviewModal(false)} style={{ padding:'10px 28px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>Закрыть</button>
+                <h3 style={{ fontSize:20, fontWeight:800, margin:'0 0 8px' }}>Отзыв отправлен!</h3>
+                <button onClick={() => setReviewModal(false)} style={{ marginTop:16, padding:'10px 28px', background:'#00aaff', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>Закрыть</button>
               </div>
             ) : (
               <>
@@ -373,13 +337,13 @@ export default function PublicWorkerProfilePage() {
                   <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Отзыв о мастере</h2>
                   <button onClick={() => setReviewModal(false)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#8f8f8f' }}>×</button>
                 </div>
-                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#f8f9fa', borderRadius:10, marginBottom:20 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#f7f7f7', borderRadius:10, marginBottom:20 }}>
                   {worker?.avatarUrl
                     ? <img src={worker.avatarUrl} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} />
                     : <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#257af4,#1a5cbf)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>{initials}</div>
                   }
                   <div>
-                    <div style={{ fontSize:15, fontWeight:700, color:'#1a1a1a' }}>{fullName}</div>
+                    <div style={{ fontSize:15, fontWeight:700 }}>{fullName}</div>
                     <div style={{ fontSize:12, color:'#8f8f8f' }}>Мастер</div>
                   </div>
                 </div>
@@ -388,21 +352,17 @@ export default function PublicWorkerProfilePage() {
                   <div style={{ display:'flex', gap:6 }}>
                     {[1,2,3,4,5].map(star => (
                       <button key={star} onClick={() => setReviewForm(p => ({...p, rating:star}))}
-                        style={{ background:'none', border:'none', cursor:'pointer', fontSize:36, padding:0, color: star <= reviewForm.rating ? '#ffb800' : '#e0e0e0', transition:'color .1s' }}>★</button>
+                        style={{ background:'none', border:'none', cursor:'pointer', fontSize:36, padding:0, color: star <= reviewForm.rating ? '#ffb800' : '#e0e0e0' }}>★</button>
                     ))}
                   </div>
                 </div>
-                <div style={{ marginBottom:20 }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:'#333', marginBottom:8 }}>Комментарий</div>
-                  <textarea value={reviewForm.text} onChange={e => setReviewForm(p => ({...p, text: e.target.value}))}
-                    placeholder="Расскажите о качестве работы, пунктуальности, общении..."
-                    style={{ width:'100%', padding:'12px', borderRadius:10, border:'1.5px solid #e0e0e0', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box', fontFamily:'inherit' }}
-                    onFocus={e => e.target.style.borderColor='#257af4'}
-                    onBlur={e => e.target.style.borderColor='#e0e0e0'} />
-                </div>
+                <textarea value={reviewForm.text} onChange={e => setReviewForm(p => ({...p, text: e.target.value}))}
+                  placeholder="Расскажите о качестве работы..."
+                  style={{ width:'100%', padding:'12px', borderRadius:10, border:'1.5px solid #e0e0e0', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box', marginBottom:16, fontFamily:'inherit' }}
+                  onFocus={e => e.target.style.borderColor='#00aaff'} onBlur={e => e.target.style.borderColor='#e0e0e0'} />
                 <button onClick={handleReviewSubmit} disabled={reviewSending || !reviewForm.text.trim()}
-                  style={{ width:'100%', padding:'13px', background: reviewForm.text.trim() ? '#e8410a' : '#e0e0e0', border:'none', borderRadius:10, color: reviewForm.text.trim() ? '#fff' : '#999', fontSize:15, fontWeight:700, cursor: reviewForm.text.trim() ? 'pointer' : 'not-allowed' }}>
-                  {reviewSending ? 'Отправляем...' : '⭐ Отправить отзыв'}
+                  style={{ width:'100%', padding:'13px', background: reviewForm.text.trim() ? '#00aaff' : '#e0e0e0', border:'none', borderRadius:10, color: reviewForm.text.trim() ? '#fff' : '#999', fontSize:15, fontWeight:700, cursor: reviewForm.text.trim() ? 'pointer' : 'not-allowed' }}>
+                  {reviewSending ? 'Отправляем...' : 'Отправить отзыв'}
                 </button>
               </>
             )}
@@ -424,6 +384,8 @@ export default function PublicWorkerProfilePage() {
           </div>
         </div>
       )}
+
+      <style>{`@media(max-width:768px){.pwp-main{grid-template-columns:1fr!important}}`}</style>
     </div>
   );
 }
