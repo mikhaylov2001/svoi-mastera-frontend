@@ -76,7 +76,7 @@ export default function PublicWorkerProfilePage() {
   }, [workerId]);
 
   if (loading) return (
-    <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center', color:'#8f8f8f' }}>
+    <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center', color:'#8f8f8f', fontFamily:'Arial,sans-serif' }}>
       <div style={{ textAlign:'center' }}><div style={{ fontSize:32, marginBottom:8 }}>⏳</div><p>Загружаем профиль...</p></div>
     </div>
   );
@@ -108,216 +108,219 @@ export default function PublicWorkerProfilePage() {
     setReviewSending(false);
   };
 
-  const tabs = [
-    { key: 'works',   label: 'Работы',    count: completedWorks.length },
-    { key: 'active',  label: 'Активные',  count: services.length },
-    { key: 'reviews', label: 'Отзывы',    count: reviews.length },
-  ];
+  const css = `
+    * { box-sizing: border-box; }
+    .av-page { background: #fff; min-height: 100vh; font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
+    .av-back { background: #f4f5f6; border-bottom: 1px solid #e0e0e0; padding: 10px 0; }
+    .av-back-btn { background: none; border: none; cursor: pointer; font-size: 14px; color: #2196f3; padding: 0; display: flex; align-items: center; gap: 4px; }
+    .av-wrap { max-width: 1232px; margin: 0 auto; padding: 0 16px; }
+    .av-layout { display: grid; grid-template-columns: 300px 1fr; gap: 32px; padding: 24px 0 60px; align-items: flex-start; }
+    /* Sidebar */
+    .av-sidebar {}
+    .av-avatar-box { margin-bottom: 12px; }
+    .av-avatar { width: 88px; height: 88px; border-radius: 16px; object-fit: cover; }
+    .av-avatar-fallback { width: 88px; height: 88px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 32px; color: #fff; }
+    .av-name { font-size: 24px; font-weight: 700; margin: 0 0 4px; line-height: 1.2; }
+    .av-meta { font-size: 13px; color: #8f8f8f; margin-bottom: 12px; line-height: 1.6; }
+    .av-badges { display: flex; flex-direction: column; gap: 0; margin-bottom: 16px; }
+    .av-badge { display: flex; align-items: center; gap: 10; padding: 10px 0; font-size: 14px; color: #333; border-bottom: 1px solid #f0f0f0; }
+    .av-badge:last-child { border-bottom: none; }
+    .av-badge-icon { width: 20px; text-align: center; flex-shrink: 0; }
+    .av-rating { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+    .av-rating-num { font-size: 18px; font-weight: 700; }
+    .av-rating-stars { color: #ffb800; font-size: 16px; letter-spacing: 1px; }
+    .av-rating-count { font-size: 13px; color: #8f8f8f; }
+    .av-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+    .av-btn-write { background: #04c96f; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; padding: 13px; cursor: pointer; width: 100%; transition: background .15s; }
+    .av-btn-write:hover { background: #03b362; }
+    .av-btn-review { background: #fff; border: 1.5px solid #d0d0d0; border-radius: 8px; color: #333; font-size: 14px; font-weight: 600; padding: 12px; cursor: pointer; width: 100%; transition: border-color .15s; }
+    .av-btn-review:hover { border-color: #999; }
+    /* Main */
+    .av-main {}
+    .av-tabs { display: flex; gap: 0; border-bottom: 2px solid #e0e0e0; margin-bottom: 20px; }
+    .av-tab { background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; padding: 12px 0; margin-right: 24px; cursor: pointer; font-size: 15px; color: #8f8f8f; font-family: Arial, sans-serif; transition: all .15s; }
+    .av-tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; font-weight: 700; }
+    .av-tab-count { font-weight: 700; }
+    .av-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .av-card { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #e5e5e5; cursor: pointer; transition: box-shadow .2s; }
+    .av-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.12); }
+    .av-card-img { position: relative; aspect-ratio: 4/3; background: #f5f5f5; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #ccc; }
+    .av-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+    .av-card-badge { position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,.5); color: #fff; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; }
+    .av-card-cat { position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,.5); color: #fff; font-size: 11px; padding: 2px 7px; border-radius: 4px; }
+    .av-card-body { padding: 10px 12px; }
+    .av-card-price { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .av-card-title { font-size: 13px; color: #333; margin-bottom: 6px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.4; }
+    .av-card-meta { font-size: 12px; color: #8f8f8f; }
+    .av-empty { text-align: center; padding: 60px 24px; color: #8f8f8f; border: 1px solid #e5e5e5; border-radius: 8px; }
+    .av-reviews { display: flex; flex-direction: column; gap: 0; }
+    .av-review { padding: 20px 0; border-bottom: 1px solid #f0f0f0; }
+    .av-review:last-child { border-bottom: none; }
+    .av-review-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .av-review-ava { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .av-review-ava-fb { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+    @media(max-width: 900px) { .av-layout { grid-template-columns: 1fr; } .av-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media(max-width: 480px) { .av-grid { grid-template-columns: 1fr; } }
+  `;
+
+  const renderCard = (work) => {
+    const hasPhoto = work.photos && work.photos.length > 0;
+    const pi = photoIdx[work.id] || 0;
+    return (
+      <div key={work.id} className="av-card"
+        onClick={hasPhoto ? () => setLightbox({ photos: work.photos, index: pi }) : undefined}>
+        <div className="av-card-img">
+          {hasPhoto
+            ? <img src={work.photos[pi]} alt="" />
+            : '🔨'
+          }
+          {work.categoryName && <div className="av-card-cat">{work.categoryName}</div>}
+          <div className="av-card-badge">✅ Завершена</div>
+          {hasPhoto && work.photos.length > 1 && (
+            <div style={{ position:'absolute', bottom:6, right:6, background:'rgba(0,0,0,.5)', color:'#fff', fontSize:11, padding:'2px 6px', borderRadius:4 }}>📷 {work.photos.length}</div>
+          )}
+        </div>
+        <div className="av-card-body">
+          {work.price && <div className="av-card-price">{Number(work.price).toLocaleString('ru-RU')} ₽</div>}
+          <div className="av-card-title">{work.title || 'Работа'}</div>
+          <div className="av-card-meta">
+            {work.customerName && <span>{work.customerName} · </span>}
+            {work.completedAt && <span>{timeAgo(work.completedAt)}</span>}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderActiveCard = (s) => (
+    <div key={s.id} className="av-card">
+      <div className="av-card-img" style={{ fontSize:32 }}>⚙️</div>
+      <div className="av-card-body">
+        <div className="av-card-price">
+          {s.priceTo ? `до ${Number(s.priceTo).toLocaleString('ru-RU')} ₽` : s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
+        </div>
+        <div className="av-card-title">{s.title}</div>
+        {s.categoryName && <div className="av-card-meta">{s.categoryName}</div>}
+      </div>
+    </div>
+  );
 
   return (
-    <div style={{ background:'#f4f4f4', minHeight:'100vh', fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif' }}>
+    <div className="av-page">
+      <style>{css}</style>
 
-      {/* Топбар */}
-      <div style={{ background:'#fff', borderBottom:'1px solid #e5e5e5', padding:'10px 0' }}>
-        <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 20px' }}>
-          <button onClick={() => navigate(-1)}
-            style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, color:'#00aaff', fontWeight:500, display:'flex', alignItems:'center', gap:4, padding:0 }}>
-            ← Назад
-          </button>
+      <div className="av-back">
+        <div className="av-wrap">
+          <button className="av-back-btn" onClick={() => navigate(-1)}>← Назад</button>
         </div>
       </div>
 
-      <div style={{ maxWidth:1100, margin:'0 auto', padding:'24px 20px 60px', display:'grid', gridTemplateColumns:'280px 1fr', gap:24, alignItems:'flex-start' }}>
+      <div className="av-wrap">
+        <div className="av-layout">
 
-        {/* ══ ЛЕВАЯ КОЛОНКА (как авито) ══ */}
-        <div>
-          {/* Аватар */}
-          <div style={{ background:'#fff', borderRadius:16, padding:'24px 20px', marginBottom:12, border:'1px solid #e5e5e5' }}>
-            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', marginBottom:16 }}>
-              {worker?.avatarUrl ? (
-                <img src={worker.avatarUrl} alt={fullName}
-                  style={{ width:120, height:120, borderRadius:'50%', objectFit:'cover', border:'3px solid #f0f0f0' }} />
-              ) : (
-                <div style={{ width:120, height:120, borderRadius:'50%', background:'linear-gradient(135deg,#257af4,#1a5cbf)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:40 }}>
-                  {initials}
-                </div>
-              )}
-              <h1 style={{ fontSize:22, fontWeight:700, color:'#1a1a1a', margin:'14px 0 4px', textAlign:'center' }}>{fullName}</h1>
-              <div style={{ fontSize:14, color:'#8f8f8f', marginBottom:8 }}>Мастер</div>
-              {avgRating && (
-                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                  <span style={{ color:'#ffb800', fontSize:18 }}>★</span>
-                  <span style={{ fontSize:16, fontWeight:700, color:'#1a1a1a' }}>{avgRating}</span>
-                  <span style={{ fontSize:13, color:'#8f8f8f' }}>· {reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}</span>
-                </div>
-              )}
-              {since && <div style={{ fontSize:12, color:'#8f8f8f', marginTop:6 }}>{since}</div>}
+          {/* ══ ЛЕВАЯ КОЛОНКА ══ */}
+          <div className="av-sidebar">
+            <div className="av-avatar-box">
+              {worker?.avatarUrl
+                ? <img src={worker.avatarUrl} alt={fullName} className="av-avatar" />
+                : <div className="av-avatar-fallback" style={{ background:'linear-gradient(135deg,#257af4,#1a5cbf)' }}>{initials}</div>
+              }
             </div>
 
-            {/* Статы */}
-            <div style={{ display:'flex', justifyContent:'center', gap:24, padding:'14px 0', borderTop:'1px solid #f0f0f0', borderBottom:'1px solid #f0f0f0', marginBottom:16 }}>
-              <div style={{ textAlign:'center' }}>
-                <div style={{ fontSize:20, fontWeight:800, color:'#1a1a1a' }}>{completedWorks.length}</div>
-                <div style={{ fontSize:11, color:'#8f8f8f', textTransform:'uppercase', letterSpacing:.5 }}>заказов</div>
-              </div>
-              <div style={{ textAlign:'center' }}>
-                <div style={{ fontSize:20, fontWeight:800, color:'#1a1a1a' }}>{reviews.length}</div>
-                <div style={{ fontSize:11, color:'#8f8f8f', textTransform:'uppercase', letterSpacing:.5 }}>отзывов</div>
-              </div>
+            <h1 className="av-name">{fullName}</h1>
+            <div className="av-meta">
+              Мастер{since ? <><br />{since}</> : ''}
             </div>
 
-            {/* Бейджи */}
-            <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
-                <span style={{ color:'#4cd964', fontSize:16 }}>✔</span> Документы проверены
+            {avgRating && (
+              <div className="av-rating">
+                <span className="av-rating-stars">{'★'.repeat(Math.round(Number(avgRating)))}</span>
+                <span className="av-rating-num">{avgRating}</span>
+                <span className="av-rating-count">{reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}</span>
               </div>
-              <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
-                <span>📍</span> {worker?.city || 'Йошкар-Ола'}
+            )}
+
+            <div className="av-badges">
+              <div className="av-badge">
+                <span className="av-badge-icon" style={{ color:'#04c96f' }}>✔</span>
+                Документы проверены
+              </div>
+              <div className="av-badge">
+                <span className="av-badge-icon">📍</span>
+                {worker?.city || 'Йошкар-Ола'}
               </div>
               {completedWorks.length >= 1 && (
-                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
-                  <span>⭐</span> Активный мастер
+                <div className="av-badge">
+                  <span className="av-badge-icon">⭐</span>
+                  Активный мастер
                 </div>
               )}
               {completedWorks.length >= 1 && (
-                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
-                  <span>🤝</span> Есть завершённые работы
+                <div className="av-badge">
+                  <span className="av-badge-icon">🤝</span>
+                  Есть завершённые работы
                 </div>
               )}
             </div>
 
-            {/* Кнопки */}
             {userId && userId !== workerId && (
-              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                <button onClick={() => navigate(`/chat/${workerId}`)}
-                  style={{ width:'100%', padding:'13px', background:'#00aaff', border:'none', borderRadius:10, color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer' }}>
-                  Написать
-                </button>
-                <button onClick={() => { setReviewModal(true); setReviewDone(false); setReviewForm({ rating:5, text:'' }); }}
-                  style={{ width:'100%', padding:'12px', background:'#fff', border:'1.5px solid #d0d0d0', borderRadius:10, color:'#333', fontSize:14, fontWeight:600, cursor:'pointer' }}>
+              <div className="av-btns">
+                <button className="av-btn-write" onClick={() => navigate(`/chat/${workerId}`)}>Написать</button>
+                <button className="av-btn-review" onClick={() => { setReviewModal(true); setReviewDone(false); setReviewForm({ rating:5, text:'' }); }}>
                   ⭐ Оставить отзыв
                 </button>
               </div>
             )}
           </div>
-        </div>
 
-        {/* ══ ПРАВАЯ КОЛОНКА ══ */}
-        <div>
-          {/* Вкладки как авито */}
-          <div style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'2px solid #e5e5e5' }}>
-            {tabs.map(({ key, label, count }) => (
-              <button key={key} onClick={() => setTab(key)}
-                style={{
-                  padding:'12px 20px', background:'none', border:'none',
-                  borderBottom: tab===key ? '2px solid #000' : '2px solid transparent',
-                  marginBottom:-2, cursor:'pointer',
-                  fontSize:16, fontWeight: tab===key ? 700 : 500,
-                  color: tab===key ? '#1a1a1a' : '#8f8f8f',
-                  transition:'all .15s',
-                }}>
-                {label} <span style={{ fontSize:14 }}>{count}</span>
+          {/* ══ ПРАВАЯ КОЛОНКА ══ */}
+          <div className="av-main">
+            <div className="av-tabs">
+              <button className={`av-tab${tab==='works'?' active':''}`} onClick={() => setTab('works')}>
+                Работы <span className="av-tab-count">{completedWorks.length}</span>
               </button>
-            ))}
+              <button className={`av-tab${tab==='active'?' active':''}`} onClick={() => setTab('active')}>
+                Активные <span className="av-tab-count">{services.length}</span>
+              </button>
+              <button className={`av-tab${tab==='reviews'?' active':''}`} onClick={() => setTab('reviews')}>
+                Отзывы <span className="av-tab-count">{reviews.length}</span>
+              </button>
+            </div>
+
+            {tab === 'works' && (completedWorks.length === 0
+              ? <div className="av-empty"><div style={{ fontSize:40, marginBottom:10 }}>🔨</div><p>Выполненных работ пока нет</p></div>
+              : <div className="av-grid">{completedWorks.map(renderCard)}</div>
+            )}
+
+            {tab === 'active' && (services.length === 0
+              ? <div className="av-empty"><div style={{ fontSize:40, marginBottom:10 }}>⚙️</div><p>Нет активных заказов</p></div>
+              : <div className="av-grid">{services.map(renderActiveCard)}</div>
+            )}
+
+            {tab === 'reviews' && (reviews.length === 0
+              ? <div className="av-empty"><div style={{ fontSize:40, marginBottom:10 }}>⭐</div><p>Отзывов пока нет</p></div>
+              : <div className="av-reviews">
+                  {reviews.map(r => (
+                    <div key={r.id} className="av-review">
+                      <div className="av-review-top">
+                        {r.authorAvatarUrl
+                          ? <img src={r.authorAvatarUrl} alt="" className="av-review-ava" />
+                          : <div className="av-review-ava-fb" style={{ background:'linear-gradient(135deg,#e8410a,#ff7043)' }}>{(r.authorName||'К')[0].toUpperCase()}</div>
+                        }
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontSize:15, fontWeight:700 }}>{[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Клиент'}</div>
+                          <div style={{ fontSize:12, color:'#8f8f8f' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
+                        </div>
+                        <div style={{ color:'#ffb800', fontSize:18 }}>
+                          {'★'.repeat(r.rating||0)}<span style={{ color:'#e0e0e0' }}>{'★'.repeat(5-(r.rating||0))}</span>
+                        </div>
+                      </div>
+                      {(r.text || r.comment) && <p style={{ fontSize:14, color:'#333', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
+                    </div>
+                  ))}
+                </div>
+            )}
           </div>
-
-          {/* РАБОТЫ — сетка как авито */}
-          {tab === 'works' && (completedWorks.length === 0 ? (
-            <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#8f8f8f', border:'1px solid #e5e5e5' }}>
-              <div style={{ fontSize:40, marginBottom:10 }}>🔨</div>
-              <p style={{ fontWeight:600, fontSize:16 }}>Выполненных работ пока нет</p>
-            </div>
-          ) : (
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px,1fr))', gap:12 }}>
-              {completedWorks.map(work => {
-                const hasPhoto = work.photos && work.photos.length > 0;
-                const pi = photoIdx[work.id] || 0;
-                return (
-                  <div key={work.id} style={{ background:'#fff', borderRadius:12, overflow:'hidden', border:'1px solid #e5e5e5', cursor:'pointer', transition:'box-shadow .2s' }}
-                    onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'}
-                    onMouseLeave={e => e.currentTarget.style.boxShadow='none'}
-                    onClick={hasPhoto ? () => setLightbox({ photos: work.photos, index: pi }) : undefined}>
-                    {/* Фото */}
-                    <div style={{ position:'relative', aspectRatio:'4/3', background:'#f0f0f0', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, color:'#ccc' }}>
-                      {hasPhoto
-                        ? <img src={work.photos[pi]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', pointerEvents:'none' }} />
-                        : '🔨'
-                      }
-                      <div style={{ position:'absolute', top:8, left:8, background:'rgba(76,217,100,.9)', color:'#fff', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:6 }}>✅ Завершена</div>
-                      {work.categoryName && <div style={{ position:'absolute', top:8, right:8, background:'rgba(0,0,0,.55)', color:'#fff', fontSize:11, fontWeight:600, padding:'3px 8px', borderRadius:6 }}>{work.categoryName}</div>}
-                      {hasPhoto && work.photos.length > 1 && <div style={{ position:'absolute', bottom:6, right:6, background:'rgba(0,0,0,.5)', color:'#fff', fontSize:11, padding:'2px 6px', borderRadius:4 }}>📷 {work.photos.length}</div>}
-                    </div>
-                    {/* Контент */}
-                    <div style={{ padding:'12px' }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:'#1a1a1a', marginBottom:4, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{work.title || 'Работа'}</div>
-                      {work.price && <div style={{ fontSize:16, fontWeight:800, color:'#1a1a1a', marginBottom:4 }}>{Number(work.price).toLocaleString('ru-RU')} ₽</div>}
-                      <div style={{ fontSize:12, color:'#8f8f8f', display:'flex', gap:8, flexWrap:'wrap' }}>
-                        {work.customerName && <span>👤 {work.customerName}</span>}
-                        {work.completedAt && <span>{timeAgo(work.completedAt)}</span>}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-
-          {/* АКТИВНЫЕ */}
-          {tab === 'active' && (services.length === 0 ? (
-            <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#8f8f8f', border:'1px solid #e5e5e5' }}>
-              <div style={{ fontSize:40, marginBottom:10 }}>⚙️</div>
-              <p style={{ fontWeight:600, fontSize:16 }}>Нет активных заказов</p>
-            </div>
-          ) : (
-            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-              {services.map(s => (
-                <div key={s.id} style={{ background:'#fff', borderRadius:12, padding:'16px 20px', border:'1px solid #e5e5e5' }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
-                    <div style={{ flex:1 }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6, flexWrap:'wrap' }}>
-                        <span style={{ fontSize:15, fontWeight:700, color:'#1a1a1a' }}>{s.title}</span>
-                        <span style={{ background:'rgba(245,158,11,.12)', color:'#b45309', fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:6 }}>⚙️ В работе</span>
-                        {s.categoryName && <span style={{ background:'rgba(0,170,255,.1)', color:'#0088cc', fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:6 }}>{s.categoryName}</span>}
-                      </div>
-                      {s.description && <p style={{ fontSize:13, color:'#666', margin:0, lineHeight:1.5 }}>{s.description}</p>}
-                    </div>
-                    <div style={{ fontSize:16, fontWeight:800, color:'#1a1a1a', flexShrink:0 }}>
-                      {s.priceTo ? `до ${Number(s.priceTo).toLocaleString('ru-RU')} ₽` : s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
-
-          {/* ОТЗЫВЫ */}
-          {tab === 'reviews' && (reviews.length === 0 ? (
-            <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#8f8f8f', border:'1px solid #e5e5e5' }}>
-              <div style={{ fontSize:40, marginBottom:10 }}>⭐</div>
-              <p style={{ fontWeight:600, fontSize:16 }}>Отзывов пока нет</p>
-            </div>
-          ) : (
-            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-              {reviews.map(r => (
-                <div key={r.id} style={{ background:'#fff', borderRadius:12, padding:'16px 20px', border:'1px solid #e5e5e5' }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
-                    {r.authorAvatarUrl
-                      ? <img src={r.authorAvatarUrl} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
-                      : <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:16, flexShrink:0 }}>{(r.authorName||'К')[0].toUpperCase()}</div>
-                    }
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:15, fontWeight:700, color:'#1a1a1a' }}>{[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Клиент'}</div>
-                      <div style={{ fontSize:12, color:'#8f8f8f' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
-                    </div>
-                    <div style={{ display:'flex', gap:2 }}>
-                      {[1,2,3,4,5].map(s => <span key={s} style={{ fontSize:18, color: s <= (r.rating||0) ? '#ffb800' : '#e0e0e0' }}>★</span>)}
-                    </div>
-                  </div>
-                  {(r.text || r.comment) && <p style={{ fontSize:14, color:'#333', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
-                </div>
-              ))}
-            </div>
-          ))}
         </div>
       </div>
 
@@ -328,19 +331,19 @@ export default function PublicWorkerProfilePage() {
             {reviewDone ? (
               <div style={{ textAlign:'center', padding:'20px 0' }}>
                 <div style={{ fontSize:48, marginBottom:12 }}>🎉</div>
-                <h3 style={{ fontSize:20, fontWeight:800, margin:'0 0 8px' }}>Отзыв отправлен!</h3>
-                <button onClick={() => setReviewModal(false)} style={{ marginTop:16, padding:'10px 28px', background:'#00aaff', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>Закрыть</button>
+                <h3 style={{ fontSize:20, fontWeight:700, margin:'0 0 8px' }}>Отзыв отправлен!</h3>
+                <button onClick={() => setReviewModal(false)} style={{ marginTop:16, padding:'10px 28px', background:'#04c96f', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>Закрыть</button>
               </div>
             ) : (
               <>
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
-                  <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Отзыв о мастере</h2>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+                  <h2 style={{ fontSize:18, fontWeight:700, margin:0 }}>Отзыв о мастере</h2>
                   <button onClick={() => setReviewModal(false)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#8f8f8f' }}>×</button>
                 </div>
                 <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#f7f7f7', borderRadius:10, marginBottom:20 }}>
                   {worker?.avatarUrl
-                    ? <img src={worker.avatarUrl} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} />
-                    : <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#257af4,#1a5cbf)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>{initials}</div>
+                    ? <img src={worker.avatarUrl} alt="" style={{ width:44, height:44, borderRadius:10, objectFit:'cover' }} />
+                    : <div style={{ width:44, height:44, borderRadius:10, background:'linear-gradient(135deg,#257af4,#1a5cbf)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>{initials}</div>
                   }
                   <div>
                     <div style={{ fontSize:15, fontWeight:700 }}>{fullName}</div>
@@ -348,7 +351,7 @@ export default function PublicWorkerProfilePage() {
                   </div>
                 </div>
                 <div style={{ marginBottom:16 }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:'#333', marginBottom:8 }}>Оценка</div>
+                  <div style={{ fontSize:13, fontWeight:600, marginBottom:8 }}>Оценка</div>
                   <div style={{ display:'flex', gap:6 }}>
                     {[1,2,3,4,5].map(star => (
                       <button key={star} onClick={() => setReviewForm(p => ({...p, rating:star}))}
@@ -358,10 +361,10 @@ export default function PublicWorkerProfilePage() {
                 </div>
                 <textarea value={reviewForm.text} onChange={e => setReviewForm(p => ({...p, text: e.target.value}))}
                   placeholder="Расскажите о качестве работы..."
-                  style={{ width:'100%', padding:'12px', borderRadius:10, border:'1.5px solid #e0e0e0', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box', marginBottom:16, fontFamily:'inherit' }}
-                  onFocus={e => e.target.style.borderColor='#00aaff'} onBlur={e => e.target.style.borderColor='#e0e0e0'} />
+                  style={{ width:'100%', padding:'12px', borderRadius:8, border:'1.5px solid #e0e0e0', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box', marginBottom:16, fontFamily:'Arial,sans-serif' }}
+                  onFocus={e => e.target.style.borderColor='#04c96f'} onBlur={e => e.target.style.borderColor='#e0e0e0'} />
                 <button onClick={handleReviewSubmit} disabled={reviewSending || !reviewForm.text.trim()}
-                  style={{ width:'100%', padding:'13px', background: reviewForm.text.trim() ? '#00aaff' : '#e0e0e0', border:'none', borderRadius:10, color: reviewForm.text.trim() ? '#fff' : '#999', fontSize:15, fontWeight:700, cursor: reviewForm.text.trim() ? 'pointer' : 'not-allowed' }}>
+                  style={{ width:'100%', padding:'13px', background: reviewForm.text.trim() ? '#04c96f' : '#e0e0e0', border:'none', borderRadius:8, color: reviewForm.text.trim() ? '#fff' : '#999', fontSize:15, fontWeight:700, cursor: reviewForm.text.trim() ? 'pointer' : 'not-allowed' }}>
                   {reviewSending ? 'Отправляем...' : 'Отправить отзыв'}
                 </button>
               </>
@@ -384,8 +387,6 @@ export default function PublicWorkerProfilePage() {
           </div>
         </div>
       )}
-
-      <style>{`@media(max-width:768px){.pwp-main{grid-template-columns:1fr!important}}`}</style>
     </div>
   );
 }

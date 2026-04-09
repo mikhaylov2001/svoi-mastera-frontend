@@ -20,13 +20,9 @@ function memberSince(d) {
   return 'На сервисе с ' + new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
 }
 
-const STATUS = {
-  OPEN:           { label: 'Открыта',    color: '#1a8c3a', bg: 'rgba(76,217,100,.15)' },
-  IN_NEGOTIATION: { label: 'Обсуждение', color: '#0088cc', bg: 'rgba(0,170,255,.12)'  },
-  ASSIGNED:       { label: 'Назначена',  color: '#b45309', bg: 'rgba(245,158,11,.12)' },
-  IN_PROGRESS:    { label: 'В работе',   color: '#b45309', bg: 'rgba(245,158,11,.12)' },
-  COMPLETED:      { label: 'Завершена',  color: '#1a8c3a', bg: 'rgba(76,217,100,.15)' },
-  CANCELLED:      { label: 'Отменена',   color: '#c0392b', bg: 'rgba(239,68,68,.12)'  },
+const STATUS_LABEL = {
+  OPEN: 'Открыта', IN_NEGOTIATION: 'Обсуждение', ASSIGNED: 'Назначена',
+  IN_PROGRESS: 'В работе', COMPLETED: 'Завершена', CANCELLED: 'Отменена',
 };
 
 export default function PublicCustomerProfilePage() {
@@ -103,7 +99,7 @@ export default function PublicCustomerProfilePage() {
   };
 
   if (loading) return (
-    <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center', color:'#8f8f8f' }}>
+    <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center', color:'#8f8f8f', fontFamily:'Arial,sans-serif' }}>
       <div style={{ textAlign:'center' }}><div style={{ fontSize:32, marginBottom:8 }}>⏳</div><p>Загружаем профиль...</p></div>
     </div>
   );
@@ -124,69 +120,101 @@ export default function PublicCustomerProfilePage() {
     ? (reviews.reduce((s, r) => s + (r.rating||0), 0) / reviews.length).toFixed(1)
     : null;
 
-  const tabs = [
-    { key: 'open',      label: 'Активные',    count: openReqs.length },
-    { key: 'completed', label: 'Завершённые', count: completedReqs.length || completedDeals.length },
-    { key: 'reviews',   label: 'Отзывы',      count: reviews.length },
-  ];
+  const css = `
+    * { box-sizing: border-box; }
+    .av-page { background: #fff; min-height: 100vh; font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
+    .av-back { background: #f4f5f6; border-bottom: 1px solid #e0e0e0; padding: 10px 0; }
+    .av-back-btn { background: none; border: none; cursor: pointer; font-size: 14px; color: #2196f3; padding: 0; display: flex; align-items: center; gap: 4px; }
+    .av-wrap { max-width: 1232px; margin: 0 auto; padding: 0 16px; }
+    .av-layout { display: grid; grid-template-columns: 300px 1fr; gap: 32px; padding: 24px 0 60px; align-items: flex-start; }
+    .av-avatar { width: 88px; height: 88px; border-radius: 16px; object-fit: cover; }
+    .av-avatar-fallback { width: 88px; height: 88px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 32px; color: #fff; }
+    .av-name { font-size: 24px; font-weight: 700; margin: 0 0 4px; line-height: 1.2; }
+    .av-meta { font-size: 13px; color: #8f8f8f; margin-bottom: 12px; line-height: 1.6; }
+    .av-badges { display: flex; flex-direction: column; gap: 0; margin-bottom: 16px; }
+    .av-badge { display: flex; align-items: center; gap: 10px; padding: 10px 0; font-size: 14px; color: #333; border-bottom: 1px solid #f0f0f0; }
+    .av-badge:last-child { border-bottom: none; }
+    .av-badge-icon { width: 20px; text-align: center; flex-shrink: 0; }
+    .av-rating { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+    .av-btn-write { background: #04c96f; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; padding: 13px; cursor: pointer; width: 100%; transition: background .15s; }
+    .av-btn-write:hover { background: #03b362; }
+    .av-tabs { display: flex; gap: 0; border-bottom: 2px solid #e0e0e0; margin-bottom: 20px; }
+    .av-tab { background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; padding: 12px 0; margin-right: 24px; cursor: pointer; font-size: 15px; color: #8f8f8f; font-family: Arial, sans-serif; transition: all .15s; }
+    .av-tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; font-weight: 700; }
+    .av-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .av-card { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #e5e5e5; transition: box-shadow .2s; }
+    .av-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.12); }
+    .av-card-img { position: relative; aspect-ratio: 4/3; background: #f5f5f5; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #ccc; cursor: pointer; }
+    .av-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+    .av-card-sticker { position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,.5); color: #fff; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; }
+    .av-card-cat { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,.5); color: #fff; font-size: 11px; padding: 2px 7px; border-radius: 4px; }
+    .av-card-body { padding: 10px 12px; }
+    .av-card-price { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .av-card-title { font-size: 13px; color: #333; margin-bottom: 6px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.4; }
+    .av-card-meta { font-size: 12px; color: #8f8f8f; }
+    .av-card-review-btn { margin-top: 8px; padding: 6px 12px; background: linear-gradient(135deg,#6366f1,#8b5cf6); border: none; border-radius: 6px; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; }
+    .av-card-review-done { margin-top: 8px; font-size: 12px; color: #04c96f; font-weight: 600; }
+    .av-empty { text-align: center; padding: 60px 24px; color: #8f8f8f; border: 1px solid #e5e5e5; border-radius: 8px; }
+    .av-reviews { display: flex; flex-direction: column; gap: 0; }
+    .av-review { padding: 20px 0; border-bottom: 1px solid #f0f0f0; }
+    .av-review:last-child { border-bottom: none; }
+    .av-review-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .av-review-ava { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .av-review-ava-fb { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+    @media(max-width: 900px) { .av-layout { grid-template-columns: 1fr; } .av-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media(max-width: 480px) { .av-grid { grid-template-columns: 1fr; } }
+  `;
 
   const renderCard = (item, isDeal) => {
-    const st = isDeal ? { label:'Завершена', color:'#1a8c3a', bg:'rgba(76,217,100,.15)' } : (STATUS[item.status] || STATUS.OPEN);
     const hasPhoto = item.photos && item.photos.length > 0;
     const pi = photoIdx[item.id] || 0;
     const cat = item.categoryName || item.category || null;
+    const stLabel = isDeal ? '✅ Завершена' : (STATUS_LABEL[item.status] || item.status);
 
     return (
-      <div key={`${isDeal?'d':'r'}-${item.id}`}
-        style={{ background:'#fff', borderRadius:12, overflow:'hidden', border:'1px solid #e5e5e5', cursor: hasPhoto ? 'pointer' : 'default', transition:'box-shadow .2s' }}
-        onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'}
-        onMouseLeave={e => e.currentTarget.style.boxShadow='none'}
-        onClick={hasPhoto ? () => setLightbox({ photos: item.photos, index: pi }) : undefined}>
-        {/* Фото */}
-        <div style={{ position:'relative', aspectRatio:'4/3', background:'#f0f0f0', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, color:'#ccc' }}>
+      <div key={`${isDeal?'d':'r'}-${item.id}`} className="av-card">
+        <div className="av-card-img"
+          onClick={hasPhoto ? () => setLightbox({ photos: item.photos, index: pi }) : undefined}
+          style={{ cursor: hasPhoto ? 'pointer' : 'default' }}>
           {hasPhoto
-            ? <img src={item.photos[pi]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', pointerEvents:'none' }} />
+            ? <img src={item.photos[pi]} alt="" />
             : (isDeal ? '🤝' : '📋')
           }
-          <div style={{ position:'absolute', top:8, left:8 }}>
-            <span style={{ background: isDeal ? 'rgba(76,217,100,.9)' : 'rgba(0,0,0,.55)', color:'#fff', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:6 }}>
-              {isDeal ? '✅ Завершена' : st.label}
-            </span>
-          </div>
-          {cat && <div style={{ position:'absolute', top:8, right:8, background:'rgba(0,0,0,.55)', color:'#fff', fontSize:11, fontWeight:600, padding:'3px 8px', borderRadius:6 }}>{cat}</div>}
-          {hasPhoto && item.photos.length > 1 && <div style={{ position:'absolute', bottom:6, right:6, background:'rgba(0,0,0,.5)', color:'#fff', fontSize:11, padding:'2px 6px', borderRadius:4 }}>📷 {item.photos.length}</div>}
+          <div className="av-card-sticker">{stLabel}</div>
+          {cat && <div className="av-card-cat">{cat}</div>}
+          {hasPhoto && item.photos.length > 1 && (
+            <div style={{ position:'absolute', bottom:6, right:6, background:'rgba(0,0,0,.5)', color:'#fff', fontSize:11, padding:'2px 6px', borderRadius:4 }}>📷 {item.photos.length}</div>
+          )}
         </div>
-        {/* Контент */}
-        <div style={{ padding:'12px' }}>
-          <div style={{ fontSize:14, fontWeight:700, color:'#1a1a1a', marginBottom:4, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{item.title || 'Задача'}</div>
+        <div className="av-card-body">
           {(item.agreedPrice || item.budgetTo) && (
-            <div style={{ fontSize:16, fontWeight:800, color:'#1a1a1a', marginBottom:4 }}>
+            <div className="av-card-price">
               {item.agreedPrice ? `${Number(item.agreedPrice).toLocaleString('ru-RU')} ₽` : `до ${Number(item.budgetTo).toLocaleString('ru-RU')} ₽`}
             </div>
           )}
-          <div style={{ fontSize:12, color:'#8f8f8f', display:'flex', gap:8, flexWrap:'wrap', marginBottom: isDeal ? 8 : 0 }}>
-            {isDeal && item.workerName && <span>👤 {item.workerName}</span>}
-            {!isDeal && item.addressText && <span>📍 {item.addressText}</span>}
+          <div className="av-card-title">{item.title || 'Задача'}</div>
+          <div className="av-card-meta">
+            {isDeal && item.workerName && <span>{item.workerName} · </span>}
+            {!isDeal && item.addressText && <span>{item.addressText} · </span>}
             {item.createdAt && <span>{timeAgo(item.createdAt)}</span>}
           </div>
-          {/* Кнопки отзыва */}
           {isDeal && userId === customerId && !item.hasReview && (
-            <button onClick={e => { e.stopPropagation(); setReviewDeal({...item, _reviewByWorker:false}); setReviewModal(true); setReviewDone(false); setReviewForm({rating:5,text:''}); }}
-              style={{ padding:'7px 12px', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', border:'none', borderRadius:8, color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer' }}>
+            <button className="av-card-review-btn"
+              onClick={e => { e.stopPropagation(); setReviewDeal({...item, _reviewByWorker:false}); setReviewModal(true); setReviewDone(false); setReviewForm({rating:5,text:''}); }}>
               ⭐ Оставить отзыв
             </button>
           )}
           {isDeal && userId === customerId && item.hasReview && (
-            <div style={{ fontSize:12, color:'#4cd964', fontWeight:600 }}>✓ Отзыв оставлен</div>
+            <div className="av-card-review-done">✓ Отзыв оставлен</div>
           )}
           {isDeal && userId !== customerId && item.workerId === userId && !item.hasWorkerReview && (
-            <button onClick={e => { e.stopPropagation(); setReviewDeal({...item, _reviewByWorker:true}); setReviewModal(true); setReviewDone(false); setReviewForm({rating:5,text:''}); }}
-              style={{ padding:'7px 12px', background:'linear-gradient(135deg,#e8410a,#ff7043)', border:'none', borderRadius:8, color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer' }}>
+            <button className="av-card-review-btn" style={{ background:'linear-gradient(135deg,#e8410a,#ff7043)' }}
+              onClick={e => { e.stopPropagation(); setReviewDeal({...item, _reviewByWorker:true}); setReviewModal(true); setReviewDone(false); setReviewForm({rating:5,text:''}); }}>
               ⭐ Отзыв заказчику
             </button>
           )}
           {isDeal && userId !== customerId && item.workerId === userId && item.hasWorkerReview && (
-            <div style={{ fontSize:12, color:'#4cd964', fontWeight:600 }}>✓ Отзыв оставлен</div>
+            <div className="av-card-review-done">✓ Отзыв оставлен</div>
           )}
         </div>
       </div>
@@ -194,162 +222,120 @@ export default function PublicCustomerProfilePage() {
   };
 
   return (
-    <div style={{ background:'#f4f4f4', minHeight:'100vh', fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif' }}>
+    <div className="av-page">
+      <style>{css}</style>
 
-      {/* Топбар */}
-      <div style={{ background:'#fff', borderBottom:'1px solid #e5e5e5', padding:'10px 0' }}>
-        <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 20px' }}>
-          <button onClick={() => navigate(-1)}
-            style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, color:'#00aaff', fontWeight:500, display:'flex', alignItems:'center', gap:4, padding:0 }}>
-            ← Назад
-          </button>
+      <div className="av-back">
+        <div className="av-wrap">
+          <button className="av-back-btn" onClick={() => navigate(-1)}>← Назад</button>
         </div>
       </div>
 
-      <div style={{ maxWidth:1100, margin:'0 auto', padding:'24px 20px 60px', display:'grid', gridTemplateColumns:'280px 1fr', gap:24, alignItems:'flex-start' }}>
+      <div className="av-wrap">
+        <div className="av-layout">
 
-        {/* ══ ЛЕВАЯ КОЛОНКА ══ */}
-        <div>
-          <div style={{ background:'#fff', borderRadius:16, padding:'24px 20px', marginBottom:12, border:'1px solid #e5e5e5' }}>
-            {/* Аватар */}
-            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', marginBottom:16 }}>
-              {avatarUrl ? (
-                <img src={avatarUrl} alt={fullName} style={{ width:120, height:120, borderRadius:'50%', objectFit:'cover', border:'3px solid #f0f0f0' }} />
-              ) : (
-                <div style={{ width:120, height:120, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:40 }}>
-                  {initials}
-                </div>
-              )}
-              <h1 style={{ fontSize:22, fontWeight:700, color:'#1a1a1a', margin:'14px 0 4px', textAlign:'center' }}>{fullName}</h1>
-              <div style={{ fontSize:14, color:'#8f8f8f', marginBottom:8 }}>Заказчик</div>
-              {avgRating && (
-                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                  <span style={{ color:'#ffb800', fontSize:18 }}>★</span>
-                  <span style={{ fontSize:16, fontWeight:700, color:'#1a1a1a' }}>{avgRating}</span>
-                  <span style={{ fontSize:13, color:'#8f8f8f' }}>· {reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}</span>
-                </div>
-              )}
-              {since && <div style={{ fontSize:12, color:'#8f8f8f', marginTop:6 }}>{since}</div>}
+          {/* ══ ЛЕВАЯ КОЛОНКА ══ */}
+          <div>
+            <div style={{ marginBottom:12 }}>
+              {avatarUrl
+                ? <img src={avatarUrl} alt={fullName} className="av-avatar" />
+                : <div className="av-avatar-fallback" style={{ background:'linear-gradient(135deg,#e8410a,#ff7043)' }}>{initials}</div>
+              }
             </div>
 
-            {/* Статы */}
-            <div style={{ display:'flex', justifyContent:'center', gap:24, padding:'14px 0', borderTop:'1px solid #f0f0f0', borderBottom:'1px solid #f0f0f0', marginBottom:16 }}>
-              <div style={{ textAlign:'center' }}>
-                <div style={{ fontSize:20, fontWeight:800, color:'#1a1a1a' }}>{total}</div>
-                <div style={{ fontSize:11, color:'#8f8f8f', textTransform:'uppercase', letterSpacing:.5 }}>заявок</div>
-              </div>
-              <div style={{ textAlign:'center' }}>
-                <div style={{ fontSize:20, fontWeight:800, color:'#1a1a1a' }}>{done}</div>
-                <div style={{ fontSize:11, color:'#8f8f8f', textTransform:'uppercase', letterSpacing:.5 }}>выполнено</div>
-              </div>
+            <h1 className="av-name">{fullName}</h1>
+            <div className="av-meta">
+              Заказчик{since ? <><br />{since}</> : ''}
             </div>
 
-            {/* Бейджи */}
-            <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
-                <span style={{ color:'#4cd964' }}>✔</span> Документы проверены
+            {avgRating && (
+              <div className="av-rating">
+                <span style={{ color:'#ffb800', fontSize:16 }}>{'★'.repeat(Math.round(Number(avgRating)))}</span>
+                <span style={{ fontSize:18, fontWeight:700 }}>{avgRating}</span>
+                <span style={{ fontSize:13, color:'#8f8f8f' }}>{reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}</span>
               </div>
-              <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
-                <span>📍</span> {customer?.city || 'Йошкар-Ола'}
+            )}
+
+            <div className="av-badges">
+              <div className="av-badge">
+                <span className="av-badge-icon" style={{ color:'#04c96f' }}>✔</span>
+                Документы проверены
+              </div>
+              <div className="av-badge">
+                <span className="av-badge-icon">📍</span>
+                {customer?.city || 'Йошкар-Ола'}
               </div>
               {total >= 1 && (
-                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
-                  <span>⭐</span> Активный заказчик
+                <div className="av-badge">
+                  <span className="av-badge-icon">⭐</span>
+                  Активный заказчик
                 </div>
               )}
               {done >= 1 && (
-                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#f7f7f7', borderRadius:8, fontSize:14, color:'#333' }}>
-                  <span>🤝</span> Есть завершённые сделки
+                <div className="av-badge">
+                  <span className="av-badge-icon">🤝</span>
+                  Есть завершённые сделки
                 </div>
               )}
             </div>
 
-            {/* Кнопка написать */}
             {userId && userId !== customerId && (
-              <button onClick={() => navigate(`/chat/${customerId}`)}
-                style={{ width:'100%', padding:'13px', background:'#00aaff', border:'none', borderRadius:10, color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer' }}>
-                Написать
-              </button>
+              <button className="av-btn-write" onClick={() => navigate(`/chat/${customerId}`)}>Написать</button>
             )}
           </div>
-        </div>
 
-        {/* ══ ПРАВАЯ КОЛОНКА ══ */}
-        <div>
-          {/* Вкладки как авито */}
-          <div style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'2px solid #e5e5e5' }}>
-            {tabs.map(({ key, label, count }) => (
-              <button key={key} onClick={() => setTab(key)}
-                style={{
-                  padding:'12px 20px', background:'none', border:'none',
-                  borderBottom: tab===key ? '2px solid #000' : '2px solid transparent',
-                  marginBottom:-2, cursor:'pointer',
-                  fontSize:16, fontWeight: tab===key ? 700 : 500,
-                  color: tab===key ? '#1a1a1a' : '#8f8f8f',
-                  transition:'all .15s',
-                }}>
-                {label} <span style={{ fontSize:14 }}>{count}</span>
+          {/* ══ ПРАВАЯ КОЛОНКА ══ */}
+          <div>
+            <div className="av-tabs">
+              <button className={`av-tab${tab==='open'?' active':''}`} onClick={() => setTab('open')}>
+                Активные <span>{openReqs.length}</span>
               </button>
-            ))}
-          </div>
-
-          {/* АКТИВНЫЕ */}
-          {tab === 'open' && (openReqs.length === 0 ? (
-            <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#8f8f8f', border:'1px solid #e5e5e5' }}>
-              <div style={{ fontSize:40, marginBottom:10 }}>📋</div>
-              <p style={{ fontWeight:600, fontSize:16 }}>Нет активных заявок</p>
+              <button className={`av-tab${tab==='completed'?' active':''}`} onClick={() => setTab('completed')}>
+                Завершённые <span>{completedReqs.length || completedDeals.length}</span>
+              </button>
+              <button className={`av-tab${tab==='reviews'?' active':''}`} onClick={() => setTab('reviews')}>
+                Отзывы <span>{reviews.length}</span>
+              </button>
             </div>
-          ) : (
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px,1fr))', gap:12 }}>
-              {openReqs.map(r => renderCard(r, false))}
-            </div>
-          ))}
 
-          {/* ЗАВЕРШЁННЫЕ */}
-          {tab === 'completed' && (() => {
-            const items = completedReqs.length > 0
-              ? completedReqs.map(r => ({...r, _isDeal: false}))
-              : completedDeals.map(d => ({...d, _isDeal: true}));
-            return items.length === 0 ? (
-              <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#8f8f8f', border:'1px solid #e5e5e5' }}>
-                <div style={{ fontSize:40, marginBottom:10 }}>✅</div>
-                <p style={{ fontWeight:600, fontSize:16 }}>Завершённых заказов нет</p>
-              </div>
-            ) : (
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px,1fr))', gap:12 }}>
-                {items.map(item => renderCard(item, item._isDeal))}
-              </div>
-            );
-          })()}
+            {tab === 'open' && (openReqs.length === 0
+              ? <div className="av-empty"><div style={{ fontSize:40, marginBottom:10 }}>📋</div><p>Нет активных заявок</p></div>
+              : <div className="av-grid">{openReqs.map(r => renderCard(r, false))}</div>
+            )}
 
-          {/* ОТЗЫВЫ */}
-          {tab === 'reviews' && (reviews.length === 0 ? (
-            <div style={{ background:'#fff', borderRadius:12, padding:'60px 24px', textAlign:'center', color:'#8f8f8f', border:'1px solid #e5e5e5' }}>
-              <div style={{ fontSize:40, marginBottom:10 }}>⭐</div>
-              <p style={{ fontWeight:600, fontSize:16 }}>Отзывов пока нет</p>
-            </div>
-          ) : (
-            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-              {reviews.map(r => (
-                <div key={r.id} style={{ background:'#fff', borderRadius:12, padding:'16px 20px', border:'1px solid #e5e5e5' }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
-                    {r.authorAvatarUrl
-                      ? <img src={r.authorAvatarUrl} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
-                      : <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#257af4,#1a5cbf)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:16, flexShrink:0 }}>{(r.authorName||'М')[0].toUpperCase()}</div>
-                    }
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:15, fontWeight:700, color:'#1a1a1a' }}>{[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Мастер'}</div>
-                      <div style={{ fontSize:12, color:'#8f8f8f' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
+            {tab === 'completed' && (() => {
+              const items = completedReqs.length > 0
+                ? completedReqs.map(r => ({...r, _isDeal:false}))
+                : completedDeals.map(d => ({...d, _isDeal:true}));
+              return items.length === 0
+                ? <div className="av-empty"><div style={{ fontSize:40, marginBottom:10 }}>✅</div><p>Завершённых заказов нет</p></div>
+                : <div className="av-grid">{items.map(item => renderCard(item, item._isDeal))}</div>;
+            })()}
+
+            {tab === 'reviews' && (reviews.length === 0
+              ? <div className="av-empty"><div style={{ fontSize:40, marginBottom:10 }}>⭐</div><p>Отзывов пока нет</p></div>
+              : <div className="av-reviews">
+                  {reviews.map(r => (
+                    <div key={r.id} className="av-review">
+                      <div className="av-review-top">
+                        {r.authorAvatarUrl
+                          ? <img src={r.authorAvatarUrl} alt="" className="av-review-ava" />
+                          : <div className="av-review-ava-fb" style={{ background:'linear-gradient(135deg,#257af4,#1a5cbf)' }}>{(r.authorName||'М')[0].toUpperCase()}</div>
+                        }
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontSize:15, fontWeight:700 }}>{[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Мастер'}</div>
+                          <div style={{ fontSize:12, color:'#8f8f8f' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
+                        </div>
+                        <div style={{ color:'#ffb800', fontSize:18 }}>
+                          {'★'.repeat(r.rating||0)}<span style={{ color:'#e0e0e0' }}>{'★'.repeat(5-(r.rating||0))}</span>
+                        </div>
+                      </div>
+                      {(r.text || r.comment) && <p style={{ fontSize:14, color:'#333', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
                     </div>
-                    <div style={{ display:'flex', gap:2 }}>
-                      {[1,2,3,4,5].map(s => <span key={s} style={{ fontSize:18, color: s <= (r.rating||0) ? '#ffb800' : '#e0e0e0' }}>★</span>)}
-                    </div>
-                  </div>
-                  {(r.text || r.comment) && <p style={{ fontSize:14, color:'#333', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
+                  ))}
                 </div>
-              ))}
-            </div>
-          ))}
+            )}
+          </div>
         </div>
       </div>
 
@@ -360,17 +346,17 @@ export default function PublicCustomerProfilePage() {
             {reviewDone ? (
               <div style={{ textAlign:'center', padding:'20px 0' }}>
                 <div style={{ fontSize:48, marginBottom:12 }}>🎉</div>
-                <h3 style={{ fontSize:20, fontWeight:800, margin:'0 0 8px' }}>Отзыв отправлен!</h3>
-                <button onClick={() => setReviewModal(false)} style={{ marginTop:16, padding:'10px 28px', background:'#00aaff', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>Закрыть</button>
+                <h3 style={{ fontSize:20, fontWeight:700, margin:'0 0 8px' }}>Отзыв отправлен!</h3>
+                <button onClick={() => setReviewModal(false)} style={{ marginTop:16, padding:'10px 28px', background:'#04c96f', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>Закрыть</button>
               </div>
             ) : (
               <>
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
-                  <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>{reviewDeal?._reviewByWorker ? 'Отзыв о заказчике' : 'Отзыв о мастере'}</h2>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+                  <h2 style={{ fontSize:18, fontWeight:700, margin:0 }}>{reviewDeal?._reviewByWorker ? 'Отзыв о заказчике' : 'Отзыв о мастере'}</h2>
                   <button onClick={() => setReviewModal(false)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#8f8f8f' }}>×</button>
                 </div>
                 <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#f7f7f7', borderRadius:10, marginBottom:20 }}>
-                  <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>
+                  <div style={{ width:44, height:44, borderRadius:10, background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>
                     {reviewDeal?._reviewByWorker ? (initials||'З') : (reviewDeal?.workerName?.[0]?.toUpperCase()||'М')}
                   </div>
                   <div>
@@ -379,7 +365,7 @@ export default function PublicCustomerProfilePage() {
                   </div>
                 </div>
                 <div style={{ marginBottom:16 }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:'#333', marginBottom:8 }}>Оценка</div>
+                  <div style={{ fontSize:13, fontWeight:600, marginBottom:8 }}>Оценка</div>
                   <div style={{ display:'flex', gap:6 }}>
                     {[1,2,3,4,5].map(star => (
                       <button key={star} onClick={() => setReviewForm(p => ({...p, rating:star}))}
@@ -389,10 +375,10 @@ export default function PublicCustomerProfilePage() {
                 </div>
                 <textarea value={reviewForm.text} onChange={e => setReviewForm(p => ({...p, text: e.target.value}))}
                   placeholder="Расскажите об опыте работы..."
-                  style={{ width:'100%', padding:'12px', borderRadius:10, border:'1.5px solid #e0e0e0', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box', marginBottom:16, fontFamily:'inherit' }}
-                  onFocus={e => e.target.style.borderColor='#00aaff'} onBlur={e => e.target.style.borderColor='#e0e0e0'} />
+                  style={{ width:'100%', padding:'12px', borderRadius:8, border:'1.5px solid #e0e0e0', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box', marginBottom:16, fontFamily:'Arial,sans-serif' }}
+                  onFocus={e => e.target.style.borderColor='#04c96f'} onBlur={e => e.target.style.borderColor='#e0e0e0'} />
                 <button onClick={handleReviewSubmit} disabled={reviewSending || !reviewForm.text.trim()}
-                  style={{ width:'100%', padding:'13px', background: reviewForm.text.trim() ? '#00aaff' : '#e0e0e0', border:'none', borderRadius:10, color: reviewForm.text.trim() ? '#fff' : '#999', fontSize:15, fontWeight:700, cursor: reviewForm.text.trim() ? 'pointer' : 'not-allowed' }}>
+                  style={{ width:'100%', padding:'13px', background: reviewForm.text.trim() ? '#04c96f' : '#e0e0e0', border:'none', borderRadius:8, color: reviewForm.text.trim() ? '#fff' : '#999', fontSize:15, fontWeight:700, cursor: reviewForm.text.trim() ? 'pointer' : 'not-allowed' }}>
                   {reviewSending ? 'Отправляем...' : 'Отправить отзыв'}
                 </button>
               </>
