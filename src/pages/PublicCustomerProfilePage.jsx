@@ -62,20 +62,15 @@ export default function PublicCustomerProfilePage() {
     if (!customerId) return;
     setLoading(true);
     Promise.all([
-      fetch(`${API}/customers/${customerId}/profile`).then(r => r.ok ? r.json() : null),
-      fetch(`${API}/customers/${customerId}/requests`).then(r => r.ok ? r.json() : []),
-      fetch(`${API}/customers/${customerId}/reviews`).then(r => r.ok ? r.json() : []),
-      fetch(`${API}/deals`, { headers: { 'X-User-Id': customerId } }).then(r => r.ok ? r.json() : []),
+      fetch(`${API}/customers/${customerId}/profile`).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(`${API}/customers/${customerId}/requests`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${API}/customers/${customerId}/reviews`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${API}/deals`, { headers: { 'X-User-Id': customerId } }).then(r => r.ok ? r.json() : []).catch(() => []),
     ]).then(([p, r, rev, d]) => {
       setCustomer(p || { displayName: nameFromQuery || 'Заказчик', city: 'Йошкар-Ола' });
       setRequests(Array.isArray(r) ? r : []);
-      setReviews(Array.isArray(rev) ? rev.filter(r => r.status === 'APPROVED') : []);
+      setReviews(Array.isArray(rev) ? rev : []);
       setDeals(Array.isArray(d) ? d.filter(deal => deal.customerId === customerId) : []);
-    }).catch(() => {
-      setCustomer({ displayName: nameFromQuery || 'Заказчик', city: 'Йошкар-Ола' });
-      setRequests([]);
-      setReviews([]);
-      setDeals([]);
     }).finally(() => setLoading(false));
   }, [customerId]);
 
