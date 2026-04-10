@@ -88,6 +88,11 @@ export default function DealsPage() {
         getCategories(),
       ]);
       setDeals(d);
+      console.log('🔍 DEALS DATA:', d.map(deal => ({
+        id: deal.id?.substring(0,8),
+        customerAvatar: deal.customerAvatar ? `YES (${deal.customerAvatar.length} chars)` : `NO (${deal.customerAvatar})`,
+        workerAvatar: deal.workerAvatar ? `YES (${deal.workerAvatar.length} chars)` : `NO (${deal.workerAvatar})`,
+      })));
       setRequests(r);
       setCategories(c);
     } catch {}
@@ -270,13 +275,13 @@ export default function DealsPage() {
                   <div style={{ fontSize:12, color:'#9ca3af', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:12 }}>Мастер</div>
                   <div style={{ display:'flex', alignItems:'center', gap:12, cursor:'pointer', marginBottom:12 }}
                     onClick={() => dealDetail.workerId && navigate(`/workers/${dealDetail.workerId}`)}>
-                    {dealDetail.workerAvatar ? (
-                      <img src={dealDetail.workerAvatar} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0, border:'2px solid #f3f4f6' }} />
-                    ) : (
-                      <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16, flexShrink:0 }}>
-                        {(dealDetail.workerName||'М')[0].toUpperCase()}
-                      </div>
-                    )}
+                    {dealDetail.workerAvatar && dealDetail.workerAvatar.length > 10 && dealDetail.workerAvatar !== 'null' ? (
+                      <img src={dealDetail.workerAvatar} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0, border:'2px solid #f3f4f6' }}
+                        onError={(e) => { e.target.style.display='none'; e.target.nextSibling && (e.target.nextSibling.style.display='flex'); }} />
+                    ) : null}
+                    <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display: dealDetail.workerAvatar && dealDetail.workerAvatar.length > 10 && dealDetail.workerAvatar !== 'null' ? 'none' : 'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16, flexShrink:0 }}>
+                      {(dealDetail.workerName||'М')[0].toUpperCase()}
+                    </div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>
                         {[dealDetail.workerName, dealDetail.workerLastName].filter(Boolean).join(' ')}
@@ -293,25 +298,18 @@ export default function DealsPage() {
               )}
 
               {/* Карточка заказчика (видит мастер) */}
-              {console.log('🔍 CUSTOMER AVATAR DEBUG:', {
-                hasAvatar: !!dealDetail.customerAvatar,
-                avatarLength: dealDetail.customerAvatar?.length,
-                avatarStart: dealDetail.customerAvatar?.substring(0, 80),
-                customerName: dealDetail.customerName,
-                im: im
-              })}
               {!im && dealDetail.customerName && (
                 <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
                   <div style={{ fontSize:12, color:'#9ca3af', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:12 }}>Заказчик</div>
                   <div style={{ display:'flex', alignItems:'center', gap:12, cursor:'pointer', marginBottom:12 }}
                     onClick={() => dealDetail.customerId && navigate(`/customers/${dealDetail.customerId}`)}>
-                    {dealDetail.customerAvatar ? (
-                      <img src={dealDetail.customerAvatar} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0, border:'2px solid #f3f4f6' }} />
-                    ) : (
-                      <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16, flexShrink:0 }}>
-                        {(dealDetail.customerName||'З')[0].toUpperCase()}
-                      </div>
-                    )}
+                    {dealDetail.customerAvatar && dealDetail.customerAvatar.length > 10 && dealDetail.customerAvatar !== 'null' ? (
+                      <img src={dealDetail.customerAvatar} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0, border:'2px solid #f3f4f6' }}
+                        onError={(e) => { e.target.style.display='none'; e.target.nextSibling && (e.target.nextSibling.style.display='flex'); }} />
+                    ) : null}
+                    <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display: dealDetail.customerAvatar && dealDetail.customerAvatar.length > 10 && dealDetail.customerAvatar !== 'null' ? 'none' : 'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16, flexShrink:0 }}>
+                      {(dealDetail.customerName||'З')[0].toUpperCase()}
+                    </div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>
                         {[dealDetail.customerName, dealDetail.customerLastName].filter(Boolean).join(' ')}
