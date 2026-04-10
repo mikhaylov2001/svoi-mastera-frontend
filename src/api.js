@@ -28,9 +28,10 @@ function getFriendlyMessage(status, endpoint, serverMessage) {
 
 async function apiCall(endpoint, options = {}) {
   try {
-    const { headers: extraHeaders, ...restOptions } = options;
+    const { headers: extraHeaders, cache, ...restOptions } = options;
     const response = await fetch(`${API_BASE}${endpoint}`, {
       ...restOptions,
+      cache: cache || 'no-store',
       headers: { 'Content-Type': 'application/json', ...extraHeaders },
     });
     const text = await response.text();
@@ -101,7 +102,7 @@ export async function acceptOffer(userId, jobRequestId, offerId) {
 
 // ── DEALS ──
 export async function getMyDeals(userId) {
-  return apiCall('/deals', { headers: { 'X-User-Id': userId } });
+  return apiCall('/deals', { headers: { 'X-User-Id': userId }, cache: 'no-store' });
 }
 export async function completeDeal(userId, dealId) {
   return apiCall(`/deals/${dealId}/complete`, { method: 'POST', headers: { 'X-User-Id': userId }, body: JSON.stringify({}) });
