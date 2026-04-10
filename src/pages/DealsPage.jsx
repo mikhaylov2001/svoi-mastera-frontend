@@ -264,8 +264,8 @@ export default function DealsPage() {
                 </div>
               )}
 
-              {/* Карточка мастера */}
-              {dealDetail.workerName && (
+              {/* Карточка мастера (видит заказчик) */}
+              {im && dealDetail.workerName && (
                 <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
                   <div style={{ fontSize:12, color:'#9ca3af', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:12 }}>Мастер</div>
                   <div style={{ display:'flex', alignItems:'center', gap:12, cursor:'pointer', marginBottom:12 }}
@@ -288,6 +288,34 @@ export default function DealsPage() {
                   <button onClick={() => navigate(`/chat/${dealDetail.workerId}`)}
                     style={{ width:'100%', padding:'10px', background:'rgba(14,165,233,.07)', border:'1.5px solid rgba(14,165,233,.2)', borderRadius:8, color:'#0ea5e9', fontSize:13, fontWeight:700, cursor:'pointer' }}>
                     💬 Написать мастеру
+                  </button>
+                </div>
+              )}
+
+              {/* Карточка заказчика (видит мастер) */}
+              {!im && dealDetail.customerName && (
+                <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
+                  <div style={{ fontSize:12, color:'#9ca3af', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:12 }}>Заказчик</div>
+                  <div style={{ display:'flex', alignItems:'center', gap:12, cursor:'pointer', marginBottom:12 }}
+                    onClick={() => dealDetail.customerId && navigate(`/customers/${dealDetail.customerId}`)}>
+                    {dealDetail.customerAvatar ? (
+                      <img src={dealDetail.customerAvatar} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0, border:'2px solid #f3f4f6' }} />
+                    ) : (
+                      <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16, flexShrink:0 }}>
+                        {(dealDetail.customerName||'З')[0].toUpperCase()}
+                      </div>
+                    )}
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>
+                        {[dealDetail.customerName, dealDetail.customerLastName].filter(Boolean).join(' ')}
+                      </div>
+                      <div style={{ fontSize:12, color:'#22c55e', fontWeight:600 }}>● Активный заказчик</div>
+                    </div>
+                    <div style={{ color:'#9ca3af', fontSize:18 }}>›</div>
+                  </div>
+                  <button onClick={() => navigate(`/chat/${dealDetail.customerId}`)}
+                    style={{ width:'100%', padding:'10px', background:'rgba(14,165,233,.07)', border:'1.5px solid rgba(14,165,233,.2)', borderRadius:8, color:'#0ea5e9', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+                    💬 Написать заказчику
                   </button>
                 </div>
               )}
