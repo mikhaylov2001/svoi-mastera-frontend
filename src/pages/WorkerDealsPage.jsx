@@ -179,11 +179,17 @@ export default function WorkerDealsPage() {
                 <div style={{ fontSize:12, color:'#9ca3af', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:12 }}>Заказчик</div>
                 <div style={{ display:'flex', alignItems:'center', gap:12, cursor:'pointer' }}
                   onClick={() => dealDetail.customerId && navigate(`/customers/${dealDetail.customerId}`)}>
-                  <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16, flexShrink:0 }}>
-                    {(dealDetail.customerName||'З')[0].toUpperCase()}
-                  </div>
+                  {dealDetail.customerAvatar && dealDetail.customerAvatar.length > 10 && dealDetail.customerAvatar !== 'null' ? (
+                    <img src={dealDetail.customerAvatar} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0, border:'2px solid #f3f4f6' }} />
+                  ) : (
+                    <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16, flexShrink:0 }}>
+                      {(dealDetail.customerName||'З')[0].toUpperCase()}
+                    </div>
+                  )}
                   <div style={{ flex:1 }}>
-                    <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{dealDetail.customerName || 'Заказчик'}</div>
+                    <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>
+                      {[dealDetail.customerName, dealDetail.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
+                    </div>
                     <div style={{ fontSize:12, color:'#22c55e', fontWeight:600 }}>● Активный заказчик</div>
                   </div>
                   <div style={{ color:'#9ca3af', fontSize:18 }}>›</div>
