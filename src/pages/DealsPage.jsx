@@ -293,6 +293,13 @@ export default function DealsPage() {
               )}
 
               {/* Карточка заказчика (видит мастер) */}
+              {console.log('🔍 CUSTOMER AVATAR DEBUG:', {
+                hasAvatar: !!dealDetail.customerAvatar,
+                avatarLength: dealDetail.customerAvatar?.length,
+                avatarStart: dealDetail.customerAvatar?.substring(0, 80),
+                customerName: dealDetail.customerName,
+                im: im
+              })}
               {!im && dealDetail.customerName && (
                 <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
                   <div style={{ fontSize:12, color:'#9ca3af', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:12 }}>Заказчик</div>
