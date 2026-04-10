@@ -18,24 +18,42 @@ export default function CustomerProfilePage() {
         : BACKEND + userAvatar)
     : '';
 
+  const compressImage = (file) => new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX = 400;
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
+        else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
   const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setAvatarLoading(true);
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64 = reader.result;
+    try {
+      const base64 = await compressImage(file);
       try {
         const res = await uploadAvatar(userId, base64);
-        // Сервер теперь возвращает base64 напрямую
         const url = res?.avatarUrl || base64;
         updateAvatar(url);
       } catch {
         updateAvatar(base64);
       }
+    } finally {
       setAvatarLoading(false);
-    };
-    reader.readAsDataURL(file);
+    }
     e.target.value = '';
   };
 
