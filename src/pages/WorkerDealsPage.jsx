@@ -240,7 +240,16 @@ export default function WorkerDealsPage() {
                 <div style={{ background:'rgba(34,197,94,.07)', borderRadius:12, padding:'16px 20px', border:'1px solid rgba(34,197,94,.2)', textAlign:'center' }}>
                   <div style={{ fontSize:28, marginBottom:6 }}>🏆</div>
                   <div style={{ fontSize:14, fontWeight:800, color:'#111827', marginBottom:4 }}>Работа завершена!</div>
-                  <div style={{ fontSize:12, color:'#6b7280' }}>Обе стороны подтвердили выполнение</div>
+                  <div style={{ fontSize:12, color:'#6b7280', marginBottom:12 }}>Обе стороны подтвердили выполнение</div>
+                  {!dealDetail.hasWorkerReview && dealDetail.customerId && (
+                    <button
+                      onClick={() => navigate(`/customers/${dealDetail.customerId}`)}
+                      style={{ width:'100%', padding:'13px', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', border:'none', borderRadius:12, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', boxShadow:'0 6px 20px rgba(99,102,241,.28)' }}
+                    >⭐ Оставить отзыв о заказчике</button>
+                  )}
+                  {dealDetail.hasWorkerReview && (
+                    <div style={{ fontSize:13, color:'#22c55e', fontWeight:600, background:'rgba(34,197,94,.08)', borderRadius:8, padding:'10px' }}>✓ Вы оставили отзыв</div>
+                  )}
                 </div>
               )}
             </div>
