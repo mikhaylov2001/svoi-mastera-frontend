@@ -121,12 +121,25 @@ export async function createReview(userId, dealId, data) {
   return apiCall(`/deals/${dealId}/reviews`, {
     method: 'POST',
     headers: { 'X-User-Id': userId },
-    body: JSON.stringify({ rating: data.rating, text: data.text || '' }),
+    body: JSON.stringify({ rating: data.rating, text: data.text || data.comment || '' }),
+  });
+}
+
+// Мастер → отзыв заказчику
+export async function createCustomerReview(userId, dealId, data) {
+  return apiCall(`/deals/${dealId}/reviews/worker`, {
+    method: 'POST',
+    headers: { 'X-User-Id': userId },
+    body: JSON.stringify({ rating: data.rating, text: data.text || data.comment || '' }),
   });
 }
 
 export async function getReviewsByWorker(workerId) {
   return apiCall(`/workers/${workerId}/reviews`);
+}
+
+export async function getReviewsByCustomer(customerUserId) {
+  return apiCall(`/customers/${customerUserId}/reviews`);
 }
 
 // ── WORKER SERVICES ──

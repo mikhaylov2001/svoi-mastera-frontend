@@ -33,10 +33,6 @@ export default function PublicWorkerProfilePage() {
   const [tab,            setTab]           = useState('works');
   const [lightbox,       setLightbox]      = useState(null);
   const [photoIdx,       setPhotoIdx]      = useState({});
-  const [reviewModal,    setReviewModal]   = useState(false);
-  const [reviewForm,     setReviewForm]    = useState({ rating: 5, text: '' });
-  const [reviewSending,  setReviewSending] = useState(false);
-  const [reviewDone,     setReviewDone]    = useState(false);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -55,7 +51,7 @@ export default function PublicWorkerProfilePage() {
     Promise.all([
       fetch(`${API}/workers/${workerId}/services`).then(r => r.ok ? r.json() : []),
       fetch(`${API}/workers/${workerId}/stats`).then(r => r.ok ? r.json() : {}),
-      fetch(`${API}/reviews/worker/${workerId}`).then(r => r.ok ? r.json() : []),
+      fetch(`${API}/workers/${workerId}/reviews`).then(r => r.ok ? r.json() : []),
       fetch(`${API}/workers/${workerId}/completed-works`).then(r => r.ok ? r.json() : []),
     ]).then(([svc, stats, rev, works]) => {
       setServices(Array.isArray(svc) ? svc : []);
@@ -88,25 +84,7 @@ export default function PublicWorkerProfilePage() {
     ? (reviews.reduce((s, r) => s + (r.rating||0), 0) / reviews.length).toFixed(1)
     : worker?.rating > 0 ? Number(worker.rating).toFixed(1) : null;
 
-  const handleReviewSubmit = async () => {
-    if (!reviewForm.text.trim()) return;
-    setReviewSending(true);
-    try {
-      const res = await fetch(`${API}/deals`, { headers: { 'X-User-Id': userId } });
-      const deals = res.ok ? await res.json() : [];
-      const completedDeal = deals.find(d => d.workerId === workerId && d.status === 'COMPLETED' && !d.hasReview);
-      if (!completedDeal) { alert('Нет завершённых сделок для отзыва'); setReviewSending(false); return; }
-      await fetch(`${API}/deals/${completedDeal.id}/reviews`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
-        body: JSON.stringify({ rating: reviewForm.rating, text: reviewForm.text, comment: reviewForm.text }),
-      });
-      setReviewDone(true);
-      const r = await fetch(`${API}/reviews/worker/${workerId}`);
-      if (r.ok) setReviews((await r.json()).filter(r => r.status === 'APPROVED'));
-    } catch(e) { console.error(e); }
-    setReviewSending(false);
-  };
+
 
   const css = `
     * { box-sizing: border-box; }
@@ -266,9 +244,6 @@ export default function PublicWorkerProfilePage() {
             {userId && userId !== workerId && (
               <div className="av-btns">
                 <button className="av-btn-write" onClick={() => navigate(`/chat/${workerId}`)}>Написать</button>
-                <button className="av-btn-review" onClick={() => { setReviewModal(true); setReviewDone(false); setReviewForm({ rating:5, text:'' }); }}>
-                  ⭐ Оставить отзыв
-                </button>
               </div>
             )}
           </div>
@@ -323,55 +298,6 @@ export default function PublicWorkerProfilePage() {
           </div>
         </div>
       </div>
-
-      {/* МОДАЛКА ОТЗЫВА */}
-      {reviewModal && (
-        <div style={{ position:'fixed', inset:0, zIndex:2000, background:'rgba(0,0,0,.5)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={() => setReviewModal(false)}>
-          <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:460, padding:28 }} onClick={e => e.stopPropagation()}>
-            {reviewDone ? (
-              <div style={{ textAlign:'center', padding:'20px 0' }}>
-                <div style={{ fontSize:48, marginBottom:12 }}>🎉</div>
-                <h3 style={{ fontSize:20, fontWeight:700, margin:'0 0 8px' }}>Отзыв отправлен!</h3>
-                <button onClick={() => setReviewModal(false)} style={{ marginTop:16, padding:'10px 28px', background:'#04c96f', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>Закрыть</button>
-              </div>
-            ) : (
-              <>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
-                  <h2 style={{ fontSize:18, fontWeight:700, margin:0 }}>Отзыв о мастере</h2>
-                  <button onClick={() => setReviewModal(false)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#8f8f8f' }}>×</button>
-                </div>
-                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#f7f7f7', borderRadius:10, marginBottom:20 }}>
-                  {worker?.avatarUrl
-                    ? <img src={worker.avatarUrl} alt="" style={{ width:44, height:44, borderRadius:10, objectFit:'cover' }} />
-                    : <div style={{ width:44, height:44, borderRadius:10, background:'linear-gradient(135deg,#257af4,#1a5cbf)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>{initials}</div>
-                  }
-                  <div>
-                    <div style={{ fontSize:15, fontWeight:700 }}>{fullName}</div>
-                    <div style={{ fontSize:12, color:'#8f8f8f' }}>Мастер</div>
-                  </div>
-                </div>
-                <div style={{ marginBottom:16 }}>
-                  <div style={{ fontSize:13, fontWeight:600, marginBottom:8 }}>Оценка</div>
-                  <div style={{ display:'flex', gap:6 }}>
-                    {[1,2,3,4,5].map(star => (
-                      <button key={star} onClick={() => setReviewForm(p => ({...p, rating:star}))}
-                        style={{ background:'none', border:'none', cursor:'pointer', fontSize:36, padding:0, color: star <= reviewForm.rating ? '#ffb800' : '#e0e0e0' }}>★</button>
-                    ))}
-                  </div>
-                </div>
-                <textarea value={reviewForm.text} onChange={e => setReviewForm(p => ({...p, text: e.target.value}))}
-                  placeholder="Расскажите о качестве работы..."
-                  style={{ width:'100%', padding:'12px', borderRadius:8, border:'1.5px solid #e0e0e0', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box', marginBottom:16, fontFamily:'Arial,sans-serif' }}
-                  onFocus={e => e.target.style.borderColor='#04c96f'} onBlur={e => e.target.style.borderColor='#e0e0e0'} />
-                <button onClick={handleReviewSubmit} disabled={reviewSending || !reviewForm.text.trim()}
-                  style={{ width:'100%', padding:'13px', background: reviewForm.text.trim() ? '#04c96f' : '#e0e0e0', border:'none', borderRadius:8, color: reviewForm.text.trim() ? '#fff' : '#999', fontSize:15, fontWeight:700, cursor: reviewForm.text.trim() ? 'pointer' : 'not-allowed' }}>
-                  {reviewSending ? 'Отправляем...' : 'Отправить отзыв'}
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* LIGHTBOX */}
       {lightbox && (

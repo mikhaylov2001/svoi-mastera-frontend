@@ -60,7 +60,7 @@ export default function DealsPage() {
 
   // ✅ ДОБАВЛЕНО: Стейты для отзыва
   const [reviewDeal, setReviewDeal] = useState(null);
-  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
+  const [reviewForm, setReviewForm] = useState({ rating: 5, text: '' });
   const [reviewStatus, setReviewStatus] = useState('idle');
 
   // Lightbox для фото
@@ -814,8 +814,8 @@ export default function DealsPage() {
                 <div style={{ marginBottom:20 }}>
                   <div style={{ fontSize:13, fontWeight:600, color:'#374151', marginBottom:8 }}>Комментарий</div>
                   <textarea
-                    value={reviewForm.comment}
-                    onChange={e => setReviewForm(p => ({...p, comment: e.target.value}))}
+                    value={reviewForm.text}
+                    onChange={e => setReviewForm(p => ({...p, text: e.target.value}))}
                     placeholder="Расскажите о качестве работы, пунктуальности, общении..."
                     style={{ width:'100%', padding:'12px', borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box' }}
                     onFocus={e => e.target.style.borderColor='#e8410a'}
@@ -829,8 +829,8 @@ export default function DealsPage() {
 
                 <button
                   onClick={handleReviewSubmit}
-                  disabled={reviewStatus === 'sending' || !reviewForm.comment?.trim()}
-                  style={{ width:'100%', padding:'13px', background: reviewForm.comment?.trim() ? '#e8410a' : '#e5e7eb', border:'none', borderRadius:8, color: reviewForm.comment?.trim() ? '#fff' : '#9ca3af', fontSize:15, fontWeight:700, cursor: reviewForm.comment?.trim() ? 'pointer' : 'not-allowed', transition:'background .15s' }}>
+                  disabled={reviewStatus === 'sending' || !reviewForm.text?.trim()}
+                  style={{ width:'100%', padding:'13px', background: reviewForm.text?.trim() ? '#e8410a' : '#e5e7eb', border:'none', borderRadius:8, color: reviewForm.text?.trim() ? '#fff' : '#9ca3af', fontSize:15, fontWeight:700, cursor: reviewForm.text?.trim() ? 'pointer' : 'not-allowed', transition:'background .15s' }}>
                   {reviewStatus === 'sending' ? 'Отправляем...' : '⭐ Отправить отзыв'}
                 </button>
               </>
