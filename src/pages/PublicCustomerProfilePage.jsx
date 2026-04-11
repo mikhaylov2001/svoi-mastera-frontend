@@ -310,24 +310,41 @@ export default function PublicCustomerProfilePage() {
             {tab === 'reviews' && (reviews.length === 0
               ? <div className="av-empty"><div style={{ fontSize:40, marginBottom:10 }}>⭐</div><p>Отзывов пока нет</p></div>
               : <div className="av-reviews">
-                  {reviews.map(r => (
-                    <div key={r.id} className="av-review">
-                      <div className="av-review-top">
-                        {r.authorAvatarUrl
-                          ? <img src={r.authorAvatarUrl} alt="" className="av-review-ava" />
-                          : <div className="av-review-ava-fb" style={{ background:'linear-gradient(135deg,#257af4,#1a5cbf)' }}>{(r.authorName||'М')[0].toUpperCase()}</div>
-                        }
-                        <div style={{ flex:1 }}>
-                          <div style={{ fontSize:15, fontWeight:700 }}>{[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Мастер'}</div>
-                          <div style={{ fontSize:12, color:'#8f8f8f' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
+                  {reviews.map(r => {
+                    const ava       = r.authorAvatarUrl || r.workerAvatar || null;
+                    const firstName = r.authorName      || r.workerName   || 'Мастер';
+                    const lastName  = r.authorLastName  || r.workerLastName || '';
+                    const fullN     = [firstName, lastName].filter(Boolean).join(' ');
+                    const wId       = r.authorId        || r.workerId      || null;
+                    return (
+                      <div key={r.id} className="av-review">
+                        <div className="av-review-top">
+                          {ava && ava.length > 10
+                            ? <img src={ava} alt="" className="av-review-ava"
+                                onClick={wId ? () => navigate(`/workers/${wId}`) : undefined}
+                                style={{ cursor: wId ? 'pointer' : 'default' }} />
+                            : <div className="av-review-ava-fb"
+                                style={{ background:'linear-gradient(135deg,#257af4,#1a5cbf)', cursor: wId ? 'pointer' : 'default' }}
+                                onClick={wId ? () => navigate(`/workers/${wId}`) : undefined}>
+                                {firstName[0].toUpperCase()}
+                              </div>
+                          }
+                          <div style={{ flex:1 }}>
+                            <div
+                              style={{ fontSize:15, fontWeight:700, cursor: wId ? 'pointer' : 'default' }}
+                              onClick={wId ? () => navigate(`/workers/${wId}`) : undefined}>
+                              {fullN}
+                            </div>
+                            <div style={{ fontSize:12, color:'#8f8f8f' }}>{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div>
+                          </div>
+                          <div style={{ color:'#ffb800', fontSize:18 }}>
+                            {'★'.repeat(r.rating||0)}<span style={{ color:'#e0e0e0' }}>{'★'.repeat(5-(r.rating||0))}</span>
+                          </div>
                         </div>
-                        <div style={{ color:'#ffb800', fontSize:18 }}>
-                          {'★'.repeat(r.rating||0)}<span style={{ color:'#e0e0e0' }}>{'★'.repeat(5-(r.rating||0))}</span>
-                        </div>
+                        {(r.text || r.comment) && <p style={{ fontSize:14, color:'#333', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
                       </div>
-                      {(r.text || r.comment) && <p style={{ fontSize:14, color:'#333', margin:0, lineHeight:1.6 }}>{r.text || r.comment}</p>}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
             )}
           </div>
