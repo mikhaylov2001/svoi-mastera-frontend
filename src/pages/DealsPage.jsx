@@ -399,6 +399,80 @@ export default function DealsPage() {
             </div>
           </div>
         )}
+
+        {/* Модалка отзыва — должна быть внутри того же return что и кнопка */}
+        {reviewDeal && (
+          <div style={{ position:'fixed', inset:0, zIndex:2000, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+            onClick={() => setReviewDeal(null)}>
+            <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:460, padding:28 }}
+              onClick={e => e.stopPropagation()}>
+              {reviewStatus === 'done' ? (
+                <div style={{ textAlign:'center', padding:'20px 0' }}>
+                  <div style={{ fontSize:48, marginBottom:12 }}>🎉</div>
+                  <h3 style={{ fontSize:20, fontWeight:800, color:'#111827', margin:'0 0 8px' }}>Отзыв отправлен!</h3>
+                  <p style={{ color:'#6b7280', margin:'0 0 20px' }}>Спасибо за вашу оценку</p>
+                  <button onClick={() => { setReviewDeal(null); setReviewStatus('idle'); }}
+                    style={{ padding:'10px 28px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>
+                    Закрыть
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+                    <h2 style={{ fontSize:18, fontWeight:800, margin:0 }}>Отзыв о мастере</h2>
+                    <button onClick={() => setReviewDeal(null)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#9ca3af' }}>×</button>
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#f9fafb', borderRadius:10, marginBottom:20 }}>
+                    {reviewDeal.workerAvatar ? (
+                      <img src={reviewDeal.workerAvatar} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} />
+                    ) : (
+                      <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>
+                        {(reviewDeal.workerName||'М')[0].toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <div style={{ fontSize:15, fontWeight:700, color:'#111827' }}>
+                        {[reviewDeal.workerName, reviewDeal.workerLastName].filter(Boolean).join(' ')}
+                      </div>
+                      <div style={{ fontSize:12, color:'#9ca3af' }}>Мастер</div>
+                    </div>
+                  </div>
+                  <div style={{ marginBottom:16 }}>
+                    <div style={{ fontSize:13, fontWeight:600, color:'#374151', marginBottom:8 }}>Оценка</div>
+                    <div style={{ display:'flex', gap:8 }}>
+                      {[1,2,3,4,5].map(star => (
+                        <button key={star} onClick={() => setReviewForm(p => ({...p, rating:star}))}
+                          style={{ background:'none', border:'none', cursor:'pointer', fontSize:32, padding:0, opacity: star <= reviewForm.rating ? 1 : 0.25, transition:'opacity .15s', color:'#f59e0b' }}>
+                          ★
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ marginBottom:20 }}>
+                    <div style={{ fontSize:13, fontWeight:600, color:'#374151', marginBottom:8 }}>Комментарий</div>
+                    <textarea
+                      value={reviewForm.text}
+                      onChange={e => setReviewForm(p => ({...p, text: e.target.value}))}
+                      placeholder="Расскажите о качестве работы, пунктуальности, общении..."
+                      style={{ width:'100%', padding:'12px', borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:14, lineHeight:1.6, resize:'vertical', minHeight:100, outline:'none', boxSizing:'border-box' }}
+                      onFocus={e => e.target.style.borderColor='#e8410a'}
+                      onBlur={e => e.target.style.borderColor='#e5e7eb'}
+                    />
+                  </div>
+                  {reviewStatus === 'error' && (
+                    <div style={{ color:'#ef4444', fontSize:13, marginBottom:12 }}>Не удалось отправить отзыв. Попробуйте ещё раз.</div>
+                  )}
+                  <button
+                    onClick={handleReviewSubmit}
+                    disabled={reviewStatus === 'sending' || !reviewForm.text?.trim()}
+                    style={{ width:'100%', padding:'13px', background: reviewForm.text?.trim() ? '#e8410a' : '#e5e7eb', border:'none', borderRadius:8, color: reviewForm.text?.trim() ? '#fff' : '#9ca3af', fontSize:15, fontWeight:700, cursor: reviewForm.text?.trim() ? 'pointer' : 'not-allowed', transition:'background .15s' }}>
+                    {reviewStatus === 'sending' ? 'Отправляем...' : '⭐ Отправить отзыв'}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -760,7 +834,7 @@ export default function DealsPage() {
       {/* Модалка отзыва */}
       {reviewDeal && (
         <div style={{ position:'fixed', inset:0, zIndex:2000, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
-          onClick={() => setReviewDeal(null)}>
+          onClick={() => { setReviewDeal(null); setReviewStatus('idle'); }}>
           <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:460, padding:28 }}
             onClick={e => e.stopPropagation()}>
             {reviewStatus === 'done' ? (
@@ -768,7 +842,7 @@ export default function DealsPage() {
                 <div style={{ fontSize:48, marginBottom:12 }}>🎉</div>
                 <h3 style={{ fontSize:20, fontWeight:800, color:'#111827', margin:'0 0 8px' }}>Отзыв отправлен!</h3>
                 <p style={{ color:'#6b7280', margin:'0 0 20px' }}>Спасибо за вашу оценку</p>
-                <button onClick={() => setReviewDeal(null)}
+                <button onClick={() => { setReviewDeal(null); setReviewStatus('idle'); }}
                   style={{ padding:'10px 28px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>
                   Закрыть
                 </button>
