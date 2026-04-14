@@ -155,10 +155,11 @@ export default function MyListingsPage() {
         const data = await r.json();
         setListings(data);
         // обновляем detail если он открыт
-        if (detail) {
-          const fresh = data.find(l => l.id === detail.id);
-          if (fresh) setDetail(fresh);
-        }
+        setDetail(prev => {
+          if (!prev) return null;
+          const fresh = data.find(l => l.id === prev.id);
+          return fresh || prev;
+        });
       }
     } catch {}
     setLoading(false);
@@ -197,26 +198,46 @@ export default function MyListingsPage() {
         headers: { 'Content-Type':'application/json','X-User-Id':userId },
         body: JSON.stringify({ title:form.title.trim(), description:form.description.trim()||null, price:Number(form.price), priceUnit:form.priceUnit, category:form.category, photos:form.photos?.length?form.photos:null }),
       });
-      if (r.ok) { setModal(false); await load(); }
+      if (r.ok) {
+        setModal(false);
+        await load();
+        // Если редактируем текущее открытое объявление — обновляем detail
+        if (detail && modal !== 'create' && modal.id === detail.id) {
+          const updated = await fetch(`${API}/workers/${userId}/listings`).then(r=>r.json()).catch(()=>null);
+          if (updated) {
+            const fresh = updated.find(x => x.id === detail.id);
+            if (fresh) setDetail(fresh);
+          }
+        }
+      }
     } catch {}
     setSaving(false);
   };
 
   const handleToggle = async (l, e) => {
     e?.stopPropagation();
+    // Оптимистичное обновление — сразу меняем UI
+    const newActive = !l.active;
+    setListings(prev => prev.map(x => x.id === l.id ? {...x, active: newActive} : x));
+    if (detail?.id === l.id) setDetail(prev => ({...prev, active: newActive}));
     try {
       if (l.active) {
+        // Снять с публикации — DELETE
         await fetch(`${API}/listings/${l.id}`, { method:'DELETE', headers:{'X-User-Id':userId} });
       } else {
-        await fetch(`${API}/listings/${l.id}`, {
-          method:'PUT',
-          headers:{'Content-Type':'application/json','X-User-Id':userId},
-          body:JSON.stringify({ title:l.title, description:l.description, price:l.price, priceUnit:l.priceUnit, category:l.category, photos:l.photos }),
+        // Восстановить — отдельный endpoint
+        await fetch(`${API}/listings/${l.id}/restore`, {
+          method:'POST',
+          headers:{'X-User-Id':userId},
         });
       }
+      // Перезагружаем для синхронизации с сервером
       await load();
-      if (detail?.id === l.id) setDetail(prev => ({...prev, active: !prev.active}));
-    } catch {}
+    } catch {
+      // Откатываем если ошибка
+      setListings(prev => prev.map(x => x.id === l.id ? {...x, active: l.active} : x));
+      if (detail?.id === l.id) setDetail(prev => ({...prev, active: l.active}));
+    }
   };
 
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
