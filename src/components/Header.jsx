@@ -212,10 +212,10 @@ function Header() {
                   Найти работу
                 </NavLink>
                 <NavLink
-                  to="/active-clients"
+                  to="/my-listings"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
                 >
-                  Активные клиенты
+                  Мои объявления
                 </NavLink>
                 <NavLink
                   to="/chat"
@@ -418,8 +418,8 @@ function Header() {
                     <NavLink to="/find-work" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
                       Найти работу
                     </NavLink>
-                    <NavLink to="/active-clients" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                      Активные клиенты
+                    <NavLink to="/my-listings" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Мои объявления
                     </NavLink>
                     <NavLink to="/chat" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
                       Сообщения {unread > 0 && `• ${unread}`}

@@ -11,6 +11,7 @@ import CategoryPage from './pages/CategoryPage';
 import ServicesPage from './pages/ServicesPage';
 import ManageServicesPage from './pages/ManageServicesPage';
 import ActiveClientsPage from './pages/ActiveClientsPage';
+import MyListingsPage from './pages/MyListingsPage';
 import { LoginPage, RegisterPage } from './pages/AuthPages';
 import CustomerProfilePage from './pages/CustomerProfilePage';
 import WorkerProfilePage from './pages/WorkerProfilePage';
@@ -72,6 +73,7 @@ function AppContent() {
           <Route path="/customers/:customerId" element={<PublicCustomerProfilePage />} />
           <Route path="/manage-services" element={<ProtectedRoute workerOnly><ManageServicesPage /></ProtectedRoute>} />
           <Route path="/active-clients"  element={<ProtectedRoute workerOnly><ActiveClientsPage /></ProtectedRoute>} />
+          <Route path="/my-listings"     element={<ProtectedRoute workerOnly><MyListingsPage /></ProtectedRoute>} />
           <Route path="/chat"            element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/chat/:partnerId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/settings/notifications" element={<ProtectedRoute><NotificationsSettingsPage /></ProtectedRoute>} />
