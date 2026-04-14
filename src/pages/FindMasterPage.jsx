@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { getCategories, getWorkerServices } from '../api';
+import { getCategories, getListings } from '../api';
 import './FindMasterPage.css';
 
 // Маппинг иконок и цветов для категорий
@@ -54,40 +54,20 @@ export default function FindMasterPage() {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([getCategories(), getWorkerServices()])
-      .then(([cats, workersServices]) => {
-        console.log('===== ЗАГРУЗКА ДАННЫХ =====');
-        console.log('Категории:', cats);
-        console.log('Количество категорий:', cats?.length || 0);
-        console.log('Сервисы (сырые ДО обработки):', workersServices);
-        console.log('Количество сервисов:', workersServices?.length || 0);
-
-        // Показываем ПЕРВЫЙ сервис полностью
-        if (workersServices && workersServices.length > 0) {
-          console.log('ПЕРВЫЙ сервис ПОЛНОСТЬЮ:', JSON.stringify(workersServices[0], null, 2));
-        }
-
-        // Показываем ПЕРВУЮ категорию полностью
-        if (cats && cats.length > 0) {
-          console.log('ПЕРВАЯ категория ПОЛНОСТЬЮ:', JSON.stringify(cats[0], null, 2));
-        }
-        console.log('============================');
-
+    Promise.all([getCategories(), getListings()])
+      .then(([cats, listings]) => {
         setCategories(cats);
-        const processedServices = (workersServices || []).map((item) => ({
+        const processedServices = (listings || []).map((item) => ({
           ...item,
-          title: item.title || 'Услуга мастера',
-          description: item.description || 'Описание услуги не указано',
-          workerName: item.workerName || `Мастер ${item.workerUserId?.slice(0, 6)}`,
-          active: item.active == null ? true : item.active,
-          priceFrom: item.priceFrom || 0,
-          priceTo: item.priceTo || 0,
+          workerUserId: item.workerId,
+          workerName: [item.workerName, item.workerLastName].filter(Boolean).join(' ') || 'Мастер',
+          priceFrom: item.price || 0,
+          priceTo: item.price || 0,
         }));
-
         setServices(processedServices);
 
-        // ✅ ДОБАВЛЕНО: Загружаем статистику для каждого мастера
-        const uniqueWorkerIds = [...new Set(processedServices.map(s => s.workerUserId))];
+        // Загружаем статистику для каждого мастера
+        const uniqueWorkerIds = [...new Set(processedServices.map(s => s.workerId))];
         uniqueWorkerIds.forEach(async (workerId) => {
           try {
             const response = await fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/stats`);
@@ -95,15 +75,10 @@ export default function FindMasterPage() {
               const stats = await response.json();
               setWorkerStats(prev => ({ ...prev, [workerId]: stats }));
             }
-          } catch (error) {
-            console.error(`Ошибка загрузки статистики для мастера ${workerId}:`, error);
-          }
+          } catch {}
         });
       })
-      .catch((e) => {
-        console.error('ОШИБКА загрузки:', e);
-        setError(e?.message || 'Ошибка загрузки данных');
-      })
+      .catch((e) => setError(e?.message || 'Ошибка загрузки данных'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -143,10 +118,9 @@ export default function FindMasterPage() {
               {categories.map((cat, i) => {
                 // Фильтрация мастеров по категории
                 const allMasters = services.filter((s) => {
-                  // Проверяем совпадение по categoryId
+                  if (s.category === cat.name) return true;
                   if (s.categoryId === cat.id) return true;
                   if (String(s.categoryId) === String(cat.id)) return true;
-
                   return false;
                 });
 
@@ -196,11 +170,12 @@ export default function FindMasterPage() {
   // Если категория выбрана - показываем мастеров
   const visibleServices = services
     .filter((item) => {
-      // Фильтр по категории - строгое совпадение
-      if (item.categoryId !== selectedCategory?.id &&
-          String(item.categoryId) !== String(selectedCategory?.id)) {
-        return false;
-      }
+      // Фильтр по категории — listings хранят название категории строкой
+      const catMatch =
+        item.category === selectedCategory?.name ||
+        item.categoryId === selectedCategory?.id ||
+        String(item.categoryId) === String(selectedCategory?.id);
+      if (!catMatch) return false;
 
       // Фильтр активных мастеров
       if (showActiveOnly && !item.active) return false;
@@ -313,7 +288,7 @@ export default function FindMasterPage() {
                 <div
                   key={service.id}
                   className={`master-card ${!service.active ? 'master-card-inactive' : ''}`}
-                  onClick={() => navigate(`/workers/${service.workerUserId}`)}
+                  onClick={() => navigate(`/workers/${service.workerId || service.workerUserId}`)}
                   style={{ cursor: 'pointer' }}
                 >
                   {!service.active && <div className="inactive-badge">Неактивен</div>}
@@ -358,28 +333,28 @@ export default function FindMasterPage() {
 
                   {/* ✅ ОБНОВЛЕНО: Рейтинг, отзывы и стаж из API */}
                   <div className="master-stats">
-                    {workerStats[service.workerUserId] ? (
+                    {workerStats[service.workerId || service.workerUserId] ? (
                       <>
                         <div className="master-rating">
                           <span className="rating-stars">
-                            {'★'.repeat(Math.floor(workerStats[service.workerUserId].averageRating || 0))}
-                            {'☆'.repeat(5 - Math.floor(workerStats[service.workerUserId].averageRating || 0))}
+                            {'★'.repeat(Math.floor(workerStats[service.workerId || service.workerUserId].averageRating || 0))}
+                            {'☆'.repeat(5 - Math.floor(workerStats[service.workerId || service.workerUserId].averageRating || 0))}
                           </span>
                           <span className="rating-text">
-                            {(workerStats[service.workerUserId].averageRating || 0).toFixed(1)}
+                            {(workerStats[service.workerId || service.workerUserId].averageRating || 0).toFixed(1)}
                           </span>
                           <span className="rating-count">
-                            ({workerStats[service.workerUserId].reviewsCount || 0}{' '}
-                            {workerStats[service.workerUserId].reviewsCount === 1
+                            ({workerStats[service.workerId || service.workerUserId].reviewsCount || 0}{' '}
+                            {workerStats[service.workerId || service.workerUserId].reviewsCount === 1
                               ? 'отзыв'
-                              : workerStats[service.workerUserId].reviewsCount < 5
+                              : workerStats[service.workerId || service.workerUserId].reviewsCount < 5
                               ? 'отзыва'
                               : 'отзывов'})
                           </span>
                         </div>
                         <div className="master-meta-row">
-                          <span>📦 {workerStats[service.workerUserId].completedWorksCount || 0} заказов</span>
-                          <span>📅 {getExperience(workerStats[service.workerUserId].registeredAt)}</span>
+                          <span>📦 {workerStats[service.workerId || service.workerUserId].completedWorksCount || 0} заказов</span>
+                          <span>📅 {getExperience(workerStats[service.workerId || service.workerUserId].registeredAt)}</span>
                         </div>
                       </>
                     ) : (
@@ -400,7 +375,7 @@ export default function FindMasterPage() {
                   <div className="master-actions" onClick={(e) => e.stopPropagation()}>
                     <button
                       className="btn btn-primary"
-                      onClick={() => navigate(`/chat/${service.workerUserId}`)}
+                      onClick={() => navigate(`/chat/${service.workerId || service.workerUserId}`)}
                     >
                       💬 Написать
                     </button>

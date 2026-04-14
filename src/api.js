@@ -259,6 +259,34 @@ export async function uploadFile(userId, file) {
   }
 }
 
+// ── LISTINGS ──
+export async function getListings() {
+  return apiCall('/listings');
+}
+export async function getListingsByWorker(workerUserId) {
+  return apiCall(`/workers/${workerUserId}/listings`);
+}
+export async function createListing(userId, data) {
+  return apiCall('/listings', {
+    method: 'POST',
+    headers: { 'X-User-Id': userId },
+    body: JSON.stringify(data),
+  });
+}
+export async function updateListing(userId, listingId, data) {
+  return apiCall(`/listings/${listingId}`, {
+    method: 'PUT',
+    headers: { 'X-User-Id': userId },
+    body: JSON.stringify(data),
+  });
+}
+export async function deleteListing(userId, listingId) {
+  return apiCall(`/listings/${listingId}`, {
+    method: 'DELETE',
+    headers: { 'X-User-Id': userId },
+  });
+}
+
 // ── NOTIFICATIONS ──
 export async function getNotifications(userId) {
   return apiCall('/notifications', { headers: { 'X-User-Id': userId } });
