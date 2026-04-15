@@ -21,25 +21,26 @@ const css = `
   .fmp-wrap { max-width: 1000px; margin: 0 auto; padding: 0 16px 60px; }
 
   /* Хедер категории */
-  .fmp-cat-hdr { background: #fff; border-bottom: 1.5px solid #e5e7eb; padding: 14px 0; }
+  .fmp-cat-hdr { background: linear-gradient(135deg, #1a0a00 0%, #3d1200 50%, #e8410a 100%); padding: 20px 0 24px; }
   .fmp-cat-hdr-inner { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
-  .fmp-back { background: none; border: none; font-size: 14px; color: #e8410a; cursor: pointer; padding: 0; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
+  .fmp-back { background: none; border: none; font-size: 13px; color: rgba(255,255,255,.75); cursor: pointer; padding: 0; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-bottom: 14px; }
+  .fmp-back:hover { color: #fff; }
   .fmp-cat-title-row { display: flex; align-items: center; gap: 14px; }
-  .fmp-cat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
-  .fmp-cat-name { font-size: 22px; font-weight: 800; margin: 0 0 2px; }
-  .fmp-cat-sub { font-size: 13px; color: #8f8f8f; margin: 0; }
+  .fmp-cat-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; background: rgba(255,255,255,.15); }
+  .fmp-cat-name { font-size: 24px; font-weight: 900; margin: 0 0 3px; color: #fff; letter-spacing: -.3px; }
+  .fmp-cat-sub { font-size: 13px; color: rgba(255,255,255,.65); margin: 0; }
 
   /* Фильтры */
-  .fmp-filters { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 12px 0; margin-bottom: 16px; }
-  .fmp-filters-inner { max-width: 1000px; margin: 0 auto; padding: 0 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .fmp-search { flex: 1; min-width: 200px; display: flex; align-items: center; gap: 8px; background: #f5f5f5; border: 1.5px solid transparent; border-radius: 8px; padding: 0 12px; transition: border-color .15s; }
-  .fmp-search:focus-within { background: #fff; border-color: #e8410a; }
-  .fmp-search input { flex: 1; border: none; background: none; font-size: 14px; color: #1a1a1a; padding: 9px 0; outline: none; font-family: Arial, sans-serif; }
+  .fmp-filters { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 0; }
+  .fmp-filters-inner { max-width: 1000px; margin: 0 auto; padding: 0 16px; display: flex; gap: 0; align-items: stretch; }
+  .fmp-search { flex: 1; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-right: 1px solid #e8e8e8; }
+  .fmp-search input { flex: 1; border: none; background: none; font-size: 14px; color: #1a1a1a; padding: 14px 0; outline: none; font-family: Arial, sans-serif; }
   .fmp-search input::placeholder { color: #9ca3af; }
-  .fmp-select { padding: 9px 12px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; background: #fff; color: #1a1a1a; cursor: pointer; }
-  .fmp-select:focus { border-color: #e8410a; }
-  .fmp-toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #374151; cursor: pointer; white-space: nowrap; }
-  .fmp-toggle input { accent-color: #e8410a; width: 15px; height: 15px; cursor: pointer; }
+  .fmp-select { padding: 0 16px; border: none; border-right: 1px solid #e8e8e8; font-size: 13px; outline: none; background: #fff; color: #1a1a1a; cursor: pointer; height: 100%; font-family: Arial, sans-serif; }
+  .fmp-select:focus { background: #fff9f7; }
+  .fmp-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151; cursor: pointer; white-space: nowrap; padding: 0 16px; font-weight: 600; }
+  .fmp-toggle input { accent-color: #e8410a; width: 16px; height: 16px; cursor: pointer; }
+  .fmp-filter-count { padding: 0 16px; display: flex; align-items: center; font-size: 13px; color: #9ca3af; border-left: 1px solid #e8e8e8; white-space: nowrap; }
 
   /* Список */
   .fmp-list { display: flex; flex-direction: column; gap: 0; background: #fff; border-radius: 10px; border: 1px solid #e8e8e8; overflow: hidden; }
@@ -77,22 +78,22 @@ const css = `
   .fmp-btn-order:hover { background: #fde8e0; }
   .fmp-item-cat-tag { font-size: 11px; color: #fff; background: #e8410a; border-radius: 4px; padding: 2px 8px; font-weight: 600; text-align: center; }
 
-  /* Список категорий — современный синий стиль */
-  .fmp-cats-hero { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1d4ed8 100%); padding: 48px 0 40px; }
+  /* Список категорий — оранжевый стиль */
+  .fmp-cats-hero { background: linear-gradient(135deg, #1a0a00 0%, #3d1200 50%, #e8410a 100%); padding: 48px 0 40px; }
   .fmp-cats-hero-inner { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
   .fmp-cats-hero h1 { font-size: 34px; font-weight: 900; color: #fff; margin: 0 0 8px; letter-spacing: -.5px; }
-  .fmp-cats-hero p { font-size: 15px; color: rgba(255,255,255,.6); margin: 0; }
+  .fmp-cats-hero p { font-size: 15px; color: rgba(255,255,255,.65); margin: 0; }
   .fmp-cats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; padding: 28px 16px 60px; max-width: 1000px; margin: 0 auto; }
-  .fmp-cat-card { background: #fff; border-radius: 14px; padding: 22px 18px 18px; display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: #1a1a1a; transition: transform .18s, box-shadow .18s; box-shadow: 0 1px 4px rgba(0,0,0,.07); position: relative; overflow: hidden; border: 1.5px solid transparent; }
-  .fmp-cat-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(29,78,216,.06) 0%, rgba(29,78,216,0) 60%); opacity: 0; transition: opacity .18s; }
-  .fmp-cat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(29,78,216,.15); border-color: rgba(29,78,216,.25); }
-  .fmp-cat-card:hover::before { opacity: 1; }
+  .fmp-cat-card { background: #fff; border-radius: 14px; padding: 22px 18px 18px; display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: #1a1a1a; transition: transform .18s, box-shadow .18s; box-shadow: 0 2px 8px rgba(0,0,0,.07); position: relative; overflow: hidden; border: 1.5px solid #f3f4f6; }
+  .fmp-cat-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #e8410a, #ff7043); transform: scaleX(0); transition: transform .2s; transform-origin: left; }
+  .fmp-cat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(232,65,10,.15); border-color: rgba(232,65,10,.2); }
+  .fmp-cat-card:hover::after { transform: scaleX(1); }
   .fmp-cat-card-icon { width: 52px; height: 52px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; margin-bottom: 2px; }
   .fmp-cat-card-name { font-size: 14px; font-weight: 800; margin: 0; line-height: 1.3; color: #111827; }
   .fmp-cat-card-count { font-size: 11px; color: #9ca3af; font-weight: 500; }
-  .fmp-cat-card-arr { position: absolute; top: 14px; right: 14px; width: 24px; height: 24px; border-radius: 50%; background: #f0f4ff; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-size: 14px; transition: background .15s, transform .15s; }
-  .fmp-cat-card:hover .fmp-cat-card-arr { background: #1d4ed8; color: #fff; transform: translateX(2px); }
-  .fmp-cat-card-masters { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #1d4ed8; background: #eff6ff; border-radius: 20px; padding: 3px 9px; font-weight: 700; width: fit-content; border: 1px solid #bfdbfe; }
+  .fmp-cat-card-arr { position: absolute; top: 14px; right: 14px; width: 24px; height: 24px; border-radius: 50%; background: #fff3f0; display: flex; align-items: center; justify-content: center; color: #e8410a; font-size: 14px; transition: background .15s, transform .15s; }
+  .fmp-cat-card:hover .fmp-cat-card-arr { background: #e8410a; color: #fff; transform: translateX(2px); }
+  .fmp-cat-card-masters { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #e8410a; background: #fff3f0; border-radius: 20px; padding: 3px 9px; font-weight: 700; width: fit-content; border: 1px solid #fecab5; }
 
   /* Пустое/ошибка */
   .fmp-empty { text-align: center; padding: 80px 24px; background: #fff; border-radius: 10px; border: 1px solid #e8e8e8; color: #8f8f8f; }
@@ -168,7 +169,7 @@ export default function FindMasterPage() {
           {/* Hero */}
           <div className="fmp-cats-hero">
             <div className="fmp-cats-hero-inner">
-              <h1>Найти мастера</h1>
+              <h1>Найти активного мастера</h1>
               <p>Профессионалы для любых задач в Йошкар-Оле</p>
             </div>
           </div>
@@ -264,18 +265,19 @@ export default function FindMasterPage() {
         <div className="fmp-filters-inner">
           <div className="fmp-search">
             <svg width="15" height="15" fill="none" stroke="#9ca3af" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Поиск по названию или описанию..." />
+            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Поиск мастера или услуги..." />
           </div>
           <select className="fmp-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
             <option value="recency">По новизне</option>
-            <option value="priceAsc">Цена: по возрастанию</option>
-            <option value="priceDesc">Цена: по убыванию</option>
-            <option value="name">По имени мастера</option>
+            <option value="priceAsc">Цена ↑</option>
+            <option value="priceDesc">Цена ↓</option>
+            <option value="name">По имени</option>
           </select>
           <label className="fmp-toggle">
             <input type="checkbox" checked={showActiveOnly} onChange={e => setShowActiveOnly(e.target.checked)} />
             Только активные
           </label>
+          <div className="fmp-filter-count">{visibleServices.length} мастеров</div>
         </div>
       </div>
 
@@ -321,8 +323,8 @@ export default function FindMasterPage() {
                   <div className="fmp-item-body">
                     {/* Мастер */}
                     <div className="fmp-item-worker">
-                      {workerAva && workerAva.length > 10
-                        ? <img src={workerAva} alt="" className="fmp-item-ava"/>
+                      {(s.workerAvatar && s.workerAvatar.length > 10) || (workerAva && workerAva.length > 10)
+                        ? <img src={s.workerAvatar || workerAva} alt="" className="fmp-item-ava" style={{border:'2px solid #f3f4f6'}}/>
                         : <div className="fmp-item-ava-ph" style={{background:'linear-gradient(135deg,#e8410a,#ff7043)'}}>{(s.workerName||'М')[0].toUpperCase()}</div>
                       }
                       <div>
