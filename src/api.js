@@ -200,7 +200,11 @@ export async function getConversations(userId) {
   return apiCall('/messages/conversations', { headers: { 'X-User-Id': userId } });
 }
 export async function getUnreadCount(userId) {
-  return apiCall('/messages/unread-count', { headers: { 'X-User-Id': userId } });
+  const data = await apiCall('/messages/unread-count', { headers: { 'X-User-Id': userId } });
+  // Бэкенд может вернуть число или объект { count: N }
+  if (typeof data === 'number') return data;
+  if (typeof data === 'object' && data !== null) return data.count ?? data.unreadCount ?? 0;
+  return 0;
 }
 
 export async function updateMessage(userId, messageId, text) {

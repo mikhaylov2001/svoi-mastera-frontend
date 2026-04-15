@@ -50,8 +50,8 @@ function Header() {
     async function loadUnread() {
       if (!userId) { setUnread(0); setNotifCount(0); return; }
       try {
-        const countData = await getUnreadCount(userId);
-        setUnread(typeof countData === 'number' ? countData : (countData?.count || 0));
+        const count = await getUnreadCount(userId);
+        setUnread(count || 0);
       } catch { setUnread(0); }
       try {
         const r = await fetch(`${NOTIF_API}/unread-count`, { headers: { 'X-User-Id': userId } });
