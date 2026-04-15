@@ -278,11 +278,18 @@ export default function MyListingsPage() {
                   ? <img src={detail.photos[photoIdx]} alt="" />
                   : <div style={{fontSize:64,color:'#d1d5db'}}>🔧</div>
                 }
-                {hasPhoto && detail.photos.length > 1 && (
-                  <div style={{position:'absolute',bottom:10,right:10,background:'rgba(0,0,0,.5)',color:'#fff',fontSize:12,fontWeight:700,padding:'4px 10px',borderRadius:999}}>
-                    📷 {photoIdx+1} / {detail.photos.length}
+                {hasPhoto && detail.photos.length > 1 && (<>
+                  {/* Стрелка влево */}
+                  <button onClick={e=>{e.stopPropagation();setPhotoIdx(i=>(i-1+detail.photos.length)%detail.photos.length);}}
+                    style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',width:36,height:36,borderRadius:'50%',background:'rgba(0,0,0,.45)',border:'none',color:'#fff',fontSize:22,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',zIndex:2}}>‹</button>
+                  {/* Стрелка вправо */}
+                  <button onClick={e=>{e.stopPropagation();setPhotoIdx(i=>(i+1)%detail.photos.length);}}
+                    style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',width:36,height:36,borderRadius:'50%',background:'rgba(0,0,0,.45)',border:'none',color:'#fff',fontSize:22,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',zIndex:2}}>›</button>
+                  {/* Счётчик */}
+                  <div style={{position:'absolute',bottom:10,right:10,background:'rgba(0,0,0,.5)',color:'#fff',fontSize:12,fontWeight:700,padding:'4px 10px',borderRadius:999,zIndex:2}}>
+                    {photoIdx+1} / {detail.photos.length}
                   </div>
-                )}
+                </>)}
               </div>
               {hasPhoto && detail.photos.length > 1 && (
                 <div className="ml-detail-thumbs">
