@@ -49,7 +49,7 @@ export default function PublicWorkerProfilePage() {
     if (!workerId) return;
     setLoading(true);
     Promise.all([
-      fetch(`${API}/workers/${workerId}/services`).then(r => r.ok ? r.json() : []),
+      fetch(`${API}/workers/${workerId}/listings`).then(r => r.ok ? r.json() : []),
       fetch(`${API}/workers/${workerId}/stats`).then(r => r.ok ? r.json() : {}),
       fetch(`${API}/workers/${workerId}/reviews`).then(r => r.ok ? r.json() : []),
       fetch(`${API}/workers/${workerId}/completed-works`).then(r => r.ok ? r.json() : []),
@@ -170,18 +170,27 @@ export default function PublicWorkerProfilePage() {
     );
   };
 
-  const renderActiveCard = (s) => (
-    <div key={s.id} className="av-card">
-      <div className="av-card-img" style={{ fontSize:32 }}>⚙️</div>
-      <div className="av-card-body">
-        <div className="av-card-price">
-          {s.priceTo ? `до ${Number(s.priceTo).toLocaleString('ru-RU')} ₽` : s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
+  const renderActiveCard = (s) => {
+    const hasPhoto = s.photos && s.photos.length > 0;
+    const price = s.price || s.priceFrom || null;
+    const cat = s.category || s.categoryName || null;
+    return (
+      <div key={s.id} className="av-card">
+        <div className="av-card-img" style={{ background:'#f5f5f5', overflow:'hidden' }}>
+          {hasPhoto
+            ? <img src={s.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+            : <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:32 }}>🔧</div>
+          }
+          {cat && <div className="av-card-cat">{cat}</div>}
         </div>
-        <div className="av-card-title">{s.title}</div>
-        {s.categoryName && <div className="av-card-meta">{s.categoryName}</div>}
+        <div className="av-card-body">
+          {price && <div className="av-card-price">{Number(price).toLocaleString('ru-RU')} ₽ <span style={{fontSize:11,color:'#9ca3af',fontWeight:500}}>{s.priceUnit||''}</span></div>}
+          <div className="av-card-title">{s.title}</div>
+          {s.description && <div className="av-card-meta" style={{fontSize:12,color:'#9ca3af',overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>{s.description}</div>}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="av-page">
