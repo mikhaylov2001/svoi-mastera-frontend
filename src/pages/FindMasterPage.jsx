@@ -1,162 +1,194 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getCategories, getListings } from '../api';
-import './FindMasterPage.css';
 
-// Маппинг иконок и цветов для категорий
+const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
+
 const CATEGORY_STYLES = {
-  'remont-kvartir': { emoji: '🏠', color: '#fff3e0' },
-  'santehnika': { emoji: '🔧', color: '#e3f2fd' },
-  'elektrika': { emoji: '⚡', color: '#fffde7' },
-  'uborka': { emoji: '🧹', color: '#fce4ec' },
-  'parikhmaher': { emoji: '💇', color: '#fce4ec' },
-  'manikur': { emoji: '💅', color: '#fce4ec' },
-  'krasota-i-zdorovie': { emoji: '✨', color: '#f3e5f5' },
-  'repetitorstvo': { emoji: '📚', color: '#e3f2fd' },
-  'kompyuternaya-pomosh': { emoji: '💻', color: '#e8f5e9' },
+  'remont-kvartir':      { emoji: '🏠', color: '#fff3e0' },
+  'santehnika':          { emoji: '🔧', color: '#e3f2fd' },
+  'elektrika':           { emoji: '⚡', color: '#fffde7' },
+  'uborka':              { emoji: '🧹', color: '#fce4ec' },
+  'parikhmaher':         { emoji: '💇', color: '#fce4ec' },
+  'manikur':             { emoji: '💅', color: '#fce4ec' },
+  'krasota-i-zdorovie':  { emoji: '✨', color: '#f3e5f5' },
+  'repetitorstvo':       { emoji: '📚', color: '#e3f2fd' },
+  'kompyuternaya-pomosh':{ emoji: '💻', color: '#e8f5e9' },
 };
 
-// ✅ ДОБАВЛЕНО: Вычисление стажа работы
-function getExperience(registeredAt) {
-  if (!registeredAt) return 'Новичок';
+const css = `
+  .fmp-page { background: #f7f8fa; min-height: 100vh; font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
+  .fmp-wrap { max-width: 1000px; margin: 0 auto; padding: 0 16px 60px; }
 
-  const now = new Date();
-  const registered = new Date(registeredAt);
-  const diffMs = now - registered;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffMonths = Math.floor(diffDays / 30);
-  const diffYears = Math.floor(diffDays / 365);
+  /* Хедер категории */
+  .fmp-cat-hdr { background: #fff; border-bottom: 1.5px solid #e5e7eb; padding: 14px 0; }
+  .fmp-cat-hdr-inner { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
+  .fmp-back { background: none; border: none; font-size: 14px; color: #e8410a; cursor: pointer; padding: 0; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
+  .fmp-cat-title-row { display: flex; align-items: center; gap: 14px; }
+  .fmp-cat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+  .fmp-cat-name { font-size: 22px; font-weight: 800; margin: 0 0 2px; }
+  .fmp-cat-sub { font-size: 13px; color: #8f8f8f; margin: 0; }
 
-  if (diffYears >= 1) {
-    return `${diffYears} ${diffYears === 1 ? 'год' : diffYears < 5 ? 'года' : 'лет'}`;
+  /* Фильтры */
+  .fmp-filters { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 12px 0; margin-bottom: 16px; }
+  .fmp-filters-inner { max-width: 1000px; margin: 0 auto; padding: 0 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .fmp-search { flex: 1; min-width: 200px; display: flex; align-items: center; gap: 8px; background: #f5f5f5; border: 1.5px solid transparent; border-radius: 8px; padding: 0 12px; transition: border-color .15s; }
+  .fmp-search:focus-within { background: #fff; border-color: #e8410a; }
+  .fmp-search input { flex: 1; border: none; background: none; font-size: 14px; color: #1a1a1a; padding: 9px 0; outline: none; font-family: Arial, sans-serif; }
+  .fmp-search input::placeholder { color: #9ca3af; }
+  .fmp-select { padding: 9px 12px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 13px; outline: none; background: #fff; color: #1a1a1a; cursor: pointer; }
+  .fmp-select:focus { border-color: #e8410a; }
+  .fmp-toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #374151; cursor: pointer; white-space: nowrap; }
+  .fmp-toggle input { accent-color: #e8410a; width: 15px; height: 15px; cursor: pointer; }
+
+  /* Список */
+  .fmp-list { display: flex; flex-direction: column; gap: 0; background: #fff; border-radius: 10px; border: 1px solid #e8e8e8; overflow: hidden; }
+  .fmp-item { display: flex; border-bottom: 1px solid #f0f0f0; transition: background .15s; cursor: pointer; }
+  .fmp-item:last-child { border-bottom: none; }
+  .fmp-item:hover { background: #fafafa; }
+
+  /* Фото */
+  .fmp-item-img { width: 130px; height: 130px; flex-shrink: 0; background: #f5f5f5; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+  .fmp-item-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fmp-item-img-ph { font-size: 40px; color: #d1d5db; }
+  .fmp-item-img-cnt { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,.5); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 5px; border-radius: 3px; }
+
+  /* Контент */
+  .fmp-item-body { flex: 1; padding: 14px 16px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .fmp-item-worker { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+  .fmp-item-ava { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; object-fit: cover; }
+  .fmp-item-ava-ph { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 13px; }
+  .fmp-item-name { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+  .fmp-item-city { font-size: 12px; color: #9ca3af; }
+  .fmp-item-title { font-size: 16px; font-weight: 700; color: #1a1a1a; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .fmp-item-desc { font-size: 13px; color: #6b6b6b; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.5; }
+  .fmp-item-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .fmp-badge { font-size: 11px; color: #374151; background: #f3f4f6; border-radius: 4px; padding: 2px 7px; font-weight: 600; }
+  .fmp-item-stats { display: flex; gap: 14px; font-size: 12px; color: #8f8f8f; align-items: center; }
+  .fmp-stars { color: #f59e0b; font-size: 13px; }
+  .fmp-item-price { font-size: 18px; font-weight: 800; color: #1a1a1a; }
+  .fmp-item-price-unit { font-size: 12px; color: #8f8f8f; font-weight: 500; margin-left: 4px; }
+
+  /* Правая панель */
+  .fmp-item-right { width: 160px; flex-shrink: 0; padding: 14px 12px; display: flex; flex-direction: column; gap: 8px; justify-content: center; border-left: 1px solid #f0f0f0; }
+  .fmp-btn-write { background: #e8410a; border: none; border-radius: 7px; color: #fff; font-size: 13px; font-weight: 700; padding: 9px 0; cursor: pointer; width: 100%; transition: background .15s; }
+  .fmp-btn-write:hover { background: #d03a09; }
+  .fmp-btn-order { background: #fff; border: 1.5px solid #e8410a; border-radius: 7px; color: #e8410a; font-size: 13px; font-weight: 700; padding: 8px 0; cursor: pointer; width: 100%; transition: background .15s; }
+  .fmp-btn-order:hover { background: #fde8e0; }
+  .fmp-item-cat-tag { font-size: 11px; color: #fff; background: #e8410a; border-radius: 4px; padding: 2px 8px; font-weight: 600; text-align: center; }
+
+  /* Список категорий */
+  .fmp-cats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; padding-top: 20px; }
+  .fmp-cat-card { background: #fff; border-radius: 10px; border: 1px solid #e8e8e8; padding: 18px 20px; display: flex; align-items: center; gap: 14px; text-decoration: none; color: #1a1a1a; transition: box-shadow .2s, border-color .2s; }
+  .fmp-cat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); border-color: #e8410a; }
+  .fmp-cat-card-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+  .fmp-cat-card-name { font-size: 15px; font-weight: 700; margin: 0 0 3px; }
+  .fmp-cat-card-count { font-size: 12px; color: #8f8f8f; margin: 0; }
+  .fmp-cat-arr { margin-left: auto; color: #9ca3af; font-size: 20px; }
+
+  /* Пустое/ошибка */
+  .fmp-empty { text-align: center; padding: 80px 24px; background: #fff; border-radius: 10px; border: 1px solid #e8e8e8; color: #8f8f8f; }
+  .fmp-empty h3 { font-size: 17px; font-weight: 700; color: #1a1a1a; margin: 12px 0 8px; }
+
+  /* Скелетон */
+  .fmp-skel { background: #fff; border-radius: 10px; border: 1px solid #e8e8e8; overflow: hidden; }
+  .fmp-skel-row { display: flex; border-bottom: 1px solid #f0f0f0; padding: 14px 16px; gap: 16px; }
+  .fmp-skel-img { width: 130px; height: 130px; background: #f0f0f0; border-radius: 6px; flex-shrink: 0; }
+  .fmp-skel-body { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .fmp-skel-line { background: #f0f0f0; border-radius: 4px; }
+
+  .fmp-page-hdr { background: #fff; border-bottom: 1.5px solid #e5e7eb; padding: 20px 0; }
+  .fmp-page-hdr-inner { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
+  .fmp-page-hdr h1 { font-size: 22px; font-weight: 800; margin: 0 0 4px; }
+  .fmp-page-hdr p { font-size: 14px; color: #8f8f8f; margin: 0; }
+
+  @media(max-width: 700px) {
+    .fmp-item-right { display: none; }
+    .fmp-item-img { width: 90px; height: 90px; }
   }
-  if (diffMonths >= 1) {
-    return `${diffMonths} ${diffMonths === 1 ? 'месяц' : diffMonths < 5 ? 'месяца' : 'месяцев'}`;
-  }
-  if (diffDays >= 7) {
-    const weeks = Math.floor(diffDays / 7);
-    return `${weeks} ${weeks === 1 ? 'неделю' : weeks < 5 ? 'недели' : 'недель'}`;
-  }
-  return 'Новичок';
-}
+`;
 
 export default function FindMasterPage() {
   const navigate = useNavigate();
   const { categorySlug } = useParams();
   const [categories, setCategories] = useState([]);
-  const [services, setServices] = useState([]);
-  const [workerStats, setWorkerStats] = useState({}); // ✅ ДОБАВЛЕНО: статистика мастеров
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [services,   setServices]   = useState([]);
+  const [workerStats, setWorkerStats] = useState({});
+  const [loading,    setLoading]    = useState(true);
+  const [error,      setError]      = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showActiveOnly, setShowActiveOnly] = useState(true);
-  const [sortBy, setSortBy] = useState('recency');
+  const [sortBy,     setSortBy]     = useState('recency');
 
   useEffect(() => {
     setLoading(true);
     Promise.all([getCategories(), getListings()])
       .then(([cats, listings]) => {
         setCategories(cats);
-        const processedServices = (listings || []).map((item) => ({
+        const processed = (listings || []).map(item => ({
           ...item,
+          workerId: item.workerId,
           workerUserId: item.workerId,
           workerName: [item.workerName, item.workerLastName].filter(Boolean).join(' ') || 'Мастер',
           priceFrom: item.price || 0,
-          priceTo: item.price || 0,
         }));
-        setServices(processedServices);
-
-        // Загружаем статистику для каждого мастера
-        const uniqueWorkerIds = [...new Set(processedServices.map(s => s.workerId))];
-        uniqueWorkerIds.forEach(async (workerId) => {
+        setServices(processed);
+        const uniqueIds = [...new Set(processed.map(s => s.workerId))];
+        uniqueIds.forEach(async (wid) => {
           try {
-            const response = await fetch(`https://svoi-mastera-backend.onrender.com/api/v1/workers/${workerId}/stats`);
-            if (response.ok) {
-              const stats = await response.json();
-              setWorkerStats(prev => ({ ...prev, [workerId]: stats }));
+            const r = await fetch(`${API}/workers/${wid}/stats`);
+            if (r.ok) {
+              const stats = await r.json();
+              setWorkerStats(prev => ({ ...prev, [wid]: stats }));
             }
           } catch {}
         });
       })
-      .catch((e) => setError(e?.message || 'Ошибка загрузки данных'))
+      .catch(e => setError(e?.message || 'Ошибка загрузки'))
       .finally(() => setLoading(false));
   }, []);
 
-  const selectedCategory = categories.find((c) => c.slug === categorySlug);
+  const selectedCategory = categories.find(c => c.slug === categorySlug);
 
-  // Если категория не выбрана - показываем список категорий
+  // ══ СПИСОК КАТЕГОРИЙ ══
   if (!categorySlug) {
     return (
-      <div>
-        <div className="page-header-bar">
-          <div className="container">
+      <div className="fmp-page">
+        <style>{css}</style>
+        <div className="fmp-page-hdr">
+          <div className="fmp-page-hdr-inner">
             <h1>Найти мастера</h1>
-            <p>Выберите категорию — найдите нужного мастера</p>
+            <p>Выберите категорию — найдите нужного специалиста</p>
           </div>
         </div>
-
-        <div className="container">
+        <div className="fmp-wrap">
           {loading ? (
-            <div className="cats-grid">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="cat-skeleton">
-                  <div style={{ width: 52, height: 52, background: '#e5e7eb', borderRadius: 'var(--r-md)' }}></div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ height: 16, background: '#e5e7eb', borderRadius: 4, marginBottom: 8, width: '60%' }}></div>
-                    <div style={{ height: 14, background: '#e5e7eb', borderRadius: 4, width: '90%' }}></div>
+            <div className="fmp-cats-grid">
+              {[1,2,3,4,5,6].map(i => (
+                <div key={i} style={{background:'#fff',borderRadius:10,border:'1px solid #e8e8e8',padding:'18px 20px',display:'flex',gap:14,alignItems:'center'}}>
+                  <div style={{width:52,height:52,background:'#f0f0f0',borderRadius:12,flexShrink:0}}/>
+                  <div style={{flex:1}}>
+                    <div style={{height:15,background:'#f0f0f0',borderRadius:4,marginBottom:8,width:'60%'}}/>
+                    <div style={{height:12,background:'#f0f0f0',borderRadius:4,width:'80%'}}/>
                   </div>
                 </div>
               ))}
             </div>
           ) : error ? (
-            <div className="cats-error">
-              <span>😕</span>
-              <p>{error}</p>
-            </div>
+            <div className="fmp-empty"><div style={{fontSize:40}}>😕</div><h3>{error}</h3></div>
           ) : (
-            <div className="cats-grid">
-              {categories.map((cat, i) => {
-                // Фильтрация мастеров по категории
-                const allMasters = services.filter((s) => {
-                  if (s.category === cat.name) return true;
-                  if (s.categoryId === cat.id) return true;
-                  if (String(s.categoryId) === String(cat.id)) return true;
-                  return false;
-                });
-
-                const activeMasters = allMasters.filter((s) => s.active === true);
-
-                // Средняя цена
-                const pricesFrom = activeMasters
-                  .map((s) => s.priceFrom)
-                  .filter((p) => p && p > 0);
-                const avgPrice = pricesFrom.length > 0
-                  ? Math.round(pricesFrom.reduce((a, b) => a + b, 0) / pricesFrom.length)
-                  : null;
-
-                // Получаем стиль для категории
+            <div className="fmp-cats-grid">
+              {categories.map(cat => {
                 const style = CATEGORY_STYLES[cat.slug] || { emoji: '🛠️', color: '#fff3e0' };
-
+                const count = services.filter(s => s.category === cat.name || s.categoryId === cat.id).filter(s => s.active).length;
                 return (
-                  <Link
-                    key={cat.id}
-                    to={`/find-master/${cat.slug}`}
-                    className="cat-card fade-up"
-                    style={{ animationDelay: `${i * 0.05}s` }}
-                  >
-                    <div className="cat-card-icon" style={{ background: style.color }}>
-                      {style.emoji}
+                  <Link key={cat.id} to={`/find-master/${cat.slug}`} className="fmp-cat-card">
+                    <div className="fmp-cat-card-icon" style={{background: style.color}}>{style.emoji}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <p className="fmp-cat-card-name">{cat.name}</p>
+                      <p className="fmp-cat-card-count">{count > 0 ? `${count} ${count===1?'мастер':count<5?'мастера':'мастеров'}` : 'Нет объявлений'}</p>
                     </div>
-                    <div className="cat-card-body">
-                      <h2>{cat.name}</h2>
-                      <p>
-                        {activeMasters.length > 0
-                          ? `${activeMasters.length} ${activeMasters.length === 1 ? 'мастер' : activeMasters.length < 5 ? 'мастера' : 'мастеров'}`
-                          : 'Нет активных мастеров'}
-                        {avgPrice && ` • от ${avgPrice} ₽`}
-                      </p>
-                    </div>
-                    <div className="cat-card-arrow">›</div>
+                    <span className="fmp-cat-arr">›</span>
                   </Link>
                 );
               })}
@@ -167,234 +199,165 @@ export default function FindMasterPage() {
     );
   }
 
-  // Если категория выбрана - показываем мастеров
-  const visibleServices = services
-    .filter((item) => {
-      // Фильтр по категории — listings хранят название категории строкой
-      const catMatch =
-        item.category === selectedCategory?.name ||
-        item.categoryId === selectedCategory?.id ||
-        String(item.categoryId) === String(selectedCategory?.id);
-      if (!catMatch) return false;
-
-      // Фильтр активных мастеров
-      if (showActiveOnly && !item.active) return false;
-
-      // Поиск
-      if (!searchTerm.trim()) return true;
-      const q = searchTerm.trim().toLowerCase();
-      return (
-        item.title.toLowerCase().includes(q) ||
-        item.description.toLowerCase().includes(q) ||
-        (item.workerName || '').toLowerCase().includes(q)
-      );
-    })
-    .sort((a, b) => {
-      if (sortBy === 'priceAsc') return (a.priceFrom || 0) - (b.priceFrom || 0);
-      if (sortBy === 'priceDesc') return (b.priceFrom || 0) - (a.priceFrom || 0);
-      if (sortBy === 'name') return (a.workerName || '').localeCompare(b.workerName || '');
-      return new Date(b.createdAt || Date.now()) - new Date(a.createdAt || Date.now());
-    });
-
-  if (!selectedCategory) {
+  if (!loading && !selectedCategory) {
     return (
-      <div className="container" style={{ padding: '60px 24px', textAlign: 'center' }}>
-        <p>Категория не найдена</p>
-        <Link to="/find-master" className="btn btn-primary" style={{ marginTop: 16 }}>
-          К категориям
-        </Link>
+      <div className="fmp-page">
+        <style>{css}</style>
+        <div className="fmp-wrap" style={{paddingTop:40,textAlign:'center'}}>
+          <p>Категория не найдена</p>
+          <Link to="/find-master" className="fmp-btn-write" style={{display:'inline-block',marginTop:16,padding:'10px 24px',textDecoration:'none'}}>К категориям</Link>
+        </div>
       </div>
     );
   }
 
+  const visibleServices = services
+    .filter(item => {
+      const catMatch = item.category === selectedCategory?.name || item.categoryId === selectedCategory?.id || String(item.categoryId) === String(selectedCategory?.id);
+      if (!catMatch) return false;
+      if (showActiveOnly && !item.active) return false;
+      if (!searchTerm.trim()) return true;
+      const q = searchTerm.trim().toLowerCase();
+      return (item.title||'').toLowerCase().includes(q) || (item.description||'').toLowerCase().includes(q) || (item.workerName||'').toLowerCase().includes(q);
+    })
+    .sort((a, b) => {
+      if (sortBy === 'priceAsc')  return (a.priceFrom||0) - (b.priceFrom||0);
+      if (sortBy === 'priceDesc') return (b.priceFrom||0) - (a.priceFrom||0);
+      if (sortBy === 'name')      return (a.workerName||'').localeCompare(b.workerName||'');
+      return new Date(b.createdAt||0) - new Date(a.createdAt||0);
+    });
+
+  const catStyle = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '🛠️', color: '#fff3e0' };
+
   return (
-    <div>
-      {/* Заголовок с выбранной категорией */}
-      <div className="page-header-bar">
-        <div className="container">
-          <Link to="/find-master" className="cats-back-link">
-            ← Все категории
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
-            <div className="cat-page-icon" style={{ background: CATEGORY_STYLES[selectedCategory.slug]?.color || '#fff3e0' }}>
-              {CATEGORY_STYLES[selectedCategory.slug]?.emoji || '🛠️'}
-            </div>
+    <div className="fmp-page">
+      <style>{css}</style>
+
+      {/* Хедер категории */}
+      <div className="fmp-cat-hdr">
+        <div className="fmp-cat-hdr-inner">
+          <button className="fmp-back" onClick={() => navigate('/find-master')}>← Все категории</button>
+          <div className="fmp-cat-title-row">
+            <div className="fmp-cat-icon" style={{background: catStyle.color}}>{catStyle.emoji}</div>
             <div>
-              <h1>{selectedCategory.name}</h1>
-              <p>{selectedCategory.description || selectedCategory.desc || 'Найдите проверенного мастера'}</p>
+              <h1 className="fmp-cat-name">{selectedCategory?.name}</h1>
+              <p className="fmp-cat-sub">{selectedCategory?.description || 'Найдите проверенного мастера'}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container">
-        {/* Панель фильтров */}
-        <div className="find-master-controls">
-          <div className="controls-left">
-            <div className="search-box">
-              <input
-                type="text"
-                placeholder="Поиск по названию или описанию..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">
-              <option value="recency">По новизне</option>
-              <option value="priceAsc">Цена: по возрастанию</option>
-              <option value="priceDesc">Цена: по убыванию</option>
-              <option value="name">По имени мастера</option>
-            </select>
+      {/* Фильтры */}
+      <div className="fmp-filters">
+        <div className="fmp-filters-inner">
+          <div className="fmp-search">
+            <svg width="15" height="15" fill="none" stroke="#9ca3af" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Поиск по названию или описанию..." />
           </div>
-
-          <div className="controls-right">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={showActiveOnly}
-                onChange={(e) => setShowActiveOnly(e.target.checked)}
-              />
-              <span>Только активные</span>
-            </label>
-          </div>
+          <select className="fmp-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
+            <option value="recency">По новизне</option>
+            <option value="priceAsc">Цена: по возрастанию</option>
+            <option value="priceDesc">Цена: по убыванию</option>
+            <option value="name">По имени мастера</option>
+          </select>
+          <label className="fmp-toggle">
+            <input type="checkbox" checked={showActiveOnly} onChange={e => setShowActiveOnly(e.target.checked)} />
+            Только активные
+          </label>
         </div>
+      </div>
 
-        {/* Список мастеров */}
+      <div className="fmp-wrap" style={{paddingTop:0}}>
         {loading ? (
-          <div className="loading-state">Загрузка мастеров...</div>
-        ) : error ? (
-          <div className="cats-error">
-            <span>😕</span>
-            <p>{error}</p>
+          <div className="fmp-skel">
+            {[1,2,3].map(i => (
+              <div key={i} className="fmp-skel-row">
+                <div className="fmp-skel-img"/>
+                <div className="fmp-skel-body">
+                  <div className="fmp-skel-line" style={{height:14,width:'40%'}}/>
+                  <div className="fmp-skel-line" style={{height:18,width:'60%'}}/>
+                  <div className="fmp-skel-line" style={{height:12,width:'80%'}}/>
+                  <div className="fmp-skel-line" style={{height:20,width:'25%'}}/>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : visibleServices.length === 0 ? (
+          <div className="fmp-empty">
+            <div style={{fontSize:48}}>🔍</div>
+            <h3>Мастера не найдены</h3>
+            <p>{showActiveOnly ? 'Пока нет активных объявлений в этой категории. Попробуйте снять фильтр.' : 'В этой категории пока нет мастеров.'}</p>
+            <Link to="/find-master" style={{display:'inline-block',marginTop:16,padding:'10px 24px',background:'#e8410a',color:'#fff',borderRadius:8,textDecoration:'none',fontWeight:700,fontSize:14}}>← Все категории</Link>
           </div>
         ) : (
-          <div className="masters-grid">
-            {visibleServices.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">🔍</div>
-                <h3>Мастера не найдены</h3>
-                <p>
-                  {showActiveOnly
-                    ? 'В этой категории пока нет активных мастеров. Попробуйте снять фильтр.'
-                    : 'В этой категории пока нет мастеров.'}
-                </p>
-                <Link to="/find-master" className="btn btn-outline" style={{ marginTop: 16 }}>
-                  Выбрать другую категорию
-                </Link>
-              </div>
-            ) : (
-              visibleServices.map((service) => (
-                <div
-                  key={service.id}
-                  className={`master-card ${!service.active ? 'master-card-inactive' : ''}`}
-                  onClick={() => navigate(`/workers/${service.workerId || service.workerUserId}`)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {!service.active && <div className="inactive-badge">Неактивен</div>}
-
-                  {/* Хедер с аватаром и именем мастера */}
-                  <div className="master-card-header">
-                    <div className="master-card-avatar">
-                      {(service.workerName || 'Мастер')
-                        .split(' ')
-                        .map((x) => x[0] || '')
-                        .join('')
-                        .toUpperCase()
-                        .slice(0, 2)}
-                    </div>
-                    <div className="master-card-header-info">
-                      <h3 className="master-card-worker-name">{service.workerName || 'Мастер'}</h3>
-                      <p className="master-card-meta">{selectedCategory.name} • Йошкар-Ола</p>
-                    </div>
+          <div className="fmp-list">
+            {visibleServices.map(s => {
+              const stats  = workerStats[s.workerId || s.workerUserId];
+              const hasPhoto = s.photos?.length > 0;
+              const workerAva = stats?.workerAvatar || null;
+              return (
+                <div key={s.id} className="fmp-item" onClick={() => navigate(`/workers/${s.workerId || s.workerUserId}`)}>
+                  {/* Фото объявления */}
+                  <div className="fmp-item-img">
+                    {hasPhoto
+                      ? <><img src={s.photos[0]} alt=""/>{s.photos.length>1 && <span className="fmp-item-img-cnt">📷{s.photos.length}</span>}</>
+                      : <div className="fmp-item-img-ph">🔧</div>
+                    }
                   </div>
 
-                  {/* Название услуги */}
-                  <h4 className="master-card-service-title">{service.title || 'Услуга мастера'}</h4>
+                  {/* Контент */}
+                  <div className="fmp-item-body">
+                    {/* Мастер */}
+                    <div className="fmp-item-worker">
+                      {workerAva && workerAva.length > 10
+                        ? <img src={workerAva} alt="" className="fmp-item-ava"/>
+                        : <div className="fmp-item-ava-ph" style={{background:'linear-gradient(135deg,#e8410a,#ff7043)'}}>{(s.workerName||'М')[0].toUpperCase()}</div>
+                      }
+                      <div>
+                        <div className="fmp-item-name">{s.workerName}</div>
+                        <div className="fmp-item-city">{selectedCategory?.name} • Йошкар-Ола</div>
+                      </div>
+                    </div>
 
-                  {/* Описание */}
-                  <div className="master-text">{service.description || 'Описание услуги не указано'}</div>
+                    {/* Название */}
+                    <div className="fmp-item-title">{s.title}</div>
 
-                  {/* Бейджи с преимуществами */}
-                  <div className="master-badges">
-                    <span className="master-badge">
-                      <span className="badge-icon">✓</span>
-                      Проверен
-                    </span>
-                    <span className="master-badge">
-                      <span className="badge-icon">⚡</span>
-                      Быстрый отклик
-                    </span>
-                    <span className="master-badge">
-                      <span className="badge-icon">🛡️</span>
-                      Гарантия
-                    </span>
-                  </div>
+                    {/* Описание */}
+                    {s.description && <div className="fmp-item-desc">{s.description}</div>}
 
-                  {/* ✅ ОБНОВЛЕНО: Рейтинг, отзывы и стаж из API */}
-                  <div className="master-stats">
-                    {workerStats[service.workerId || service.workerUserId] ? (
-                      <>
-                        <div className="master-rating">
-                          <span className="rating-stars">
-                            {'★'.repeat(Math.floor(workerStats[service.workerId || service.workerUserId].averageRating || 0))}
-                            {'☆'.repeat(5 - Math.floor(workerStats[service.workerId || service.workerUserId].averageRating || 0))}
-                          </span>
-                          <span className="rating-text">
-                            {(workerStats[service.workerId || service.workerUserId].averageRating || 0).toFixed(1)}
-                          </span>
-                          <span className="rating-count">
-                            ({workerStats[service.workerId || service.workerUserId].reviewsCount || 0}{' '}
-                            {workerStats[service.workerId || service.workerUserId].reviewsCount === 1
-                              ? 'отзыв'
-                              : workerStats[service.workerId || service.workerUserId].reviewsCount < 5
-                              ? 'отзыва'
-                              : 'отзывов'})
-                          </span>
-                        </div>
-                        <div className="master-meta-row">
-                          <span>📦 {workerStats[service.workerId || service.workerUserId].completedWorksCount || 0} заказов</span>
-                          <span>📅 {getExperience(workerStats[service.workerId || service.workerUserId].registeredAt)}</span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="master-rating">
-                        <span className="rating-text">Загрузка...</span>
+                    {/* Бейджи */}
+                    <div className="fmp-item-badges">
+                      <span className="fmp-badge">✓ Проверен</span>
+                      <span className="fmp-badge">⚡ Быстрый отклик</span>
+                      <span className="fmp-badge">🛡️ Гарантия</span>
+                    </div>
+
+                    {/* Статистика */}
+                    {stats && (
+                      <div className="fmp-item-stats">
+                        <span className="fmp-stars">{'★'.repeat(Math.round(stats.averageRating||0))}</span>
+                        <span style={{fontWeight:700}}>{(stats.averageRating||0).toFixed(1)}</span>
+                        <span>({stats.reviewsCount||0} {stats.reviewsCount===1?'отзыв':stats.reviewsCount<5?'отзыва':'отзывов'})</span>
+                        <span>📦 {stats.completedWorksCount||0} заказов</span>
                       </div>
                     )}
+
+                    {/* Цена */}
+                    <div className="fmp-item-price">
+                      {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Цена по договорённости'}
+                      {s.priceUnit && <span className="fmp-item-price-unit">{s.priceUnit}</span>}
+                    </div>
                   </div>
 
-                  {/* Цена */}
-                  <div className="master-price">
-                    {service.priceFrom || service.priceTo
-                      ? `от ${service.priceFrom || '-'} до ${service.priceTo || '-'} ₽`
-                      : 'Цена по договоренности'}
-                  </div>
-
-                  {/* Кнопки действий */}
-                  <div className="master-actions" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => navigate(`/chat/${service.workerId || service.workerUserId}`)}
-                    >
-                      💬 Написать
-                    </button>
-                    <button
-                      className="btn btn-outline"
-                      onClick={() => {
-                        const titleParam = encodeURIComponent(service.title || 'Заказать работу');
-                        const descriptionParam = encodeURIComponent(service.description || '');
-                        navigate(
-                          `/categories/${categorySlug}?title=${titleParam}&description=${descriptionParam}`
-                        );
-                      }}
-                    >
-                      Заказать работу
-                    </button>
+                  {/* Правая панель */}
+                  <div className="fmp-item-right" onClick={e => e.stopPropagation()}>
+                    {s.category && <span className="fmp-item-cat-tag">{s.category}</span>}
+                    <button className="fmp-btn-write" onClick={() => navigate(`/chat/${s.workerId||s.workerUserId}`)}>💬 Написать</button>
+                    <button className="fmp-btn-order" onClick={() => navigate(`/categories/${categorySlug}?title=${encodeURIComponent(s.title||'')}`)}>Заказать</button>
                   </div>
                 </div>
-              ))
-            )}
+              );
+            })}
           </div>
         )}
       </div>
