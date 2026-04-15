@@ -357,12 +357,7 @@ function Header() {
                 <div
                   className="header-user"
                   onMouseEnter={() => setMenuOpen(true)}
-                  onMouseLeave={(e) => {
-                    // Закрываем только если мышь ушла за пределы всего блока (включая дропдаун)
-                    const rel = e.relatedTarget;
-                    if (rel && e.currentTarget.contains(rel)) return;
-                    setTimeout(() => setMenuOpen(false), 150);
-                  }}
+                  onMouseLeave={() => setMenuOpen(false)}
                   tabIndex={0}
                 >
                   <div className="header-avatar">
@@ -373,7 +368,9 @@ function Header() {
                   </div>
 
                   {menuOpen && (
-                    <div className="header-dropdown">
+                    {/* Невидимый мост — заполняет gap между аватаром и дропдауном */}
+                    <div style={{position:'absolute',top:'100%',right:0,width:'100%',height:12,background:'transparent'}}/>
+                    <div className="header-dropdown" style={{top:'calc(100% + 8px)'}}>
                       <div className="header-dropdown-name">
                         {[userName, userLastName].filter(Boolean).join(' ') || 'Профиль'}
                       </div>
