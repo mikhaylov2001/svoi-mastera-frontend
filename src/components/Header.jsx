@@ -78,7 +78,7 @@ function Header() {
       } catch { setNotifCount(0); }
     }
     loadUnread();
-    iv = setInterval(loadUnread, 15000);
+    iv = setInterval(loadUnread, 3000);
     return () => clearInterval(iv);
   }, [userId, showInAppToast]);
 
