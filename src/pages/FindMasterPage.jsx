@@ -77,14 +77,23 @@ const css = `
   .fmp-btn-order:hover { background: #fde8e0; }
   .fmp-item-cat-tag { font-size: 11px; color: #fff; background: #e8410a; border-radius: 4px; padding: 2px 8px; font-weight: 600; text-align: center; }
 
-  /* Список категорий */
-  .fmp-cats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; padding-top: 20px; }
-  .fmp-cat-card { background: #fff; border-radius: 10px; border: 1px solid #e8e8e8; padding: 18px 20px; display: flex; align-items: center; gap: 14px; text-decoration: none; color: #1a1a1a; transition: box-shadow .2s, border-color .2s; }
-  .fmp-cat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); border-color: #e8410a; }
-  .fmp-cat-card-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
-  .fmp-cat-card-name { font-size: 15px; font-weight: 700; margin: 0 0 3px; }
-  .fmp-cat-card-count { font-size: 12px; color: #8f8f8f; margin: 0; }
-  .fmp-cat-arr { margin-left: auto; color: #9ca3af; font-size: 20px; }
+  /* Список категорий — Авито стиль */
+  .fmp-cats-wrap { padding: 24px 0 60px; }
+  .fmp-cats-hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 40px 0 32px; margin-bottom: 0; }
+  .fmp-cats-hero-inner { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
+  .fmp-cats-hero h1 { font-size: 32px; font-weight: 900; color: #fff; margin: 0 0 8px; letter-spacing: -.5px; }
+  .fmp-cats-hero p { font-size: 15px; color: rgba(255,255,255,.65); margin: 0; }
+  .fmp-cats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0; border-left: 1px solid #e8e8e8; border-top: 1px solid #e8e8e8; background: #fff; }
+  .fmp-cat-card { background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: #1a1a1a; transition: background .15s; border-right: 1px solid #e8e8e8; border-bottom: 1px solid #e8e8e8; position: relative; overflow: hidden; }
+  .fmp-cat-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: #e8410a; transform: scaleX(0); transition: transform .2s; transform-origin: left; }
+  .fmp-cat-card:hover { background: #fff9f7; }
+  .fmp-cat-card:hover::after { transform: scaleX(1); }
+  .fmp-cat-card-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+  .fmp-cat-card-name { font-size: 15px; font-weight: 700; margin: 0; line-height: 1.3; }
+  .fmp-cat-card-count { font-size: 12px; color: #8f8f8f; font-weight: 500; }
+  .fmp-cat-card-arr { position: absolute; top: 16px; right: 16px; color: #d1d5db; font-size: 18px; transition: color .15s, transform .15s; }
+  .fmp-cat-card:hover .fmp-cat-card-arr { color: #e8410a; transform: translateX(3px); }
+  .fmp-cat-card-masters { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #fff; background: #e8410a; border-radius: 20px; padding: 2px 8px; font-weight: 700; width: fit-content; }
 
   /* Пустое/ошибка */
   .fmp-empty { text-align: center; padding: 80px 24px; background: #fff; border-radius: 10px; border: 1px solid #e8e8e8; color: #8f8f8f; }
@@ -155,22 +164,24 @@ export default function FindMasterPage() {
     return (
       <div className="fmp-page">
         <style>{css}</style>
-        <div className="fmp-page-hdr">
-          <div className="fmp-page-hdr-inner">
-            <h1>Найти мастера</h1>
-            <p>Выберите категорию — найдите нужного специалиста</p>
+
+        <>
+          {/* Hero */}
+          <div className="fmp-cats-hero">
+            <div className="fmp-cats-hero-inner">
+              <h1>Найти мастера</h1>
+              <p>Профессионалы для любых задач в Йошкар-Оле</p>
+            </div>
           </div>
-        </div>
-        <div className="fmp-wrap">
+
+          <div className="fmp-wrap">
           {loading ? (
-            <div className="fmp-cats-grid">
-              {[1,2,3,4,5,6].map(i => (
-                <div key={i} style={{background:'#fff',borderRadius:10,border:'1px solid #e8e8e8',padding:'18px 20px',display:'flex',gap:14,alignItems:'center'}}>
-                  <div style={{width:52,height:52,background:'#f0f0f0',borderRadius:12,flexShrink:0}}/>
-                  <div style={{flex:1}}>
-                    <div style={{height:15,background:'#f0f0f0',borderRadius:4,marginBottom:8,width:'60%'}}/>
-                    <div style={{height:12,background:'#f0f0f0',borderRadius:4,width:'80%'}}/>
-                  </div>
+            <div className="fmp-cats-grid" style={{marginTop:0}}>
+              {[1,2,3,4,5,6,7,8,9].map(i => (
+                <div key={i} style={{padding:'20px',display:'flex',flexDirection:'column',gap:10,borderRight:'1px solid #e8e8e8',borderBottom:'1px solid #e8e8e8'}}>
+                  <div style={{width:56,height:56,background:'#f0f0f0',borderRadius:14}}/>
+                  <div style={{height:15,background:'#f0f0f0',borderRadius:4,width:'70%'}}/>
+                  <div style={{height:12,background:'#f0f0f0',borderRadius:4,width:'50%'}}/>
                 </div>
               ))}
             </div>
@@ -180,21 +191,23 @@ export default function FindMasterPage() {
             <div className="fmp-cats-grid">
               {categories.map(cat => {
                 const style = CATEGORY_STYLES[cat.slug] || { emoji: '🛠️', color: '#fff3e0' };
-                const count = services.filter(s => s.category === cat.name || s.categoryId === cat.id).filter(s => s.active).length;
+                const count = services.filter(s => s.category === cat.name || s.categoryId === cat.id).filter(s => s.active !== false).length;
                 return (
                   <Link key={cat.id} to={`/find-master/${cat.slug}`} className="fmp-cat-card">
+                    <span className="fmp-cat-card-arr">›</span>
                     <div className="fmp-cat-card-icon" style={{background: style.color}}>{style.emoji}</div>
-                    <div style={{flex:1,minWidth:0}}>
-                      <p className="fmp-cat-card-name">{cat.name}</p>
-                      <p className="fmp-cat-card-count">{count > 0 ? `${count} ${count===1?'мастер':count<5?'мастера':'мастеров'}` : 'Нет объявлений'}</p>
-                    </div>
-                    <span className="fmp-cat-arr">›</span>
+                    <div className="fmp-cat-card-name">{cat.name}</div>
+                    {count > 0
+                      ? <span className="fmp-cat-card-masters">👤 {count} {count===1?'мастер':count<5?'мастера':'мастеров'}</span>
+                      : <span className="fmp-cat-card-count">Нет объявлений</span>
+                    }
                   </Link>
                 );
               })}
             </div>
           )}
-        </div>
+          </div>
+        </>
       </div>
     );
   }
