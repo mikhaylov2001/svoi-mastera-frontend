@@ -77,23 +77,22 @@ const css = `
   .fmp-btn-order:hover { background: #fde8e0; }
   .fmp-item-cat-tag { font-size: 11px; color: #fff; background: #e8410a; border-radius: 4px; padding: 2px 8px; font-weight: 600; text-align: center; }
 
-  /* Список категорий — Авито стиль */
-  .fmp-cats-wrap { padding: 24px 0 60px; }
-  .fmp-cats-hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 40px 0 32px; margin-bottom: 0; }
+  /* Список категорий — современный синий стиль */
+  .fmp-cats-hero { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1d4ed8 100%); padding: 48px 0 40px; }
   .fmp-cats-hero-inner { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
-  .fmp-cats-hero h1 { font-size: 32px; font-weight: 900; color: #fff; margin: 0 0 8px; letter-spacing: -.5px; }
-  .fmp-cats-hero p { font-size: 15px; color: rgba(255,255,255,.65); margin: 0; }
-  .fmp-cats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0; border-left: 1px solid #e8e8e8; border-top: 1px solid #e8e8e8; background: #fff; }
-  .fmp-cat-card { background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: #1a1a1a; transition: background .15s; border-right: 1px solid #e8e8e8; border-bottom: 1px solid #e8e8e8; position: relative; overflow: hidden; }
-  .fmp-cat-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: #e8410a; transform: scaleX(0); transition: transform .2s; transform-origin: left; }
-  .fmp-cat-card:hover { background: #fff9f7; }
-  .fmp-cat-card:hover::after { transform: scaleX(1); }
-  .fmp-cat-card-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
-  .fmp-cat-card-name { font-size: 15px; font-weight: 700; margin: 0; line-height: 1.3; }
-  .fmp-cat-card-count { font-size: 12px; color: #8f8f8f; font-weight: 500; }
-  .fmp-cat-card-arr { position: absolute; top: 16px; right: 16px; color: #d1d5db; font-size: 18px; transition: color .15s, transform .15s; }
-  .fmp-cat-card:hover .fmp-cat-card-arr { color: #e8410a; transform: translateX(3px); }
-  .fmp-cat-card-masters { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #fff; background: #e8410a; border-radius: 20px; padding: 2px 8px; font-weight: 700; width: fit-content; }
+  .fmp-cats-hero h1 { font-size: 34px; font-weight: 900; color: #fff; margin: 0 0 8px; letter-spacing: -.5px; }
+  .fmp-cats-hero p { font-size: 15px; color: rgba(255,255,255,.6); margin: 0; }
+  .fmp-cats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; padding: 28px 16px 60px; max-width: 1000px; margin: 0 auto; }
+  .fmp-cat-card { background: #fff; border-radius: 14px; padding: 22px 18px 18px; display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: #1a1a1a; transition: transform .18s, box-shadow .18s; box-shadow: 0 1px 4px rgba(0,0,0,.07); position: relative; overflow: hidden; border: 1.5px solid transparent; }
+  .fmp-cat-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(29,78,216,.06) 0%, rgba(29,78,216,0) 60%); opacity: 0; transition: opacity .18s; }
+  .fmp-cat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(29,78,216,.15); border-color: rgba(29,78,216,.25); }
+  .fmp-cat-card:hover::before { opacity: 1; }
+  .fmp-cat-card-icon { width: 52px; height: 52px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; margin-bottom: 2px; }
+  .fmp-cat-card-name { font-size: 14px; font-weight: 800; margin: 0; line-height: 1.3; color: #111827; }
+  .fmp-cat-card-count { font-size: 11px; color: #9ca3af; font-weight: 500; }
+  .fmp-cat-card-arr { position: absolute; top: 14px; right: 14px; width: 24px; height: 24px; border-radius: 50%; background: #f0f4ff; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-size: 14px; transition: background .15s, transform .15s; }
+  .fmp-cat-card:hover .fmp-cat-card-arr { background: #1d4ed8; color: #fff; transform: translateX(2px); }
+  .fmp-cat-card-masters { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #1d4ed8; background: #eff6ff; border-radius: 20px; padding: 3px 9px; font-weight: 700; width: fit-content; border: 1px solid #bfdbfe; }
 
   /* Пустое/ошибка */
   .fmp-empty { text-align: center; padding: 80px 24px; background: #fff; border-radius: 10px; border: 1px solid #e8e8e8; color: #8f8f8f; }
@@ -174,7 +173,7 @@ export default function FindMasterPage() {
             </div>
           </div>
 
-          <div className="fmp-wrap">
+          <div>
           {loading ? (
             <div className="fmp-cats-grid" style={{marginTop:0}}>
               {[1,2,3,4,5,6,7,8,9].map(i => (
