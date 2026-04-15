@@ -193,15 +193,16 @@
 .header-dropdown {
   position: absolute;
   right: 0;
-  top: calc(100% + 10px);
+  top: 100%;
   background: #fff;
   border: 1px solid var(--gray-200);
   border-radius: var(--r-lg);
   box-shadow: 0 16px 48px rgba(0,0,0,.14);
   padding: 8px;
+  padding-top: 12px;
   min-width: 210px;
   max-width: 280px;
-  animation: fadeUp .2s ease both;
+  animation: fadeUp .15s ease both;
   z-index: 10;
 }
 

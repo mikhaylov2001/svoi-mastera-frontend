@@ -368,9 +368,7 @@ function Header() {
                   </div>
 
                   {menuOpen && (
-                    {/* Невидимый мост — заполняет gap между аватаром и дропдауном */}
-                    <div style={{position:'absolute',top:'100%',right:0,width:'100%',height:12,background:'transparent'}}/>
-                    <div className="header-dropdown" style={{top:'calc(100% + 8px)'}}>
+                    <div className="header-dropdown" style={{top:'100%', marginTop:0, paddingTop:8}}>
                       <div className="header-dropdown-name">
                         {[userName, userLastName].filter(Boolean).join(' ') || 'Профиль'}
                       </div>
