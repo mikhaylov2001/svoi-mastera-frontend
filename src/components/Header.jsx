@@ -223,7 +223,7 @@ function Header() {
                 >
                   Сообщения
                   {unread > 0 && (
-                    <span className="header-unread-badge">{unread}</span>
+                    <span className="header-unread-badge" style={{background:'#e8410a',color:'#fff',borderRadius:999,fontSize:11,fontWeight:800,padding:'1px 6px',marginLeft:4,verticalAlign:'middle'}}>{unread}</span>
                   )}
                 </NavLink>
                 <NavLink
@@ -254,7 +254,7 @@ function Header() {
                 >
                   Сообщения
                   {unread > 0 && (
-                    <span className="header-unread-badge">{unread}</span>
+                    <span className="header-unread-badge" style={{background:'#e8410a',color:'#fff',borderRadius:999,fontSize:11,fontWeight:800,padding:'1px 6px',marginLeft:4,verticalAlign:'middle'}}>{unread}</span>
                   )}
                 </NavLink>
                 <NavLink
@@ -356,8 +356,8 @@ function Header() {
             {userId ? (
                 <div
                   className="header-user"
-                  onClick={() => setMenuOpen(v => !v)}
-                  onBlur={() => setTimeout(() => setMenuOpen(false), 150)}
+                  onMouseEnter={() => setMenuOpen(true)}
+                  onMouseLeave={() => setMenuOpen(false)}
                   tabIndex={0}
                 >
                   <div className="header-avatar">
