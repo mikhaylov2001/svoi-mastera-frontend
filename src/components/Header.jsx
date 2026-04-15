@@ -357,7 +357,7 @@ function Header() {
                 <div
                   className="header-user"
                   onMouseEnter={() => setMenuOpen(true)}
-                  onMouseLeave={() => setMenuOpen(false)}
+                  onMouseLeave={() => setTimeout(() => setMenuOpen(false), 300)}
                   tabIndex={0}
                 >
                   <div className="header-avatar">
