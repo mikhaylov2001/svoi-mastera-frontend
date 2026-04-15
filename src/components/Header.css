@@ -192,7 +192,8 @@
 
 .header-dropdown {
   position: absolute;
-  right: 0;
+  right: 50%;
+  transform: translateX(50%);
   top: 100%;
   background: #fff;
   border: 1px solid var(--gray-200);
