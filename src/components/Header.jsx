@@ -357,7 +357,12 @@ function Header() {
                 <div
                   className="header-user"
                   onMouseEnter={() => setMenuOpen(true)}
-                  onMouseLeave={() => setTimeout(() => setMenuOpen(false), 300)}
+                  onMouseLeave={(e) => {
+                    // Закрываем только если мышь ушла за пределы всего блока (включая дропдаун)
+                    const rel = e.relatedTarget;
+                    if (rel && e.currentTarget.contains(rel)) return;
+                    setTimeout(() => setMenuOpen(false), 150);
+                  }}
                   tabIndex={0}
                 >
                   <div className="header-avatar">
