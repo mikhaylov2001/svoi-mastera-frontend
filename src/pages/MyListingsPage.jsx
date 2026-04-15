@@ -167,6 +167,18 @@ export default function MyListingsPage() {
 
   useEffect(() => { if (userId) load(); }, [userId]);
 
+  // Клавиатурная навигация лайтбокса
+  React.useEffect(() => {
+    if (!lightbox) return;
+    const handler = (e) => {
+      if (e.key === 'ArrowRight') setLightbox(l => l ? {...l, index:(l.index+1)%l.photos.length} : l);
+      if (e.key === 'ArrowLeft')  setLightbox(l => l ? {...l, index:(l.index-1+l.photos.length)%l.photos.length} : l);
+      if (e.key === 'Escape')     setLightbox(null);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [lightbox]);
+
   const active  = listings.filter(l => l.active);
   const archive = listings.filter(l => !l.active);
   const shown   = tab === 'active' ? active : archive;
@@ -347,14 +359,33 @@ export default function MyListingsPage() {
         {/* Lightbox */}
         {lightbox && (
           <div style={{position:'fixed',inset:0,zIndex:9999,background:'rgba(0,0,0,.93)',display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setLightbox(null)}>
-            <div style={{position:'relative',maxWidth:'90vw',maxHeight:'80vh'}} onClick={e=>e.stopPropagation()}>
-              <img src={lightbox.photos[lightbox.index]} alt="" style={{maxWidth:'90vw',maxHeight:'80vh',borderRadius:10,display:'block'}} />
-              <button onClick={()=>setLightbox(null)} style={{position:'absolute',top:12,right:12,width:36,height:36,borderRadius:'50%',background:'rgba(255,255,255,.15)',border:'none',color:'#fff',fontSize:22,cursor:'pointer'}}>×</button>
-              {lightbox.photos.length>1&&(<>
-                <button onClick={e=>{e.stopPropagation();setLightbox(l=>({...l,index:(l.index-1+l.photos.length)%l.photos.length}));}} style={{position:'absolute',left:-50,top:'50%',transform:'translateY(-50%)',width:40,height:40,borderRadius:'50%',background:'rgba(255,255,255,.15)',border:'none',color:'#fff',fontSize:26,cursor:'pointer'}}>‹</button>
-                <button onClick={e=>{e.stopPropagation();setLightbox(l=>({...l,index:(l.index+1)%l.photos.length}));}} style={{position:'absolute',right:-50,top:'50%',transform:'translateY(-50%)',width:40,height:40,borderRadius:'50%',background:'rgba(255,255,255,.15)',border:'none',color:'#fff',fontSize:26,cursor:'pointer'}}>›</button>
-              </>)}
+            {/* Стрелки — на уровне оверлея, не обрезаются */}
+            {lightbox.photos.length>1&&(<>
+              <button onClick={e=>{e.stopPropagation();setLightbox(l=>({...l,index:(l.index-1+l.photos.length)%l.photos.length}));}}
+                style={{position:'absolute',left:20,top:'50%',transform:'translateY(-50%)',zIndex:10001,width:48,height:48,borderRadius:'50%',background:'rgba(255,255,255,.18)',border:'none',color:'#fff',fontSize:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>‹</button>
+              <button onClick={e=>{e.stopPropagation();setLightbox(l=>({...l,index:(l.index+1)%l.photos.length}));}}
+                style={{position:'absolute',right:20,top:'50%',transform:'translateY(-50%)',zIndex:10001,width:48,height:48,borderRadius:'50%',background:'rgba(255,255,255,.18)',border:'none',color:'#fff',fontSize:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>›</button>
+            </>)}
+            <div style={{position:'relative',maxWidth:'85vw',maxHeight:'80vh'}} onClick={e=>e.stopPropagation()}>
+              <img src={lightbox.photos[lightbox.index]} alt="" style={{maxWidth:'85vw',maxHeight:'80vh',borderRadius:10,display:'block',userSelect:'none'}} />
+              {/* Счётчик */}
+              <div style={{position:'absolute',top:12,left:12,background:'rgba(0,0,0,.55)',color:'#fff',fontSize:13,fontWeight:700,padding:'4px 10px',borderRadius:999}}>
+                {lightbox.index+1} / {lightbox.photos.length}
+              </div>
+              {/* Закрыть */}
+              <button onClick={()=>setLightbox(null)} style={{position:'absolute',top:12,right:12,width:36,height:36,borderRadius:'50%',background:'rgba(255,255,255,.18)',border:'none',color:'#fff',fontSize:22,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
             </div>
+            {/* Миниатюры */}
+            {lightbox.photos.length>1&&(
+              <div style={{position:'absolute',bottom:20,left:'50%',transform:'translateX(-50%)',display:'flex',gap:8}} onClick={e=>e.stopPropagation()}>
+                {lightbox.photos.map((p,i)=>(
+                  <div key={i} onClick={()=>setLightbox(l=>({...l,index:i}))}
+                    style={{width:52,height:40,borderRadius:5,overflow:'hidden',cursor:'pointer',border:i===lightbox.index?'2.5px solid #e8410a':'2px solid rgba(255,255,255,.25)',opacity:i===lightbox.index?1:0.6}}>
+                    <img src={p} alt="" style={{width:'100%',height:'100%',objectFit:'cover',pointerEvents:'none'}}/>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
