@@ -612,24 +612,22 @@ function GuestHome() {
       <div className="hp-hero">
         <div className="hp-hero-noise"/><div className="hp-hero-glow"/>
         <div style={{position:'absolute',top:'-80px',left:'-80px',width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
-        <div className="hp-hero-inner" style={{gridTemplateColumns:'1fr',maxWidth:800,textAlign:'center',padding:'72px 24px 64px'}}>
-          <div>
-            <div className="hp-hero-eyebrow" style={{margin:'0 auto 24px'}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
-            <h1 className="hp-hero-h1" style={{fontSize:56,marginBottom:20}}>Свои мастера<br/>для <em>любых задач</em><br/>в Йошкар-Оле</h1>
-            <p className="hp-hero-sub" style={{fontSize:17,maxWidth:500,margin:'0 auto 36px',color:'rgba(255,255,255,.6)'}}>Опишите задачу — мастера откликнутся сами.<br/>Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
-            <div className="hp-hero-actions" style={{justifyContent:'center',marginBottom:44}}>
+        <div style={{position:'relative',zIndex:1,maxWidth:760,margin:'0 auto',padding:'80px 24px 72px',textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:0}}>
+            <div className="hp-hero-eyebrow" style={{margin:'0 auto 28px'}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
+            <h1 className="hp-hero-h1" style={{fontSize:58,marginBottom:22,lineHeight:1.06}}>Свои мастера<br/>для <em>любых задач</em><br/>в Йошкар-Оле</h1>
+            <p style={{fontSize:17,color:'rgba(255,255,255,.58)',lineHeight:1.65,margin:'0 0 40px',maxWidth:460}}>Опишите задачу — мастера откликнутся сами.<br/>Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
+            <div style={{display:'flex',gap:14,alignItems:'center',justifyContent:'center',marginBottom:48}}>
               <Link to="/register" className="hp-hero-btn">🔍 Найти мастера</Link>
               <Link to="/register?role=WORKER" className="hp-hero-btn-ghost">Стать мастером →</Link>
             </div>
-            <div style={{display:'flex',gap:0,justifyContent:'center',background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',borderRadius:16,maxWidth:520,margin:'0 auto',overflow:'hidden'}}>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:0,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.09)',borderRadius:18,overflow:'hidden',width:'100%',maxWidth:560}}>
               {[['24/7','Приём заявок'],['9','Категорий'],['≤10 мин','Первый отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
-                <div key={l} style={{flex:1,padding:'18px 12px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
-                  <div style={{fontSize:18,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
-                  <div style={{fontSize:10,color:'rgba(255,255,255,.4)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:4}}>{l}</div>
+                <div key={l} style={{padding:'20px 8px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
+                  <div style={{fontSize:20,fontWeight:900,color:'#fff',lineHeight:1,marginBottom:5}}>{n}</div>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em'}}>{l}</div>
                 </div>
               ))}
             </div>
-          </div>
         </div>
       </div>
 
