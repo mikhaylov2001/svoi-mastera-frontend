@@ -8,14 +8,14 @@ const ALL_CATS = Object.values(CATEGORIES_BY_SECTION).flat();
 
 const CAT_PHOTOS = {
   'remont-kvartir':       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80',
-  'santehnika':           'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=600&q=80',
+  'santehnika':           'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
   'elektrika':            'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80',
-  'uborka':               'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80',
-  'parikhmaher':          'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&q=80',
+  'uborka':               'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=600&q=80',
+  'parikhmaher':          'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80',
   'manikur':              'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&q=80',
-  'krasota-i-zdorovie':   'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&q=80',
-  'repetitorstvo':        'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80',
-  'kompyuternaya-pomosh': 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80',
+  'krasota-i-zdorovie':   'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80',
+  'repetitorstvo':        'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80',
+  'kompyuternaya-pomosh': 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=600&q=80',
 };
 
 const css = `
@@ -363,16 +363,6 @@ function CustomerHome({ userId, userName }) {
 
         {/* Правая колонка */}
         <div className="hp-side">
-          <div className="hp-widget">
-            <div className="hp-widget-title">Действия</div>
-            <div className="hp-quick-list">
-              <Link to="/find-master" className="hp-quick-item hp-qi-orange">🔍 Найти мастера</Link>
-              <Link to="/categories"  className="hp-quick-item hp-qi-outline">📋 Разместить заявку</Link>
-              <Link to="/deals"       className="hp-quick-item hp-qi-gray">🤝 Мои сделки</Link>
-              <Link to="/chat"        className="hp-quick-item hp-qi-gray">💬 Сообщения</Link>
-            </div>
-          </div>
-
           <div className="hp-widget">
             <div className="hp-widget-title">Платформа</div>
             <div className="hp-stats-2x2">
