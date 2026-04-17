@@ -633,17 +633,26 @@ function GuestHome() {
               ))}
             </div>
           </div>
-          <div className="hp-hero-card">
-            <div className="hp-hero-card-title">Популярные услуги</div>
-            <div className="hp-hero-cat-list">
+          <div className="hp-hero-card" style={{padding:0,overflow:'hidden',background:'rgba(255,255,255,.04)'}}>
+            <div style={{padding:'16px 20px 12px',fontSize:11,fontWeight:800,color:'rgba(255,255,255,.4)',textTransform:'uppercase',letterSpacing:'.1em'}}>Популярные услуги</div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,padding:'0 12px'}}>
               {ALL_CATS.slice(0,6).map(cat=>(
-                <Link key={cat.slug} to="/register" className="hp-hero-cat-row">
-                  <div className="hp-hero-cat-icon"><div className="hp-hero-cat-icon-ph">{cat.emoji||'🛠️'}</div></div>
-                  {cat.name}<span className="hp-hero-cat-arr">›</span>
+                <Link key={cat.slug} to="/register"
+                  style={{borderRadius:10,overflow:'hidden',textDecoration:'none',color:'#fff',position:'relative',aspectRatio:'3/2',display:'flex',alignItems:'flex-end',transition:'transform .18s'}}>
+                  {CAT_PHOTOS[cat.slug]
+                    ? <div style={{position:'absolute',inset:0,backgroundImage:`url(${CAT_PHOTOS[cat.slug]})`,backgroundSize:'cover',backgroundPosition:'center'}}/>
+                    : <div style={{position:'absolute',inset:0,background:'#2a1a00',display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>{cat.emoji||'🛠️'}</div>
+                  }
+                  <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.7) 0%,transparent 60%)'}}/>
+                  <div style={{position:'relative',padding:'6px 8px',fontSize:12,fontWeight:700,lineHeight:1.2}}>{cat.name}</div>
                 </Link>
               ))}
             </div>
-            <Link to="/register" className="hp-hero-all-link">Все категории →</Link>
+            <Link to="/register" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,margin:'12px',padding:'10px',borderRadius:10,border:'1px dashed rgba(255,255,255,.15)',color:'rgba(255,255,255,.45)',fontSize:13,fontWeight:600,textDecoration:'none',transition:'all .15s'}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(232,65,10,.4)';e.currentTarget.style.color='#e8410a';}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.15)';e.currentTarget.style.color='rgba(255,255,255,.45)';}}>
+              Все категории →
+            </Link>
           </div>
         </div>
       </div>
