@@ -612,47 +612,23 @@ function GuestHome() {
       <div className="hp-hero">
         <div className="hp-hero-noise"/><div className="hp-hero-glow"/>
         <div style={{position:'absolute',top:'-80px',left:'-80px',width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
-        <div className="hp-hero-inner">
+        <div className="hp-hero-inner" style={{gridTemplateColumns:'1fr',maxWidth:800,textAlign:'center',padding:'72px 24px 64px'}}>
           <div>
-            <div className="hp-hero-eyebrow"><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
-            <h1 className="hp-hero-h1">Свои мастера<br/>для <em>любых задач</em><br/>в Йошкар-Оле</h1>
-            <p className="hp-hero-sub">Опишите задачу — мастера откликнутся сами.<br/>Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
-            <div className="hp-hero-actions">
+            <div className="hp-hero-eyebrow" style={{margin:'0 auto 24px'}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
+            <h1 className="hp-hero-h1" style={{fontSize:56,marginBottom:20}}>Свои мастера<br/>для <em>любых задач</em><br/>в Йошкар-Оле</h1>
+            <p className="hp-hero-sub" style={{fontSize:17,maxWidth:500,margin:'0 auto 36px',color:'rgba(255,255,255,.6)'}}>Опишите задачу — мастера откликнутся сами.<br/>Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
+            <div className="hp-hero-actions" style={{justifyContent:'center',marginBottom:44}}>
               <Link to="/register" className="hp-hero-btn">🔍 Найти мастера</Link>
               <Link to="/register?role=WORKER" className="hp-hero-btn-ghost">Стать мастером →</Link>
             </div>
-            <div className="hp-hero-stats">
+            <div style={{display:'flex',gap:0,justifyContent:'center',background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',borderRadius:16,maxWidth:520,margin:'0 auto',overflow:'hidden'}}>
               {[['24/7','Приём заявок'],['9','Категорий'],['≤10 мин','Первый отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
-                <React.Fragment key={l}>
-                  {i>0&&<div className="hp-hero-stat-div"/>}
-                  <div className="hp-hero-stat">
-                    <span className="hp-hero-stat-num">{n}</span>
-                    <span className="hp-hero-stat-lbl">{l}</span>
-                  </div>
-                </React.Fragment>
+                <div key={l} style={{flex:1,padding:'18px 12px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
+                  <div style={{fontSize:18,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,.4)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:4}}>{l}</div>
+                </div>
               ))}
             </div>
-          </div>
-          <div className="hp-hero-card" style={{padding:0,overflow:'hidden',background:'rgba(255,255,255,.04)'}}>
-            <div style={{padding:'16px 20px 12px',fontSize:11,fontWeight:800,color:'rgba(255,255,255,.4)',textTransform:'uppercase',letterSpacing:'.1em'}}>Популярные услуги</div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,padding:'0 12px'}}>
-              {ALL_CATS.slice(0,6).map(cat=>(
-                <Link key={cat.slug} to="/register"
-                  style={{borderRadius:10,overflow:'hidden',textDecoration:'none',color:'#fff',position:'relative',aspectRatio:'3/2',display:'flex',alignItems:'flex-end',transition:'transform .18s'}}>
-                  {CAT_PHOTOS[cat.slug]
-                    ? <div style={{position:'absolute',inset:0,backgroundImage:`url(${CAT_PHOTOS[cat.slug]})`,backgroundSize:'cover',backgroundPosition:'center'}}/>
-                    : <div style={{position:'absolute',inset:0,background:'#2a1a00',display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>{cat.emoji||'🛠️'}</div>
-                  }
-                  <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.7) 0%,transparent 60%)'}}/>
-                  <div style={{position:'relative',padding:'6px 8px',fontSize:12,fontWeight:700,lineHeight:1.2}}>{cat.name}</div>
-                </Link>
-              ))}
-            </div>
-            <Link to="/register" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:6,margin:'12px',padding:'10px',borderRadius:10,border:'1px dashed rgba(255,255,255,.15)',color:'rgba(255,255,255,.45)',fontSize:13,fontWeight:600,textDecoration:'none',transition:'all .15s'}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(232,65,10,.4)';e.currentTarget.style.color='#e8410a';}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.15)';e.currentTarget.style.color='rgba(255,255,255,.45)';}}>
-              Все категории →
-            </Link>
           </div>
         </div>
       </div>
