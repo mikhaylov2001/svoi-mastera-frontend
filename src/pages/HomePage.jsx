@@ -223,68 +223,78 @@ function CustomerHome({ userId, userName }) {
       <div className="hp-hero">
         <div className="hp-hero-noise"/>
         <div className="hp-hero-glow"/>
-        <div className="hp-hero-inner">
+        {/* Декоративные круги */}
+        <div style={{position:'absolute',top:'-80px',left:'-80px',width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.12)',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',top:'-40px',left:'-40px',width:300,height:300,borderRadius:'50%',border:'1px solid rgba(232,65,10,.08)',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',bottom:'-60px',right:'10%',width:280,height:280,borderRadius:'50%',border:'1px solid rgba(255,255,255,.04)',pointerEvents:'none'}}/>
+
+        <div className="hp-hero-inner" style={{gridTemplateColumns:'1fr',maxWidth:900,textAlign:'center',padding:'72px 24px 64px'}}>
           <div>
-            <div className="hp-hero-eyebrow">
+            <div className="hp-hero-eyebrow" style={{margin:'0 auto 24px'}}>
               <span className="hp-hero-dot"/>
               Йошкар-Ола · Маркетплейс мастеров
             </div>
-            <h1 className="hp-hero-h1">
+            <h1 className="hp-hero-h1" style={{fontSize:60,marginBottom:20}}>
               Свои мастера<br/>
-              для <em>любых задач</em><br/>
-              в Йошкар-Оле
+              для <em>любых задач</em>
             </h1>
-            <p className="hp-hero-sub">Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
-            <div className="hp-hero-actions">
-              <Link to="/find-master" className="hp-hero-btn">🔍 Найти мастера</Link>
-              <Link to="/categories" className="hp-hero-btn-ghost">Разместить заявку →</Link>
-            </div>
-            <div className="hp-hero-stats">
-              {[['24/7','Приём заявок'],['9','Категорий'],['≤10 мин','Первый отклик'],['5.0★','Рейтинг']].map(([n,l],i) => (
-                <React.Fragment key={l}>
-                  {i > 0 && <div className="hp-hero-stat-div"/>}
-                  <div className="hp-hero-stat">
-                    <span className="hp-hero-stat-num">{n}</span>
-                    <span className="hp-hero-stat-lbl">{l}</span>
-                  </div>
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
+            <p className="hp-hero-sub" style={{fontSize:18,maxWidth:520,margin:'0 auto 36px',color:'rgba(255,255,255,.6)'}}>
+              Опишите задачу — мастера откликнутся сами.<br/>
+              Выбирайте по рейтингу, договаривайтесь внутри сервиса.
+            </p>
 
-          {/* Hero карточка — популярные категории */}
-          <div className="hp-hero-card">
-            <div className="hp-hero-card-title">Популярные услуги</div>
-            <div className="hp-hero-cat-list">
-              {ALL_CATS.slice(0,6).map(cat => (
-                <Link key={cat.slug} to={`/find-master/${cat.slug}`} className="hp-hero-cat-row">
-                  <div className="hp-hero-cat-icon">
-                    {CAT_PHOTOS[cat.slug]
-                      ? <img src={CAT_PHOTOS[cat.slug]} alt=""/>
-                      : <div className="hp-hero-cat-icon-ph">{cat.emoji||'🛠️'}</div>
-                    }
-                  </div>
+            {/* Поиск прямо в hero */}
+            <div style={{display:'flex',gap:0,maxWidth:580,margin:'0 auto 40px',background:'rgba(255,255,255,.07)',border:'1.5px solid rgba(255,255,255,.12)',borderRadius:14,overflow:'hidden',backdropFilter:'blur(12px)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:10,padding:'0 18px',flex:1}}>
+                <svg width="18" height="18" fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input
+                  value={q} onChange={e=>setQ(e.target.value)}
+                  onKeyDown={e=>e.key==='Enter'&&q.trim()&&navigate(`/find-master?q=${encodeURIComponent(q)}`)}
+                  placeholder="Найдите мастера или услугу..."
+                  style={{flex:1,border:'none',background:'none',fontSize:15,color:'#fff',padding:'16px 0',outline:'none',fontFamily:'Manrope,Arial,sans-serif'}}
+                />
+              </div>
+              <button onClick={()=>q.trim()&&navigate(`/find-master?q=${encodeURIComponent(q)}`)}
+                style={{background:'#e8410a',border:'none',color:'#fff',fontSize:14,fontWeight:800,padding:'0 28px',cursor:'pointer',fontFamily:'Manrope,Arial,sans-serif',transition:'background .15s',whiteSpace:'nowrap'}}
+                onMouseEnter={e=>e.target.style.background='#d03a09'}
+                onMouseLeave={e=>e.target.style.background='#e8410a'}>
+                Найти
+              </button>
+            </div>
+
+            {/* Категории-пилюли */}
+            <div style={{display:'flex',flexWrap:'wrap',gap:8,justifyContent:'center',marginBottom:44}}>
+              {ALL_CATS.slice(0,7).map(cat=>(
+                <Link key={cat.slug} to={`/find-master/${cat.slug}`}
+                  style={{display:'inline-flex',alignItems:'center',gap:6,background:'rgba(255,255,255,.07)',border:'1px solid rgba(255,255,255,.12)',borderRadius:20,padding:'7px 14px',textDecoration:'none',color:'rgba(255,255,255,.8)',fontSize:13,fontWeight:600,transition:'all .15s',backdropFilter:'blur(8px)'}}
+                  onMouseEnter={e=>{e.currentTarget.style.background='rgba(232,65,10,.25)';e.currentTarget.style.borderColor='rgba(232,65,10,.5)';e.currentTarget.style.color='#fff';}}
+                  onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,.07)';e.currentTarget.style.borderColor='rgba(255,255,255,.12)';e.currentTarget.style.color='rgba(255,255,255,.8)';}}>
+                  <span style={{fontSize:16}}>{cat.emoji||'🛠️'}</span>
                   {cat.name}
-                  <span className="hp-hero-cat-arr">›</span>
                 </Link>
               ))}
+              <Link to="/find-master"
+                style={{display:'inline-flex',alignItems:'center',gap:6,background:'transparent',border:'1px dashed rgba(255,255,255,.2)',borderRadius:20,padding:'7px 14px',textDecoration:'none',color:'rgba(255,255,255,.45)',fontSize:13,fontWeight:600,transition:'all .15s'}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(232,65,10,.4)';e.currentTarget.style.color='#e8410a';}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.2)';e.currentTarget.style.color='rgba(255,255,255,.45)';}}>
+                Все категории →
+              </Link>
             </div>
-            <Link to="/find-master" className="hp-hero-all-link">Все категории →</Link>
+
+            {/* Статистика */}
+            <div style={{display:'flex',gap:0,justifyContent:'center',background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',borderRadius:16,maxWidth:560,margin:'0 auto',overflow:'hidden'}}>
+              {[['24/7','Приём заявок'],['9','Категорий'],['≤10 мин','Первый отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
+                <div key={l} style={{flex:1,padding:'18px 12px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
+                  <div style={{fontSize:20,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,.4)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:4}}>{l}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Поиск */}
-      <div className="hp-search-bar">
-        <div className="hp-search-inner">
-          <div className="hp-search-box">
-            <svg width="16" height="16" fill="none" stroke="#aaa" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&q.trim()&&navigate(`/find-master?q=${encodeURIComponent(q)}`)} placeholder="Найдите мастера или услугу..."/>
-          </div>
-          <button className="hp-search-find" onClick={()=>q.trim()&&navigate(`/find-master?q=${encodeURIComponent(q)}`)}>Найти</button>
-          <div className="hp-loc">📍 Йошкар-Ола</div>
-        </div>
-      </div>
+
 
       <div className="hp-body">
         <div>
@@ -551,21 +561,75 @@ function WorkerHome({ userId, userName }) {
 }
 
 function GuestHome() {
-  const [q, setQ] = useState('');
   const navigate = useNavigate();
+  const guestCss = `
+    .g-section { padding: 60px 0; }
+    .g-section-white { background: #fff; }
+    .g-section-gray  { background: #f8f8f6; }
+    .g-section-dark  { background: #0d0d0d; }
+    .g-wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .g-eyebrow { font-size: 11px; font-weight: 800; color: #e8410a; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
+    .g-title { font-size: 32px; font-weight: 900; letter-spacing: -.5px; margin: 0 0 10px; }
+    .g-sub { font-size: 15px; color: #888; margin: 0 0 40px; }
+    .g-how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+    .g-how-card { background: #f8f8f6; border-radius: 16px; padding: 28px 24px; border: 1px solid #ebebeb; }
+    .g-how-num { width: 40px; height: 40px; border-radius: 10px; background: #e8410a; color: #fff; font-size: 18px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+    .g-how-title { font-size: 17px; font-weight: 800; margin: 0 0 8px; }
+    .g-how-desc { font-size: 14px; color: #666; line-height: 1.6; margin: 0; }
+    .g-benefits-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+    .g-benefit { display: flex; gap: 16px; align-items: flex-start; }
+    .g-benefit-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .g-benefit-title { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
+    .g-benefit-desc { font-size: 13px; color: #888; line-height: 1.55; margin: 0; }
+    .g-cats-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); gap: 10px; }
+    .g-cat-card { background: #fff; border-radius: 12px; border: 1px solid #ebebeb; padding: 18px 14px; text-align: center; text-decoration: none; color: #1a1a1a; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all .18s; }
+    .g-cat-card:hover { border-color: #e8410a; box-shadow: 0 4px 16px rgba(232,65,10,.1); transform: translateY(-2px); }
+    .g-cat-emoji { font-size: 28px; }
+    .g-cat-name { font-size: 13px; font-weight: 700; }
+    .g-reviews-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+    .g-review { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 24px; }
+    .g-review-stars { color: #f59e0b; font-size: 16px; margin-bottom: 12px; }
+    .g-review-text { font-size: 14px; color: rgba(255,255,255,.7); line-height: 1.65; margin: 0 0 16px; font-style: italic; }
+    .g-review-footer { display: flex; align-items: center; gap: 10px; }
+    .g-review-ava { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 800; flex-shrink: 0; }
+    .g-review-name { font-size: 14px; font-weight: 700; color: #fff; }
+    .g-review-svc { font-size: 12px; color: rgba(255,255,255,.4); }
+    .g-cta { background: linear-gradient(135deg, #1a0500, #e8410a 120%); border-radius: 20px; padding: 48px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .g-cta-title { font-size: 26px; font-weight: 900; color: #fff; margin: 0 0 8px; }
+    .g-cta-sub { font-size: 15px; color: rgba(255,255,255,.65); margin: 0; }
+    .g-cta-btn { background: #fff; border: none; border-radius: 10px; color: #e8410a; font-size: 15px; font-weight: 800; padding: 14px 32px; cursor: pointer; white-space: nowrap; font-family: Manrope,Arial,sans-serif; transition: background .15s; flex-shrink: 0; }
+    .g-cta-btn:hover { background: #fff3f0; }
+    @media(max-width:768px) { .g-how-grid,.g-benefits-grid,.g-reviews-grid { grid-template-columns: 1fr; } .g-cta { flex-direction: column; } }
+  `;
+
   return (
     <div className="hp">
       <style>{css}</style>
+      <style>{guestCss}</style>
+
+      {/* Hero */}
       <div className="hp-hero">
         <div className="hp-hero-noise"/><div className="hp-hero-glow"/>
+        <div style={{position:'absolute',top:'-80px',left:'-80px',width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
         <div className="hp-hero-inner">
           <div>
             <div className="hp-hero-eyebrow"><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
             <h1 className="hp-hero-h1">Свои мастера<br/>для <em>любых задач</em><br/>в Йошкар-Оле</h1>
-            <p className="hp-hero-sub">Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
+            <p className="hp-hero-sub">Опишите задачу — мастера откликнутся сами.<br/>Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
             <div className="hp-hero-actions">
-              <Link to="/register"               className="hp-hero-btn">🔍 Найти мастера</Link>
-              <Link to="/register?role=WORKER"   className="hp-hero-btn-ghost">Стать мастером →</Link>
+              <Link to="/register" className="hp-hero-btn">🔍 Найти мастера</Link>
+              <Link to="/register?role=WORKER" className="hp-hero-btn-ghost">Стать мастером →</Link>
+            </div>
+            <div className="hp-hero-stats">
+              {[['24/7','Приём заявок'],['9','Категорий'],['≤10 мин','Первый отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
+                <React.Fragment key={l}>
+                  {i>0&&<div className="hp-hero-stat-div"/>}
+                  <div className="hp-hero-stat">
+                    <span className="hp-hero-stat-num">{n}</span>
+                    <span className="hp-hero-stat-lbl">{l}</span>
+                  </div>
+                </React.Fragment>
+              ))}
             </div>
           </div>
           <div className="hp-hero-card">
@@ -582,6 +646,118 @@ function GuestHome() {
           </div>
         </div>
       </div>
+
+      {/* Как работает */}
+      <section className="g-section g-section-white">
+        <div className="g-wrap">
+          <div style={{textAlign:'center',marginBottom:40}}>
+            <p className="g-eyebrow">Просто и понятно</p>
+            <h2 className="g-title">Как это работает</h2>
+            <p className="g-sub">Три шага от задачи до результата</p>
+          </div>
+          <div className="g-how-grid">
+            {[
+              {n:'1',title:'Создайте задачу',desc:'Опишите что нужно сделать, укажите адрес и удобное время. Это займёт 2 минуты.'},
+              {n:'2',title:'Получите отклики',desc:'Мастера предложат цену — смотрите рейтинг, отзывы и выбирайте лучшего.'},
+              {n:'3',title:'Заключите сделку',desc:'Оформите безопасную сделку внутри сервиса. Оплата только после выполнения.'},
+            ].map(s=>(
+              <div key={s.n} className="g-how-card">
+                <div className="g-how-num">{s.n}</div>
+                <h3 className="g-how-title">{s.title}</h3>
+                <p className="g-how-desc">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Категории */}
+      <section className="g-section g-section-gray">
+        <div className="g-wrap">
+          <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:24}}>
+            <div>
+              <p className="g-eyebrow">Услуги</p>
+              <h2 className="g-title" style={{marginBottom:0}}>Категории услуг</h2>
+            </div>
+            <Link to="/register" style={{fontSize:13,color:'#e8410a',fontWeight:700,textDecoration:'none'}}>Все категории →</Link>
+          </div>
+          <div className="g-cats-grid">
+            {ALL_CATS.map(cat=>(
+              <Link key={cat.slug} to="/register" className="g-cat-card">
+                <span className="g-cat-emoji">{cat.emoji||'🛠️'}</span>
+                <span className="g-cat-name">{cat.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Преимущества */}
+      <section className="g-section g-section-white">
+        <div className="g-wrap">
+          <div style={{textAlign:'center',marginBottom:40}}>
+            <p className="g-eyebrow">Почему мы</p>
+            <h2 className="g-title">Преимущества сервиса</h2>
+          </div>
+          <div className="g-benefits-grid">
+            {[
+              {ico:'⚡',bg:'#fffbeb',title:'Быстрый отклик',     desc:'Первые предложения от мастеров в течение 10 минут после публикации задачи'},
+              {ico:'🔒',bg:'#f0fdf4',title:'Безопасная сделка',  desc:'Деньги переходят мастеру только после подтверждения выполненной работы'},
+              {ico:'⭐',bg:'#eff6ff',title:'Проверенные мастера',desc:'Рейтинг, отзывы и история работ — выбирайте лучшего с полной информацией'},
+              {ico:'💬',bg:'#fdf4ff',title:'Чат внутри сервиса', desc:'Обсуждайте детали, отправляйте фото прямо в приложении'},
+              {ico:'📍',bg:'#fff3f0',title:'Мастера рядом',      desc:'Только мастера из Йошкар-Олы — никаких долгих ожиданий'},
+              {ico:'🎯',bg:'#fff9f0',title:'Точная цена',         desc:'Мастер называет цену до начала работы. Никаких скрытых платежей'},
+            ].map(b=>(
+              <div key={b.title} className="g-benefit">
+                <div className="g-benefit-icon" style={{background:b.bg}}>{b.ico}</div>
+                <div>
+                  <p className="g-benefit-title">{b.title}</p>
+                  <p className="g-benefit-desc">{b.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Отзывы */}
+      <section className="g-section g-section-dark">
+        <div className="g-wrap">
+          <div style={{textAlign:'center',marginBottom:40}}>
+            <p className="g-eyebrow" style={{color:'#ff8055'}}>Отзывы</p>
+            <h2 className="g-title" style={{color:'#fff'}}>Что говорят клиенты</h2>
+          </div>
+          <div className="g-reviews-grid">
+            {[
+              {ava:'АК',color:'#6366f1',name:'Анна К.',svc:'Сантехника',text:'Нашла сантехника за 15 минут. Приехал вовремя, всё сделал аккуратно. Сервис огонь!'},
+              {ava:'МР',color:'#0ea5e9',name:'Михаил Р.',svc:'Электрика',text:'Заказывал электрика для новой квартиры. Мастер профессиональный, цена честная.'},
+              {ava:'СТ',color:'#22c55e',name:'Светлана Т.',svc:'Репетиторство',text:'Репетитор по математике для дочки — нашла через сервис. Уже видим результат!'},
+            ].map(r=>(
+              <div key={r.name} className="g-review">
+                <div className="g-review-stars">★★★★★</div>
+                <p className="g-review-text">«{r.text}»</p>
+                <div className="g-review-footer">
+                  <div className="g-review-ava" style={{background:r.color}}>{r.ava}</div>
+                  <div><p className="g-review-name">{r.name}</p><p className="g-review-svc">{r.svc}</p></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="g-section g-section-gray">
+        <div className="g-wrap">
+          <div className="g-cta">
+            <div>
+              <h2 className="g-cta-title">Готовы разместить задачу?</h2>
+              <p className="g-cta-sub">Зарегистрируйтесь бесплатно — первые отклики уже через 10 минут</p>
+            </div>
+            <button className="g-cta-btn" onClick={()=>navigate('/register')}>Начать бесплатно →</button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
