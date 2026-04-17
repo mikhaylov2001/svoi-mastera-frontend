@@ -565,15 +565,16 @@ function GuestHome() {
   const guestCss = `
     .g-section { padding: 60px 0; }
     .g-section-white { background: #fff; }
-    .g-section-gray  { background: #f8f8f6; }
+    .g-section-gray  { background: #f5f5f3; }
     .g-section-dark  { background: #0d0d0d; }
     .g-wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
     .g-eyebrow { font-size: 11px; font-weight: 800; color: #e8410a; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
     .g-title { font-size: 32px; font-weight: 900; letter-spacing: -.5px; margin: 0 0 10px; }
     .g-sub { font-size: 15px; color: #888; margin: 0 0 40px; }
     .g-how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
-    .g-how-card { background: #f8f8f6; border-radius: 16px; padding: 28px 24px; border: 1px solid #ebebeb; }
-    .g-how-num { width: 40px; height: 40px; border-radius: 10px; background: #e8410a; color: #fff; font-size: 18px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+    .g-how-card { background: #fff; border-radius: 16px; padding: 28px 24px; border: 1px solid #ebebeb; transition: box-shadow .18s, transform .18s; }
+    .g-how-card:hover { box-shadow: 0 8px 28px rgba(232,65,10,.1); transform: translateY(-3px); border-color: rgba(232,65,10,.2); }
+    .g-how-num { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg,#e8410a,#ff5722); color: #fff; font-size: 18px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(232,65,10,.3); }
     .g-how-title { font-size: 17px; font-weight: 800; margin: 0 0 8px; }
     .g-how-desc { font-size: 14px; color: #666; line-height: 1.6; margin: 0; }
     .g-benefits-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
@@ -594,7 +595,7 @@ function GuestHome() {
     .g-review-ava { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 800; flex-shrink: 0; }
     .g-review-name { font-size: 14px; font-weight: 700; color: #fff; }
     .g-review-svc { font-size: 12px; color: rgba(255,255,255,.4); }
-    .g-cta { background: linear-gradient(135deg, #1a0500, #e8410a 120%); border-radius: 20px; padding: 48px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .g-cta { background: linear-gradient(135deg, #1a0a00 0%, #3d1200 50%, #e8410a 100%); border-radius: 20px; padding: 48px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
     .g-cta-title { font-size: 26px; font-weight: 900; color: #fff; margin: 0 0 8px; }
     .g-cta-sub { font-size: 15px; color: rgba(255,255,255,.65); margin: 0; }
     .g-cta-btn { background: #fff; border: none; border-radius: 10px; color: #e8410a; font-size: 15px; font-weight: 800; padding: 14px 32px; cursor: pointer; white-space: nowrap; font-family: Manrope,Arial,sans-serif; transition: background .15s; flex-shrink: 0; }
@@ -681,11 +682,20 @@ function GuestHome() {
             </div>
             <Link to="/register" style={{fontSize:13,color:'#e8410a',fontWeight:700,textDecoration:'none'}}>Все категории →</Link>
           </div>
-          <div className="g-cats-grid">
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:12}}>
             {ALL_CATS.map(cat=>(
-              <Link key={cat.slug} to="/register" className="g-cat-card">
-                <span className="g-cat-emoji">{cat.emoji||'🛠️'}</span>
-                <span className="g-cat-name">{cat.name}</span>
+              <Link key={cat.slug} to="/register"
+                style={{borderRadius:12,overflow:'hidden',textDecoration:'none',color:'#fff',position:'relative',aspectRatio:'4/3',display:'flex',flexDirection:'column',justifyContent:'flex-end',transition:'transform .18s, box-shadow .18s'}}
+                onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 10px 28px rgba(0,0,0,.2)';}}
+                onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none';}}>
+                {CAT_PHOTOS[cat.slug]
+                  ? <div style={{position:'absolute',inset:0,backgroundImage:`url(${CAT_PHOTOS[cat.slug]})`,backgroundSize:'cover',backgroundPosition:'center',transition:'transform .3s'}}/>
+                  : <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,#2a1a00,#e8410a)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:36}}>{cat.emoji||'🛠️'}</div>
+                }
+                <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.1) 55%,transparent 100%)'}}/>
+                <div style={{position:'relative',padding:'10px 12px'}}>
+                  <div style={{fontSize:13,fontWeight:800,lineHeight:1.2}}>{cat.name}</div>
+                </div>
               </Link>
             ))}
           </div>
