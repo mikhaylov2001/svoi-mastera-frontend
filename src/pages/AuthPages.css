@@ -4,7 +4,7 @@
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
   font-family: 'Manrope', Arial, Helvetica, sans-serif;
-  background: #0a0a0a;
+  background: #0f1629;
 }
 
 /* ── LEFT ── */
@@ -12,7 +12,7 @@
   position: sticky;
   top: 0;
   height: 100vh;
-  background: linear-gradient(160deg, #0a0a0a 0%, #160700 40%, #260c00 70%, #160700 100%);
+  background: linear-gradient(135deg, #0f1629 0%, #1a2340 40%, #0d1a3a 100%);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -20,7 +20,7 @@
 
 /* ── RIGHT ── */
 .auth-right {
-  background: linear-gradient(160deg, #0a0a0a 0%, #160700 40%, #260c00 70%, #160700 100%);
+  background: linear-gradient(135deg, #0f1629 0%, #1a2340 40%, #0d1a3a 100%);
   display: flex;
   flex-direction: column;
   align-items: center;

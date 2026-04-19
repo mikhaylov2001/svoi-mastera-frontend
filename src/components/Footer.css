@@ -1,5 +1,5 @@
 .footer {
-  background: linear-gradient(160deg, #0a0a0a 0%, #160700 40%, #260c00 70%, #160700 100%);
+  background: #080b18;
   padding: 56px 0 0;
   border-top: 1px solid rgba(255,255,255,.06);
   margin-top: auto;
@@ -119,3 +119,4 @@
   flex-shrink: 0;
   box-shadow: 0 4px 14px rgba(200,80,10,.35);
 }
+

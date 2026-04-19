@@ -81,8 +81,8 @@ function AuthLeft({ title, subtitle, points, stats }) {
       </svg>
 
       {/* Оранжевый glow */}
-      <div style={{position:'absolute',top:-80,right:-80,width:380,height:380,background:'radial-gradient(circle,rgba(232,65,10,.28) 0%,transparent 65%)',pointerEvents:'none'}}/>
-      <div style={{position:'absolute',bottom:0,left:-60,width:280,height:280,background:'radial-gradient(circle,rgba(232,65,10,.1) 0%,transparent 70%)',pointerEvents:'none'}}/>
+      <div style={{position:'absolute',top:-80,right:-80,width:380,height:380,background:'radial-gradient(circle,rgba(99,102,241,.25) 0%,transparent 65%)',pointerEvents:'none'}}/>
+      <div style={{position:'absolute',bottom:0,left:-60,width:280,height:280,background:'radial-gradient(circle,rgba(99,102,241,.1) 0%,transparent 70%)',pointerEvents:'none'}}/>
 
       {/* Контент */}
       <div style={{position:'relative',zIndex:1,padding:'48px 48px 0',display:'flex',flexDirection:'column',flex:1}}>
