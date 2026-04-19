@@ -612,26 +612,48 @@ function GuestHome() {
       <div className="hp-hero">
         <div className="hp-hero-noise"/><div className="hp-hero-glow"/>
         <div style={{position:'absolute',top:'-80px',left:'-80px',width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
-        <div style={{position:'relative',zIndex:1,maxWidth:760,margin:'0 auto',padding:'80px 24px 72px',textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:0}}>
-            <div className="hp-hero-eyebrow" style={{margin:'0 auto 28px'}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
-            <h1 className="hp-hero-h1" style={{fontSize:56,marginBottom:22,lineHeight:1.1,letterSpacing:'-1px',width:'100%',maxWidth:580,textAlign:'justify',textAlignLast:'justify',WebkitTextAlignLast:'justify'}}>
+        <div style={{position:'relative',zIndex:1,maxWidth:1200,margin:'0 auto',padding:'72px 24px 64px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'center'}}>
+          {/* Левая — текст */}
+          <div>
+            <div className="hp-hero-eyebrow" style={{marginBottom:24}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
+            <h1 className="hp-hero-h1" style={{fontSize:52,marginBottom:20,lineHeight:1.06}}>
               Свои мастера<br/>
               для <em>любых задач</em><br/>
               в Йошкар-Оле
             </h1>
-            <p style={{fontSize:17,color:'rgba(255,255,255,.55)',lineHeight:1.7,margin:'0 0 40px',maxWidth:480}}>Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
-            <div style={{display:'flex',gap:14,alignItems:'center',justifyContent:'center',marginBottom:48}}>
+            <p style={{fontSize:16,color:'rgba(255,255,255,.55)',lineHeight:1.7,margin:'0 0 32px',maxWidth:400}}>
+              Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
+            </p>
+            <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:40}}>
               <Link to="/register" className="hp-hero-btn">🔍 Найти мастера</Link>
               <Link to="/register?role=WORKER" className="hp-hero-btn-ghost">Стать мастером →</Link>
             </div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:0,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.09)',borderRadius:18,overflow:'hidden',width:'100%',maxWidth:560}}>
-              {[['24/7','Приём заявок'],['9','Категорий'],['≤10 мин','Первый отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
-                <div key={l} style={{padding:'20px 8px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
-                  <div style={{fontSize:20,fontWeight:900,color:'#fff',lineHeight:1,marginBottom:5}}>{n}</div>
-                  <div style={{fontSize:10,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em'}}>{l}</div>
+            <div style={{display:'flex',gap:28,paddingTop:28,borderTop:'1px solid rgba(255,255,255,.08)'}}>
+              {[['24/7','Приём заявок'],['9','Категорий'],['≤10','Мин. отклик'],['5.0★','Рейтинг']].map(([n,l])=>(
+                <div key={l}>
+                  <div style={{fontSize:22,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:4}}>{l}</div>
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Правая — сетка 3×3 */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+            {ALL_CATS.slice(0,9).map(cat=>(
+              <Link key={cat.slug} to="/register"
+                style={{borderRadius:12,overflow:'hidden',textDecoration:'none',color:'#fff',position:'relative',aspectRatio:'1',display:'flex',alignItems:'flex-end',transition:'transform .2s,box-shadow .2s'}}
+                onMouseEnter={e=>{e.currentTarget.style.transform='scale(1.05)';e.currentTarget.style.boxShadow='0 12px 28px rgba(0,0,0,.5)';}}
+                onMouseLeave={e=>{e.currentTarget.style.transform='scale(1)';e.currentTarget.style.boxShadow='none';}}>
+                {CAT_PHOTOS[cat.slug]
+                  ? <div style={{position:'absolute',inset:0,backgroundImage:`url(${CAT_PHOTOS[cat.slug]})`,backgroundSize:'cover',backgroundPosition:'center'}}/>
+                  : <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,#2a1a00,#e8410a)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>{cat.emoji||'🛠️'}</div>
+                }
+                <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.72) 0%,transparent 55%)'}}/>
+                <div style={{position:'relative',padding:'8px 10px',fontSize:11,fontWeight:800,lineHeight:1.2}}>{cat.name}</div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
 
