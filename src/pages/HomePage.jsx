@@ -614,8 +614,10 @@ function GuestHome() {
         <div style={{position:'absolute',top:'-80px',left:'-80px',width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
         <div style={{position:'relative',zIndex:1,maxWidth:760,margin:'0 auto',padding:'80px 24px 72px',textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:0}}>
             <div className="hp-hero-eyebrow" style={{margin:'0 auto 28px'}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
-            <h1 className="hp-hero-h1" style={{fontSize:58,marginBottom:22,lineHeight:1.06}}>Свои мастера<br/>для <em>любых задач</em><br/>в Йошкар-Оле</h1>
-            <p style={{fontSize:17,color:'rgba(255,255,255,.58)',lineHeight:1.65,margin:'0 0 40px',maxWidth:460}}>Опишите задачу — мастера откликнутся сами.<br/>Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
+            <h1 className="hp-hero-h1" style={{fontSize:62,marginBottom:22,lineHeight:1.04,letterSpacing:'-2px',maxWidth:580}}>
+              Свои мастера для <em>любых&nbsp;задач</em> в&nbsp;Йошкар-Оле
+            </h1>
+            <p style={{fontSize:17,color:'rgba(255,255,255,.55)',lineHeight:1.7,margin:'0 0 40px',maxWidth:480}}>Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
             <div style={{display:'flex',gap:14,alignItems:'center',justifyContent:'center',marginBottom:48}}>
               <Link to="/register" className="hp-hero-btn">🔍 Найти мастера</Link>
               <Link to="/register?role=WORKER" className="hp-hero-btn-ghost">Стать мастером →</Link>
