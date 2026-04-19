@@ -37,7 +37,7 @@ const css = `
   .hp { font-family: 'Manrope', Arial, sans-serif; background: #f8f8f6; color: var(--text); }
 
   /* ══ HERO ══ */
-  .hp-hero { background: linear-gradient(135deg, #0f1629 0%, #1a2340 40%, #0d1a3a 100%); padding: 0; overflow: hidden; position: relative; }
+  .hp-hero { background: var(--dark); padding: 0; overflow: hidden; position: relative; }
   .hp-hero-noise { position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); opacity: .4; pointer-events: none; }
   .hp-hero-glow { position: absolute; top: -200px; right: -100px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(232,65,10,.35) 0%, transparent 70%); pointer-events: none; }
   .hp-hero-inner { max-width: 1200px; margin: 0 auto; padding: 60px 24px 56px; display: grid; grid-template-columns: 1fr 420px; gap: 40px; align-items: center; position: relative; z-index: 1; }
@@ -612,49 +612,22 @@ function GuestHome() {
       <div className="hp-hero">
         <div className="hp-hero-noise"/><div className="hp-hero-glow"/>
         <div style={{position:'absolute',top:'-80px',left:'-80px',width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
-        <div style={{position:'relative',zIndex:1,maxWidth:1100,margin:'0 auto',padding:'52px 24px 48px',display:'grid',gridTemplateColumns:'1fr 440px',gap:48,alignItems:'center'}}>
-          {/* Левая — текст */}
-          <div>
-            <div className="hp-hero-eyebrow" style={{marginBottom:18}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
-            <h1 className="hp-hero-h1" style={{fontSize:46,marginBottom:16,lineHeight:1.08}}>
-              Свои мастера<br/>для <em>любых задач</em><br/>в Йошкар-Оле
-            </h1>
-            <p style={{fontSize:15,color:'rgba(255,255,255,.52)',lineHeight:1.65,margin:'0 0 28px',maxWidth:400}}>
-              Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
-            </p>
-            <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:32}}>
-              <Link to="/register" className="hp-hero-btn" style={{padding:'12px 22px',fontSize:14}}>🔍 Найти мастера</Link>
-              <Link to="/register?role=WORKER" className="hp-hero-btn-ghost" style={{padding:'11px 20px',fontSize:14}}>Стать мастером →</Link>
+        <div style={{position:'relative',zIndex:1,maxWidth:760,margin:'0 auto',padding:'80px 24px 72px',textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:0}}>
+            <div className="hp-hero-eyebrow" style={{margin:'0 auto 28px'}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
+            <h1 className="hp-hero-h1" style={{fontSize:58,marginBottom:22,lineHeight:1.06}}>Свои мастера<br/>для <em>любых задач</em><br/>в Йошкар-Оле</h1>
+            <p style={{fontSize:17,color:'rgba(255,255,255,.58)',lineHeight:1.65,margin:'0 0 40px',maxWidth:460}}>Опишите задачу — мастера откликнутся сами.<br/>Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
+            <div style={{display:'flex',gap:14,alignItems:'center',justifyContent:'center',marginBottom:48}}>
+              <Link to="/register" className="hp-hero-btn">🔍 Найти мастера</Link>
+              <Link to="/register?role=WORKER" className="hp-hero-btn-ghost">Стать мастером →</Link>
             </div>
-            <div style={{display:'flex',gap:24,paddingTop:24,borderTop:'1px solid rgba(255,255,255,.08)'}}>
-              {[['24/7','Заявки'],['9','Категорий'],['≤10 мин','Отклик'],['5.0★','Рейтинг']].map(([n,l])=>(
-                <div key={l}>
-                  <div style={{fontSize:20,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
-                  <div style={{fontSize:10,color:'rgba(255,255,255,.35)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:3}}>{l}</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:0,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.09)',borderRadius:18,overflow:'hidden',width:'100%',maxWidth:560}}>
+              {[['24/7','Приём заявок'],['9','Категорий'],['≤10 мин','Первый отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
+                <div key={l} style={{padding:'20px 8px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
+                  <div style={{fontSize:20,fontWeight:900,color:'#fff',lineHeight:1,marginBottom:5}}>{n}</div>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em'}}>{l}</div>
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Правая — компактная сетка 2×2 */}
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gridTemplateRows:'1fr 1fr',gap:8,height:340}}>
-            {ALL_CATS.slice(0,4).map((cat,i)=>(
-              <Link key={cat.slug} to="/register"
-                style={{borderRadius:12,overflow:'hidden',textDecoration:'none',color:'#fff',position:'relative',display:'flex',alignItems:'flex-end',transition:'transform .2s, box-shadow .2s'}}
-                onMouseEnter={e=>{e.currentTarget.style.transform='scale(1.03)';e.currentTarget.style.boxShadow='0 10px 28px rgba(0,0,0,.4)';}}
-                onMouseLeave={e=>{e.currentTarget.style.transform='scale(1)';e.currentTarget.style.boxShadow='none';}}>
-                {CAT_PHOTOS[cat.slug]
-                  ? <div style={{position:'absolute',inset:0,backgroundImage:`url(${CAT_PHOTOS[cat.slug]})`,backgroundSize:'cover',backgroundPosition:'center'}}/>
-                  : <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,#2a1a00,#e8410a)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:32}}>{cat.emoji||'🛠️'}</div>
-                }
-                <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.72) 0%,transparent 55%)'}}/>
-                <div style={{position:'relative',padding:'10px 12px'}}>
-                  <div style={{fontSize:13,fontWeight:800,lineHeight:1.2}}>{cat.name}</div>
-                  <div style={{fontSize:10,color:'rgba(255,255,255,.5)',marginTop:2}}>Найти →</div>
-                </div>
-              </Link>
-            ))}
-          </div>
         </div>
       </div>
 

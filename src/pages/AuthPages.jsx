@@ -42,83 +42,33 @@ const EyeClosed = () => (
 /* ───────────────────────────────
    Left panel (shared)
 ─────────────────────────────── */
-const CAT_PHOTOS = {
-  'remont-kvartir':       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80',
-  'santehnika':           'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
-  'elektrika':            'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80',
-  'uborka':               'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=600&q=80',
-  'parikhmaher':          'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80',
-  'manikur':              'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&q=80',
-  'krasota-i-zdorovie':   'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80',
-  'repetitorstvo':        'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80',
-  'kompyuternaya-pomosh': 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=600&q=80',
-};
-
-const ALL_AUTH_CATS = [
-  {slug:'remont-kvartir',name:'Ремонт квартир'},
-  {slug:'santehnika',name:'Сантехника'},
-  {slug:'elektrika',name:'Электрика'},
-  {slug:'uborka',name:'Уборка'},
-  {slug:'parikhmaher',name:'Парикмахер'},
-  {slug:'manikur',name:'Маникюр'},
-  {slug:'krasota-i-zdorovie',name:'Красота'},
-  {slug:'repetitorstvo',name:'Репетиторство'},
-  {slug:'kompyuternaya-pomosh',name:'IT помощь'},
-];
-
 function AuthLeft({ title, subtitle, points, stats }) {
   return (
     <div className="auth-left">
-      {/* SVG декор — геометрические круги */}
-      <svg style={{position:'absolute',inset:0,width:'100%',height:'100%',pointerEvents:'none'}} viewBox="0 0 480 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="420" cy="120" r="200" fill="none" stroke="rgba(232,65,10,.18)" strokeWidth="1"/>
-        <circle cx="420" cy="120" r="140" fill="none" stroke="rgba(232,65,10,.12)" strokeWidth="1"/>
-        <circle cx="420" cy="120" r="80"  fill="none" stroke="rgba(232,65,10,.18)" strokeWidth="1"/>
-        <circle cx="-20" cy="780" r="220" fill="none" stroke="rgba(255,255,255,.06)" strokeWidth="1"/>
-        <circle cx="-20" cy="780" r="150" fill="none" stroke="rgba(255,255,255,.04)" strokeWidth="1"/>
-        <line x1="0" y1="0" x2="480" y2="900" stroke="rgba(232,65,10,.05)" strokeWidth="1"/>
-        <line x1="480" y1="0" x2="0" y2="900" stroke="rgba(232,65,10,.04)" strokeWidth="1"/>
-      </svg>
-
-      {/* Оранжевый glow */}
-      <div style={{position:'absolute',top:-80,right:-80,width:380,height:380,background:'radial-gradient(circle,rgba(99,102,241,.25) 0%,transparent 65%)',pointerEvents:'none'}}/>
-      <div style={{position:'absolute',bottom:0,left:-60,width:280,height:280,background:'radial-gradient(circle,rgba(99,102,241,.1) 0%,transparent 70%)',pointerEvents:'none'}}/>
-
-      {/* Контент */}
-      <div style={{position:'relative',zIndex:1,padding:'48px 48px 0',display:'flex',flexDirection:'column',flex:1}}>
-        <Link to="/" style={{display:'inline-flex',alignItems:'center',gap:10,textDecoration:'none',marginBottom:52}}>
-          <span style={{width:38,height:38,borderRadius:10,background:'rgba(232,65,10,.2)',border:'1px solid rgba(232,65,10,.35)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>⚒️</span>
-          <span style={{fontSize:17,fontWeight:900,color:'#fff',letterSpacing:'-.2px'}}>СвоиМастера</span>
+      <div className="auth-left-content">
+        <Link to="/" className="auth-brand">
+          <span style={{fontSize: '24px'}}>⚒️</span>
+          <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
         </Link>
-
-        <div style={{flex:1}}>
-          <h2 style={{fontSize:36,fontWeight:900,color:'#fff',lineHeight:1.08,margin:'0 0 16px',letterSpacing:'-.8px'}}>
-            {title}
-          </h2>
-          <p style={{fontSize:15,color:'rgba(255,255,255,.5)',lineHeight:1.7,margin:'0 0 36px',maxWidth:320}}>{subtitle}</p>
-
-          <ul style={{listStyle:'none',padding:0,margin:0,display:'flex',flexDirection:'column',gap:16}}>
-            {points.map(([icon, text]) => (
-              <li key={text} style={{display:'flex',alignItems:'center',gap:14,fontSize:14,color:'rgba(255,255,255,.8)',fontWeight:600}}>
-                <span style={{width:36,height:36,borderRadius:10,background:'rgba(232,65,10,.18)',border:'1px solid rgba(232,65,10,.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,color:'#ff7043',flexShrink:0}}>{icon}</span>
-                {text}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <h2 className="auth-left-title">{title}</h2>
+        <p  className="auth-left-desc">{subtitle}</p>
+        <ul className="auth-left-points">
+          {points.map(([icon, text]) => (
+            <li key={text} className="auth-left-point">
+              <span className="auth-left-point-icon">{icon}</span>
+              {text}
+            </li>
+          ))}
+        </ul>
       </div>
-
-      {/* Статистика внизу */}
       {stats && (
-        <div style={{position:'relative',zIndex:1,display:'flex',margin:'0 48px',paddingBottom:0}}>
-          <div style={{flex:1,display:'flex',gap:0,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.09)',borderRadius:16,overflow:'hidden',marginBottom:48}}>
-            {stats.map(([n,l],i) => (
-              <div key={l} style={{flex:1,padding:'18px 12px',textAlign:'center',borderRight:i<stats.length-1?'1px solid rgba(255,255,255,.08)':'none'}}>
-                <div style={{fontSize:22,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
-                <div style={{fontSize:10,color:'rgba(255,255,255,.35)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em',marginTop:4}}>{l}</div>
-              </div>
-            ))}
-          </div>
+        <div className="auth-stats-row">
+          {stats.map(([n, l]) => (
+            <div className="auth-stat-box" key={l}>
+              <div className="auth-stat-num">{n}</div>
+              <div className="auth-stat-lbl">{l}</div>
+            </div>
+          ))}
         </div>
       )}
     </div>
