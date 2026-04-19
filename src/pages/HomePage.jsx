@@ -612,50 +612,22 @@ function GuestHome() {
       <div className="hp-hero">
         <div className="hp-hero-noise"/><div className="hp-hero-glow"/>
         <div style={{position:'absolute',top:'-80px',left:'-80px',width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
-        <div style={{position:'relative',zIndex:1,maxWidth:1200,margin:'0 auto',padding:'80px 24px 72px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:60,alignItems:'center'}}>
-          {/* Левая — текст */}
-          <div>
-            <div className="hp-hero-eyebrow" style={{marginBottom:24}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
-            <h1 className="hp-hero-h1" style={{fontSize:54,marginBottom:20,lineHeight:1.06}}>
-              Свои мастера<br/>для <em>любых задач</em><br/>в Йошкар-Оле
-            </h1>
-            <p style={{fontSize:16,color:'rgba(255,255,255,.55)',lineHeight:1.7,margin:'0 0 36px',maxWidth:420}}>
-              Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
-            </p>
-            <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:48}}>
+        <div style={{position:'relative',zIndex:1,maxWidth:760,margin:'0 auto',padding:'80px 24px 72px',textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:0}}>
+            <div className="hp-hero-eyebrow" style={{margin:'0 auto 28px'}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
+            <h1 className="hp-hero-h1" style={{fontSize:58,marginBottom:22,lineHeight:1.06}}>Свои мастера<br/>для <em>любых задач</em><br/>в Йошкар-Оле</h1>
+            <p style={{fontSize:17,color:'rgba(255,255,255,.58)',lineHeight:1.65,margin:'0 0 40px',maxWidth:460}}>Опишите задачу — мастера откликнутся сами.<br/>Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
+            <div style={{display:'flex',gap:14,alignItems:'center',justifyContent:'center',marginBottom:48}}>
               <Link to="/register" className="hp-hero-btn">🔍 Найти мастера</Link>
               <Link to="/register?role=WORKER" className="hp-hero-btn-ghost">Стать мастером →</Link>
             </div>
-            {/* Статистика — горизонтально слева */}
-            <div style={{display:'flex',gap:32,paddingTop:32,borderTop:'1px solid rgba(255,255,255,.08)'}}>
-              {[['24/7','Приём заявок'],['9','Категорий'],['≤10','Мин. отклик'],['5.0★','Рейтинг']].map(([n,l])=>(
-                <div key={l}>
-                  <div style={{fontSize:24,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
-                  <div style={{fontSize:11,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:4}}>{l}</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:0,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.09)',borderRadius:18,overflow:'hidden',width:'100%',maxWidth:560}}>
+              {[['24/7','Приём заявок'],['9','Категорий'],['≤10 мин','Первый отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
+                <div key={l} style={{padding:'20px 8px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
+                  <div style={{fontSize:20,fontWeight:900,color:'#fff',lineHeight:1,marginBottom:5}}>{n}</div>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em'}}>{l}</div>
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Правая — карточки категорий */}
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-            {ALL_CATS.slice(0,4).map((cat,i)=>(
-              <Link key={cat.slug} to="/register"
-                style={{borderRadius:16,overflow:'hidden',textDecoration:'none',color:'#fff',position:'relative',aspectRatio: i===0 ? '1/1.1' : '1',display:'flex',alignItems:'flex-end',transition:'transform .2s, box-shadow .2s'}}
-                onMouseEnter={e=>{e.currentTarget.style.transform='scale(1.03)';e.currentTarget.style.boxShadow='0 16px 40px rgba(0,0,0,.4)';}}
-                onMouseLeave={e=>{e.currentTarget.style.transform='scale(1)';e.currentTarget.style.boxShadow='none';}}>
-                {CAT_PHOTOS[cat.slug]
-                  ? <div style={{position:'absolute',inset:0,backgroundImage:`url(${CAT_PHOTOS[cat.slug]})`,backgroundSize:'cover',backgroundPosition:'center'}}/>
-                  : <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,#2a1a00,#e8410a)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:40}}>{cat.emoji||'🛠️'}</div>
-                }
-                <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.75) 0%,rgba(0,0,0,.05) 50%,transparent 100%)'}}/>
-                <div style={{position:'relative',padding:'14px'}}>
-                  <div style={{fontSize:15,fontWeight:800,lineHeight:1.2}}>{cat.name}</div>
-                  <div style={{fontSize:11,color:'rgba(255,255,255,.55)',marginTop:3}}>Найти мастера →</div>
-                </div>
-              </Link>
-            ))}
-          </div>
         </div>
       </div>
 
