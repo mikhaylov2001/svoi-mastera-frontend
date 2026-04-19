@@ -42,31 +42,81 @@ const EyeClosed = () => (
 /* ───────────────────────────────
    Left panel (shared)
 ─────────────────────────────── */
+const CAT_PHOTOS = {
+  'remont-kvartir':       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80',
+  'santehnika':           'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
+  'elektrika':            'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80',
+  'uborka':               'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=600&q=80',
+  'parikhmaher':          'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80',
+  'manikur':              'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&q=80',
+  'krasota-i-zdorovie':   'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80',
+  'repetitorstvo':        'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80',
+  'kompyuternaya-pomosh': 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=600&q=80',
+};
+
+const ALL_AUTH_CATS = [
+  {slug:'remont-kvartir',name:'Ремонт квартир'},
+  {slug:'santehnika',name:'Сантехника'},
+  {slug:'elektrika',name:'Электрика'},
+  {slug:'uborka',name:'Уборка'},
+  {slug:'parikhmaher',name:'Парикмахер'},
+  {slug:'manikur',name:'Маникюр'},
+  {slug:'krasota-i-zdorovie',name:'Красота'},
+  {slug:'repetitorstvo',name:'Репетиторство'},
+  {slug:'kompyuternaya-pomosh',name:'IT помощь'},
+];
+
 function AuthLeft({ title, subtitle, points, stats }) {
   return (
-    <div className="auth-left">
-      <div className="auth-left-content">
-        <Link to="/" className="auth-brand">
-          <span style={{fontSize: '24px'}}>⚒️</span>
-          <span className="auth-brand-text">СвоиМастера в Йошкар-Оле</span>
+    <div className="auth-left" style={{
+      background: 'linear-gradient(135deg, #0d0d0d 0%, #1a0800 50%, #2d0e00 100%)',
+      position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+    }}>
+      {/* Glow */}
+      <div style={{position:'absolute',top:-100,right:-100,width:500,height:500,background:'radial-gradient(circle,rgba(232,65,10,.3) 0%,transparent 70%)',pointerEvents:'none'}}/>
+      <div style={{position:'absolute',bottom:-50,left:-50,width:300,height:300,background:'radial-gradient(circle,rgba(232,65,10,.12) 0%,transparent 70%)',pointerEvents:'none'}}/>
+
+      {/* Контент */}
+      <div style={{position:'relative',zIndex:1,padding:'40px 44px',flex:1,display:'flex',flexDirection:'column'}}>
+        <Link to="/" style={{display:'inline-flex',alignItems:'center',gap:10,textDecoration:'none',marginBottom:36}}>
+          <span style={{fontSize:28}}>⚒️</span>
+          <span style={{fontSize:16,fontWeight:800,color:'#fff',letterSpacing:'-.2px'}}>СвоиМастера</span>
+          <span style={{fontSize:12,color:'rgba(255,255,255,.4)',fontWeight:500}}>· Йошкар-Ола</span>
         </Link>
-        <h2 className="auth-left-title">{title}</h2>
-        <p  className="auth-left-desc">{subtitle}</p>
-        <ul className="auth-left-points">
+
+        <h2 style={{fontSize:32,fontWeight:900,color:'#fff',lineHeight:1.1,margin:'0 0 12px',letterSpacing:'-.5px'}}>
+          {title}
+        </h2>
+        <p style={{fontSize:14,color:'rgba(255,255,255,.5)',lineHeight:1.65,margin:'0 0 28px'}}>{subtitle}</p>
+
+        <ul style={{listStyle:'none',padding:0,margin:'0 0 32px',display:'flex',flexDirection:'column',gap:12}}>
           {points.map(([icon, text]) => (
-            <li key={text} className="auth-left-point">
-              <span className="auth-left-point-icon">{icon}</span>
+            <li key={text} style={{display:'flex',alignItems:'center',gap:12,fontSize:14,color:'rgba(255,255,255,.75)',fontWeight:600}}>
+              <span style={{width:32,height:32,borderRadius:9,background:'rgba(232,65,10,.2)',border:'1px solid rgba(232,65,10,.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:'#ff7043',flexShrink:0}}>{icon}</span>
               {text}
             </li>
           ))}
         </ul>
+
+        {/* Фото-плитки категорий */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:7,flex:1,minHeight:0,maxHeight:280}}>
+          {ALL_AUTH_CATS.map(cat => (
+            <div key={cat.slug} style={{borderRadius:10,overflow:'hidden',position:'relative',minHeight:0}}>
+              <div style={{position:'absolute',inset:0,backgroundImage:`url(${CAT_PHOTOS[cat.slug]})`,backgroundSize:'cover',backgroundPosition:'center'}}/>
+              <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.7) 0%,transparent 60%)'}}/>
+              <div style={{position:'absolute',bottom:0,left:0,right:0,padding:'6px 8px',fontSize:10,fontWeight:800,color:'#fff',lineHeight:1.2}}>{cat.name}</div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Статистика */}
       {stats && (
-        <div className="auth-stats-row">
-          {stats.map(([n, l]) => (
-            <div className="auth-stat-box" key={l}>
-              <div className="auth-stat-num">{n}</div>
-              <div className="auth-stat-lbl">{l}</div>
+        <div style={{position:'relative',zIndex:1,display:'flex',borderTop:'1px solid rgba(255,255,255,.08)'}}>
+          {stats.map(([n,l],i) => (
+            <div key={l} style={{flex:1,padding:'16px',textAlign:'center',borderRight:i<stats.length-1?'1px solid rgba(255,255,255,.08)':'none'}}>
+              <div style={{fontSize:20,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
+              <div style={{fontSize:10,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:3}}>{l}</div>
             </div>
           ))}
         </div>
