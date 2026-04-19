@@ -4,6 +4,7 @@
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
   font-family: 'Manrope', Arial, Helvetica, sans-serif;
+  background: #0d0d0d;
 }
 
 /* ── LEFT ── */
@@ -19,13 +20,37 @@
 
 /* ── RIGHT ── */
 .auth-right {
-  background: #f8f8f6;
+  background: linear-gradient(160deg, #0d0d0d 0%, #1c0900 45%, #2e0f00 75%, #1a0800 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 40px 24px;
   min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glow на правой стороне */
+.auth-right::before {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  right: -100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(232,65,10,.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+.auth-right::after {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: -60px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(232,65,10,.1) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .auth-mobile-header {
@@ -38,12 +63,12 @@
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  color: #1a1a1a;
+  color: #fff;
   font-weight: 800;
   font-size: 18px;
   margin-bottom: 6px;
 }
-.auth-mobile-sub { font-size: 13px; color: #888; margin: 0; }
+.auth-mobile-sub { font-size: 13px; color: rgba(255,255,255,.5); margin: 0; }
 
 /* ── FORM CARD ── */
 .auth-form-card {
@@ -52,8 +77,10 @@
   padding: 36px 40px;
   width: 100%;
   max-width: 440px;
-  box-shadow: 0 4px 32px rgba(0,0,0,.08);
-  border: 1px solid #ebebeb;
+  box-shadow: 0 24px 80px rgba(0,0,0,.5);
+  border: 1px solid rgba(255,255,255,.08);
+  position: relative;
+  z-index: 1;
 }
 
 .auth-form-title {
