@@ -290,36 +290,44 @@ function CustomerHome({ userId, userName }) {
     .av-promo-btn:hover { background: #ffe8e0; }
 
     @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } }
-    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } .av-welcome-inner { flex-direction: column; align-items: flex-start; gap: 16px; } .av-welcome-actions { width: 100%; } .av-welcome-btn, .av-welcome-btn-outline { flex: 1; text-align: center; justify-content: center; } }
-
-    /* ── WELCOME BANNER ── */
-    .av-welcome { background: #fff; border-bottom: 1px solid #e8e8e8; position: relative; overflow: hidden; }
-    .av-welcome::before { content: ''; position: absolute; top: -60px; right: -40px; width: 280px; height: 280px; background: radial-gradient(circle, rgba(232,65,10,.07) 0%, transparent 70%); pointer-events: none; }
-    .av-welcome::after { content: ''; position: absolute; bottom: -80px; left: 10%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(232,65,10,.04) 0%, transparent 70%); pointer-events: none; }
-    .av-welcome-inner { max-width: 1200px; margin: 0 auto; padding: 24px 16px; display: flex; align-items: center; justify-content: space-between; gap: 20px; position: relative; z-index: 1; }
-    .av-welcome-hi { font-size: 26px; font-weight: 900; color: #1a1a1a; margin: 0 0 4px; letter-spacing: -.5px; }
-    .av-welcome-sub { font-size: 15px; color: #888; margin: 0; font-weight: 500; }
-    .av-welcome-actions { display: flex; gap: 10px; }
-    .av-welcome-btn { background: #e8410a; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 800; padding: 12px 22px; cursor: pointer; font-family: Manrope, Arial, sans-serif; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(232,65,10,.25); }
-    .av-welcome-btn:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232,65,10,.35); }
-    .av-welcome-btn-outline { background: #fff; color: #1a1a1a; border: 1.5px solid #d9d9d9; border-radius: 10px; font-size: 14px; font-weight: 700; padding: 11px 20px; cursor: pointer; text-decoration: none; font-family: Manrope, Arial, sans-serif; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
-    .av-welcome-btn-outline:hover { border-color: #e8410a; color: #e8410a; }
+    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } }
   `;
 
   return (
     <div className="av-page">
       <style>{avitoCss}</style>
 
-      {/* ── WELCOME BANNER ── */}
-      <div className="av-welcome">
-        <div className="av-welcome-inner">
-          <div className="av-welcome-left">
-            <h1 className="av-welcome-hi">Привет{userName ? `, ${userName}` : ''}! 👋</h1>
-            <p className="av-welcome-sub">Найдите мастера для любой задачи в Йошкар-Оле</p>
+      {/* ── HERO ── */}
+      <div style={{background:'linear-gradient(135deg,#0d0d0d 0%,#1a0800 50%,#2d0e00 100%)',position:'relative',overflow:'hidden',padding:'0'}}>
+        {/* Glow */}
+        <div style={{position:'absolute',top:-100,right:-80,width:500,height:500,background:'radial-gradient(circle,rgba(232,65,10,.3) 0%,transparent 70%)',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',bottom:-60,left:-60,width:320,height:320,background:'radial-gradient(circle,rgba(232,65,10,.1) 0%,transparent 70%)',pointerEvents:'none'}}/>
+        {/* Декоративные круги */}
+        <div style={{position:'absolute',top:-80,left:-80,width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
+
+        <div style={{position:'relative',zIndex:1,maxWidth:900,margin:'0 auto',padding:'48px 24px 44px',textAlign:'center'}}>
+          {/* Бейдж */}
+          <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(232,65,10,.15)',border:'1px solid rgba(232,65,10,.3)',borderRadius:20,padding:'5px 14px',fontSize:11,fontWeight:800,color:'#ff8055',letterSpacing:'.08em',textTransform:'uppercase',marginBottom:20}}>
+            <span style={{width:6,height:6,borderRadius:'50%',background:'#ff5722',animation:'pulse-dot 2s infinite',display:'inline-block'}}/>
+            Йошкар-Ола · Маркетплейс мастеров
           </div>
-          <div className="av-welcome-actions">
-            <button className="av-welcome-btn" onClick={()=>navigate('/categories')}>📋 Разместить заявку</button>
-            <Link to="/find-master" className="av-welcome-btn-outline">🔍 Найти мастера</Link>
+
+          {/* Заголовок */}
+          <h1 style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:54,fontWeight:900,color:'#fff',lineHeight:1.06,margin:'0 0 16px',letterSpacing:'-1.5px'}}>
+            Свои мастера для <em style={{fontStyle:'normal',color:'#e8410a'}}>любых задач</em><br/>в Йошкар-Оле
+          </h1>
+          <p style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:17,color:'rgba(255,255,255,.5)',lineHeight:1.7,margin:'0 auto 32px',maxWidth:520}}>
+            Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
+          </p>
+
+          {/* Статистика */}
+          <div style={{display:'inline-flex',gap:0,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.08)',borderRadius:16,overflow:'hidden'}}>
+            {[['24/7','Приём заявок'],['9','Категорий'],['≤10','Мин. отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
+              <div key={l} style={{padding:'16px 28px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
+                <div style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:20,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
+                <div style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:10,color:'rgba(255,255,255,.35)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em',marginTop:4}}>{l}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
