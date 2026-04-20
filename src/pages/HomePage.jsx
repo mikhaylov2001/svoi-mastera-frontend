@@ -233,14 +233,14 @@ function CustomerHome({ userId, userName }) {
     .av-cats-hdr-title { font-size: 18px; font-weight: 800; color: #1a1a1a; }
     .av-cats-hdr-link { font-size: 13px; color: #e8410a; text-decoration: none; font-weight: 600; }
     .av-cats-hdr-link:hover { text-decoration: underline; }
-    .av-cats-scroll { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; padding: 12px 8px 8px; }
-    .av-cat-item { display: flex; flex-direction: column; align-items: center; gap: 0; text-decoration: none; color: #1a1a1a; padding: 8px 6px; border-radius: 10px; transition: background .15s; cursor: pointer; }
+    .av-cats-scroll { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; padding: 8px 6px 6px; }
+    .av-cat-item { display: flex; flex-direction: column; align-items: center; gap: 0; text-decoration: none; color: #1a1a1a; padding: 6px 4px; border-radius: 10px; transition: background .15s; cursor: pointer; }
     .av-cat-item:hover { background: #fff3f0; }
-    .av-cat-photo { width: 100%; aspect-ratio: 3/2; border-radius: 10px; overflow: hidden; position: relative; margin-bottom: 8px; }
+    .av-cat-photo { width: 100%; aspect-ratio: 3/2; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 6px; }
     .av-cat-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
     .av-cat-item:hover .av-cat-photo img { transform: scale(1.06); }
     .av-cat-photo-ph { width: 100%; height: 100%; background: linear-gradient(135deg, #2a1a00, #e8410a); display: flex; align-items: center; justify-content: center; font-size: 28px; }
-    .av-cat-name { font-size: 12px; font-weight: 700; text-align: center; line-height: 1.3; color: #1a1a1a; }
+    .av-cat-name { font-size: 11px; font-weight: 700; text-align: center; line-height: 1.2; color: #1a1a1a; }
 
     /* ── ОБЪЯВЛЕНИЯ ── */
     .av-recs-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
@@ -386,16 +386,6 @@ function CustomerHome({ userId, userName }) {
 
         {/* ── ПРАВАЯ КОЛОНКА ── */}
         <div className="av-side">
-          <div className="av-widget">
-            <div className="av-widget-title">Навигация</div>
-            <div className="av-nav-list">
-              <Link to="/find-master" className="av-nav-item av-nav-item-orange">🔍 Найти мастера</Link>
-              <Link to="/categories"  className="av-nav-item">📋 Разместить заявку</Link>
-              <Link to="/deals"       className="av-nav-item">🤝 Мои сделки</Link>
-              <Link to="/chat"        className="av-nav-item">💬 Сообщения</Link>
-            </div>
-          </div>
-
           <div className="av-widget">
             <div className="av-widget-title">Платформа</div>
             <div className="av-stats-grid">
