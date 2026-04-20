@@ -316,19 +316,7 @@ function CustomerHome({ userId, userName }) {
           <h1 style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:54,fontWeight:900,color:'#fff',lineHeight:1.06,margin:'0 0 16px',letterSpacing:'-1.5px'}}>
             Свои мастера для <em style={{fontStyle:'normal',color:'#e8410a'}}>любых задач</em><br/>в Йошкар-Оле
           </h1>
-          <p style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:17,color:'rgba(255,255,255,.5)',lineHeight:1.7,margin:'0 auto 32px',maxWidth:520}}>
-            Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
-          </p>
-
-          {/* Статистика */}
-          <div style={{display:'inline-flex',gap:0,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.08)',borderRadius:16,overflow:'hidden'}}>
-            {[['24/7','Приём заявок'],['9','Категорий'],['≤10','Мин. отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
-              <div key={l} style={{padding:'16px 28px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
-                <div style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:20,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
-                <div style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:10,color:'rgba(255,255,255,.35)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em',marginTop:4}}>{l}</div>
-              </div>
-            ))}
-          </div>
+          <div style={{height:12}} />
         </div>
       </div>
 
