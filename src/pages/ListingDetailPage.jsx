@@ -26,93 +26,91 @@ const CAT_SLUGS = {
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
   .ld * { box-sizing: border-box; }
-  .ld { font-family: Manrope, Arial, sans-serif; background: #f4f4f4; min-height: 100vh; color: #141414; }
+  .ld { font-family: Manrope, Arial, sans-serif; background: #f4f4f4; min-height: 100vh; color: #1a1a1a; }
 
   /* BREADCRUMB */
-  .ld-bread { background: #fff; border-bottom: 1px solid #e0e0e0; }
-  .ld-bread-inner { max-width: 1200px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 6px; font-size: 13px; color: #999; flex-wrap: wrap; }
-  .ld-bread a { color: #999; text-decoration: none; transition: color .12s; } .ld-bread a:hover { color: #e8410a; }
-  .ld-bread-sep { color: #d9d9d9; }
+  .ld-bread { background: #fff; border-bottom: 1px solid #e8e8e8; }
+  .ld-bread-inner { max-width: 1200px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 6px; font-size: 13px; color: #888; flex-wrap: wrap; }
+  .ld-bread a { color: #888; text-decoration: none; } .ld-bread a:hover { color: #e8410a; }
+  .ld-bread-sep { color: #ccc; }
 
   /* LAYOUT */
-  .ld-wrap { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: flex-start; }
+  .ld-wrap { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: flex-start; }
+
+  /* MAIN */
+  .ld-main {}
 
   /* GALLERY */
-  .ld-gallery { background: #fff; border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
-  .ld-gallery-main { position: relative; aspect-ratio: 4/3; background: #f5f5f5; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; }
-  .ld-gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ld-gallery { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 12px; border: 1px solid #e8e8e8; }
+  .ld-gallery-main { position: relative; aspect-ratio: 4/3; background: #f0f0f0; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; }
+  .ld-gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+  .ld-gallery-main:hover img { transform: scale(1.02); }
   .ld-gallery-main-ph { font-size: 64px; color: #ddd; }
-  .ld-gallery-count { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,.6); color: #fff; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 4px; backdrop-filter: blur(4px); }
-  .ld-gallery-cat { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,.6); color: #fff; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 4px; backdrop-filter: blur(4px); }
-  .ld-gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.85); border: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; color: #333; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
-  .ld-gallery-nav:hover { background: #fff; }
-  .ld-gallery-nav-left { left: 12px; }
-  .ld-gallery-nav-right { right: 12px; }
-  .ld-thumbs { display: flex; gap: 6px; padding: 10px 12px; overflow-x: auto; }
-  .ld-thumb { width: 80px; height: 60px; border-radius: 4px; overflow: hidden; flex-shrink: 0; cursor: pointer; border: 2px solid transparent; transition: border-color .15s; opacity: .7; }
-  .ld-thumb.active { border-color: #e8410a; opacity: 1; }
-  .ld-thumb:hover { opacity: 1; }
+  .ld-gallery-count { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,.55); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+  .ld-gallery-cat { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,.55); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 5px; letter-spacing: .03em; }
+  .ld-thumbs { display: flex; gap: 8px; padding: 10px; overflow-x: auto; }
+  .ld-thumb { width: 72px; height: 54px; border-radius: 7px; overflow: hidden; flex-shrink: 0; cursor: pointer; border: 2px solid transparent; transition: border-color .15s; }
+  .ld-thumb.active { border-color: #e8410a; }
   .ld-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-  /* PRICE + TITLE */
-  .ld-info { background: #fff; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; }
-  .ld-price { font-size: 32px; font-weight: 900; color: #141414; letter-spacing: -.5px; margin-bottom: 4px; }
-  .ld-price-unit { font-size: 15px; color: #999; font-weight: 500; margin-left: 4px; }
-  .ld-title { font-size: 22px; font-weight: 800; margin: 0 0 14px; line-height: 1.25; color: #141414; }
-  .ld-meta-row { display: flex; align-items: center; gap: 14px; font-size: 13px; color: #999; flex-wrap: wrap; }
+  /* CARD */
+  .ld-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 20px 22px; margin-bottom: 12px; }
+  .ld-price-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+  .ld-price { font-size: 28px; font-weight: 900; color: #1a1a1a; letter-spacing: -.5px; }
+  .ld-price-unit { font-size: 14px; color: #888; font-weight: 500; }
+  .ld-title { font-size: 20px; font-weight: 800; margin: 0 0 10px; line-height: 1.25; letter-spacing: -.2px; }
+  .ld-meta-row { display: flex; align-items: center; gap: 16px; font-size: 13px; color: #888; margin-bottom: 0; flex-wrap: wrap; }
   .ld-meta-item { display: flex; align-items: center; gap: 4px; }
-  .ld-meta-id { margin-left: auto; font-size: 12px; color: #ccc; }
+
+  /* BADGES */
+  .ld-badges { display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 22px; background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; margin-bottom: 12px; }
+  .ld-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; padding: 5px 11px; border-radius: 20px; }
+  .ld-badge-green { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+  .ld-badge-orange { background: #fff3f0; color: #e8410a; border: 1px solid #fecab5; }
+  .ld-badge-blue { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
 
   /* DESC */
-  .ld-desc-card { background: #fff; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; }
-  .ld-desc-title { font-size: 18px; font-weight: 800; margin: 0 0 12px; color: #141414; }
-  .ld-desc-text { font-size: 15px; color: #333; line-height: 1.7; margin: 0; white-space: pre-wrap; word-break: break-word; }
-  .ld-desc-more { background: none; border: none; color: #e8410a; font-size: 14px; font-weight: 700; cursor: pointer; padding: 10px 0 0; font-family: inherit; }
+  .ld-desc-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 20px 22px; margin-bottom: 12px; }
+  .ld-desc-title { font-size: 15px; font-weight: 800; margin: 0 0 12px; }
+  .ld-desc-text { font-size: 14px; color: #444; line-height: 1.7; margin: 0; white-space: pre-wrap; word-break: break-word; }
+  .ld-desc-more { background: none; border: none; color: #e8410a; font-size: 13px; font-weight: 700; cursor: pointer; padding: 8px 0 0; font-family: inherit; }
 
   /* SIDE */
-  .ld-side { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .ld-side { position: sticky; top: 72px; display: flex; flex-direction: column; gap: 12px; }
 
-  /* WORKER CARD — Avito seller style */
-  .ld-worker-card { background: #fff; border-radius: 8px; overflow: hidden; }
-  .ld-worker-top { padding: 20px 20px 16px; display: flex; align-items: center; gap: 14px; }
-  .ld-worker-ava { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: linear-gradient(135deg,#e8410a,#ff7043); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px; font-weight: 800; }
+  /* WORKER CARD */
+  .ld-worker-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; overflow: hidden; }
+  .ld-worker-top { padding: 18px 18px 14px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid #f0f0f0; }
+  .ld-worker-ava { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: linear-gradient(135deg,#e8410a,#ff7043); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; font-weight: 800; }
   .ld-worker-ava img { width: 100%; height: 100%; object-fit: cover; }
-  .ld-worker-name { font-size: 18px; font-weight: 800; margin: 0 0 4px; color: #141414; }
+  .ld-worker-name { font-size: 15px; font-weight: 800; margin: 0 0 3px; color: #1a1a1a; }
   .ld-worker-name a { color: inherit; text-decoration: none; }
   .ld-worker-name a:hover { color: #e8410a; }
-  .ld-worker-stars { display: flex; align-items: center; gap: 3px; }
-  .ld-worker-star { font-size: 14px; }
-  .ld-worker-rating { font-weight: 800; color: #141414; font-size: 14px; margin-right: 4px; }
-  .ld-worker-reviews { color: #e8410a; font-size: 13px; font-weight: 600; text-decoration: none; }
-  .ld-worker-reviews:hover { text-decoration: underline; }
-  .ld-worker-info { padding: 0 20px 14px; font-size: 13px; color: #999; line-height: 1.7; }
-
-  /* Stats row */
-  .ld-worker-stats { display: grid; grid-template-columns: repeat(3,1fr); padding: 0 20px 16px; gap: 0; }
-  .ld-wstat { text-align: center; padding: 10px 4px; border-right: 1px solid #f0f0f0; }
+  .ld-worker-stars { display: flex; align-items: center; gap: 4px; font-size: 13px; }
+  .ld-worker-star { color: #f59e0b; font-size: 14px; }
+  .ld-worker-rating { font-weight: 800; color: #1a1a1a; }
+  .ld-worker-reviews { color: #888; font-size: 12px; }
+  .ld-worker-stats { display: grid; grid-template-columns: repeat(3,1fr); padding: 12px 18px; gap: 0; }
+  .ld-wstat { text-align: center; padding: 6px 4px; border-right: 1px solid #f0f0f0; }
   .ld-wstat:last-child { border-right: none; }
-  .ld-wstat-num { font-size: 18px; font-weight: 900; color: #141414; display: block; line-height: 1; }
-  .ld-wstat-lbl { font-size: 10px; color: #999; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 4px; display: block; }
-
-  /* Buttons */
-  .ld-worker-btns { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 8px; }
-  .ld-btn-primary { background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 16px; font-weight: 800; padding: 14px; cursor: pointer; font-family: inherit; transition: background .15s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+  .ld-wstat-num { font-size: 17px; font-weight: 900; color: #1a1a1a; display: block; line-height: 1; }
+  .ld-wstat-lbl { font-size: 10px; color: #aaa; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 3px; display: block; }
+  .ld-worker-btns { padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .ld-btn-primary { background: #e8410a; border: none; border-radius: 9px; color: #fff; font-size: 15px; font-weight: 800; padding: 13px; cursor: pointer; font-family: inherit; transition: background .15s; display: flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none; }
   .ld-btn-primary:hover { background: #d03a09; }
-  .ld-btn-outline { background: #fff; border: 2px solid #141414; border-radius: 8px; color: #141414; font-size: 16px; font-weight: 800; padding: 12px; cursor: pointer; font-family: inherit; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
-  .ld-btn-outline:hover { border-color: #e8410a; color: #e8410a; }
-  .ld-profile-link { display: block; text-align: center; font-size: 14px; color: #999; font-weight: 600; text-decoration: none; padding: 6px 0; transition: color .12s; }
-  .ld-profile-link:hover { color: #e8410a; }
+  .ld-btn-outline { background: #fff; border: 2px solid #e8410a; border-radius: 9px; color: #e8410a; font-size: 15px; font-weight: 800; padding: 12px; cursor: pointer; font-family: inherit; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none; }
+  .ld-btn-outline:hover { background: #fff3f0; }
 
   /* SIMILAR */
-  .ld-similar { background: #fff; border-radius: 8px; padding: 18px 20px; }
-  .ld-similar-title { font-size: 18px; font-weight: 800; color: #141414; margin: 0 0 14px; }
+  .ld-similar { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 16px; }
+  .ld-similar-title { font-size: 13px; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: .07em; margin: 0 0 12px; }
   .ld-similar-list { display: flex; flex-direction: column; gap: 10px; }
-  .ld-sim-item { display: flex; gap: 10px; text-decoration: none; color: #141414; align-items: center; transition: background .12s; border-radius: 6px; padding: 6px; }
+  .ld-sim-item { display: flex; gap: 10px; text-decoration: none; color: #1a1a1a; align-items: center; transition: background .15s; border-radius: 8px; padding: 4px; }
   .ld-sim-item:hover { background: #f8f8f8; }
-  .ld-sim-img { width: 64px; height: 48px; border-radius: 4px; overflow: hidden; flex-shrink: 0; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .ld-sim-img { width: 52px; height: 40px; border-radius: 7px; overflow: hidden; flex-shrink: 0; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
   .ld-sim-img img { width: 100%; height: 100%; object-fit: cover; }
-  .ld-sim-title { font-size: 13px; font-weight: 600; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; color: #333; }
-  .ld-sim-price { font-size: 14px; font-weight: 800; color: #141414; margin-top: 2px; }
+  .ld-sim-title { font-size: 13px; font-weight: 600; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
+  .ld-sim-price { font-size: 13px; font-weight: 800; color: #1a1a1a; margin-top: 2px; }
 
   /* SKELETON */
   .ld-skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: 8px; }
@@ -120,9 +118,8 @@ const css = `
 
   /* LIGHTBOX */
   .ld-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 9999; display: flex; align-items: center; justify-content: center; cursor: zoom-out; }
-  .ld-lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 4px; }
-  .ld-lightbox-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,.15); border: none; border-radius: 50%; width: 40px; height: 40px; color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; }
-  .ld-lightbox-close:hover { background: rgba(255,255,255,.3); }
+  .ld-lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 8px; }
+  .ld-lightbox-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,.15); border: none; border-radius: 50%; width: 40px; height: 40px; color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
   @media(max-width:900px) { .ld-wrap { grid-template-columns: 1fr; } .ld-side { position: static; } }
 `;
@@ -252,12 +249,6 @@ export default function ListingDetailPage() {
               {allPhotos.length > 1 && (
                 <span className="ld-gallery-count">{activePhoto+1} / {allPhotos.length}</span>
               )}
-              {allPhotos.length > 1 && (
-                <>
-                  <button className="ld-gallery-nav ld-gallery-nav-left" onClick={e => { e.stopPropagation(); setActivePhoto(i => i > 0 ? i-1 : allPhotos.length-1); }}>‹</button>
-                  <button className="ld-gallery-nav ld-gallery-nav-right" onClick={e => { e.stopPropagation(); setActivePhoto(i => i < allPhotos.length-1 ? i+1 : 0); }}>›</button>
-                </>
-              )}
             </div>
             {allPhotos.length > 1 && (
               <div className="ld-thumbs">
@@ -270,18 +261,28 @@ export default function ListingDetailPage() {
             )}
           </div>
 
-          {/* Price + Title — Avito style */}
-          <div className="ld-info">
-            <div className="ld-price">
-              {Number(listing.price||0).toLocaleString('ru-RU')} ₽
+          {/* Price + Title */}
+          <div className="ld-card">
+            <div className="ld-price-row">
+              <span className="ld-price">{Number(listing.price||0).toLocaleString('ru-RU')} ₽</span>
               {listing.priceUnit && <span className="ld-price-unit">{listing.priceUnit}</span>}
             </div>
             <h1 className="ld-title">{listing.title}</h1>
             <div className="ld-meta-row">
               <span className="ld-meta-item">📍 Йошкар-Ола</span>
               {listing.category && <span className="ld-meta-item">🏷️ {listing.category}</span>}
-              <span className="ld-meta-id">ID {listing.id}</span>
+              <span className="ld-meta-item" style={{marginLeft:'auto',color:'#bbb',fontSize:12}}>
+                ID {listing.id}
+              </span>
             </div>
+          </div>
+
+          {/* Badges */}
+          <div className="ld-badges">
+            <span className="ld-badge ld-badge-green">✅ Проверен</span>
+            <span className="ld-badge ld-badge-orange">⚡ Быстрый отклик</span>
+            <span className="ld-badge ld-badge-blue">🛡️ Гарантия</span>
+            {completed > 0 && <span className="ld-badge ld-badge-green">🏆 {completed} заказов</span>}
           </div>
 
           {/* Description */}
@@ -301,7 +302,7 @@ export default function ListingDetailPage() {
         {/* ── SIDE ── */}
         <div className="ld-side">
 
-          {/* Worker card — Avito seller style */}
+          {/* Worker card */}
           <div className="ld-worker-card">
             <div className="ld-worker-top">
               <div className="ld-worker-ava">
@@ -315,18 +316,13 @@ export default function ListingDetailPage() {
                   <Link to={`/workers/${listing.workerId}`}>{workerName}</Link>
                 </div>
                 <div className="ld-worker-stars">
-                  {rating > 0 && <span className="ld-worker-rating">{Number(rating).toFixed(1)}</span>}
                   {[1,2,3,4,5].map(i => (
                     <span key={i} className="ld-worker-star" style={{color: i <= Math.round(rating) ? '#f59e0b' : '#e5e7eb'}}>★</span>
                   ))}
-                  {reviews > 0 && <>&nbsp;<Link to={`/workers/${listing.workerId}`} className="ld-worker-reviews">{reviews} {reviews === 1 ? 'отзыв' : reviews < 5 ? 'отзыва' : 'отзывов'}</Link></>}
+                  {rating > 0 && <span className="ld-worker-rating">{Number(rating).toFixed(1)}</span>}
+                  {reviews > 0 && <span className="ld-worker-reviews">({reviews} отзывов)</span>}
                 </div>
               </div>
-            </div>
-
-            <div className="ld-worker-info">
-              Частное лицо · На СвоиМастера
-              {completed > 0 && <> · {completed} {completed === 1 ? 'заказ' : completed < 5 ? 'заказа' : 'заказов'} выполнено</>}
             </div>
 
             {/* Stats */}
@@ -361,7 +357,7 @@ export default function ListingDetailPage() {
               </Link>
               <Link
                 to={`/workers/${listing.workerId}`}
-                className="ld-profile-link"
+                style={{textAlign:'center',fontSize:13,color:'#888',fontWeight:600,textDecoration:'none',padding:'4px 0'}}
               >
                 Профиль мастера →
               </Link>
