@@ -320,20 +320,6 @@ function CustomerHome({ userId, userName }) {
             Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
           </p>
 
-          {/* Кнопки */}
-          <div style={{display:'flex',gap:12,justifyContent:'center',marginBottom:40}}>
-            <Link to="/find-master" style={{background:'#e8410a',color:'#fff',borderRadius:12,fontFamily:'Manrope,Arial,sans-serif',fontSize:15,fontWeight:800,padding:'14px 32px',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:8,boxShadow:'0 8px 24px rgba(232,65,10,.35)',transition:'background .15s'}}
-              onMouseEnter={e=>e.currentTarget.style.background='#d03a09'}
-              onMouseLeave={e=>e.currentTarget.style.background='#e8410a'}>
-              🔍 Найти мастера
-            </Link>
-            <Link to="/categories" style={{background:'transparent',color:'rgba(255,255,255,.8)',border:'1.5px solid rgba(255,255,255,.2)',borderRadius:12,fontFamily:'Manrope,Arial,sans-serif',fontSize:15,fontWeight:700,padding:'13px 28px',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:8,transition:'all .15s'}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.5)';e.currentTarget.style.color='#fff';}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.2)';e.currentTarget.style.color='rgba(255,255,255,.8)';}}>
-              Разместить заявку →
-            </Link>
-          </div>
-
           {/* Статистика */}
           <div style={{display:'inline-flex',gap:0,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.08)',borderRadius:16,overflow:'hidden'}}>
             {[['24/7','Приём заявок'],['9','Категорий'],['≤10','Мин. отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
