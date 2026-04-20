@@ -26,7 +26,7 @@ const CAT_SLUGS = {
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
   .ld * { box-sizing: border-box; }
-  .ld { font-family: Manrope, Arial, sans-serif; background: #f4f4f4; min-height: 100vh; color: #1a1a1a; }
+  .ld { font-family: Manrope, Arial, sans-serif; background: #fff; min-height: 100vh; color: #1a1a1a; }
 
   /* BREADCRUMB */
   .ld-bread { background: #fff; border-bottom: 1px solid #e8e8e8; }
