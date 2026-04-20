@@ -177,6 +177,30 @@ export default function ListingDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  const photos = listing?.photos?.length ? listing.photos : [];
+  const catSlug = CAT_SLUGS[listing?.category] || '';
+  const fallbackPhoto = CAT_PHOTOS[catSlug];
+  const allPhotos = photos.length ? photos : (fallbackPhoto ? [fallbackPhoto] : []);
+
+  const nextPhoto = () => {
+    setActivePhoto((i) => (allPhotos.length > 1 ? (i + 1) % allPhotos.length : i));
+  };
+
+  const prevPhoto = () => {
+    setActivePhoto((i) => (allPhotos.length > 1 ? (i - 1 + allPhotos.length) % allPhotos.length : i));
+  };
+
+  useEffect(() => {
+    if (!lightbox || allPhotos.length <= 1) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setLightbox(false);
+      if (e.key === 'ArrowRight') setActivePhoto((i) => (i + 1) % allPhotos.length);
+      if (e.key === 'ArrowLeft') setActivePhoto((i) => (i - 1 + allPhotos.length) % allPhotos.length);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightbox, allPhotos.length]);
+
   if (loading) return (
     <div className="ld"><style>{css}</style>
       <div className="ld-wrap">
@@ -204,30 +228,6 @@ export default function ListingDetailPage() {
       </div>
     </div>
   );
-
-  const photos = listing.photos?.length ? listing.photos : [];
-  const catSlug = CAT_SLUGS[listing.category] || '';
-  const fallbackPhoto = CAT_PHOTOS[catSlug];
-  const allPhotos = photos.length ? photos : (fallbackPhoto ? [fallbackPhoto] : []);
-
-  const nextPhoto = React.useCallback(() => {
-    setActivePhoto((i) => (allPhotos.length > 1 ? (i + 1) % allPhotos.length : i));
-  }, [allPhotos.length]);
-
-  const prevPhoto = React.useCallback(() => {
-    setActivePhoto((i) => (allPhotos.length > 1 ? (i - 1 + allPhotos.length) % allPhotos.length : i));
-  }, [allPhotos.length]);
-
-  React.useEffect(() => {
-    if (!lightbox) return;
-    const onKey = (e) => {
-      if (e.key === 'Escape') setLightbox(false);
-      if (e.key === 'ArrowRight') setActivePhoto((i) => (i + 1) % allPhotos.length);
-      if (e.key === 'ArrowLeft') setActivePhoto((i) => (i - 1 + allPhotos.length) % allPhotos.length);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [lightbox, allPhotos.length]);
 
   const workerName = [listing.workerName, listing.workerLastName].filter(Boolean).join(' ') || 'Мастер';
   const initials = (listing.workerName||'М')[0].toUpperCase();
