@@ -305,55 +305,42 @@ function CustomerHome({ userId, userName }) {
         {/* Декоративные круги */}
         <div style={{position:'absolute',top:-80,left:-80,width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
 
-        <div style={{position:'relative',zIndex:1,maxWidth:1200,margin:'0 auto',padding:'60px 24px 56px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:48,alignItems:'center'}}>
-          {/* Текст */}
-          <div>
-            <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(232,65,10,.15)',border:'1px solid rgba(232,65,10,.3)',borderRadius:20,padding:'5px 14px',fontSize:11,fontWeight:800,color:'#ff8055',letterSpacing:'.08em',textTransform:'uppercase',marginBottom:20}}>
-              <span style={{width:6,height:6,borderRadius:'50%',background:'#ff5722',display:'inline-block'}}/>
-              Йошкар-Ола · Маркетплейс мастеров
-            </div>
-            <h1 style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:50,fontWeight:900,color:'#fff',lineHeight:1.06,margin:'0 0 18px',letterSpacing:'-1.5px'}}>
-              Свои мастера<br/>для <em style={{fontStyle:'normal',color:'#e8410a'}}>любых задач</em><br/>в Йошкар-Оле
-            </h1>
-            <p style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:16,color:'rgba(255,255,255,.55)',lineHeight:1.7,margin:'0 0 32px',maxWidth:400}}>
-              Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
-            </p>
-            <div style={{display:'flex',gap:12,marginBottom:40}}>
-              <Link to="/find-master" style={{background:'#e8410a',color:'#fff',borderRadius:12,fontFamily:'Manrope,Arial,sans-serif',fontSize:15,fontWeight:800,padding:'14px 28px',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:8,boxShadow:'0 8px 24px rgba(232,65,10,.35)',transition:'background .15s'}}
-                onMouseEnter={e=>e.currentTarget.style.background='#d03a09'}
-                onMouseLeave={e=>e.currentTarget.style.background='#e8410a'}>
-                🔍 Найти мастера
-              </Link>
-              <Link to="/categories" style={{background:'transparent',color:'rgba(255,255,255,.8)',border:'1.5px solid rgba(255,255,255,.2)',borderRadius:12,fontFamily:'Manrope,Arial,sans-serif',fontSize:15,fontWeight:700,padding:'13px 24px',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:8,transition:'all .15s'}}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.5)';e.currentTarget.style.color='#fff';}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.2)';e.currentTarget.style.color='rgba(255,255,255,.8)';}}>
-                Разместить заявку →
-              </Link>
-            </div>
-            {/* Статистика горизонтально */}
-            <div style={{display:'flex',gap:32,paddingTop:28,borderTop:'1px solid rgba(255,255,255,.08)'}}>
-              {[['24/7','Приём заявок'],['9','Категорий'],['≤10','Мин. отклик'],['5.0★','Рейтинг']].map(([n,l])=>(
-                <div key={l}>
-                  <div style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:22,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
-                  <div style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:10,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:4}}>{l}</div>
-                </div>
-              ))}
-            </div>
+        <div style={{position:'relative',zIndex:1,maxWidth:900,margin:'0 auto',padding:'48px 24px 44px',textAlign:'center'}}>
+          {/* Бейдж */}
+          <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(232,65,10,.15)',border:'1px solid rgba(232,65,10,.3)',borderRadius:20,padding:'5px 14px',fontSize:11,fontWeight:800,color:'#ff8055',letterSpacing:'.08em',textTransform:'uppercase',marginBottom:20}}>
+            <span style={{width:6,height:6,borderRadius:'50%',background:'#ff5722',animation:'pulse-dot 2s infinite',display:'inline-block'}}/>
+            Йошкар-Ола · Маркетплейс мастеров
           </div>
 
-          {/* Фото-сетка 3×3 без названий */}
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
-            {ALL_CATS.slice(0,9).map(cat=>(
-              <Link key={cat.slug} to={`/find-master/${cat.slug}`}
-                style={{borderRadius:12,overflow:'hidden',textDecoration:'none',position:'relative',aspectRatio:'1',display:'block',transition:'transform .2s,box-shadow .2s'}}
-                onMouseEnter={e=>{e.currentTarget.style.transform='scale(1.05)';e.currentTarget.style.boxShadow='0 12px 28px rgba(0,0,0,.5)';}}
-                onMouseLeave={e=>{e.currentTarget.style.transform='scale(1)';e.currentTarget.style.boxShadow='none';}}>
-                {CAT_PHOTOS[cat.slug]
-                  ? <div style={{position:'absolute',inset:0,backgroundImage:`url(${CAT_PHOTOS[cat.slug]})`,backgroundSize:'cover',backgroundPosition:'center'}}/>
-                  : <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,#2a1a00,#e8410a)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>{cat.emoji||'🛠️'}</div>
-                }
-                <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.3) 0%,transparent 50%)'}}/>
-              </Link>
+          {/* Заголовок */}
+          <h1 style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:54,fontWeight:900,color:'#fff',lineHeight:1.06,margin:'0 0 16px',letterSpacing:'-1.5px'}}>
+            Свои мастера для <em style={{fontStyle:'normal',color:'#e8410a'}}>любых задач</em><br/>в Йошкар-Оле
+          </h1>
+          <p style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:17,color:'rgba(255,255,255,.5)',lineHeight:1.7,margin:'0 auto 32px',maxWidth:520}}>
+            Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
+          </p>
+
+          {/* Кнопки */}
+          <div style={{display:'flex',gap:12,justifyContent:'center',marginBottom:40}}>
+            <Link to="/find-master" style={{background:'#e8410a',color:'#fff',borderRadius:12,fontFamily:'Manrope,Arial,sans-serif',fontSize:15,fontWeight:800,padding:'14px 32px',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:8,boxShadow:'0 8px 24px rgba(232,65,10,.35)',transition:'background .15s'}}
+              onMouseEnter={e=>e.currentTarget.style.background='#d03a09'}
+              onMouseLeave={e=>e.currentTarget.style.background='#e8410a'}>
+              🔍 Найти мастера
+            </Link>
+            <Link to="/categories" style={{background:'transparent',color:'rgba(255,255,255,.8)',border:'1.5px solid rgba(255,255,255,.2)',borderRadius:12,fontFamily:'Manrope,Arial,sans-serif',fontSize:15,fontWeight:700,padding:'13px 28px',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:8,transition:'all .15s'}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.5)';e.currentTarget.style.color='#fff';}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.2)';e.currentTarget.style.color='rgba(255,255,255,.8)';}}>
+              Разместить заявку →
+            </Link>
+          </div>
+
+          {/* Статистика */}
+          <div style={{display:'inline-flex',gap:0,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.08)',borderRadius:16,overflow:'hidden'}}>
+            {[['24/7','Приём заявок'],['9','Категорий'],['≤10','Мин. отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
+              <div key={l} style={{padding:'16px 28px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
+                <div style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:20,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
+                <div style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:10,color:'rgba(255,255,255,.35)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em',marginTop:4}}>{l}</div>
+              </div>
             ))}
           </div>
         </div>
