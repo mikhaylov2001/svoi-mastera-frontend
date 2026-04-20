@@ -240,13 +240,13 @@ function Header() {
                   to="/categories"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
                 >
-                  Найти мастера
+                  Разместить заявку
                 </NavLink>
                 <NavLink
                   to="/find-master"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
                 >
-                  Активные мастера
+                  Найти мастера
                 </NavLink>
                 <NavLink
                   to="/chat"
@@ -432,10 +432,10 @@ function Header() {
                   <>
                     {/* ══ МОБИЛЬНОЕ МЕНЮ ЗАКАЗЧИКА ══ */}
                     <NavLink to="/categories" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                      Найти мастера
+                      Разместить заявку
                     </NavLink>
                     <NavLink to="/find-master" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                      Активные мастера
+                      Найти мастера
                     </NavLink>
                     <NavLink to="/chat" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
                       Сообщения {unread > 0 && `• ${unread}`}
