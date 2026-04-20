@@ -35,7 +35,7 @@ const css = `
   .ld-bread-sep { color: #ccc; }
 
   /* LAYOUT */
-  .ld-wrap { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: flex-start; }
+  .ld-wrap { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; display: grid; grid-template-columns: minmax(0,1fr) 340px; gap: 20px; align-items: flex-start; }
 
   /* MAIN */
   .ld-main {}
@@ -45,6 +45,10 @@ const css = `
   .ld-gallery-main { position: relative; aspect-ratio: 4/3; background: #f0f0f0; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; }
   .ld-gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
   .ld-gallery-main:hover img { transform: scale(1.02); }
+  .ld-gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border: none; border-radius: 50%; background: rgba(0,0,0,.45); color: #fff; font-size: 26px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 3; backdrop-filter: blur(4px); }
+  .ld-gallery-nav:hover { background: rgba(0,0,0,.62); }
+  .ld-gallery-nav-prev { left: 12px; }
+  .ld-gallery-nav-next { right: 12px; }
   .ld-gallery-main-ph { font-size: 64px; color: #ddd; }
   .ld-gallery-count { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,.55); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
   .ld-gallery-cat { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,.55); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 5px; letter-spacing: .03em; }
@@ -61,6 +65,10 @@ const css = `
   .ld-title { font-size: 20px; font-weight: 800; margin: 0 0 10px; line-height: 1.25; letter-spacing: -.2px; }
   .ld-meta-row { display: flex; align-items: center; gap: 16px; font-size: 13px; color: #888; margin-bottom: 0; flex-wrap: wrap; }
   .ld-meta-item { display: flex; align-items: center; gap: 4px; }
+  .ld-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin-top: 14px; }
+  .ld-fact { border-top: 1px solid #f2f2f2; padding-top: 10px; }
+  .ld-fact-k { font-size: 11px; color: #9ca3af; text-transform: uppercase; font-weight: 700; letter-spacing: .04em; margin-bottom: 3px; }
+  .ld-fact-v { font-size: 13px; color: #1f2937; font-weight: 700; }
 
   /* BADGES */
   .ld-badges { display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 22px; background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; margin-bottom: 12px; }
@@ -100,6 +108,7 @@ const css = `
   .ld-btn-primary:hover { background: #d03a09; }
   .ld-btn-outline { background: #fff; border: 2px solid #e8410a; border-radius: 9px; color: #e8410a; font-size: 15px; font-weight: 800; padding: 12px; cursor: pointer; font-family: inherit; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none; }
   .ld-btn-outline:hover { background: #fff3f0; }
+  .ld-side-note { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #64748b; line-height: 1.5; }
 
   /* SIMILAR */
   .ld-similar { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 16px; }
@@ -120,8 +129,12 @@ const css = `
   .ld-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 9999; display: flex; align-items: center; justify-content: center; cursor: zoom-out; }
   .ld-lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 8px; }
   .ld-lightbox-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,.15); border: none; border-radius: 50%; width: 40px; height: 40px; color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .ld-lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.14); border: none; border-radius: 999px; width: 44px; height: 44px; color: #fff; font-size: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .ld-lightbox-prev { left: 20px; }
+  .ld-lightbox-next { right: 20px; }
+  .ld-lightbox-counter { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 13px; font-weight: 700; background: rgba(255,255,255,.14); border-radius: 999px; padding: 6px 12px; }
 
-  @media(max-width:900px) { .ld-wrap { grid-template-columns: 1fr; } .ld-side { position: static; } }
+  @media(max-width:900px) { .ld-wrap { grid-template-columns: 1fr; } .ld-side { position: static; } .ld-facts { grid-template-columns: 1fr; } }
 `;
 
 export default function ListingDetailPage() {
@@ -197,6 +210,25 @@ export default function ListingDetailPage() {
   const fallbackPhoto = CAT_PHOTOS[catSlug];
   const allPhotos = photos.length ? photos : (fallbackPhoto ? [fallbackPhoto] : []);
 
+  const nextPhoto = React.useCallback(() => {
+    setActivePhoto((i) => (allPhotos.length > 1 ? (i + 1) % allPhotos.length : i));
+  }, [allPhotos.length]);
+
+  const prevPhoto = React.useCallback(() => {
+    setActivePhoto((i) => (allPhotos.length > 1 ? (i - 1 + allPhotos.length) % allPhotos.length : i));
+  }, [allPhotos.length]);
+
+  React.useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setLightbox(false);
+      if (e.key === 'ArrowRight') setActivePhoto((i) => (i + 1) % allPhotos.length);
+      if (e.key === 'ArrowLeft') setActivePhoto((i) => (i - 1 + allPhotos.length) % allPhotos.length);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightbox, allPhotos.length]);
+
   const workerName = [listing.workerName, listing.workerLastName].filter(Boolean).join(' ') || 'Мастер';
   const initials = (listing.workerName||'М')[0].toUpperCase();
 
@@ -215,7 +247,16 @@ export default function ListingDetailPage() {
       {lightbox && allPhotos.length > 0 && (
         <div className="ld-lightbox" onClick={() => setLightbox(false)}>
           <button className="ld-lightbox-close" onClick={() => setLightbox(false)}>✕</button>
+          {allPhotos.length > 1 && (
+            <>
+              <button className="ld-lightbox-nav ld-lightbox-prev" onClick={(e) => { e.stopPropagation(); prevPhoto(); }}>‹</button>
+              <button className="ld-lightbox-nav ld-lightbox-next" onClick={(e) => { e.stopPropagation(); nextPhoto(); }}>›</button>
+            </>
+          )}
           <img src={allPhotos[activePhoto]} alt="" onClick={e => e.stopPropagation()}/>
+          {allPhotos.length > 1 && (
+            <div className="ld-lightbox-counter">{activePhoto + 1} / {allPhotos.length}</div>
+          )}
         </div>
       )}
 
@@ -245,6 +286,12 @@ export default function ListingDetailPage() {
                 ? <img src={allPhotos[activePhoto]} alt={listing.title}/>
                 : <div className="ld-gallery-main-ph">🔧</div>
               }
+              {allPhotos.length > 1 && (
+                <>
+                  <button className="ld-gallery-nav ld-gallery-nav-prev" onClick={(e) => { e.stopPropagation(); prevPhoto(); }}>‹</button>
+                  <button className="ld-gallery-nav ld-gallery-nav-next" onClick={(e) => { e.stopPropagation(); nextPhoto(); }}>›</button>
+                </>
+              )}
               {listing.category && <span className="ld-gallery-cat">{listing.category}</span>}
               {allPhotos.length > 1 && (
                 <span className="ld-gallery-count">{activePhoto+1} / {allPhotos.length}</span>
@@ -274,6 +321,24 @@ export default function ListingDetailPage() {
               <span className="ld-meta-item" style={{marginLeft:'auto',color:'#bbb',fontSize:12}}>
                 ID {listing.id}
               </span>
+            </div>
+            <div className="ld-facts">
+              <div className="ld-fact">
+                <div className="ld-fact-k">Формат</div>
+                <div className="ld-fact-v">{listing.priceUnit || 'За услугу'}</div>
+              </div>
+              <div className="ld-fact">
+                <div className="ld-fact-k">Отклик</div>
+                <div className="ld-fact-v">Обычно до 30 минут</div>
+              </div>
+              <div className="ld-fact">
+                <div className="ld-fact-k">Способ связи</div>
+                <div className="ld-fact-v">Через внутренний чат</div>
+              </div>
+              <div className="ld-fact">
+                <div className="ld-fact-k">Сделка</div>
+                <div className="ld-fact-v">Безопасно в сервисе</div>
+              </div>
             </div>
           </div>
 
@@ -353,8 +418,11 @@ export default function ListingDetailPage() {
                 to={catSlug ? `/categories/${catSlug}` : '/categories'}
                 className="ld-btn-outline"
               >
-                📋 Разместить заявку
+                ✅ Оставить заявку по услуге
               </Link>
+              <div className="ld-side-note">
+                После заявки мастер увидит задачу и сможет сразу ответить в чате.
+              </div>
               <Link
                 to={`/workers/${listing.workerId}`}
                 style={{textAlign:'center',fontSize:13,color:'#888',fontWeight:600,textDecoration:'none',padding:'4px 0'}}
