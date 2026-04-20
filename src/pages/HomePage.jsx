@@ -309,12 +309,12 @@ function CustomerHome({ userId, userName }) {
           {/* Бейдж */}
           <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(232,65,10,.15)',border:'1px solid rgba(232,65,10,.3)',borderRadius:20,padding:'5px 14px',fontSize:11,fontWeight:800,color:'#ff8055',letterSpacing:'.08em',textTransform:'uppercase',marginBottom:20}}>
             <span style={{width:6,height:6,borderRadius:'50%',background:'#ff5722',animation:'pulse-dot 2s infinite',display:'inline-block'}}/>
-            Йошкар-Ола · Маркетплейс мастеров
+            Йошкар-Ола · Проверенные мастера рядом
           </div>
 
           {/* Заголовок */}
           <h1 style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:54,fontWeight:900,color:'#fff',lineHeight:1.06,margin:'0 0 16px',letterSpacing:'-1.5px'}}>
-            Свои мастера для <em style={{fontStyle:'normal',color:'#e8410a'}}>любых задач</em><br/>в Йошкар-Оле
+            Найдите мастера в <em style={{fontStyle:'normal',color:'#e8410a'}}>Йошкар-Оле</em><br/>за 10 минут
           </h1>
           <div style={{height:12}} />
         </div>
@@ -326,7 +326,7 @@ function CustomerHome({ userId, userName }) {
           {/* ── КАТЕГОРИИ ── */}
           <div className="av-cats-block">
             <div className="av-cats-hdr">
-              <span className="av-cats-hdr-title">Категории услуг</span>
+              <span className="av-cats-hdr-title">Популярные категории</span>
               <Link to="/find-master" className="av-cats-hdr-link">Все категории →</Link>
             </div>
             <div className="av-cats-scroll">
@@ -346,7 +346,7 @@ function CustomerHome({ userId, userName }) {
 
           {/* ── ОБЪЯВЛЕНИЯ ── */}
           <div className="av-recs-hdr">
-            <h2 className="av-recs-title">Рекомендации для вас</h2>
+            <h2 className="av-recs-title">Объявления мастеров</h2>
             <Link to="/find-master" className="av-recs-link">Смотреть все →</Link>
           </div>
 
@@ -617,11 +617,11 @@ function GuestHome() {
         <div style={{position:'relative',zIndex:1,maxWidth:1200,margin:'0 auto',padding:'72px 24px 64px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'center'}}>
           {/* Левая — текст */}
           <div>
-            <div className="hp-hero-eyebrow" style={{marginBottom:24}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
+            <div className="hp-hero-eyebrow" style={{marginBottom:24}}><span className="hp-hero-dot"/>Йошкар-Ола · Проверенные мастера рядом</div>
             <h1 className="hp-hero-h1" style={{fontSize:52,marginBottom:20,lineHeight:1.06}}>
-              Свои мастера<br/>
-              для <em>любых задач</em><br/>
-              в Йошкар-Оле
+              Найдите мастера<br/>
+              в <em>Йошкар-Оле</em><br/>
+              за 10 минут
             </h1>
             <p style={{fontSize:16,color:'rgba(255,255,255,.55)',lineHeight:1.7,margin:'0 0 32px',maxWidth:400}}>
               Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
@@ -689,7 +689,7 @@ function GuestHome() {
           <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:24}}>
             <div>
               <p className="g-eyebrow">Услуги</p>
-              <h2 className="g-title" style={{marginBottom:0}}>Категории услуг</h2>
+              <h2 className="g-title" style={{marginBottom:0}}>Популярные категории</h2>
             </div>
             <Link to="/register" style={{fontSize:13,color:'#e8410a',fontWeight:700,textDecoration:'none'}}>Все категории →</Link>
           </div>
