@@ -353,7 +353,7 @@ function CustomerHome({ userId, userName }) {
             <>
               <div className="av-cards-grid">
                 {listings.slice(0, shown).map(l => (
-                  <Link key={l.id} to={`/workers/${l.workerId}`} className="av-card">
+                  <Link key={l.id} to={`/listings/${l.id}`} className="av-card">
                     <div className="av-card-img">
                       {l.photos?.length ? <img src={l.photos[0]} alt=""/> : '🔧'}
                       {l.category && <span className="av-card-cat">{l.category}</span>}
