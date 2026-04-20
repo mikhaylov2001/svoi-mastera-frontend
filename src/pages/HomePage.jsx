@@ -209,209 +209,205 @@ function CustomerHome({ userId, userName }) {
       .then(d => setListings(Array.isArray(d) ? d.filter(l => l.active) : [])).catch(() => {});
   }, []);
 
-  const avitoCss = `
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
-    .av-page { font-family: Manrope, Arial, sans-serif; background: #f4f4f4; min-height: 100vh; }
+  const mainCats = ALL_CATS.slice(0, 5);
+  const restCats = ALL_CATS.slice(5);
 
-    /* ── ПОИСК ── */
-    .av-search-bar { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 12px 0; }
-    .av-search-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; gap: 10px; align-items: center; }
-    .av-search-box { flex: 1; display: flex; align-items: center; gap: 10px; background: #f4f4f4; border: 2px solid transparent; border-radius: 8px; padding: 0 14px; transition: all .15s; }
-    .av-search-box:focus-within { background: #fff; border-color: #e8410a; box-shadow: 0 0 0 3px rgba(232,65,10,.08); }
-    .av-search-box input { flex: 1; border: none; background: none; font-size: 15px; padding: 12px 0; outline: none; font-family: Manrope, Arial, sans-serif; color: #1a1a1a; }
-    .av-search-box input::placeholder { color: #aaa; }
-    .av-search-btn { background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 800; padding: 12px 28px; cursor: pointer; font-family: Manrope, Arial, sans-serif; flex-shrink: 0; transition: background .15s; }
-    .av-search-btn:hover { background: #d03a09; }
-    .av-location { display: flex; align-items: center; gap: 5px; font-size: 14px; color: #333; font-weight: 600; white-space: nowrap; cursor: pointer; }
-
-    /* ── BODY ── */
-    .av-body { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; display: grid; grid-template-columns: 1fr 296px; gap: 20px; align-items: flex-start; }
-
-    /* ── КАТЕГОРИИ ── */
-    .av-cats-block { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
-    .av-cats-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 0; }
-    .av-cats-hdr-title { font-size: 18px; font-weight: 800; color: #1a1a1a; }
-    .av-cats-hdr-link { font-size: 13px; color: #e8410a; text-decoration: none; font-weight: 600; }
-    .av-cats-hdr-link:hover { text-decoration: underline; }
-    .av-cats-scroll { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; padding: 12px 8px 8px; }
-    .av-cat-item { display: flex; flex-direction: column; align-items: center; gap: 0; text-decoration: none; color: #1a1a1a; padding: 8px 6px; border-radius: 10px; transition: background .15s; cursor: pointer; }
-    .av-cat-item:hover { background: #fff3f0; }
-    .av-cat-photo { width: 100%; aspect-ratio: 3/2; border-radius: 10px; overflow: hidden; position: relative; margin-bottom: 8px; }
-    .av-cat-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
-    .av-cat-item:hover .av-cat-photo img { transform: scale(1.06); }
-    .av-cat-photo-ph { width: 100%; height: 100%; background: linear-gradient(135deg, #2a1a00, #e8410a); display: flex; align-items: center; justify-content: center; font-size: 28px; }
-    .av-cat-name { font-size: 12px; font-weight: 700; text-align: center; line-height: 1.3; color: #1a1a1a; }
-
-    /* ── ОБЪЯВЛЕНИЯ ── */
-    .av-recs-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-    .av-recs-title { font-size: 18px; font-weight: 800; color: #1a1a1a; margin: 0; }
-    .av-recs-link { font-size: 13px; color: #e8410a; text-decoration: none; font-weight: 600; }
-    .av-recs-link:hover { text-decoration: underline; }
-    .av-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .av-card { background: #fff; border-radius: 10px; overflow: hidden; text-decoration: none; color: #1a1a1a; display: flex; flex-direction: column; transition: box-shadow .18s, transform .18s; border: 1px solid #e8e8e8; }
-    .av-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.1); transform: translateY(-2px); }
-    .av-card-img { aspect-ratio: 4/3; background: #f0f0f0; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #ccc; }
-    .av-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
-    .av-card:hover .av-card-img img { transform: scale(1.04); }
-    .av-card-cat { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,.52); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
-    .av-card-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 3px; flex: 1; }
-    .av-card-price { font-size: 17px; font-weight: 900; color: #1a1a1a; letter-spacing: -.2px; }
-    .av-card-price-unit { font-size: 11px; color: #aaa; font-weight: 500; margin-left: 3px; }
-    .av-card-title { font-size: 13px; color: #555; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .av-card-footer { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding-top: 8px; border-top: 1px solid #f0f0f0; }
-    .av-card-ava { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg,#e8410a,#ff7043); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 800; overflow: hidden; flex-shrink: 0; }
-    .av-card-ava img { width: 100%; height: 100%; object-fit: cover; }
-    .av-card-wname { font-size: 12px; color: #888; font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; }
-    .av-card-city { font-size: 11px; color: #bbb; white-space: nowrap; }
-    .av-more-btn { width: 100%; margin-top: 14px; padding: 13px; background: #fff; border: 2px solid #e8e8e8; border-radius: 8px; font-size: 14px; font-weight: 700; color: #333; cursor: pointer; font-family: Manrope, Arial, sans-serif; transition: all .15s; }
-    .av-more-btn:hover { border-color: #e8410a; color: #e8410a; }
-    .av-empty { background: #fff; border-radius: 10px; border: 2px dashed #e8e8e8; padding: 48px 24px; text-align: center; color: #aaa; }
-    .av-empty-ico { font-size: 40px; margin-bottom: 10px; }
-    .av-empty h3 { font-size: 15px; font-weight: 700; color: #555; margin: 0 0 6px; }
-    .av-empty p { font-size: 13px; margin: 0; }
-
-    /* ── ПРАВАЯ КОЛОНКА ── */
-    .av-side { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 68px; }
-    .av-widget { background: #fff; border-radius: 12px; padding: 16px; border: 1px solid #e8e8e8; }
-    .av-widget-title { font-size: 12px; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: .07em; margin: 0 0 12px; }
-    .av-nav-list { display: flex; flex-direction: column; gap: 4px; }
-    .av-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; color: #1a1a1a; transition: background .15s; }
-    .av-nav-item:hover { background: #f4f4f4; }
-    .av-nav-item-orange { background: #e8410a; color: #fff; }
-    .av-nav-item-orange:hover { background: #d03a09; }
-    .av-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .av-stat-box { background: #f8f8f8; border-radius: 8px; padding: 12px 10px; text-align: center; }
-    .av-stat-num { font-size: 20px; font-weight: 900; color: #e8410a; display: block; line-height: 1; }
-    .av-stat-lbl { font-size: 10px; color: #aaa; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; display: block; }
-    .av-promo { background: linear-gradient(135deg, #1a0a00, #e8410a 140%); border-radius: 12px; padding: 18px; color: #fff; }
-    .av-promo h3 { font-size: 15px; font-weight: 800; margin: 0 0 6px; line-height: 1.3; }
-    .av-promo p { font-size: 12px; color: rgba(255,255,255,.65); margin: 0 0 14px; line-height: 1.55; }
-    .av-promo-btn { width: 100%; background: #fff; border: none; border-radius: 7px; color: #e8410a; font-size: 13px; font-weight: 800; padding: 10px; cursor: pointer; font-family: Manrope, Arial, sans-serif; transition: background .15s; }
-    .av-promo-btn:hover { background: #ffe8e0; }
-
-    @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } }
-    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } }
-  `;
+  // Masonry layout: first cat is big (spans 2 rows)
+  const masonryCats = ALL_CATS.slice(0, 5);
 
   return (
-    <div className="av-page">
-      <style>{avitoCss}</style>
+    <div className="hp">
+      <style>{css}</style>
 
-      {/* ── ПОИСК ── */}
-      <div className="av-search-bar">
-        <div className="av-search-wrap">
-          <div className="av-search-box">
-            <svg width="17" height="17" fill="none" stroke="#aaa" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input
-              value={q} onChange={e=>setQ(e.target.value)}
-              onKeyDown={e=>e.key==='Enter'&&q.trim()&&navigate(`/find-master?q=${encodeURIComponent(q)}`)}
-              placeholder="Поиск мастера или услуги..."
-            />
-          </div>
-          <button className="av-search-btn" onClick={()=>q.trim()&&navigate(`/find-master?q=${encodeURIComponent(q)}`)}>Найти</button>
-          <div className="av-location">📍 Йошкар-Ола</div>
-        </div>
-      </div>
+      {/* Hero */}
+      <div className="hp-hero">
+        <div className="hp-hero-noise"/>
+        <div className="hp-hero-glow"/>
+        {/* Декоративные круги */}
+        <div style={{position:'absolute',top:'-80px',left:'-80px',width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.12)',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',top:'-40px',left:'-40px',width:300,height:300,borderRadius:'50%',border:'1px solid rgba(232,65,10,.08)',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',bottom:'-60px',right:'10%',width:280,height:280,borderRadius:'50%',border:'1px solid rgba(255,255,255,.04)',pointerEvents:'none'}}/>
 
-      {/* ── BODY ── */}
-      <div className="av-body">
-        <div>
-          {/* ── КАТЕГОРИИ ── */}
-          <div className="av-cats-block">
-            <div className="av-cats-hdr">
-              <span className="av-cats-hdr-title">Категории услуг</span>
-              <Link to="/find-master" className="av-cats-hdr-link">Все категории →</Link>
+        <div className="hp-hero-inner" style={{gridTemplateColumns:'1fr',maxWidth:900,textAlign:'center',padding:'72px 24px 64px'}}>
+          <div>
+            <div className="hp-hero-eyebrow" style={{margin:'0 auto 24px'}}>
+              <span className="hp-hero-dot"/>
+              Йошкар-Ола · Маркетплейс мастеров
             </div>
-            <div className="av-cats-scroll">
-              {ALL_CATS.map(cat => (
-                <Link key={cat.slug} to={`/find-master/${cat.slug}`} className="av-cat-item">
-                  <div className="av-cat-photo">
-                    {CAT_PHOTOS[cat.slug]
-                      ? <img src={CAT_PHOTOS[cat.slug]} alt={cat.name}/>
-                      : <div className="av-cat-photo-ph">{cat.emoji||'🛠️'}</div>
-                    }
-                  </div>
-                  <div className="av-cat-name">{cat.name}</div>
+            <h1 className="hp-hero-h1" style={{fontSize:60,marginBottom:20}}>
+              Свои мастера<br/>
+              для <em>любых задач</em>
+            </h1>
+            <p className="hp-hero-sub" style={{fontSize:18,maxWidth:520,margin:'0 auto 36px',color:'rgba(255,255,255,.6)'}}>
+              Опишите задачу — мастера откликнутся сами.<br/>
+              Выбирайте по рейтингу, договаривайтесь внутри сервиса.
+            </p>
+
+            {/* Поиск прямо в hero */}
+            <div style={{display:'flex',gap:0,maxWidth:580,margin:'0 auto 40px',background:'rgba(255,255,255,.07)',border:'1.5px solid rgba(255,255,255,.12)',borderRadius:14,overflow:'hidden',backdropFilter:'blur(12px)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:10,padding:'0 18px',flex:1}}>
+                <svg width="18" height="18" fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input
+                  value={q} onChange={e=>setQ(e.target.value)}
+                  onKeyDown={e=>e.key==='Enter'&&q.trim()&&navigate(`/find-master?q=${encodeURIComponent(q)}`)}
+                  placeholder="Найдите мастера или услугу..."
+                  style={{flex:1,border:'none',background:'none',fontSize:15,color:'#fff',padding:'16px 0',outline:'none',fontFamily:'Manrope,Arial,sans-serif'}}
+                />
+              </div>
+              <button onClick={()=>q.trim()&&navigate(`/find-master?q=${encodeURIComponent(q)}`)}
+                style={{background:'#e8410a',border:'none',color:'#fff',fontSize:14,fontWeight:800,padding:'0 28px',cursor:'pointer',fontFamily:'Manrope,Arial,sans-serif',transition:'background .15s',whiteSpace:'nowrap'}}
+                onMouseEnter={e=>e.target.style.background='#d03a09'}
+                onMouseLeave={e=>e.target.style.background='#e8410a'}>
+                Найти
+              </button>
+            </div>
+
+            {/* Категории-пилюли */}
+            <div style={{display:'flex',flexWrap:'wrap',gap:8,justifyContent:'center',marginBottom:44}}>
+              {ALL_CATS.slice(0,7).map(cat=>(
+                <Link key={cat.slug} to={`/find-master/${cat.slug}`}
+                  style={{display:'inline-flex',alignItems:'center',gap:6,background:'rgba(255,255,255,.07)',border:'1px solid rgba(255,255,255,.12)',borderRadius:20,padding:'7px 14px',textDecoration:'none',color:'rgba(255,255,255,.8)',fontSize:13,fontWeight:600,transition:'all .15s',backdropFilter:'blur(8px)'}}
+                  onMouseEnter={e=>{e.currentTarget.style.background='rgba(232,65,10,.25)';e.currentTarget.style.borderColor='rgba(232,65,10,.5)';e.currentTarget.style.color='#fff';}}
+                  onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,.07)';e.currentTarget.style.borderColor='rgba(255,255,255,.12)';e.currentTarget.style.color='rgba(255,255,255,.8)';}}>
+                  <span style={{fontSize:16}}>{cat.emoji||'🛠️'}</span>
+                  {cat.name}
                 </Link>
+              ))}
+              <Link to="/find-master"
+                style={{display:'inline-flex',alignItems:'center',gap:6,background:'transparent',border:'1px dashed rgba(255,255,255,.2)',borderRadius:20,padding:'7px 14px',textDecoration:'none',color:'rgba(255,255,255,.45)',fontSize:13,fontWeight:600,transition:'all .15s'}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(232,65,10,.4)';e.currentTarget.style.color='#e8410a';}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.2)';e.currentTarget.style.color='rgba(255,255,255,.45)';}}>
+                Все категории →
+              </Link>
+            </div>
+
+            {/* Статистика */}
+            <div style={{display:'flex',gap:0,justifyContent:'center',background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',borderRadius:16,maxWidth:560,margin:'0 auto',overflow:'hidden'}}>
+              {[['24/7','Приём заявок'],['9','Категорий'],['≤10 мин','Первый отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
+                <div key={l} style={{flex:1,padding:'18px 12px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
+                  <div style={{fontSize:20,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,.4)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:4}}>{l}</div>
+                </div>
               ))}
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* ── ОБЪЯВЛЕНИЯ ── */}
-          <div className="av-recs-hdr">
-            <h2 className="av-recs-title">Рекомендации для вас</h2>
-            <Link to="/find-master" className="av-recs-link">Смотреть все →</Link>
+
+
+      <div className="hp-body">
+        <div>
+          {/* Категории — мозаика */}
+          <div className="hp-section-hdr">
+            <h2 className="hp-section-title">Категории услуг</h2>
+            <Link to="/find-master" className="hp-section-link">Все категории →</Link>
+          </div>
+          <div className="hp-cats-masonry">
+            {masonryCats.map((cat, i) => (
+              <Link key={cat.slug} to={`/find-master/${cat.slug}`} className={`hp-cat-tile${i===0?' hp-cat-big':''}`}>
+                {CAT_PHOTOS[cat.slug]
+                  ? <div className="hp-cat-tile-bg" style={{backgroundImage:`url(${CAT_PHOTOS[cat.slug]})`}}/>
+                  : <div className="hp-cat-tile-ph">{cat.emoji||'🛠️'}</div>
+                }
+                <div className="hp-cat-tile-overlay"/>
+                <div className="hp-cat-tile-body">
+                  <div className="hp-cat-tile-name">{cat.name}</div>
+                </div>
+              </Link>
+            ))}
           </div>
 
+          {/* Остальные категории — чипы */}
+          <div className="hp-cats-chips">
+            {restCats.map(cat => (
+              <Link key={cat.slug} to={`/find-master/${cat.slug}`} className="hp-cat-chip">
+                <span>{cat.emoji||'🛠️'}</span>
+                {cat.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Объявления */}
+          <div className="hp-section-hdr">
+            <h2 className="hp-section-title">Объявления мастеров</h2>
+            <Link to="/find-master" className="hp-section-link">Смотреть все →</Link>
+          </div>
           {listings.length === 0 ? (
-            <div className="av-empty">
-              <div className="av-empty-ico">🔍</div>
+            <div className="hp-empty">
+              <div className="hp-empty-ico">🔍</div>
               <h3>Пока нет объявлений</h3>
               <p>Мастера скоро появятся!</p>
             </div>
           ) : (
             <>
-              <div className="av-cards-grid">
-                {listings.slice(0, shown).map(l => (
-                  <Link key={l.id} to={`/listings/${l.id}`} className="av-card">
-                    <div className="av-card-img">
+              <div className="hp-listings-grid">
+                {listings.slice(0,shown).map(l => (
+                  <Link key={l.id} to={`/workers/${l.workerId}`} className="hp-card">
+                    <div className="hp-card-img">
                       {l.photos?.length ? <img src={l.photos[0]} alt=""/> : '🔧'}
-                      {l.category && <span className="av-card-cat">{l.category}</span>}
+                      {l.category && <span className="hp-card-tag">{l.category}</span>}
                     </div>
-                    <div className="av-card-body">
-                      <div className="av-card-price">
-                        {l.price ? Number(l.price).toLocaleString('ru-RU') : '—'} ₽
-                        <span className="av-card-price-unit">{l.priceUnit}</span>
-                      </div>
-                      <div className="av-card-title">{l.title}</div>
-                      <div className="av-card-footer">
-                        <div className="av-card-ava">
-                          {l.workerAvatar?.length > 10 ? <img src={l.workerAvatar} alt=""/> : (l.workerName||'М')[0]}
+                    <div className="hp-card-body">
+                      <div className="hp-card-price">{Number(l.price).toLocaleString('ru-RU')} ₽<span className="hp-card-unit">{l.priceUnit}</span></div>
+                      <div className="hp-card-title">{l.title}</div>
+                      <div className="hp-card-worker">
+                        <div className="hp-card-ava">
+                          {l.workerAvatar?.length>10 ? <img src={l.workerAvatar} alt=""/> : (l.workerName||'М')[0]}
                         </div>
-                        <span className="av-card-wname">{[l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер'}</span>
-                        <span className="av-card-city">📍 Йошкар-Ола</span>
+                        <span className="hp-card-wname">{[l.workerName,l.workerLastName].filter(Boolean).join(' ')||'Мастер'}</span>
+                        <span className="hp-card-city">📍 ЙО</span>
                       </div>
                     </div>
                   </Link>
                 ))}
               </div>
               {shown < listings.length && (
-                <button className="av-more-btn" onClick={()=>setShown(s=>s+8)}>
-                  Показать ещё · осталось {listings.length - shown}
+                <button className="hp-more-btn" onClick={()=>setShown(s=>s+8)}>
+                  Показать ещё · осталось {listings.length-shown}
                 </button>
               )}
             </>
           )}
         </div>
 
-        {/* ── ПРАВАЯ КОЛОНКА ── */}
-        <div className="av-side">
-          <div className="av-widget">
-            <div className="av-widget-title">Навигация</div>
-            <div className="av-nav-list">
-              <Link to="/find-master" className="av-nav-item av-nav-item-orange">🔍 Найти мастера</Link>
-              <Link to="/categories"  className="av-nav-item">📋 Разместить заявку</Link>
-              <Link to="/deals"       className="av-nav-item">🤝 Мои сделки</Link>
-              <Link to="/chat"        className="av-nav-item">💬 Сообщения</Link>
-            </div>
-          </div>
-
-          <div className="av-widget">
-            <div className="av-widget-title">Платформа</div>
-            <div className="av-stats-grid">
+        {/* Правая колонка */}
+        <div className="hp-side">
+          <div className="hp-widget">
+            <div className="hp-widget-title">Платформа</div>
+            <div className="hp-stats-2x2">
               {[['24/7','Заявки'],['9','Категорий'],['5.0★','Рейтинг'],['≤10','Мин. отклик']].map(([n,l])=>(
-                <div key={l} className="av-stat-box">
-                  <span className="av-stat-num">{n}</span>
-                  <span className="av-stat-lbl">{l}</span>
+                <div key={l} className="hp-stat-cell">
+                  <span className="hp-stat-cell-num">{n}</span>
+                  <span className="hp-stat-cell-lbl">{l}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="av-promo">
+          <div className="hp-widget">
+            <div className="hp-widget-title">Почему мы</div>
+            <div className="hp-trust-list">
+              {[
+                {ico:'⚡',bg:'#fffbeb',title:'Быстрый отклик',sub:'Первые предложения за 10 мин'},
+                {ico:'🔒',bg:'#f0fdf4',title:'Безопасная сделка',sub:'Оплата только после выполнения'},
+                {ico:'⭐',bg:'#eff6ff',title:'Проверенные мастера',sub:'Рейтинг и реальные отзывы'},
+              ].map(t=>(
+                <div key={t.title} className="hp-trust-item">
+                  <div className="hp-trust-icon" style={{background:t.bg}}>{t.ico}</div>
+                  <div>
+                    <div className="hp-trust-text">{t.title}</div>
+                    <div className="hp-trust-sub">{t.sub}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="hp-promo-widget">
             <h3>Нужен мастер прямо сейчас?</h3>
             <p>Опишите задачу — первые отклики уже через 10 минут</p>
-            <button className="av-promo-btn" onClick={()=>navigate('/categories')}>Разместить заявку →</button>
+            <button className="hp-promo-btn" onClick={()=>navigate('/categories')}>Разместить заявку →</button>
           </div>
         </div>
       </div>
@@ -616,26 +612,49 @@ function GuestHome() {
       <div className="hp-hero">
         <div className="hp-hero-noise"/><div className="hp-hero-glow"/>
         <div style={{position:'absolute',top:'-80px',left:'-80px',width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
-        <div style={{position:'relative',zIndex:1,maxWidth:760,margin:'0 auto',padding:'80px 24px 72px',textAlign:'center',display:'flex',flexDirection:'column',alignItems:'center',gap:0}}>
-            <div className="hp-hero-eyebrow" style={{margin:'0 auto 28px'}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
-            <h1 className="hp-hero-h1" style={{fontSize:56,marginBottom:22,lineHeight:1.1,letterSpacing:'-1px',width:'100%',maxWidth:580,textAlign:'justify',textAlignLast:'justify',WebkitTextAlignLast:'justify'}}>
+
+        <div style={{position:'relative',zIndex:1,maxWidth:1200,margin:'0 auto',padding:'72px 24px 64px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'center'}}>
+          {/* Левая — текст */}
+          <div>
+            <div className="hp-hero-eyebrow" style={{marginBottom:24}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
+            <h1 className="hp-hero-h1" style={{fontSize:52,marginBottom:20,lineHeight:1.06}}>
               Свои мастера<br/>
               для <em>любых задач</em><br/>
               в Йошкар-Оле
             </h1>
-            <p style={{fontSize:17,color:'rgba(255,255,255,.55)',lineHeight:1.7,margin:'0 0 40px',maxWidth:480}}>Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
-            <div style={{display:'flex',gap:14,alignItems:'center',justifyContent:'center',marginBottom:48}}>
+            <p style={{fontSize:16,color:'rgba(255,255,255,.55)',lineHeight:1.7,margin:'0 0 32px',maxWidth:400}}>
+              Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
+            </p>
+            <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:40}}>
               <Link to="/register" className="hp-hero-btn">🔍 Найти мастера</Link>
               <Link to="/register?role=WORKER" className="hp-hero-btn-ghost">Стать мастером →</Link>
             </div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:0,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.09)',borderRadius:18,overflow:'hidden',width:'100%',maxWidth:560}}>
-              {[['24/7','Приём заявок'],['9','Категорий'],['≤10 мин','Первый отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
-                <div key={l} style={{padding:'20px 8px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
-                  <div style={{fontSize:20,fontWeight:900,color:'#fff',lineHeight:1,marginBottom:5}}>{n}</div>
-                  <div style={{fontSize:10,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em'}}>{l}</div>
+            <div style={{display:'flex',gap:28,paddingTop:28,borderTop:'1px solid rgba(255,255,255,.08)'}}>
+              {[['24/7','Приём заявок'],['9','Категорий'],['≤10','Мин. отклик'],['5.0★','Рейтинг']].map(([n,l])=>(
+                <div key={l}>
+                  <div style={{fontSize:22,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:4}}>{l}</div>
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Правая — сетка 3×3 с реальными фото */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+            {ALL_CATS.slice(0,9).map(cat=>(
+              <Link key={cat.slug} to="/register"
+                style={{borderRadius:12,overflow:'hidden',textDecoration:'none',color:'#fff',position:'relative',aspectRatio:'1',display:'flex',alignItems:'flex-end',transition:'transform .2s,box-shadow .2s'}}
+                onMouseEnter={e=>{e.currentTarget.style.transform='scale(1.05)';e.currentTarget.style.boxShadow='0 12px 28px rgba(0,0,0,.5)';}}
+                onMouseLeave={e=>{e.currentTarget.style.transform='scale(1)';e.currentTarget.style.boxShadow='none';}}>
+                {CAT_PHOTOS[cat.slug]
+                  ? <div style={{position:'absolute',inset:0,backgroundImage:`url(${CAT_PHOTOS[cat.slug]})`,backgroundSize:'cover',backgroundPosition:'center'}}/>
+                  : <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,#2a1a00,#e8410a)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>{cat.emoji||'🛠️'}</div>
+                }
+                <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.72) 0%,transparent 55%)'}}/>
+                <div style={{position:'relative',padding:'8px 10px',fontSize:11,fontWeight:800,lineHeight:1.2}}>{cat.name}</div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
 
