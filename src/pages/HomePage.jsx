@@ -18,9 +18,186 @@ const CAT_PHOTOS = {
   'kompyuternaya-pomosh': 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=600&q=80',
 };
 
-/* ═══════════════════════════════════════════════════════════
-   CUSTOMER HOME — Авито-стиль
-   ═══════════════════════════════════════════════════════════ */
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800;900&display=swap');
+
+  :root {
+    --orange: #e8410a;
+    --orange-light: #ff5722;
+    --orange-pale: #fff3f0;
+    --dark: #0d0d0d;
+    --dark2: #1a1a1a;
+    --gray: #f4f4f4;
+    --border: #ebebeb;
+    --text: #1a1a1a;
+    --muted: #888;
+  }
+
+  .hp * { box-sizing: border-box; }
+  .hp { font-family: 'Manrope', Arial, sans-serif; background: #f8f8f6; color: var(--text); }
+
+  /* ══ HERO ══ */
+  .hp-hero { background: var(--dark); padding: 0; overflow: hidden; position: relative; }
+  .hp-hero-noise { position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); opacity: .4; pointer-events: none; }
+  .hp-hero-glow { position: absolute; top: -200px; right: -100px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(232,65,10,.35) 0%, transparent 70%); pointer-events: none; }
+  .hp-hero-inner { max-width: 1200px; margin: 0 auto; padding: 60px 24px 56px; display: grid; grid-template-columns: 1fr 420px; gap: 40px; align-items: center; position: relative; z-index: 1; }
+  .hp-hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(232,65,10,.15); border: 1px solid rgba(232,65,10,.3); border-radius: 20px; padding: 5px 14px; font-size: 11px; font-weight: 800; color: #ff8055; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 20px; }
+  .hp-hero-dot { width: 6px; height: 6px; border-radius: 50%; background: #ff5722; animation: pulse-dot 2s infinite; }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+  .hp-hero-h1 { font-size: 52px; font-weight: 900; color: #fff; line-height: 1.08; margin: 0 0 18px; letter-spacing: -1.5px; }
+  .hp-hero-h1 em { font-style: normal; color: var(--orange); }
+  .hp-hero-sub { font-size: 16px; color: rgba(255,255,255,.55); line-height: 1.65; margin: 0 0 32px; max-width: 480px; }
+  .hp-hero-actions { display: flex; gap: 12px; align-items: center; margin-bottom: 40px; }
+  .hp-hero-btn { background: var(--orange); color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 800; padding: 14px 28px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-family: inherit; transition: background .15s, transform .15s, box-shadow .15s; box-shadow: 0 8px 24px rgba(232,65,10,.35); }
+  .hp-hero-btn:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 12px 32px rgba(232,65,10,.45); }
+  .hp-hero-btn-ghost { background: transparent; color: rgba(255,255,255,.8); border: 1.5px solid rgba(255,255,255,.2); border-radius: 12px; font-size: 15px; font-weight: 700; padding: 13px 24px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-family: inherit; transition: all .15s; }
+  .hp-hero-btn-ghost:hover { border-color: rgba(255,255,255,.5); color: #fff; background: rgba(255,255,255,.05); }
+  .hp-hero-stats { display: flex; gap: 28px; }
+  .hp-hero-stat { }
+  .hp-hero-stat-num { font-size: 28px; font-weight: 900; color: #fff; display: block; line-height: 1; }
+  .hp-hero-stat-lbl { font-size: 11px; color: rgba(255,255,255,.45); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  .hp-hero-stat-div { width: 1px; background: rgba(255,255,255,.1); align-self: stretch; }
+
+  /* ── HERO КАРТОЧКА ── */
+  .hp-hero-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 24px; backdrop-filter: blur(20px); }
+  .hp-hero-card-title { font-size: 11px; font-weight: 800; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 16px; }
+  .hp-hero-cat-list { display: flex; flex-direction: column; gap: 8px; }
+  .hp-hero-cat-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.07); border-radius: 10px; text-decoration: none; color: rgba(255,255,255,.85); font-size: 14px; font-weight: 600; transition: background .15s, border-color .15s; }
+  .hp-hero-cat-row:hover { background: rgba(232,65,10,.15); border-color: rgba(232,65,10,.3); color: #fff; }
+  .hp-hero-cat-icon { width: 32px; height: 32px; border-radius: 8px; overflow: hidden; flex-shrink: 0; position: relative; }
+  .hp-hero-cat-icon img { width: 100%; height: 100%; object-fit: cover; }
+  .hp-hero-cat-icon-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 16px; background: rgba(255,255,255,.08); }
+  .hp-hero-cat-arr { margin-left: auto; color: rgba(255,255,255,.3); font-size: 16px; transition: color .15s, transform .15s; }
+  .hp-hero-cat-row:hover .hp-hero-cat-arr { color: var(--orange); transform: translateX(3px); }
+  .hp-hero-all-link { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 12px; padding: 10px; border-radius: 10px; border: 1px dashed rgba(255,255,255,.15); color: rgba(255,255,255,.45); font-size: 13px; font-weight: 600; text-decoration: none; transition: all .15s; }
+  .hp-hero-all-link:hover { border-color: rgba(232,65,10,.4); color: var(--orange); }
+
+  /* ══ ПОИСК ══ */
+  .hp-search-bar { background: #fff; border-bottom: 1px solid var(--border); padding: 14px 0; position: sticky; top: 0; z-index: 100; }
+  .hp-search-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; gap: 10px; }
+  .hp-search-box { flex: 1; display: flex; align-items: center; gap: 10px; background: #f4f4f4; border: 2px solid transparent; border-radius: 10px; padding: 0 16px; transition: all .15s; }
+  .hp-search-box:focus-within { background: #fff; border-color: var(--orange); box-shadow: 0 0 0 4px rgba(232,65,10,.08); }
+  .hp-search-box input { flex: 1; border: none; background: none; font-size: 14px; padding: 11px 0; outline: none; font-family: inherit; color: var(--text); }
+  .hp-search-box input::placeholder { color: #aaa; }
+  .hp-search-find { background: var(--orange); border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 800; padding: 11px 22px; cursor: pointer; font-family: inherit; transition: background .15s; flex-shrink: 0; }
+  .hp-search-find:hover { background: #d03a09; }
+  .hp-loc { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #555; font-weight: 600; white-space: nowrap; }
+
+  /* ══ ОСНОВНАЯ СЕТКА ══ */
+  .hp-body { max-width: 1200px; margin: 0 auto; padding: 28px 24px 80px; display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+
+  /* ══ КАТЕГОРИИ ══ */
+  .hp-section-hdr { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .hp-section-title { font-size: 20px; font-weight: 900; letter-spacing: -.3px; margin: 0; }
+  .hp-section-link { font-size: 13px; color: var(--orange); font-weight: 700; text-decoration: none; }
+  .hp-section-link:hover { text-decoration: underline; }
+  .hp-cats-masonry { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 180px 180px; gap: 10px; margin-bottom: 28px; }
+  .hp-cats-masonry .hp-cat-big { grid-column: span 1; grid-row: span 2; }
+  .hp-cat-tile { border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; position: relative; display: flex; flex-direction: column; justify-content: flex-end; transition: transform .2s, box-shadow .2s; cursor: pointer; }
+  .hp-cat-tile:hover { transform: scale(1.02); box-shadow: 0 12px 32px rgba(0,0,0,.25); }
+  .hp-cat-tile-bg { position: absolute; inset: 0; background-size: cover; background-position: center; transition: transform .4s; }
+  .hp-cat-tile:hover .hp-cat-tile-bg { transform: scale(1.06); }
+  .hp-cat-tile-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,.75) 0%, rgba(0,0,0,.1) 55%, transparent 100%); }
+  .hp-cat-tile-body { position: relative; padding: 12px 14px; }
+  .hp-cat-tile-name { font-size: 14px; font-weight: 800; line-height: 1.2; }
+  .hp-cat-tile-count { font-size: 11px; color: rgba(255,255,255,.65); margin-top: 2px; }
+  .hp-cat-tile-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 42px; background: linear-gradient(135deg, #2a2a2a, #1a1a1a); }
+  .hp-cats-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .hp-cat-chip { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1.5px solid var(--border); border-radius: 20px; padding: 7px 14px; text-decoration: none; font-size: 13px; font-weight: 700; color: var(--text); transition: all .15s; }
+  .hp-cat-chip:hover { border-color: var(--orange); color: var(--orange); background: var(--orange-pale); }
+  .hp-cat-chip span:first-child { font-size: 16px; }
+
+  /* ══ ОБЪЯВЛЕНИЯ ══ */
+  .hp-listings-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .hp-card { background: #fff; border-radius: 14px; overflow: hidden; text-decoration: none; color: var(--text); transition: transform .18s, box-shadow .18s; display: flex; flex-direction: column; border: 1px solid var(--border); }
+  .hp-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,.1); }
+  .hp-card-img { aspect-ratio: 4/3; background: #f0f0f0; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; font-size: 38px; color: #ccc; }
+  .hp-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; display: block; }
+  .hp-card:hover .hp-card-img img { transform: scale(1.04); }
+  .hp-card-tag { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,.55); color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 5px; letter-spacing: .03em; }
+  .hp-card-body { padding: 12px 14px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .hp-card-price { font-size: 18px; font-weight: 900; color: var(--dark); letter-spacing: -.3px; }
+  .hp-card-unit { font-size: 11px; color: var(--muted); font-weight: 500; margin-left: 3px; }
+  .hp-card-title { font-size: 13px; color: #444; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .hp-card-worker { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding-top: 8px; border-top: 1px solid #f4f4f4; }
+  .hp-card-ava { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg,#e8410a,#ff7043); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 800; overflow: hidden; flex-shrink: 0; }
+  .hp-card-ava img { width: 100%; height: 100%; object-fit: cover; }
+  .hp-card-wname { font-size: 12px; color: var(--muted); font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .hp-card-city { font-size: 11px; color: #bbb; margin-left: auto; white-space: nowrap; }
+  .hp-more-btn { width: 100%; margin-top: 14px; padding: 13px; background: #fff; border: 2px solid var(--border); border-radius: 10px; font-size: 14px; font-weight: 700; color: var(--text); cursor: pointer; font-family: inherit; transition: all .15s; }
+  .hp-more-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* ══ ПРАВАЯ ПАНЕЛЬ ══ */
+  .hp-side { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 68px; }
+  .hp-widget { background: #fff; border-radius: 16px; border: 1px solid var(--border); padding: 20px; }
+  .hp-widget-title { font-size: 13px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin: 0 0 14px; }
+  .hp-quick-list { display: flex; flex-direction: column; gap: 6px; }
+  .hp-quick-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 700; transition: all .15s; font-family: inherit; border: none; cursor: pointer; }
+  .hp-qi-orange { background: var(--orange); color: #fff; }
+  .hp-qi-orange:hover { background: #d03a09; }
+  .hp-qi-outline { background: #fff; color: var(--orange); border: 2px solid var(--orange); }
+  .hp-qi-outline:hover { background: var(--orange-pale); }
+  .hp-qi-gray { background: #f4f4f4; color: var(--text); }
+  .hp-qi-gray:hover { background: #ebebeb; }
+  .hp-stats-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .hp-stat-cell { background: #f8f8f8; border-radius: 10px; padding: 14px 12px; text-align: center; }
+  .hp-stat-cell-num { font-size: 24px; font-weight: 900; color: var(--orange); display: block; line-height: 1.1; }
+  .hp-stat-cell-lbl { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; display: block; }
+  .hp-promo-widget { background: linear-gradient(135deg, #0d0d0d 0%, #2a0a00 60%, #e8410a 140%); border-radius: 16px; padding: 22px; color: #fff; border: none; }
+  .hp-promo-widget h3 { font-size: 16px; font-weight: 900; margin: 0 0 7px; line-height: 1.3; }
+  .hp-promo-widget p { font-size: 12px; color: rgba(255,255,255,.6); margin: 0 0 16px; line-height: 1.6; }
+  .hp-promo-btn { width: 100%; padding: 11px; background: #fff; border: none; border-radius: 8px; color: var(--orange); font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; transition: background .15s; }
+  .hp-promo-btn:hover { background: #ffe8e0; }
+  .hp-trust-list { display: flex; flex-direction: column; gap: 10px; }
+  .hp-trust-item { display: flex; align-items: center; gap: 10px; }
+  .hp-trust-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .hp-trust-text { font-size: 12px; font-weight: 600; color: #444; line-height: 1.4; }
+  .hp-trust-sub { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+  /* ══ МАСТЕР ══ */
+  .hp-worker-hero { background: var(--dark); padding: 32px 0; position: relative; overflow: hidden; }
+  .hp-worker-hero::before { content: ''; position: absolute; top: -150px; right: -80px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(232,65,10,.3) 0%, transparent 70%); pointer-events: none; }
+  .hp-worker-hero-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; position: relative; z-index: 1; }
+  .hp-worker-hi { font-size: 28px; font-weight: 900; color: #fff; margin: 0 0 6px; letter-spacing: -.5px; }
+  .hp-worker-hi em { font-style: normal; color: #ff8055; }
+  .hp-worker-sub { font-size: 14px; color: rgba(255,255,255,.5); margin: 0; }
+  .hp-worker-hero-btns { display: flex; gap: 10px; }
+  .hp-worker-btn-fill { background: var(--orange); border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 800; padding: 12px 22px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; font-family: inherit; transition: all .15s; box-shadow: 0 4px 16px rgba(232,65,10,.35); }
+  .hp-worker-btn-fill:hover { background: #d03a09; }
+  .hp-worker-btn-line { background: transparent; border: 1.5px solid rgba(255,255,255,.2); border-radius: 10px; color: rgba(255,255,255,.75); font-size: 14px; font-weight: 700; padding: 11px 20px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; font-family: inherit; transition: all .15s; }
+  .hp-worker-btn-line:hover { border-color: rgba(255,255,255,.5); color: #fff; }
+  .hp-worker-body { max-width: 1200px; margin: 0 auto; padding: 24px 24px 80px; display: grid; grid-template-columns: 1fr 280px; gap: 24px; }
+  .hp-kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .hp-kpi { background: #fff; border-radius: 14px; border: 1px solid var(--border); padding: 18px; display: flex; align-items: center; gap: 14px; transition: box-shadow .15s; }
+  .hp-kpi:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+  .hp-kpi-ico { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .hp-kpi-num { font-size: 26px; font-weight: 900; color: var(--dark); line-height: 1; }
+  .hp-kpi-lbl { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+  .hp-actions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+  .hp-action { background: #fff; border-radius: 14px; border: 1px solid var(--border); padding: 18px 14px; text-align: center; text-decoration: none; color: var(--text); transition: all .18s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .hp-action:hover { border-color: var(--orange); box-shadow: 0 6px 20px rgba(232,65,10,.12); transform: translateY(-2px); }
+  .hp-action-ico { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .hp-action-title { font-size: 13px; font-weight: 800; }
+  .hp-action-sub { font-size: 11px; color: var(--muted); }
+  .hp-deal-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+  .hp-deal { background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--text); transition: box-shadow .15s; }
+  .hp-deal:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+  .hp-deal-ico { width: 42px; height: 42px; border-radius: 10px; background: var(--orange-pale); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .hp-deal-title { font-size: 14px; font-weight: 700; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-bottom: 2px; }
+  .hp-deal-meta { font-size: 12px; color: var(--muted); }
+  .hp-deal-badge { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; }
+  .hp-empty { background: #fff; border-radius: 14px; border: 2px dashed var(--border); padding: 48px 24px; text-align: center; color: var(--muted); margin-bottom: 24px; }
+  .hp-empty-ico { font-size: 40px; margin-bottom: 12px; }
+  .hp-empty h3 { font-size: 15px; font-weight: 800; color: #333; margin: 0 0 6px; }
+  .hp-empty p { font-size: 13px; margin: 0 0 18px; }
+  .hp-empty-link { display: inline-flex; align-items: center; gap: 6px; padding: 10px 22px; background: var(--orange); color: #fff; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 800; transition: background .15s; }
+  .hp-empty-link:hover { background: #d03a09; }
+
+  /* ══ АДАПТИВ ══ */
+  @media(max-width:960px) { .hp-body,.hp-worker-body { grid-template-columns: 1fr; } .hp-side,.hp-worker-side { position:static; } .hp-hero-inner { grid-template-columns: 1fr; } .hp-hero-card { display:none; } }
+  @media(max-width:640px) { .hp-cats-masonry { grid-template-columns: repeat(2,1fr); grid-template-rows: 140px 140px 140px; } .hp-listings-grid { grid-template-columns: 1fr; } .hp-kpi-row { grid-template-columns: repeat(2,1fr); } .hp-actions-grid { grid-template-columns: repeat(2,1fr); } .hp-hero-h1 { font-size: 34px; } .hp-worker-hero-inner { flex-direction: column; align-items: flex-start; } }
+`;
+
 function CustomerHome({ userId, userName }) {
   const navigate = useNavigate();
   const [q, setQ] = useState('');
@@ -32,252 +209,218 @@ function CustomerHome({ userId, userName }) {
       .then(d => setListings(Array.isArray(d) ? d.filter(l => l.active) : [])).catch(() => {});
   }, []);
 
-  const styles = `
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  const avitoCss = `
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
+    .av-page { font-family: Manrope, Arial, sans-serif; background: #f4f4f4; min-height: 100vh; }
 
-    .av * { box-sizing: border-box; margin: 0; padding: 0; }
-    .av { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f2f2f2; min-height: 100vh; color: #141414; -webkit-font-smoothing: antialiased; }
+    /* ── ПОИСК ── */
+    .av-search-bar { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 12px 0; }
+    .av-search-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; gap: 10px; align-items: center; }
+    .av-search-box { flex: 1; display: flex; align-items: center; gap: 10px; background: #f4f4f4; border: 2px solid transparent; border-radius: 8px; padding: 0 14px; transition: all .15s; }
+    .av-search-box:focus-within { background: #fff; border-color: #e8410a; box-shadow: 0 0 0 3px rgba(232,65,10,.08); }
+    .av-search-box input { flex: 1; border: none; background: none; font-size: 15px; padding: 12px 0; outline: none; font-family: Manrope, Arial, sans-serif; color: #1a1a1a; }
+    .av-search-box input::placeholder { color: #aaa; }
+    .av-search-btn { background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 800; padding: 12px 28px; cursor: pointer; font-family: Manrope, Arial, sans-serif; flex-shrink: 0; transition: background .15s; }
+    .av-search-btn:hover { background: #d03a09; }
+    .av-location { display: flex; align-items: center; gap: 5px; font-size: 14px; color: #333; font-weight: 600; white-space: nowrap; cursor: pointer; }
 
-    /* ── SEARCH BAR ── */
-    .av-topbar { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 10px 0; position: sticky; top: 0; z-index: 100; }
-    .av-topbar-inner { max-width: 1260px; margin: 0 auto; padding: 0 20px; display: flex; gap: 10px; align-items: center; }
-    .av-location-btn { display: flex; align-items: center; gap: 6px; background: none; border: 1px solid #d9d9d9; border-radius: 8px; padding: 10px 14px; font-size: 14px; font-weight: 600; color: #141414; cursor: pointer; white-space: nowrap; font-family: inherit; transition: border-color .15s; }
-    .av-location-btn:hover { border-color: #999; }
-    .av-location-btn svg { flex-shrink: 0; }
-    .av-search-wrap { flex: 1; display: flex; gap: 0; }
-    .av-search-input { flex: 1; border: 1px solid #d9d9d9; border-right: none; border-radius: 8px 0 0 8px; padding: 10px 14px; font-size: 15px; outline: none; font-family: inherit; color: #141414; transition: border-color .15s; }
-    .av-search-input:focus { border-color: #3d9be9; box-shadow: inset 0 0 0 1px #3d9be9; }
-    .av-search-input::placeholder { color: #999; }
-    .av-search-btn { background: #3d9be9; border: none; border-radius: 0 8px 8px 0; color: #fff; font-size: 15px; font-weight: 700; padding: 10px 24px; cursor: pointer; font-family: inherit; transition: background .15s; white-space: nowrap; }
-    .av-search-btn:hover { background: #2b8ad6; }
+    /* ── BODY ── */
+    .av-body { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; display: grid; grid-template-columns: 1fr 296px; gap: 20px; align-items: flex-start; }
 
-    /* ── MAIN LAYOUT ── */
-    .av-main { max-width: 1260px; margin: 0 auto; padding: 16px 20px 60px; }
+    /* ── КАТЕГОРИИ ── */
+    .av-cats-block { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+    .av-cats-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 0; }
+    .av-cats-hdr-title { font-size: 18px; font-weight: 800; color: #1a1a1a; }
+    .av-cats-hdr-link { font-size: 13px; color: #e8410a; text-decoration: none; font-weight: 600; }
+    .av-cats-hdr-link:hover { text-decoration: underline; }
+    .av-cats-scroll { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; padding: 8px 6px 6px; }
+    .av-cat-item { display: flex; flex-direction: column; align-items: center; gap: 0; text-decoration: none; color: #1a1a1a; padding: 6px 4px; border-radius: 10px; transition: background .15s; cursor: pointer; }
+    .av-cat-item:hover { background: #fff3f0; }
+    .av-cat-photo { width: 100%; aspect-ratio: 3/2; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 6px; }
+    .av-cat-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+    .av-cat-item:hover .av-cat-photo img { transform: scale(1.06); }
+    .av-cat-photo-ph { width: 100%; height: 100%; background: linear-gradient(135deg, #2a1a00, #e8410a); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .av-cat-name { font-size: 11px; font-weight: 700; text-align: center; line-height: 1.2; color: #1a1a1a; }
 
-    /* ── CATEGORIES BLOCK ── */
-    .av-cats { background: #fff; border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
-    .av-cats-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 8px; }
-    .av-cats-title { font-size: 20px; font-weight: 800; color: #141414; }
-    .av-cats-all { font-size: 14px; color: #3d9be9; text-decoration: none; font-weight: 600; }
-    .av-cats-all:hover { text-decoration: underline; }
-    .av-cats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 4px; padding: 8px 12px 16px; }
-    .av-cat-link { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #141414; padding: 8px 4px; border-radius: 10px; transition: background .12s; }
-    .av-cat-link:hover { background: #f5f5f5; }
-    .av-cat-photo { width: 100%; aspect-ratio: 4/3; border-radius: 8px; overflow: hidden; background: #f0f0f0; }
-    .av-cat-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s; }
-    .av-cat-link:hover .av-cat-photo img { transform: scale(1.05); }
-    .av-cat-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 28px; background: linear-gradient(135deg, #e8f0fe, #d4e4fc); }
-    .av-cat-name { font-size: 12px; font-weight: 600; text-align: center; line-height: 1.25; color: #333; }
-
-    /* ── CONTENT GRID ── */
-    .av-content { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
-
-    /* ── LISTINGS ── */
-    .av-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-    .av-section-title { font-size: 20px; font-weight: 800; color: #141414; }
-    .av-section-link { font-size: 14px; color: #3d9be9; text-decoration: none; font-weight: 600; }
-    .av-section-link:hover { text-decoration: underline; }
-
-    .av-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .av-card { background: #fff; border-radius: 10px; overflow: hidden; text-decoration: none; color: #141414; display: flex; flex-direction: column; transition: box-shadow .18s; }
-    .av-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.1); }
-    .av-card-img { aspect-ratio: 4/3; background: #f5f5f5; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
-    .av-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s; }
-    .av-card:hover .av-card-img img { transform: scale(1.03); }
-    .av-card-img-ph { font-size: 36px; color: #ccc; }
-    .av-card-badge { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,.6); backdrop-filter: blur(4px); color: #fff; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; }
-    .av-card-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
-    .av-card-price { font-size: 18px; font-weight: 800; color: #141414; }
-    .av-card-unit { font-size: 12px; color: #999; font-weight: 400; margin-left: 2px; }
-    .av-card-name { font-size: 14px; color: #333; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .av-card-meta { display: flex; align-items: center; gap: 6px; margin-top: auto; padding-top: 8px; }
-    .av-card-ava { width: 20px; height: 20px; border-radius: 50%; background: #3d9be9; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 700; overflow: hidden; flex-shrink: 0; }
+    /* ── ОБЪЯВЛЕНИЯ ── */
+    .av-recs-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .av-recs-title { font-size: 18px; font-weight: 800; color: #1a1a1a; margin: 0; }
+    .av-recs-link { font-size: 13px; color: #e8410a; text-decoration: none; font-weight: 600; }
+    .av-recs-link:hover { text-decoration: underline; }
+    .av-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .av-card { background: #fff; border-radius: 10px; overflow: hidden; text-decoration: none; color: #1a1a1a; display: flex; flex-direction: column; transition: box-shadow .18s, transform .18s; border: 1px solid #e8e8e8; }
+    .av-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.1); transform: translateY(-2px); }
+    .av-card-img { aspect-ratio: 4/3; background: #f0f0f0; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #ccc; }
+    .av-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+    .av-card:hover .av-card-img img { transform: scale(1.04); }
+    .av-card-cat { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,.52); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+    .av-card-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 3px; flex: 1; }
+    .av-card-price { font-size: 17px; font-weight: 900; color: #1a1a1a; letter-spacing: -.2px; }
+    .av-card-price-unit { font-size: 11px; color: #aaa; font-weight: 500; margin-left: 3px; }
+    .av-card-title { font-size: 13px; color: #555; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .av-card-footer { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding-top: 8px; border-top: 1px solid #f0f0f0; }
+    .av-card-ava { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg,#e8410a,#ff7043); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 800; overflow: hidden; flex-shrink: 0; }
     .av-card-ava img { width: 100%; height: 100%; object-fit: cover; }
-    .av-card-worker { font-size: 12px; color: #999; font-weight: 500; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-    .av-card-geo { font-size: 12px; color: #bbb; white-space: nowrap; }
+    .av-card-wname { font-size: 12px; color: #888; font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; }
+    .av-card-city { font-size: 11px; color: #bbb; white-space: nowrap; }
+    .av-more-btn { width: 100%; margin-top: 14px; padding: 13px; background: #fff; border: 2px solid #e8e8e8; border-radius: 8px; font-size: 14px; font-weight: 700; color: #333; cursor: pointer; font-family: Manrope, Arial, sans-serif; transition: all .15s; }
+    .av-more-btn:hover { border-color: #e8410a; color: #e8410a; }
+    .av-empty { background: #fff; border-radius: 10px; border: 2px dashed #e8e8e8; padding: 48px 24px; text-align: center; color: #aaa; }
+    .av-empty-ico { font-size: 40px; margin-bottom: 10px; }
+    .av-empty h3 { font-size: 15px; font-weight: 700; color: #555; margin: 0 0 6px; }
+    .av-empty p { font-size: 13px; margin: 0; }
 
-    .av-more { width: 100%; margin-top: 12px; padding: 13px; background: #fff; border: 1px solid #d9d9d9; border-radius: 8px; font-size: 15px; font-weight: 700; color: #3d9be9; cursor: pointer; font-family: inherit; transition: all .15s; }
-    .av-more:hover { background: #f0f7ff; border-color: #3d9be9; }
+    /* ── ПРАВАЯ КОЛОНКА ── */
+    .av-side { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 68px; }
+    .av-widget { background: #fff; border-radius: 12px; padding: 16px; border: 1px solid #e8e8e8; }
+    .av-widget-title { font-size: 12px; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: .07em; margin: 0 0 12px; }
+    .av-nav-list { display: flex; flex-direction: column; gap: 4px; }
+    .av-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; color: #1a1a1a; transition: background .15s; }
+    .av-nav-item:hover { background: #f4f4f4; }
+    .av-nav-item-orange { background: #e8410a; color: #fff; }
+    .av-nav-item-orange:hover { background: #d03a09; }
+    .av-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .av-stat-box { background: #f8f8f8; border-radius: 8px; padding: 12px 10px; text-align: center; }
+    .av-stat-num { font-size: 20px; font-weight: 900; color: #e8410a; display: block; line-height: 1; }
+    .av-stat-lbl { font-size: 10px; color: #aaa; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; display: block; }
+    .av-promo { background: linear-gradient(135deg, #1a0a00, #e8410a 140%); border-radius: 12px; padding: 18px; color: #fff; }
+    .av-promo h3 { font-size: 15px; font-weight: 800; margin: 0 0 6px; line-height: 1.3; }
+    .av-promo p { font-size: 12px; color: rgba(255,255,255,.65); margin: 0 0 14px; line-height: 1.55; }
+    .av-promo-btn { width: 100%; background: #fff; border: none; border-radius: 7px; color: #e8410a; font-size: 13px; font-weight: 800; padding: 10px; cursor: pointer; font-family: Manrope, Arial, sans-serif; transition: background .15s; }
+    .av-promo-btn:hover { background: #ffe8e0; }
 
-    .av-empty { background: #fff; border-radius: 10px; padding: 48px 24px; text-align: center; }
-    .av-empty-ico { font-size: 40px; margin-bottom: 12px; }
-    .av-empty h3 { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 4px; }
-    .av-empty p { font-size: 14px; color: #999; }
-
-    /* ── SIDEBAR ── */
-    .av-side { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 62px; }
-    .av-widget { background: #fff; border-radius: 12px; padding: 16px; }
-    .av-widget-label { font-size: 13px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
-
-    .av-nav { display: flex; flex-direction: column; gap: 2px; }
-    .av-nav-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; color: #141414; transition: background .12s; }
-    .av-nav-link:hover { background: #f5f5f5; }
-    .av-nav-link-primary { background: #3d9be9; color: #fff; }
-    .av-nav-link-primary:hover { background: #2b8ad6; }
-
-    .av-stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .av-stat { background: #f7f7f7; border-radius: 8px; padding: 12px; text-align: center; }
-    .av-stat-val { font-size: 20px; font-weight: 900; color: #141414; display: block; line-height: 1; }
-    .av-stat-lbl { font-size: 11px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; margin-top: 4px; display: block; }
-
-    .av-banner { background: #3d9be9; border-radius: 12px; padding: 20px; color: #fff; }
-    .av-banner h3 { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
-    .av-banner p { font-size: 13px; color: rgba(255,255,255,.8); margin-bottom: 14px; line-height: 1.5; }
-    .av-banner-btn { width: 100%; background: #fff; border: none; border-radius: 8px; color: #3d9be9; font-size: 14px; font-weight: 700; padding: 11px; cursor: pointer; font-family: inherit; transition: background .15s; }
-    .av-banner-btn:hover { background: #e8f4fd; }
-
-    /* ── RESPONSIVE ── */
-    @media(max-width: 1024px) {
-      .av-content { grid-template-columns: 1fr; }
-      .av-side { position: static; flex-direction: row; flex-wrap: wrap; }
-      .av-side > * { flex: 1; min-width: 200px; }
-    }
-    @media(max-width: 768px) {
-      .av-cats-grid { grid-template-columns: repeat(3, 1fr); }
-      .av-cards { grid-template-columns: repeat(2, 1fr); }
-      .av-topbar-inner { flex-wrap: wrap; }
-      .av-location-btn { order: -1; width: 100%; justify-content: center; }
-    }
-    @media(max-width: 480px) {
-      .av-cards { grid-template-columns: 1fr; }
-    }
+    @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } }
+    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } }
   `;
 
-  const filtered = q.trim()
-    ? listings.filter(l => l.title?.toLowerCase().includes(q.toLowerCase()) || l.category?.toLowerCase().includes(q.toLowerCase()))
-    : listings;
-
   return (
-    <div className="av">
-      <style>{styles}</style>
+    <div className="av-page">
+      <style>{avitoCss}</style>
 
-      {/* ── SEARCH BAR ── */}
-      <div className="av-topbar">
-        <div className="av-topbar-inner">
-          <button className="av-location-btn">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.75a1.75 1.75 0 110-3.5 1.75 1.75 0 010 3.5z" fill="#141414"/></svg>
-            Йошкар-Ола
-          </button>
-          <div className="av-search-wrap">
-            <input
-              className="av-search-input"
-              placeholder="Поиск услуг и мастеров"
-              value={q}
-              onChange={e => setQ(e.target.value)}
-            />
-            <button className="av-search-btn">Найти</button>
+      {/* ── HERO ── */}
+      <div style={{background:'linear-gradient(135deg,#0d0d0d 0%,#1a0800 50%,#2d0e00 100%)',position:'relative',overflow:'hidden',padding:'0'}}>
+        {/* Glow */}
+        <div style={{position:'absolute',top:-100,right:-80,width:500,height:500,background:'radial-gradient(circle,rgba(232,65,10,.3) 0%,transparent 70%)',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',bottom:-60,left:-60,width:320,height:320,background:'radial-gradient(circle,rgba(232,65,10,.1) 0%,transparent 70%)',pointerEvents:'none'}}/>
+        {/* Декоративные круги */}
+        <div style={{position:'absolute',top:-80,left:-80,width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
+
+        <div style={{position:'relative',zIndex:1,maxWidth:900,margin:'0 auto',padding:'48px 24px 44px',textAlign:'center'}}>
+          {/* Бейдж */}
+          <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(232,65,10,.15)',border:'1px solid rgba(232,65,10,.3)',borderRadius:20,padding:'5px 14px',fontSize:11,fontWeight:800,color:'#ff8055',letterSpacing:'.08em',textTransform:'uppercase',marginBottom:20}}>
+            <span style={{width:6,height:6,borderRadius:'50%',background:'#ff5722',animation:'pulse-dot 2s infinite',display:'inline-block'}}/>
+            Йошкар-Ола · Маркетплейс мастеров
+          </div>
+
+          {/* Заголовок */}
+          <h1 style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:54,fontWeight:900,color:'#fff',lineHeight:1.06,margin:'0 0 16px',letterSpacing:'-1.5px'}}>
+            Свои мастера для <em style={{fontStyle:'normal',color:'#e8410a'}}>любых задач</em><br/>в Йошкар-Оле
+          </h1>
+          <p style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:17,color:'rgba(255,255,255,.5)',lineHeight:1.7,margin:'0 auto 32px',maxWidth:520}}>
+            Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
+          </p>
+
+          {/* Статистика */}
+          <div style={{display:'inline-flex',gap:0,background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.08)',borderRadius:16,overflow:'hidden'}}>
+            {[['24/7','Приём заявок'],['9','Категорий'],['≤10','Мин. отклик'],['5.0★','Рейтинг']].map(([n,l],i)=>(
+              <div key={l} style={{padding:'16px 28px',borderRight:i<3?'1px solid rgba(255,255,255,.07)':'none',textAlign:'center'}}>
+                <div style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:20,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
+                <div style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:10,color:'rgba(255,255,255,.35)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em',marginTop:4}}>{l}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="av-main">
-        {/* ── CATEGORIES ── */}
-        <div className="av-cats">
-          <div className="av-cats-header">
-            <h2 className="av-cats-title">Категории услуг</h2>
-            <Link to="/find-master" className="av-cats-all">Все категории</Link>
-          </div>
-          <div className="av-cats-grid">
-            {ALL_CATS.map(cat => (
-              <Link key={cat.slug} to={`/find-master/${cat.slug}`} className="av-cat-link">
-                <div className="av-cat-photo">
-                  {CAT_PHOTOS[cat.slug]
-                    ? <img src={CAT_PHOTOS[cat.slug]} alt={cat.name} loading="lazy"/>
-                    : <div className="av-cat-ph">{cat.emoji || '🛠️'}</div>
-                  }
-                </div>
-                <span className="av-cat-name">{cat.name}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* ── CONTENT ── */}
-        <div className="av-content">
-          <div>
-            <div className="av-section-header">
-              <h2 className="av-section-title">Рекомендации для вас</h2>
-              <Link to="/find-master" className="av-section-link">Смотреть все</Link>
+      {/* ── BODY ── */}
+      <div className="av-body">
+        <div>
+          {/* ── КАТЕГОРИИ ── */}
+          <div className="av-cats-block">
+            <div className="av-cats-hdr">
+              <span className="av-cats-hdr-title">Категории услуг</span>
+              <Link to="/find-master" className="av-cats-hdr-link">Все категории →</Link>
             </div>
-
-            {filtered.length === 0 ? (
-              <div className="av-empty">
-                <div className="av-empty-ico">🔍</div>
-                <h3>Пока нет объявлений</h3>
-                <p>Мастера скоро появятся</p>
-              </div>
-            ) : (
-              <>
-                <div className="av-cards">
-                  {filtered.slice(0, shown).map(l => (
-                    <Link key={l.id} to={`/listings/${l.id}`} className="av-card">
-                      <div className="av-card-img">
-                        {l.photos?.length
-                          ? <img src={l.photos[0]} alt="" loading="lazy"/>
-                          : <span className="av-card-img-ph">🔧</span>
-                        }
-                        {l.category && <span className="av-card-badge">{l.category}</span>}
-                      </div>
-                      <div className="av-card-body">
-                        <div className="av-card-price">
-                          {l.price ? Number(l.price).toLocaleString('ru-RU') : '—'} ₽
-                          {l.priceUnit && <span className="av-card-unit">{l.priceUnit}</span>}
-                        </div>
-                        <div className="av-card-name">{l.title}</div>
-                        <div className="av-card-meta">
-                          <div className="av-card-ava">
-                            {l.workerAvatar?.length > 10
-                              ? <img src={l.workerAvatar} alt=""/>
-                              : (l.workerName || 'М')[0]
-                            }
-                          </div>
-                          <span className="av-card-worker">
-                            {[l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер'}
-                          </span>
-                          <span className="av-card-geo">Йошкар-Ола</span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-                {shown < filtered.length && (
-                  <button className="av-more" onClick={() => setShown(s => s + 8)}>
-                    Показать ещё ({filtered.length - shown})
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* ── SIDEBAR ── */}
-          <div className="av-side">
-            <div className="av-widget">
-              <div className="av-widget-label">Навигация</div>
-              <div className="av-nav">
-                <Link to="/categories" className="av-nav-link av-nav-link-primary">📋 Разместить задачу</Link>
-                <Link to="/find-master" className="av-nav-link">🔍 Найти мастера</Link>
-                <Link to="/deals" className="av-nav-link">🤝 Мои сделки</Link>
-                <Link to="/chat" className="av-nav-link">💬 Сообщения</Link>
-              </div>
-            </div>
-
-            <div className="av-widget">
-              <div className="av-widget-label">Платформа</div>
-              <div className="av-stats-row">
-                {[['24/7','Заявки'],['9','Категорий'],['5.0★','Рейтинг'],['≤10','Мин. отклик']].map(([n,l]) => (
-                  <div key={l} className="av-stat">
-                    <span className="av-stat-val">{n}</span>
-                    <span className="av-stat-lbl">{l}</span>
+            <div className="av-cats-scroll">
+              {ALL_CATS.map(cat => (
+                <Link key={cat.slug} to={`/find-master/${cat.slug}`} className="av-cat-item">
+                  <div className="av-cat-photo">
+                    {CAT_PHOTOS[cat.slug]
+                      ? <img src={CAT_PHOTOS[cat.slug]} alt={cat.name}/>
+                      : <div className="av-cat-photo-ph">{cat.emoji||'🛠️'}</div>
+                    }
                   </div>
+                  <div className="av-cat-name">{cat.name}</div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* ── ОБЪЯВЛЕНИЯ ── */}
+          <div className="av-recs-hdr">
+            <h2 className="av-recs-title">Рекомендации для вас</h2>
+            <Link to="/find-master" className="av-recs-link">Смотреть все →</Link>
+          </div>
+
+          {listings.length === 0 ? (
+            <div className="av-empty">
+              <div className="av-empty-ico">🔍</div>
+              <h3>Пока нет объявлений</h3>
+              <p>Мастера скоро появятся!</p>
+            </div>
+          ) : (
+            <>
+              <div className="av-cards-grid">
+                {listings.slice(0, shown).map(l => (
+                  <Link key={l.id} to={`/listings/${l.id}`} className="av-card">
+                    <div className="av-card-img">
+                      {l.photos?.length ? <img src={l.photos[0]} alt=""/> : '🔧'}
+                      {l.category && <span className="av-card-cat">{l.category}</span>}
+                    </div>
+                    <div className="av-card-body">
+                      <div className="av-card-price">
+                        {l.price ? Number(l.price).toLocaleString('ru-RU') : '—'} ₽
+                        <span className="av-card-price-unit">{l.priceUnit}</span>
+                      </div>
+                      <div className="av-card-title">{l.title}</div>
+                      <div className="av-card-footer">
+                        <div className="av-card-ava">
+                          {l.workerAvatar?.length > 10 ? <img src={l.workerAvatar} alt=""/> : (l.workerName||'М')[0]}
+                        </div>
+                        <span className="av-card-wname">{[l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер'}</span>
+                        <span className="av-card-city">📍 Йошкар-Ола</span>
+                      </div>
+                    </div>
+                  </Link>
                 ))}
               </div>
-            </div>
+              {shown < listings.length && (
+                <button className="av-more-btn" onClick={()=>setShown(s=>s+8)}>
+                  Показать ещё · осталось {listings.length - shown}
+                </button>
+              )}
+            </>
+          )}
+        </div>
 
-            <div className="av-banner">
-              <h3>Нужен мастер?</h3>
-              <p>Опишите задачу — первые отклики уже через 10 минут</p>
-              <button className="av-banner-btn" onClick={() => navigate('/categories')}>Разместить задачу</button>
+        {/* ── ПРАВАЯ КОЛОНКА ── */}
+        <div className="av-side">
+          <div className="av-widget">
+            <div className="av-widget-title">Платформа</div>
+            <div className="av-stats-grid">
+              {[['24/7','Заявки'],['9','Категорий'],['5.0★','Рейтинг'],['≤10','Мин. отклик']].map(([n,l])=>(
+                <div key={l} className="av-stat-box">
+                  <span className="av-stat-num">{n}</span>
+                  <span className="av-stat-lbl">{l}</span>
+                </div>
+              ))}
             </div>
+          </div>
+
+          <div className="av-promo">
+            <h3>Нужен мастер прямо сейчас?</h3>
+            <p>Опишите задачу — первые отклики уже через 10 минут</p>
+            <button className="av-promo-btn" onClick={()=>navigate('/categories')}>Разместить заявку →</button>
           </div>
         </div>
       </div>
@@ -285,9 +428,6 @@ function CustomerHome({ userId, userName }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   WORKER HOME
-   ═══════════════════════════════════════════════════════════ */
 function WorkerHome({ userId, userName }) {
   const [deals, setDeals] = useState([]);
   const [listings, setListings] = useState([]);
@@ -296,209 +436,113 @@ function WorkerHome({ userId, userName }) {
   useEffect(() => {
     if (!userId) return;
     Promise.all([
-      fetch(`${API}/deals`, { headers: { 'X-User-Id': userId } }).then(r => r.ok ? r.json() : []),
-      fetch(`${API}/workers/${userId}/listings`).then(r => r.ok ? r.json() : []),
-    ]).then(([d, l]) => { setDeals(Array.isArray(d) ? d : []); setListings(Array.isArray(l) ? l : []); })
-      .finally(() => setLoading(false));
-  }, [userId]);
+      fetch(`${API}/deals`,{headers:{'X-User-Id':userId}}).then(r=>r.ok?r.json():[]),
+      fetch(`${API}/workers/${userId}/listings`).then(r=>r.ok?r.json():[]),
+    ]).then(([d,l])=>{ setDeals(Array.isArray(d)?d:[]); setListings(Array.isArray(l)?l:[]); }).finally(()=>setLoading(false));
+  },[userId]);
 
-  const active = deals.filter(d => d.status === 'IN_PROGRESS');
-  const done = deals.filter(d => d.status === 'COMPLETED');
-  const liveListing = listings.filter(l => l.active);
+  const active = deals.filter(d=>d.status==='IN_PROGRESS');
+  const done   = deals.filter(d=>d.status==='COMPLETED');
+  const liveListing = listings.filter(l=>l.active);
 
-  const ST = {
-    IN_PROGRESS: { bg: '#fff8f0', color: '#d97706', label: 'В работе' },
-    COMPLETED: { bg: '#f0fdf4', color: '#16a34a', label: 'Завершена' },
-    NEW: { bg: '#eff6ff', color: '#2563eb', label: 'Новая' },
-  };
-
-  const wStyles = `
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-    .wk * { box-sizing: border-box; margin: 0; padding: 0; }
-    .wk { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f2f2f2; min-height: 100vh; color: #141414; -webkit-font-smoothing: antialiased; }
-
-    .wk-header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 20px 0; }
-    .wk-header-inner { max-width: 1260px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-    .wk-hello { font-size: 22px; font-weight: 800; }
-    .wk-hello span { color: #3d9be9; }
-    .wk-sub { font-size: 14px; color: #999; margin-top: 2px; }
-    .wk-header-btns { display: flex; gap: 8px; }
-    .wk-btn-primary { background: #3d9be9; border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700; padding: 10px 20px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; transition: background .15s; }
-    .wk-btn-primary:hover { background: #2b8ad6; }
-    .wk-btn-outline { background: #fff; border: 1px solid #d9d9d9; border-radius: 8px; color: #141414; font-size: 14px; font-weight: 600; padding: 10px 20px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; transition: all .15s; }
-    .wk-btn-outline:hover { border-color: #3d9be9; color: #3d9be9; }
-
-    .wk-body { max-width: 1260px; margin: 0 auto; padding: 16px 20px 60px; display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
-
-    .wk-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-    .wk-kpi { background: #fff; border-radius: 10px; padding: 16px; display: flex; align-items: center; gap: 12px; }
-    .wk-kpi-ico { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-    .wk-kpi-num { font-size: 24px; font-weight: 900; color: #141414; line-height: 1; }
-    .wk-kpi-lbl { font-size: 12px; color: #999; font-weight: 600; margin-top: 2px; }
-
-    .wk-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-    .wk-action { background: #fff; border-radius: 10px; padding: 16px; text-align: center; text-decoration: none; color: #141414; transition: box-shadow .15s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .wk-action:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
-    .wk-action-ico { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .wk-action-title { font-size: 13px; font-weight: 700; }
-    .wk-action-sub { font-size: 12px; color: #999; }
-
-    .wk-section-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .wk-section-title { font-size: 18px; font-weight: 800; }
-    .wk-section-link { font-size: 14px; color: #3d9be9; text-decoration: none; font-weight: 600; }
-    .wk-section-link:hover { text-decoration: underline; }
-
-    .wk-deals { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
-    .wk-deal { background: #fff; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #141414; transition: box-shadow .12s; }
-    .wk-deal:hover { box-shadow: 0 2px 12px rgba(0,0,0,.06); }
-    .wk-deal-ico { width: 38px; height: 38px; border-radius: 8px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-    .wk-deal-info { flex: 1; min-width: 0; }
-    .wk-deal-title { font-size: 14px; font-weight: 700; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-    .wk-deal-meta { font-size: 12px; color: #999; margin-top: 1px; }
-    .wk-deal-badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 6px; flex-shrink: 0; }
-
-    .wk-listings { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-    .wk-listing { background: #fff; border-radius: 10px; overflow: hidden; text-decoration: none; color: #141414; transition: box-shadow .15s; }
-    .wk-listing:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
-    .wk-listing-img { aspect-ratio: 4/3; background: #f5f5f5; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #ccc; position: relative; }
-    .wk-listing-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .wk-listing-body { padding: 10px 12px; }
-    .wk-listing-price { font-size: 16px; font-weight: 800; }
-    .wk-listing-name { font-size: 13px; color: #555; margin-top: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-
-    .wk-empty { background: #fff; border-radius: 10px; padding: 40px 20px; text-align: center; margin-bottom: 20px; }
-    .wk-empty-ico { font-size: 36px; margin-bottom: 10px; }
-    .wk-empty h3 { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 4px; }
-    .wk-empty p { font-size: 13px; color: #999; margin-bottom: 14px; }
-    .wk-empty-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; background: #3d9be9; color: #fff; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 700; transition: background .15s; }
-    .wk-empty-btn:hover { background: #2b8ad6; }
-
-    .wk-side { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 16px; }
-    .wk-widget { background: #fff; border-radius: 12px; padding: 16px; }
-    .wk-widget-label { font-size: 13px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
-    .wk-nav { display: flex; flex-direction: column; gap: 2px; }
-    .wk-nav-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; color: #141414; transition: background .12s; }
-    .wk-nav-link:hover { background: #f5f5f5; }
-    .wk-nav-primary { background: #3d9be9; color: #fff; }
-    .wk-nav-primary:hover { background: #2b8ad6; }
-    .wk-promo { background: #3d9be9; border-radius: 12px; padding: 18px; color: #fff; }
-    .wk-promo h3 { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
-    .wk-promo p { font-size: 13px; color: rgba(255,255,255,.8); margin-bottom: 14px; line-height: 1.5; }
-    .wk-promo-btn { width: 100%; background: #fff; border: none; border-radius: 8px; color: #3d9be9; font-size: 14px; font-weight: 700; padding: 10px; cursor: pointer; font-family: inherit; transition: background .15s; }
-    .wk-promo-btn:hover { background: #e8f4fd; }
-
-    @media(max-width: 1024px) { .wk-body { grid-template-columns: 1fr; } .wk-side { position: static; } }
-    @media(max-width: 640px) { .wk-kpis { grid-template-columns: 1fr 1fr; } .wk-actions { grid-template-columns: 1fr 1fr; } .wk-listings { grid-template-columns: 1fr; } .wk-header-inner { flex-direction: column; align-items: flex-start; } }
-  `;
+  const ST = { IN_PROGRESS:{bg:'#fff3f0',color:'#e8410a',label:'В работе'}, COMPLETED:{bg:'#f0fdf4',color:'#22c55e',label:'Завершена'}, NEW:{bg:'#eff6ff',color:'#3b82f6',label:'Новая'} };
 
   return (
-    <div className="wk">
-      <style>{wStyles}</style>
-
-      <div className="wk-header">
-        <div className="wk-header-inner">
+    <div className="hp">
+      <style>{css}</style>
+      <div className="hp-worker-hero">
+        <div className="hp-worker-hero-inner">
           <div>
-            <h1 className="wk-hello">Привет, <span>{userName || 'Мастер'}</span></h1>
-            <p className="wk-sub">Панель управления · Йошкар-Ола</p>
+            <h1 className="hp-worker-hi">👋 Привет, <em>{userName||'Мастер'}</em>!</h1>
+            <p className="hp-worker-sub">Панель управления · Йошкар-Ола</p>
           </div>
-          <div className="wk-header-btns">
-            <Link to="/find-work" className="wk-btn-primary">📋 Найти работу</Link>
-            <Link to="/my-listings" className="wk-btn-outline">+ Объявление</Link>
+          <div className="hp-worker-hero-btns">
+            <Link to="/find-work"    className="hp-worker-btn-fill">📋 Найти работу</Link>
+            <Link to="/my-listings"  className="hp-worker-btn-line">+ Объявление</Link>
           </div>
         </div>
       </div>
 
-      <div className="wk-body">
+      <div className="hp-worker-body">
         <div>
-          {/* KPIs */}
-          <div className="wk-kpis">
+          {/* KPI */}
+          <div className="hp-kpi-row">
             {[
-              { ico: '⚙️', bg: '#fff8f0', num: active.length, lbl: 'В работе' },
-              { ico: '✅', bg: '#f0fdf4', num: done.length, lbl: 'Выполнено' },
-              { ico: '📢', bg: '#eff6ff', num: liveListing.length, lbl: 'Объявлений' },
-            ].map(k => (
-              <div key={k.lbl} className="wk-kpi">
-                <div className="wk-kpi-ico" style={{ background: k.bg }}>{k.ico}</div>
-                <div><div className="wk-kpi-num">{k.num}</div><div className="wk-kpi-lbl">{k.lbl}</div></div>
+              {ico:'⚙️',bg:'#fff3f0',num:active.length,   lbl:'В работе'},
+              {ico:'✅',bg:'#f0fdf4',num:done.length,     lbl:'Выполнено'},
+              {ico:'📢',bg:'#eff6ff',num:liveListing.length,lbl:'Объявлений'},
+            ].map(k=>(
+              <div key={k.lbl} className="hp-kpi">
+                <div className="hp-kpi-ico" style={{background:k.bg}}>{k.ico}</div>
+                <div><div className="hp-kpi-num">{k.num}</div><div className="hp-kpi-lbl">{k.lbl}</div></div>
               </div>
             ))}
           </div>
 
-          {/* Quick actions */}
-          <div className="wk-actions">
+          {/* Действия */}
+          <div className="hp-section-hdr" style={{marginBottom:12}}><h2 className="hp-section-title">Быстрые действия</h2></div>
+          <div className="hp-actions-grid">
             {[
-              { to: '/find-work', ico: '🔍', bg: '#eff6ff', title: 'Найти работу', sub: 'Новые заявки' },
-              { to: '/deals', ico: '📋', bg: '#f0fdf4', title: 'Мои сделки', sub: `Активных: ${active.length}` },
-              { to: '/my-listings', ico: '📢', bg: '#fff8f0', title: 'Объявления', sub: `Активных: ${liveListing.length}` },
-              { to: '/chat', ico: '💬', bg: '#fdf4ff', title: 'Сообщения', sub: 'Переписка' },
-              { to: '/worker-profile', ico: '👤', bg: '#f5f5f5', title: 'Профиль', sub: 'Настройки' },
-              { to: '/deals', ico: '⭐', bg: '#fff8f0', title: 'Отзывы', sub: 'Репутация' },
-            ].map(a => (
-              <Link key={a.to + a.title} to={a.to} className="wk-action">
-                <div className="wk-action-ico" style={{ background: a.bg }}>{a.ico}</div>
-                <div className="wk-action-title">{a.title}</div>
-                <div className="wk-action-sub">{a.sub}</div>
+              {to:'/find-work',    ico:'🔍',bg:'#fff3f0',title:'Найти работу',   sub:'Новые заявки'},
+              {to:'/deals',        ico:'📋',bg:'#f0fdf4',title:'Мои сделки',     sub:`Активных: ${active.length}`},
+              {to:'/my-listings',  ico:'📢',bg:'#eff6ff',title:'Объявления',     sub:`Активных: ${liveListing.length}`},
+              {to:'/chat',         ico:'💬',bg:'#fdf4ff',title:'Сообщения',      sub:'Переписка'},
+              {to:'/worker-profile',ico:'👤',bg:'#fff9f0',title:'Профиль',       sub:'Настройки'},
+              {to:'/deals',        ico:'⭐',bg:'#fff3f0',title:'Отзывы',         sub:'Репутация'},
+            ].map(a=>(
+              <Link key={a.to+a.title} to={a.to} className="hp-action">
+                <div className="hp-action-ico" style={{background:a.bg}}>{a.ico}</div>
+                <div className="hp-action-title">{a.title}</div>
+                <div className="hp-action-sub">{a.sub}</div>
               </Link>
             ))}
           </div>
 
-          {/* Active deals */}
-          <div className="wk-section-hdr">
-            <h2 className="wk-section-title">Активные сделки</h2>
-            <Link to="/deals" className="wk-section-link">Все</Link>
-          </div>
-          {loading ? (
-            <div className="wk-deals">{[1, 2].map(i => <div key={i} style={{ background: '#fff', borderRadius: 10, height: 62 }}/>)}</div>
-          ) : active.length === 0 ? (
-            <div className="wk-empty">
-              <div className="wk-empty-ico">📋</div>
+          {/* Сделки */}
+          <div className="hp-section-hdr"><h2 className="hp-section-title">Активные сделки</h2><Link to="/deals" className="hp-section-link">Все →</Link></div>
+          {loading ? <div className="hp-deal-list">{[1,2].map(i=><div key={i} style={{background:'#fff',borderRadius:12,border:'1px solid #ebebeb',height:68}}/>)}</div>
+          : active.length===0 ? (
+            <div className="hp-empty">
+              <div className="hp-empty-ico">📋</div>
               <h3>Нет активных сделок</h3>
               <p>Откликайтесь на заявки чтобы получить заказы</p>
-              <Link to="/find-work" className="wk-empty-btn">Найти работу</Link>
+              <Link to="/find-work" className="hp-empty-link">Найти работу</Link>
             </div>
           ) : (
-            <div className="wk-deals">
-              {active.slice(0, 5).map(d => {
-                const st = ST[d.status] || ST.NEW;
+            <div className="hp-deal-list">
+              {active.slice(0,5).map(d=>{
+                const st=ST[d.status]||ST.NEW;
                 return (
-                  <Link key={d.id} to="/deals" className="wk-deal">
-                    <div className="wk-deal-ico">⚙️</div>
-                    <div className="wk-deal-info">
-                      <div className="wk-deal-title">{d.title || 'Сделка'}</div>
-                      <div className="wk-deal-meta">
-                        {d.customerName || 'Заказчик'}{d.agreedPrice ? ` · ${Number(d.agreedPrice).toLocaleString('ru-RU')} ₽` : ''}
-                      </div>
+                  <Link key={d.id} to="/deals" className="hp-deal">
+                    <div className="hp-deal-ico">⚙️</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div className="hp-deal-title">{d.title||'Сделка'}</div>
+                      <div className="hp-deal-meta">👤 {d.customerName||'Заказчик'}{d.agreedPrice?` · ${Number(d.agreedPrice).toLocaleString('ru-RU')} ₽`:''}</div>
                     </div>
-                    <span className="wk-deal-badge" style={{ background: st.bg, color: st.color }}>{st.label}</span>
+                    <span className="hp-deal-badge" style={{background:st.bg,color:st.color}}>{st.label}</span>
                   </Link>
                 );
               })}
             </div>
           )}
 
-          {/* My listings */}
-          <div className="wk-section-hdr">
-            <h2 className="wk-section-title">Мои объявления</h2>
-            <Link to="/my-listings" className="wk-section-link">Все</Link>
-          </div>
-          {liveListing.length === 0 ? (
-            <div className="wk-empty">
-              <div className="wk-empty-ico">📢</div>
+          {/* Объявления */}
+          <div className="hp-section-hdr"><h2 className="hp-section-title">Мои объявления</h2><Link to="/my-listings" className="hp-section-link">Все →</Link></div>
+          {liveListing.length===0 ? (
+            <div className="hp-empty">
+              <div className="hp-empty-ico">📢</div>
               <h3>Нет объявлений</h3>
               <p>Опубликуйте услуги чтобы заказчики нашли вас</p>
-              <Link to="/my-listings" className="wk-empty-btn">+ Разместить</Link>
+              <Link to="/my-listings" className="hp-empty-link">+ Разместить</Link>
             </div>
           ) : (
-            <div className="wk-listings">
-              {liveListing.slice(0, 4).map(l => (
-                <Link key={l.id} to="/my-listings" className="wk-listing">
-                  <div className="wk-listing-img">
-                    {l.photos?.length ? <img src={l.photos[0]} alt=""/> : '🔧'}
-                    {l.category && <span style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(0,0,0,.6)', color: '#fff', fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 4 }}>{l.category}</span>}
-                  </div>
-                  <div className="wk-listing-body">
-                    <div className="wk-listing-price">{Number(l.price).toLocaleString('ru-RU')} ₽ <span style={{ fontSize: 12, color: '#999', fontWeight: 400 }}>{l.priceUnit}</span></div>
-                    <div className="wk-listing-name">{l.title}</div>
+            <div className="hp-listings-grid">
+              {liveListing.slice(0,4).map(l=>(
+                <Link key={l.id} to="/my-listings" className="hp-card">
+                  <div className="hp-card-img">{l.photos?.length?<img src={l.photos[0]} alt=""/>:'🔧'}{l.category&&<span className="hp-card-tag">{l.category}</span>}</div>
+                  <div className="hp-card-body">
+                    <div className="hp-card-price">{Number(l.price).toLocaleString('ru-RU')} ₽<span className="hp-card-unit">{l.priceUnit}</span></div>
+                    <div className="hp-card-title">{l.title}</div>
                   </div>
                 </Link>
               ))}
@@ -506,22 +550,22 @@ function WorkerHome({ userId, userName }) {
           )}
         </div>
 
-        {/* Sidebar */}
-        <div className="wk-side">
-          <div className="wk-widget">
-            <div className="wk-widget-label">Навигация</div>
-            <div className="wk-nav">
-              <Link to="/find-work" className="wk-nav-link wk-nav-primary">🔍 Найти работу</Link>
-              <Link to="/my-listings" className="wk-nav-link">📢 Объявления</Link>
-              <Link to="/deals" className="wk-nav-link">📋 Сделки</Link>
-              <Link to="/chat" className="wk-nav-link">💬 Сообщения</Link>
-              <Link to="/worker-profile" className="wk-nav-link">👤 Профиль</Link>
+        {/* Правая колонка */}
+        <div className="hp-worker-side" style={{position:'sticky',top:68,display:'flex',flexDirection:'column',gap:16}}>
+          <div className="hp-widget">
+            <div className="hp-widget-title">Навигация</div>
+            <div className="hp-quick-list">
+              <Link to="/find-work"    className="hp-quick-item hp-qi-orange">🔍 Найти работу</Link>
+              <Link to="/my-listings"  className="hp-quick-item hp-qi-outline">📢 Объявления</Link>
+              <Link to="/deals"        className="hp-quick-item hp-qi-gray">📋 Сделки</Link>
+              <Link to="/chat"         className="hp-quick-item hp-qi-gray">💬 Сообщения</Link>
+              <Link to="/worker-profile" className="hp-quick-item hp-qi-gray">👤 Профиль</Link>
             </div>
           </div>
-          <div className="wk-promo">
+          <div className="hp-promo-widget">
             <h3>Новые заявки ждут!</h3>
-            <p>Откликайтесь первым — получайте больше заказов</p>
-            <button className="wk-promo-btn" onClick={() => window.location.href = '/find-work'}>Смотреть заявки</button>
+            <p>Откликайтесь первым — получайте больше заказов от клиентов</p>
+            <button className="hp-promo-btn" onClick={()=>window.location.href='/find-work'}>Смотреть заявки →</button>
           </div>
         </div>
       </div>
@@ -529,204 +573,179 @@ function WorkerHome({ userId, userName }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   GUEST HOME — Авито-стиль лендинг
-   ═══════════════════════════════════════════════════════════ */
 function GuestHome() {
   const navigate = useNavigate();
-
-  const gStyles = `
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-    .gh * { box-sizing: border-box; margin: 0; padding: 0; }
-    .gh { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f2f2f2; min-height: 100vh; color: #141414; -webkit-font-smoothing: antialiased; }
-
-    /* HERO */
-    .gh-hero { background: #fff; padding: 48px 0 40px; border-bottom: 1px solid #e0e0e0; }
-    .gh-hero-inner { max-width: 1260px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
-    .gh-badge { display: inline-flex; align-items: center; gap: 6px; background: #e8f4fd; border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 700; color: #3d9be9; margin-bottom: 16px; }
-    .gh-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #3d9be9; }
-    .gh-h1 { font-size: 44px; font-weight: 900; line-height: 1.1; margin-bottom: 14px; letter-spacing: -1px; color: #141414; }
-    .gh-h1 span { color: #3d9be9; }
-    .gh-sub { font-size: 16px; color: #777; line-height: 1.6; margin-bottom: 28px; max-width: 420px; }
-    .gh-btns { display: flex; gap: 10px; margin-bottom: 32px; }
-    .gh-btn-primary { background: #3d9be9; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; padding: 14px 28px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-family: inherit; transition: background .15s; }
-    .gh-btn-primary:hover { background: #2b8ad6; }
-    .gh-btn-secondary { background: #fff; color: #141414; border: 1px solid #d9d9d9; border-radius: 10px; font-size: 16px; font-weight: 600; padding: 14px 24px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-family: inherit; transition: all .15s; }
-    .gh-btn-secondary:hover { border-color: #3d9be9; color: #3d9be9; }
-    .gh-stats { display: flex; gap: 24px; padding-top: 24px; border-top: 1px solid #e8e8e8; }
-    .gh-stat-num { font-size: 22px; font-weight: 900; color: #141414; display: block; line-height: 1; }
-    .gh-stat-lbl { font-size: 11px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-top: 4px; display: block; }
-
-    .gh-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .gh-photo { border-radius: 12px; overflow: hidden; aspect-ratio: 1; position: relative; }
-    .gh-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
-    .gh-photo:hover img { transform: scale(1.04); }
-    .gh-photo-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,.55) 0%, transparent 50%); }
-    .gh-photo-label { position: absolute; bottom: 8px; left: 10px; color: #fff; font-size: 12px; font-weight: 700; }
-    .gh-photo-ph { width: 100%; height: 100%; background: #e8f0fe; display: flex; align-items: center; justify-content: center; font-size: 28px; }
-
-    /* SECTIONS */
-    .gh-section { padding: 48px 0; }
-    .gh-section-white { background: #fff; }
-    .gh-section-gray { background: #f2f2f2; }
-    .gh-wrap { max-width: 1260px; margin: 0 auto; padding: 0 20px; }
-    .gh-section-top { text-align: center; margin-bottom: 36px; }
-    .gh-section-tag { font-size: 12px; font-weight: 700; color: #3d9be9; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
-    .gh-section-title { font-size: 28px; font-weight: 900; color: #141414; letter-spacing: -.5px; }
-    .gh-section-desc { font-size: 15px; color: #999; margin-top: 8px; }
-
-    /* HOW IT WORKS */
-    .gh-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .gh-step { background: #fff; border-radius: 12px; padding: 24px 20px; border: 1px solid #e8e8e8; transition: box-shadow .18s, transform .18s; }
-    .gh-step:hover { box-shadow: 0 6px 24px rgba(0,0,0,.08); transform: translateY(-2px); }
-    .gh-step-num { width: 40px; height: 40px; border-radius: 10px; background: #3d9be9; color: #fff; font-size: 18px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
-    .gh-step-title { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
-    .gh-step-desc { font-size: 14px; color: #777; line-height: 1.55; }
-
-    /* CATEGORIES */
-    .gh-cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-    .gh-cat { background: #fff; border-radius: 10px; border: 1px solid #e8e8e8; overflow: hidden; text-decoration: none; color: #141414; transition: box-shadow .15s, transform .15s; }
-    .gh-cat:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-2px); }
-    .gh-cat-img { aspect-ratio: 4/3; overflow: hidden; background: #f5f5f5; }
-    .gh-cat-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s; }
-    .gh-cat:hover .gh-cat-img img { transform: scale(1.05); }
-    .gh-cat-name { padding: 10px 12px; font-size: 13px; font-weight: 700; text-align: center; }
-
-    /* BENEFITS */
-    .gh-benefits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .gh-benefit { display: flex; gap: 14px; align-items: flex-start; }
-    .gh-benefit-ico { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-    .gh-benefit-title { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
-    .gh-benefit-desc { font-size: 13px; color: #888; line-height: 1.5; }
-
-    /* REVIEWS */
-    .gh-reviews { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .gh-review { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 20px; }
-    .gh-review-stars { color: #f59e0b; font-size: 14px; margin-bottom: 10px; }
-    .gh-review-text { font-size: 14px; color: #555; line-height: 1.55; margin-bottom: 14px; }
-    .gh-review-footer { display: flex; align-items: center; gap: 10px; }
-    .gh-review-ava { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; }
-    .gh-review-name { font-size: 14px; font-weight: 700; }
-    .gh-review-svc { font-size: 12px; color: #999; }
-
-    /* CTA */
-    .gh-cta { background: #3d9be9; border-radius: 16px; padding: 40px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-    .gh-cta-title { font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 6px; }
-    .gh-cta-sub { font-size: 15px; color: rgba(255,255,255,.8); }
-    .gh-cta-btn { background: #fff; border: none; border-radius: 10px; color: #3d9be9; font-size: 16px; font-weight: 800; padding: 14px 32px; cursor: pointer; white-space: nowrap; font-family: inherit; transition: background .15s; flex-shrink: 0; }
-    .gh-cta-btn:hover { background: #e8f4fd; }
-
-    @media(max-width: 960px) { .gh-hero-inner { grid-template-columns: 1fr; } .gh-photos { display: none; } }
-    @media(max-width: 768px) { .gh-steps, .gh-benefits, .gh-reviews { grid-template-columns: 1fr; } .gh-cta { flex-direction: column; text-align: center; } .gh-h1 { font-size: 32px; } .gh-btns { flex-direction: column; } }
+  const guestCss = `
+    .g-section { padding: 60px 0; }
+    .g-section-white { background: #fff; }
+    .g-section-gray  { background: #f5f5f3; }
+    .g-section-dark  { background: #0d0d0d; }
+    .g-wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .g-eyebrow { font-size: 11px; font-weight: 800; color: #e8410a; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
+    .g-title { font-size: 32px; font-weight: 900; letter-spacing: -.5px; margin: 0 0 10px; }
+    .g-sub { font-size: 15px; color: #888; margin: 0 0 40px; }
+    .g-how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+    .g-how-card { background: #fff; border-radius: 16px; padding: 28px 24px; border: 1px solid #ebebeb; transition: box-shadow .18s, transform .18s; }
+    .g-how-card:hover { box-shadow: 0 8px 28px rgba(232,65,10,.1); transform: translateY(-3px); border-color: rgba(232,65,10,.2); }
+    .g-how-num { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg,#e8410a,#ff5722); color: #fff; font-size: 18px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(232,65,10,.3); }
+    .g-how-title { font-size: 17px; font-weight: 800; margin: 0 0 8px; }
+    .g-how-desc { font-size: 14px; color: #666; line-height: 1.6; margin: 0; }
+    .g-benefits-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+    .g-benefit { display: flex; gap: 16px; align-items: flex-start; }
+    .g-benefit-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .g-benefit-title { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
+    .g-benefit-desc { font-size: 13px; color: #888; line-height: 1.55; margin: 0; }
+    .g-cats-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); gap: 10px; }
+    .g-cat-card { background: #fff; border-radius: 12px; border: 1px solid #ebebeb; padding: 18px 14px; text-align: center; text-decoration: none; color: #1a1a1a; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all .18s; }
+    .g-cat-card:hover { border-color: #e8410a; box-shadow: 0 4px 16px rgba(232,65,10,.1); transform: translateY(-2px); }
+    .g-cat-emoji { font-size: 28px; }
+    .g-cat-name { font-size: 13px; font-weight: 700; }
+    .g-reviews-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+    .g-review { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 24px; }
+    .g-review-stars { color: #f59e0b; font-size: 16px; margin-bottom: 12px; }
+    .g-review-text { font-size: 14px; color: rgba(255,255,255,.7); line-height: 1.65; margin: 0 0 16px; font-style: italic; }
+    .g-review-footer { display: flex; align-items: center; gap: 10px; }
+    .g-review-ava { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 800; flex-shrink: 0; }
+    .g-review-name { font-size: 14px; font-weight: 700; color: #fff; }
+    .g-review-svc { font-size: 12px; color: rgba(255,255,255,.4); }
+    .g-cta { background: linear-gradient(135deg, #1a0a00 0%, #3d1200 50%, #e8410a 100%); border-radius: 20px; padding: 48px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .g-cta-title { font-size: 26px; font-weight: 900; color: #fff; margin: 0 0 8px; }
+    .g-cta-sub { font-size: 15px; color: rgba(255,255,255,.65); margin: 0; }
+    .g-cta-btn { background: #fff; border: none; border-radius: 10px; color: #e8410a; font-size: 15px; font-weight: 800; padding: 14px 32px; cursor: pointer; white-space: nowrap; font-family: Manrope,Arial,sans-serif; transition: background .15s; flex-shrink: 0; }
+    .g-cta-btn:hover { background: #fff3f0; }
+    @media(max-width:768px) { .g-how-grid,.g-benefits-grid,.g-reviews-grid { grid-template-columns: 1fr; } .g-cta { flex-direction: column; } }
   `;
 
   return (
-    <div className="gh">
-      <style>{gStyles}</style>
+    <div className="hp">
+      <style>{css}</style>
+      <style>{guestCss}</style>
 
-      {/* HERO */}
-      <div className="gh-hero">
-        <div className="gh-hero-inner">
+      {/* Hero */}
+      <div className="hp-hero">
+        <div className="hp-hero-noise"/><div className="hp-hero-glow"/>
+        <div style={{position:'absolute',top:'-80px',left:'-80px',width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
+
+        <div style={{position:'relative',zIndex:1,maxWidth:1200,margin:'0 auto',padding:'72px 24px 64px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'center'}}>
+          {/* Левая — текст */}
           <div>
-            <div className="gh-badge"><span className="gh-badge-dot"/>Йошкар-Ола</div>
-            <h1 className="gh-h1">Свои мастера<br/>для <span>любых задач</span></h1>
-            <p className="gh-sub">Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.</p>
-            <div className="gh-btns">
-              <Link to="/register" className="gh-btn-primary">Найти мастера</Link>
-              <Link to="/register?role=WORKER" className="gh-btn-secondary">Стать мастером</Link>
+            <div className="hp-hero-eyebrow" style={{marginBottom:24}}><span className="hp-hero-dot"/>Йошкар-Ола · Маркетплейс мастеров</div>
+            <h1 className="hp-hero-h1" style={{fontSize:52,marginBottom:20,lineHeight:1.06}}>
+              Свои мастера<br/>
+              для <em>любых задач</em><br/>
+              в Йошкар-Оле
+            </h1>
+            <p style={{fontSize:16,color:'rgba(255,255,255,.55)',lineHeight:1.7,margin:'0 0 32px',maxWidth:400}}>
+              Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
+            </p>
+            <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:40}}>
+              <Link to="/register" className="hp-hero-btn">🔍 Найти мастера</Link>
+              <Link to="/register?role=WORKER" className="hp-hero-btn-ghost">Стать мастером →</Link>
             </div>
-            <div className="gh-stats">
-              {[['24/7', 'Приём заявок'], ['9', 'Категорий'], ['≤10', 'Мин. отклик'], ['5.0★', 'Рейтинг']].map(([n, l]) => (
+            <div style={{display:'flex',gap:28,paddingTop:28,borderTop:'1px solid rgba(255,255,255,.08)'}}>
+              {[['24/7','Приём заявок'],['9','Категорий'],['≤10','Мин. отклик'],['5.0★','Рейтинг']].map(([n,l])=>(
                 <div key={l}>
-                  <span className="gh-stat-num">{n}</span>
-                  <span className="gh-stat-lbl">{l}</span>
+                  <div style={{fontSize:22,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
+                  <div style={{fontSize:10,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:4}}>{l}</div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="gh-photos">
-            {ALL_CATS.slice(0, 9).map(cat => (
-              <Link key={cat.slug} to="/register" className="gh-photo" style={{ textDecoration: 'none' }}>
+
+          {/* Правая — сетка 3×3 с реальными фото */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+            {ALL_CATS.slice(0,9).map(cat=>(
+              <Link key={cat.slug} to="/register"
+                style={{borderRadius:12,overflow:'hidden',textDecoration:'none',color:'#fff',position:'relative',aspectRatio:'1',display:'flex',alignItems:'flex-end',transition:'transform .2s,box-shadow .2s'}}
+                onMouseEnter={e=>{e.currentTarget.style.transform='scale(1.05)';e.currentTarget.style.boxShadow='0 12px 28px rgba(0,0,0,.5)';}}
+                onMouseLeave={e=>{e.currentTarget.style.transform='scale(1)';e.currentTarget.style.boxShadow='none';}}>
                 {CAT_PHOTOS[cat.slug]
-                  ? <img src={CAT_PHOTOS[cat.slug]} alt={cat.name} loading="lazy"/>
-                  : <div className="gh-photo-ph">{cat.emoji || '🛠️'}</div>
+                  ? <div style={{position:'absolute',inset:0,backgroundImage:`url(${CAT_PHOTOS[cat.slug]})`,backgroundSize:'cover',backgroundPosition:'center'}}/>
+                  : <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,#2a1a00,#e8410a)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>{cat.emoji||'🛠️'}</div>
                 }
-                <div className="gh-photo-overlay"/>
-                <span className="gh-photo-label">{cat.name}</span>
+                <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.72) 0%,transparent 55%)'}}/>
+                <div style={{position:'relative',padding:'8px 10px',fontSize:11,fontWeight:800,lineHeight:1.2}}>{cat.name}</div>
               </Link>
             ))}
           </div>
         </div>
       </div>
 
-      {/* HOW IT WORKS */}
-      <section className="gh-section gh-section-gray">
-        <div className="gh-wrap">
-          <div className="gh-section-top">
-            <div className="gh-section-tag">Просто и понятно</div>
-            <h2 className="gh-section-title">Как это работает</h2>
-            <p className="gh-section-desc">Три шага от задачи до результата</p>
+      {/* Как работает */}
+      <section className="g-section g-section-white">
+        <div className="g-wrap">
+          <div style={{textAlign:'center',marginBottom:40}}>
+            <p className="g-eyebrow">Просто и понятно</p>
+            <h2 className="g-title">Как это работает</h2>
+            <p className="g-sub">Три шага от задачи до результата</p>
           </div>
-          <div className="gh-steps">
+          <div className="g-how-grid">
             {[
-              { n: '1', title: 'Создайте задачу', desc: 'Опишите что нужно сделать, укажите адрес и удобное время. Это займёт 2 минуты.' },
-              { n: '2', title: 'Получите отклики', desc: 'Мастера предложат цену — смотрите рейтинг, отзывы и выбирайте лучшего.' },
-              { n: '3', title: 'Заключите сделку', desc: 'Оформите безопасную сделку внутри сервиса. Оплата только после выполнения.' },
-            ].map(s => (
-              <div key={s.n} className="gh-step">
-                <div className="gh-step-num">{s.n}</div>
-                <h3 className="gh-step-title">{s.title}</h3>
-                <p className="gh-step-desc">{s.desc}</p>
+              {n:'1',title:'Создайте задачу',desc:'Опишите что нужно сделать, укажите адрес и удобное время. Это займёт 2 минуты.'},
+              {n:'2',title:'Получите отклики',desc:'Мастера предложат цену — смотрите рейтинг, отзывы и выбирайте лучшего.'},
+              {n:'3',title:'Заключите сделку',desc:'Оформите безопасную сделку внутри сервиса. Оплата только после выполнения.'},
+            ].map(s=>(
+              <div key={s.n} className="g-how-card">
+                <div className="g-how-num">{s.n}</div>
+                <h3 className="g-how-title">{s.title}</h3>
+                <p className="g-how-desc">{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CATEGORIES */}
-      <section className="gh-section gh-section-white">
-        <div className="gh-wrap">
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 20 }}>
-            <h2 className="gh-section-title">Категории услуг</h2>
-            <Link to="/register" style={{ fontSize: 14, color: '#3d9be9', fontWeight: 600, textDecoration: 'none' }}>Все категории</Link>
+      {/* Категории */}
+      <section className="g-section g-section-gray">
+        <div className="g-wrap">
+          <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:24}}>
+            <div>
+              <p className="g-eyebrow">Услуги</p>
+              <h2 className="g-title" style={{marginBottom:0}}>Категории услуг</h2>
+            </div>
+            <Link to="/register" style={{fontSize:13,color:'#e8410a',fontWeight:700,textDecoration:'none'}}>Все категории →</Link>
           </div>
-          <div className="gh-cats">
-            {ALL_CATS.map(cat => (
-              <Link key={cat.slug} to="/register" className="gh-cat">
-                <div className="gh-cat-img">
-                  {CAT_PHOTOS[cat.slug]
-                    ? <img src={CAT_PHOTOS[cat.slug]} alt={cat.name} loading="lazy"/>
-                    : <div style={{ width: '100%', height: '100%', background: '#e8f0fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>{cat.emoji || '🛠️'}</div>
-                  }
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:12}}>
+            {ALL_CATS.map(cat=>(
+              <Link key={cat.slug} to="/register"
+                style={{borderRadius:12,overflow:'hidden',textDecoration:'none',color:'#fff',position:'relative',aspectRatio:'4/3',display:'flex',flexDirection:'column',justifyContent:'flex-end',transition:'transform .18s, box-shadow .18s'}}
+                onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 10px 28px rgba(0,0,0,.2)';}}
+                onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none';}}>
+                {CAT_PHOTOS[cat.slug]
+                  ? <div style={{position:'absolute',inset:0,backgroundImage:`url(${CAT_PHOTOS[cat.slug]})`,backgroundSize:'cover',backgroundPosition:'center',transition:'transform .3s'}}/>
+                  : <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,#2a1a00,#e8410a)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:36}}>{cat.emoji||'🛠️'}</div>
+                }
+                <div style={{position:'absolute',inset:0,background:'linear-gradient(0deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.1) 55%,transparent 100%)'}}/>
+                <div style={{position:'relative',padding:'10px 12px'}}>
+                  <div style={{fontSize:13,fontWeight:800,lineHeight:1.2}}>{cat.name}</div>
                 </div>
-                <div className="gh-cat-name">{cat.name}</div>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* BENEFITS */}
-      <section className="gh-section gh-section-gray">
-        <div className="gh-wrap">
-          <div className="gh-section-top">
-            <div className="gh-section-tag">Почему мы</div>
-            <h2 className="gh-section-title">Преимущества сервиса</h2>
+      {/* Преимущества */}
+      <section className="g-section g-section-white">
+        <div className="g-wrap">
+          <div style={{textAlign:'center',marginBottom:40}}>
+            <p className="g-eyebrow">Почему мы</p>
+            <h2 className="g-title">Преимущества сервиса</h2>
           </div>
-          <div className="gh-benefits">
+          <div className="g-benefits-grid">
             {[
-              { ico: '⚡', bg: '#fff8f0', title: 'Быстрый отклик', desc: 'Первые предложения от мастеров в течение 10 минут после публикации задачи' },
-              { ico: '🔒', bg: '#f0fdf4', title: 'Безопасная сделка', desc: 'Деньги переходят мастеру только после подтверждения выполненной работы' },
-              { ico: '⭐', bg: '#eff6ff', title: 'Проверенные мастера', desc: 'Рейтинг, отзывы и история работ — выбирайте лучшего с полной информацией' },
-              { ico: '💬', bg: '#fdf4ff', title: 'Чат внутри сервиса', desc: 'Обсуждайте детали, отправляйте фото прямо в приложении' },
-              { ico: '📍', bg: '#f0f7ff', title: 'Мастера рядом', desc: 'Только мастера из Йошкар-Олы — никаких долгих ожиданий' },
-              { ico: '🎯', bg: '#fff8f0', title: 'Точная цена', desc: 'Мастер называет цену до начала работы. Никаких скрытых платежей' },
-            ].map(b => (
-              <div key={b.title} className="gh-benefit">
-                <div className="gh-benefit-ico" style={{ background: b.bg }}>{b.ico}</div>
+              {ico:'⚡',bg:'#fffbeb',title:'Быстрый отклик',     desc:'Первые предложения от мастеров в течение 10 минут после публикации задачи'},
+              {ico:'🔒',bg:'#f0fdf4',title:'Безопасная сделка',  desc:'Деньги переходят мастеру только после подтверждения выполненной работы'},
+              {ico:'⭐',bg:'#eff6ff',title:'Проверенные мастера',desc:'Рейтинг, отзывы и история работ — выбирайте лучшего с полной информацией'},
+              {ico:'💬',bg:'#fdf4ff',title:'Чат внутри сервиса', desc:'Обсуждайте детали, отправляйте фото прямо в приложении'},
+              {ico:'📍',bg:'#fff3f0',title:'Мастера рядом',      desc:'Только мастера из Йошкар-Олы — никаких долгих ожиданий'},
+              {ico:'🎯',bg:'#fff9f0',title:'Точная цена',         desc:'Мастер называет цену до начала работы. Никаких скрытых платежей'},
+            ].map(b=>(
+              <div key={b.title} className="g-benefit">
+                <div className="g-benefit-icon" style={{background:b.bg}}>{b.ico}</div>
                 <div>
-                  <p className="gh-benefit-title">{b.title}</p>
-                  <p className="gh-benefit-desc">{b.desc}</p>
+                  <p className="g-benefit-title">{b.title}</p>
+                  <p className="g-benefit-desc">{b.desc}</p>
                 </div>
               </div>
             ))}
@@ -734,28 +753,25 @@ function GuestHome() {
         </div>
       </section>
 
-      {/* REVIEWS */}
-      <section className="gh-section gh-section-white">
-        <div className="gh-wrap">
-          <div className="gh-section-top">
-            <div className="gh-section-tag">Отзывы</div>
-            <h2 className="gh-section-title">Что говорят клиенты</h2>
+      {/* Отзывы */}
+      <section className="g-section g-section-dark">
+        <div className="g-wrap">
+          <div style={{textAlign:'center',marginBottom:40}}>
+            <p className="g-eyebrow" style={{color:'#ff8055'}}>Отзывы</p>
+            <h2 className="g-title" style={{color:'#fff'}}>Что говорят клиенты</h2>
           </div>
-          <div className="gh-reviews">
+          <div className="g-reviews-grid">
             {[
-              { ava: 'АК', color: '#6366f1', name: 'Анна К.', svc: 'Сантехника', text: 'Нашла сантехника за 15 минут. Приехал вовремя, всё сделал аккуратно. Сервис огонь!' },
-              { ava: 'МР', color: '#3d9be9', name: 'Михаил Р.', svc: 'Электрика', text: 'Заказывал электрика для новой квартиры. Мастер профессиональный, цена честная.' },
-              { ava: 'СТ', color: '#22c55e', name: 'Светлана Т.', svc: 'Репетиторство', text: 'Репетитор по математике для дочки — нашла через сервис. Уже видим результат!' },
-            ].map(r => (
-              <div key={r.name} className="gh-review">
-                <div className="gh-review-stars">★★★★★</div>
-                <p className="gh-review-text">{r.text}</p>
-                <div className="gh-review-footer">
-                  <div className="gh-review-ava" style={{ background: r.color }}>{r.ava}</div>
-                  <div>
-                    <p className="gh-review-name">{r.name}</p>
-                    <p className="gh-review-svc">{r.svc}</p>
-                  </div>
+              {ava:'АК',color:'#6366f1',name:'Анна К.',svc:'Сантехника',text:'Нашла сантехника за 15 минут. Приехал вовремя, всё сделал аккуратно. Сервис огонь!'},
+              {ava:'МР',color:'#0ea5e9',name:'Михаил Р.',svc:'Электрика',text:'Заказывал электрика для новой квартиры. Мастер профессиональный, цена честная.'},
+              {ava:'СТ',color:'#22c55e',name:'Светлана Т.',svc:'Репетиторство',text:'Репетитор по математике для дочки — нашла через сервис. Уже видим результат!'},
+            ].map(r=>(
+              <div key={r.name} className="g-review">
+                <div className="g-review-stars">★★★★★</div>
+                <p className="g-review-text">«{r.text}»</p>
+                <div className="g-review-footer">
+                  <div className="g-review-ava" style={{background:r.color}}>{r.ava}</div>
+                  <div><p className="g-review-name">{r.name}</p><p className="g-review-svc">{r.svc}</p></div>
                 </div>
               </div>
             ))}
@@ -764,14 +780,14 @@ function GuestHome() {
       </section>
 
       {/* CTA */}
-      <section className="gh-section gh-section-gray">
-        <div className="gh-wrap">
-          <div className="gh-cta">
+      <section className="g-section g-section-gray">
+        <div className="g-wrap">
+          <div className="g-cta">
             <div>
-              <h2 className="gh-cta-title">Готовы разместить задачу?</h2>
-              <p className="gh-cta-sub">Зарегистрируйтесь бесплатно — первые отклики уже через 10 минут</p>
+              <h2 className="g-cta-title">Готовы разместить задачу?</h2>
+              <p className="g-cta-sub">Зарегистрируйтесь бесплатно — первые отклики уже через 10 минут</p>
             </div>
-            <button className="gh-cta-btn" onClick={() => navigate('/register')}>Начать бесплатно</button>
+            <button className="g-cta-btn" onClick={()=>navigate('/register')}>Начать бесплатно →</button>
           </div>
         </div>
       </section>
@@ -779,9 +795,6 @@ function GuestHome() {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   EXPORT
-   ═══════════════════════════════════════════════════════════ */
 export default function HomePage() {
   const { userId, userRole, userName } = useAuth();
   if (userRole === 'WORKER') return <WorkerHome userId={userId} userName={userName}/>;
