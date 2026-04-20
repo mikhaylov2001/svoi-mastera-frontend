@@ -99,6 +99,12 @@ export async function acceptOffer(userId, jobRequestId, offerId) {
     method: 'POST', headers: { 'X-User-Id': userId },
   });
 }
+export async function acceptListingDeal(userId, listingId) {
+  return apiCall(`/deals/accept-listing?listingId=${listingId}`, {
+    method: 'POST',
+    headers: { 'X-User-Id': userId },
+  });
+}
 
 // ── DEALS ──
 export async function getMyDeals(userId) {

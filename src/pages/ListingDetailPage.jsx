@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { acceptListingDeal } from '../api';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -148,6 +149,8 @@ export default function ListingDetailPage() {
   const [activePhoto, setActivePhoto] = useState(0);
   const [lightbox, setLightbox] = useState(false);
   const [showFull, setShowFull] = useState(false);
+  const [accepting, setAccepting] = useState(false);
+  const [actionError, setActionError] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -238,6 +241,24 @@ export default function ListingDetailPage() {
   const rating = stats?.averageRating || listing.workerRating || 0;
   const reviews = stats?.reviewCount || 0;
   const completed = stats?.completedWorksCount || 0;
+
+  const handleAcceptWork = async () => {
+    if (!userId) {
+      navigate('/login');
+      return;
+    }
+    setActionError('');
+    setAccepting(true);
+    try {
+      const deal = await acceptListingDeal(userId, listing.id);
+      navigate('/deals');
+      return deal;
+    } catch (e) {
+      setActionError(e?.message || 'Не удалось принять работу. Попробуйте ещё раз.');
+    } finally {
+      setAccepting(false);
+    }
+  };
 
   return (
     <div className="ld">
@@ -414,15 +435,15 @@ export default function ListingDetailPage() {
               >
                 💬 Написать мастеру
               </Link>
-              <Link
-                to={catSlug ? `/categories/${catSlug}` : '/categories'}
-                className="ld-btn-outline"
-              >
-                ✅ Оставить заявку по услуге
-              </Link>
+              <button className="ld-btn-outline" onClick={handleAcceptWork} disabled={accepting}>
+                {accepting ? '⏳ Принимаем…' : '✅ Принять работу'}
+              </button>
               <div className="ld-side-note">
-                После заявки мастер увидит задачу и сможет сразу ответить в чате.
+                После принятия начнётся сделка, дальше ждём подтверждение мастера.
               </div>
+              {actionError && (
+                <div style={{ color:'#ef4444', fontSize:12, fontWeight:600 }}>{actionError}</div>
+              )}
               <Link
                 to={`/workers/${listing.workerId}`}
                 style={{textAlign:'center',fontSize:13,color:'#888',fontWeight:600,textDecoration:'none',padding:'4px 0'}}
