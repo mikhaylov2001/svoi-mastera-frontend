@@ -26,7 +26,7 @@ const css = `
   }
   .mp-ava-fb {
     width: 88px; height: 88px; border-radius: 50%;
-    background: linear-gradient(135deg, #e8410a, #ff7043);
+    background: linear-gradient(135deg, #64748b, #475569);
     display: flex; align-items: center; justify-content: center;
     font-size: 30px; font-weight: 800; color: #fff;
   }
@@ -39,13 +39,13 @@ const css = `
   .mp-ava-wrap:hover .mp-ava-overlay { opacity: 1; }
   .mp-ava-ico { color: #fff; font-size: 20px; }
   .mp-ava-lbl {
-    display: block; font-size: 12px; color: #e8410a; font-weight: 600;
+    display: block; font-size: 12px; color: #2563eb; font-weight: 600;
     margin-top: 4px; cursor: pointer; background: none; border: none;
     font-family: inherit; padding: 0; text-align: left;
   }
 
   .mp-name { font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; color: #111; }
-  .mp-role { display: inline-block; font-size: 12px; font-weight: 600; color: #e8410a; background: #fff4f1; border-radius: 20px; padding: 3px 10px; margin-bottom: 8px; }
+  .mp-role { display: inline-block; font-size: 12px; font-weight: 600; color: #1d4ed8; background: #eff6ff; border-radius: 20px; padding: 3px 10px; margin-bottom: 8px; }
   .mp-since { font-size: 13px; color: #999; margin-bottom: 14px; }
 
   .mp-badges { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
@@ -66,7 +66,7 @@ const css = `
     cursor: pointer; background: none; border: none; font-family: inherit; text-align: left; width: 100%;
   }
   .mp-nav-item:hover { background: #f5f5f5; }
-  .mp-nav-item.active { background: #fff4f1; color: #e8410a; font-weight: 700; }
+  .mp-nav-item.active { background: #eff6ff; color: #2563eb; font-weight: 700; }
   .mp-nav-ico { font-size: 18px; flex-shrink: 0; width: 22px; }
 
   .mp-btn-logout {
@@ -106,8 +106,8 @@ const css = `
     text-decoration: none; color: inherit; transition: box-shadow .18s, transform .18s;
   }
   .mp-action:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-2px); }
-  .mp-action-primary { background: #e8410a; border-color: #e8410a; color: #fff; }
-  .mp-action-primary:hover { background: #d03a09; box-shadow: 0 4px 18px rgba(232,65,10,.25); }
+  .mp-action-primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+  .mp-action-primary:hover { background: #1d4ed8; box-shadow: 0 4px 18px rgba(37,99,235,.25); }
   .mp-action-ico { font-size: 26px; margin-bottom: 10px; }
   .mp-action-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
   .mp-action-desc { font-size: 12px; opacity: .7; }
@@ -117,7 +117,7 @@ const css = `
   .mp-review { padding: 16px 0; border-bottom: 1px solid #f5f5f5; }
   .mp-review:last-child { border-bottom: none; }
   .mp-review-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .mp-review-ava-fb { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#e8410a,#ff7043); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .mp-review-ava-fb { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#64748b,#475569); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0; }
   .mp-review-author { font-size: 14px; font-weight: 700; }
   .mp-review-date { font-size: 12px; color: #aaa; }
   .mp-review-stars { color: #f59e0b; font-size: 14px; margin-left: auto; }
@@ -349,7 +349,7 @@ export default function WorkerProfilePage() {
                   <div className="mp-empty">
                     <div className="mp-empty-ico">📋</div>
                     <p>Сделок пока нет</p>
-                    <Link to="/find-work" style={{display:'inline-block',marginTop:12,padding:'10px 20px',background:'#e8410a',color:'#fff',borderRadius:8,fontWeight:700,textDecoration:'none',fontSize:14}}>Найти работу</Link>
+                    <Link to="/find-work" style={{display:'inline-block',marginTop:12,padding:'10px 20px',background:'#2563eb',color:'#fff',borderRadius:8,fontWeight:700,textDecoration:'none',fontSize:14}}>Найти работу</Link>
                   </div>
                 ) : (
                   <div className="mp-deals-list">

@@ -32,30 +32,30 @@ const css = `
   .pw-page { background: #fff; min-height: 100vh; font-family: Inter, Arial, sans-serif; color: #1a1a1a; }
 
   .pw-breadcrumb { background: #f6f6f6; border-bottom: 1px solid #e8e8e8; }
-  .pw-breadcrumb-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: #e8410a; font-family: inherit; display: inline-flex; align-items: center; gap: 4px; padding: 0; }
-  .pw-breadcrumb-btn:hover { text-decoration: underline; }
+  .pw-breadcrumb-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: #757575; font-family: inherit; display: inline-flex; align-items: center; gap: 4px; padding: 0; }
+  .pw-breadcrumb-btn:hover { color: #333; text-decoration: underline; }
 
   .pw-wrap { max-width: 1176px; margin: 0 auto; padding: 0 20px; }
   .pw-layout { display: grid; grid-template-columns: 280px 1fr; gap: 24px; padding: 20px 0 60px; align-items: flex-start; }
 
   /* ── SIDEBAR ── */
   .pw-avatar { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; display: block; margin-bottom: 12px; border: 2px solid #f0f0f0; }
-  .pw-avatar-fb { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, #e8410a, #ff7043); display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+  .pw-avatar-fb { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, #64748b, #475569); display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; color: #fff; margin-bottom: 12px; }
 
   .pw-name { font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; }
-  .pw-review-link { display: inline-block; font-size: 14px; color: #e8410a; text-decoration: none; margin-bottom: 6px; cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; }
+  .pw-review-link { display: inline-block; font-size: 14px; color: #2563eb; text-decoration: none; margin-bottom: 6px; cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; }
   .pw-review-link:hover { text-decoration: underline; }
   .pw-meta { font-size: 13px; color: #777; line-height: 1.7; margin-bottom: 14px; }
 
   .pw-rating-row { display: flex; align-items: center; gap: 7px; padding: 12px 0; border-top: 1px solid #f2f2f2; border-bottom: 1px solid #f2f2f2; margin-bottom: 12px; }
   .pw-rating-num { font-size: 22px; font-weight: 800; color: #111; line-height: 1; }
   .pw-stars { display: flex; gap: 2px; }
-  .pw-star-f { color: #f59e0b; font-size: 15px; }
+  .pw-star-f { color: #334155; font-size: 15px; }
   .pw-star-e { color: #e5e7eb; font-size: 15px; }
   .pw-rating-cnt { font-size: 13px; color: #aaa; }
 
   .pw-badges { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-  .pw-badge { display: flex; align-items: center; gap: 8px; background: #fff4f1; border-radius: 8px; padding: 9px 12px; font-size: 13px; color: #c23300; font-weight: 500; }
+  .pw-badge { display: flex; align-items: center; gap: 8px; background: #e8f4ff; border-radius: 8px; padding: 9px 12px; font-size: 13px; color: #1464b0; font-weight: 500; }
   .pw-badge svg { flex-shrink: 0; }
 
   .pw-responds { font-size: 13px; color: #777; margin-bottom: 14px; }
@@ -66,13 +66,13 @@ const css = `
   .pw-strip-num { font-size: 20px; font-weight: 800; color: #111; line-height: 1; }
   .pw-strip-lbl { font-size: 10px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; display: block; }
 
-  .pw-btn-msg { display: block; width: 100%; background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; padding: 13px 0; cursor: pointer; font-family: inherit; text-align: center; margin-bottom: 8px; transition: background .15s; }
-  .pw-btn-msg:hover { background: #d03a09; }
+  .pw-btn-msg { display: block; width: 100%; background: #2563eb; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; padding: 13px 0; cursor: pointer; font-family: inherit; text-align: center; margin-bottom: 8px; transition: background .15s; }
+  .pw-btn-msg:hover { background: #1d4ed8; }
 
   /* ── MAIN ── */
   .pw-tabs { display: flex; gap: 0; border-bottom: 1px solid #e8e8e8; margin-bottom: 20px; }
   .pw-tab { background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 12px 0; margin-right: 28px; cursor: pointer; font-size: 16px; font-weight: 400; color: #777; font-family: inherit; transition: color .15s; white-space: nowrap; }
-  .pw-tab.active { color: #e8410a; font-weight: 700; border-bottom-color: #e8410a; }
+  .pw-tab.active { color: #1a1a1a; font-weight: 700; border-bottom-color: #1a1a1a; }
   .pw-tab:hover:not(.active) { color: #333; }
 
   .pw-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
@@ -87,8 +87,8 @@ const css = `
   .pw-card-price { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 3px; }
   .pw-card-loc { font-size: 12px; color: #999; display: flex; align-items: center; gap: 3px; margin-bottom: 2px; }
   .pw-card-date { font-size: 12px; color: #bbb; }
-  .pw-card-review-btn { margin-top: 8px; padding: 7px 12px; background: #e8410a; border: none; border-radius: 7px; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; font-family: inherit; transition: background .15s; }
-  .pw-card-review-btn:hover { background: #d03a09; }
+  .pw-card-review-btn { margin-top: 8px; padding: 7px 12px; background: #1a1a1a; border: none; border-radius: 7px; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; font-family: inherit; transition: background .15s; }
+  .pw-card-review-btn:hover { background: #333; }
   .pw-card-review-done { margin-top: 8px; font-size: 12px; color: #16a34a; font-weight: 600; }
 
   .pw-empty { padding: 48px 0; text-align: center; color: #aaa; font-size: 15px; }
@@ -100,23 +100,23 @@ const css = `
   .pw-rating-block { display: flex; gap: 32px; margin-bottom: 24px; }
   .pw-rating-left { text-align: center; flex-shrink: 0; }
   .pw-rating-big { font-size: 48px; font-weight: 800; line-height: 1; color: #1a1a1a; }
-  .pw-rating-stars-big { color: #f59e0b; font-size: 18px; letter-spacing: 2px; display: block; margin: 6px 0 4px; }
+  .pw-rating-stars-big { color: #334155; font-size: 18px; letter-spacing: 2px; display: block; margin: 6px 0 4px; }
   .pw-rating-hint { font-size: 12px; color: #aaa; }
   .pw-rating-bars { flex: 1; display: flex; flex-direction: column; gap: 5px; }
   .pw-bar-row { display: flex; align-items: center; gap: 8px; }
-  .pw-bar-stars { font-size: 12px; color: #f59e0b; white-space: nowrap; width: 80px; }
+  .pw-bar-stars { font-size: 12px; color: #334155; white-space: nowrap; width: 80px; }
   .pw-bar-track { flex: 1; height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden; }
-  .pw-bar-fill { height: 100%; background: #f59e0b; border-radius: 3px; }
+  .pw-bar-fill { height: 100%; background: #334155; border-radius: 3px; }
   .pw-bar-cnt { font-size: 12px; color: #aaa; width: 20px; text-align: right; }
   .pw-review-list { display: flex; flex-direction: column; }
   .pw-review-item { padding: 18px 0; border-bottom: 1px solid #f2f2f2; }
   .pw-review-item:last-child { border-bottom: none; }
   .pw-review-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
   .pw-review-ava { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; flex-shrink: 0; cursor: pointer; }
-  .pw-review-ava-fb { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg,#e8410a,#ff7043); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+  .pw-review-ava-fb { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg,#64748b,#475569); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 15px; flex-shrink: 0; }
   .pw-review-author { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
   .pw-review-date { font-size: 12px; color: #aaa; }
-  .pw-review-rating { color: #f59e0b; font-size: 15px; margin-left: auto; letter-spacing: 1px; }
+  .pw-review-rating { color: #334155; font-size: 15px; margin-left: auto; letter-spacing: 1px; }
   .pw-review-text { font-size: 14px; color: #333; line-height: 1.65; padding-left: 54px; }
 
   /* ── МОДАЛКА ОТЗЫВА ── */
@@ -127,9 +127,9 @@ const css = `
   .pw-modal-stars button { background: none; border: none; cursor: pointer; font-size: 36px; padding: 0; transition: transform .1s; }
   .pw-modal-stars button:hover { transform: scale(1.15); }
   .pw-modal-textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1.5px solid #e0e0e0; font-size: 14px; line-height: 1.6; resize: vertical; min-height: 100px; outline: none; font-family: inherit; margin-bottom: 16px; transition: border-color .15s; }
-  .pw-modal-textarea:focus { border-color: #e8410a; }
-  .pw-modal-submit { width: 100%; padding: 13px; background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .15s; }
-  .pw-modal-submit:hover { background: #d03a09; }
+  .pw-modal-textarea:focus { border-color: #2563eb; }
+  .pw-modal-submit { width: 100%; padding: 13px; background: #2563eb; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .15s; }
+  .pw-modal-submit:hover { background: #1d4ed8; }
   .pw-modal-submit:disabled { background: #e0e0e0; color: #999; cursor: not-allowed; }
 
   /* ── LIGHTBOX ── */
@@ -336,23 +336,23 @@ export default function PublicCustomerProfilePage() {
             <div className="pw-badges">
               <div className="pw-badge">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="#e8410a" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="#e8410a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
+                  <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 Документы проверены
               </div>
               <div className="pw-badge">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="#e8410a" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="#e8410a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
+                  <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 {customer?.city || 'Йошкар-Ола'}
               </div>
               {done >= 1 && (
                 <div className="pw-badge">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <circle cx="8" cy="8" r="7.5" stroke="#e8410a" strokeWidth="1"/>
-                    <path d="M5 8l2 2 4-4" stroke="#e8410a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
+                    <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   {done} {done===1?'сделка завершена':done<5?'сделки завершено':'сделок завершено'}
                 </div>
@@ -418,7 +418,7 @@ export default function PublicCustomerProfilePage() {
                   <div className="pw-rating-big">{avgRatingStr.replace('.', ',')}</div>
                   <span className="pw-rating-stars-big">
                     {Array.from({length:5}).map((_,i) => (
-                      <span key={i} style={{ color: i < starsFilled ? '#f59e0b' : '#e0e0e0' }}>★</span>
+                      <span key={i} style={{ color: i < starsFilled ? '#334155' : '#e0e0e0' }}>★</span>
                     ))}
                   </span>
                   <div className="pw-rating-hint">рейтинг{reviews.length===0?' пока нет':''}</div>
@@ -460,7 +460,7 @@ export default function PublicCustomerProfilePage() {
                             </div>
                             <div className="pw-review-rating">
                               {Array.from({length:5}).map((_,i) => (
-                                <span key={i} style={{ color: i < rStars ? '#f59e0b' : '#e0e0e0' }}>★</span>
+                                <span key={i} style={{ color: i < rStars ? '#334155' : '#e0e0e0' }}>★</span>
                               ))}
                             </div>
                           </div>
@@ -485,7 +485,7 @@ export default function PublicCustomerProfilePage() {
               <div style={{ textAlign:'center', padding:'20px 0' }}>
                 <div style={{ fontSize:48, marginBottom:12 }}>🎉</div>
                 <h3 style={{ fontSize:20, fontWeight:700, margin:'0 0 8px' }}>Отзыв отправлен!</h3>
-                <button onClick={() => setReviewModal(false)} style={{ marginTop:16, padding:'10px 28px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>Закрыть</button>
+                <button onClick={() => setReviewModal(false)} style={{ marginTop:16, padding:'10px 28px', background:'#2563eb', border:'none', borderRadius:8, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>Закрыть</button>
               </div>
             ) : (
               <>
@@ -494,7 +494,7 @@ export default function PublicCustomerProfilePage() {
                   <button className="pw-modal-close" onClick={() => setReviewModal(false)}>×</button>
                 </div>
                 <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#f7f7f7', borderRadius:10, marginBottom:20 }}>
-                  <div style={{ width:44, height:44, borderRadius:10, background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>
+                  <div style={{ width:44, height:44, borderRadius:10, background:'linear-gradient(135deg,#64748b,#475569)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>
                     {reviewDeal?._reviewByWorker ? (initials||'З') : (reviewDeal?.workerName?.[0]?.toUpperCase()||'М')}
                   </div>
                   <div>
@@ -507,7 +507,7 @@ export default function PublicCustomerProfilePage() {
                   <div className="pw-modal-stars" style={{ display:'flex', gap:6 }}>
                     {[1,2,3,4,5].map(star => (
                       <button key={star} onClick={() => setReviewForm(p => ({...p, rating:star}))}
-                        style={{ color: star <= reviewForm.rating ? '#f59e0b' : '#e0e0e0' }}>★</button>
+                        style={{ color: star <= reviewForm.rating ? '#334155' : '#e0e0e0' }}>★</button>
                     ))}
                   </div>
                 </div>

@@ -24,7 +24,7 @@ const css = `
   .cp2-ava-fb { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, #257af4, #1a5cbf); display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; color: #fff; }
   .cp2-ava-overlay { position: absolute; inset: 0; border-radius: 50%; background: rgba(0,0,0,.42); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .18s; }
   .cp2-ava-wrap:hover .cp2-ava-overlay { opacity: 1; }
-  .cp2-ava-lbl { display: block; font-size: 12px; color: #e8410a; font-weight: 600; margin-top: 4px; cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; text-align: left; }
+  .cp2-ava-lbl { display: block; font-size: 12px; color: #2563eb; font-weight: 600; margin-top: 4px; cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; text-align: left; }
 
   .cp2-name { font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; color: #111; }
   .cp2-role { display: inline-block; font-size: 12px; font-weight: 600; color: #257af4; background: #e8f4ff; border-radius: 20px; padding: 3px 10px; margin-bottom: 8px; }
@@ -54,8 +54,8 @@ const css = `
   .cp2-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
   .cp2-action { display: flex; flex-direction: column; align-items: flex-start; padding: 18px; border: 1px solid #f0f0f0; border-radius: 12px; text-decoration: none; color: inherit; transition: box-shadow .18s, transform .18s; }
   .cp2-action:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-2px); }
-  .cp2-action-primary { background: #e8410a; border-color: #e8410a; color: #fff; }
-  .cp2-action-primary:hover { background: #d03a09; box-shadow: 0 4px 18px rgba(232,65,10,.25); }
+  .cp2-action-primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+  .cp2-action-primary:hover { background: #1d4ed8; box-shadow: 0 4px 18px rgba(37,99,235,.25); }
   .cp2-action-ico { font-size: 26px; margin-bottom: 10px; }
   .cp2-action-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
   .cp2-action-desc { font-size: 12px; opacity: .7; }
@@ -74,7 +74,7 @@ const css = `
   .cp2-deal-badge-pending { background: #e8f4ff; color: #1464b0; }
 
   .cp2-review-btn { width: 100%; padding: 10px; background: none; border: 1px solid #e0e0e0; border-radius: 8px; color: #555; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 8px; transition: border-color .15s; }
-  .cp2-review-btn:hover { border-color: #e8410a; color: #e8410a; }
+  .cp2-review-btn:hover { border-color: #2563eb; color: #2563eb; }
   .cp2-review-sent { font-size: 13px; color: #16a34a; font-weight: 600; margin-top: 8px; padding: 8px 12px; background: #f0fdf4; border-radius: 8px; }
 
   .cp2-settings { display: flex; flex-direction: column; gap: 1px; border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
@@ -296,7 +296,7 @@ export default function CustomerProfilePage() {
                   <div className="cp2-empty">
                     <div className="cp2-empty-ico">📋</div>
                     <p>Сделок пока нет</p>
-                    <Link to="/categories" style={{display:'inline-block',marginTop:12,padding:'10px 20px',background:'#e8410a',color:'#fff',borderRadius:8,fontWeight:700,textDecoration:'none',fontSize:14}}>Найти мастера</Link>
+                    <Link to="/categories" style={{display:'inline-block',marginTop:12,padding:'10px 20px',background:'#2563eb',color:'#fff',borderRadius:8,fontWeight:700,textDecoration:'none',fontSize:14}}>Найти мастера</Link>
                   </div>
                 ) : (
                   <div className="cp2-deals-list">

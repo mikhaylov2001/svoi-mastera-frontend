@@ -33,7 +33,7 @@ const css = `
   .ld-bread { background: #fff; border-bottom: 1px solid #eaeaea; }
   .ld-bread-inner { max-width: 1180px; margin: 0 auto; padding: 11px 20px; display: flex; align-items: center; gap: 7px; font-size: 13px; color: #aaa; flex-wrap: wrap; }
   .ld-bread a { color: #888; text-decoration: none; transition: color .15s; }
-  .ld-bread a:hover { color: #e8410a; }
+  .ld-bread a:hover { color: #333; }
   .ld-bread-sep { color: #ddd; }
 
   /* PAGE LAYOUT */
@@ -74,7 +74,7 @@ const css = `
   .ld-thumbs { display: flex; gap: 8px; padding: 10px 14px; background: #f5f5f7; border-top: 1px solid #eaeaea; overflow-x: auto; scrollbar-width: none; }
   .ld-thumbs::-webkit-scrollbar { display: none; }
   .ld-thumb { width: 80px; height: 60px; border-radius: 10px; overflow: hidden; flex-shrink: 0; cursor: pointer; border: 2.5px solid transparent; transition: all .18s; opacity: .55; flex-shrink: 0; }
-  .ld-thumb.active { border-color: #e8410a; opacity: 1; box-shadow: 0 0 0 3px rgba(232,65,10,.15); }
+  .ld-thumb.active { border-color: #2563eb; opacity: 1; box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
   .ld-thumb:hover { opacity: .85; transform: scale(1.04); }
   .ld-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; image-rendering: -webkit-optimize-contrast; }
 
@@ -91,14 +91,14 @@ const css = `
   .ld-badges-block { background: #fff; border: 1px solid #e6e6e6; border-radius: 14px; padding: 14px 16px; display: flex; gap: 8px; flex-wrap: wrap; }
   .ld-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 8px; }
   .ld-badge-green { background: #f0fdf4; color: #16a34a; }
-  .ld-badge-orange { background: #fff7ed; color: #ea580c; }
+  .ld-badge-orange { background: #f1f5f9; color: #475569; }
   .ld-badge-blue { background: #eff6ff; color: #2563eb; }
 
   /* DESCRIPTION */
   .ld-desc-block { background: #fff; border: 1px solid #e6e6e6; border-radius: 14px; padding: 20px 24px; }
   .ld-desc-head { font-size: 15px; font-weight: 700; margin: 0 0 12px; color: #111; }
   .ld-desc-text { font-size: 14px; color: #555; line-height: 1.8; margin: 0; white-space: pre-wrap; word-break: break-word; }
-  .ld-desc-toggle { background: none; border: none; color: #e8410a; font-size: 13px; font-weight: 600; cursor: pointer; padding: 10px 0 0; font-family: inherit; transition: opacity .15s; }
+  .ld-desc-toggle { background: none; border: none; color: #2563eb; font-size: 13px; font-weight: 600; cursor: pointer; padding: 10px 0 0; font-family: inherit; transition: opacity .15s; }
   .ld-desc-toggle:hover { opacity: .75; }
   .ld-empty-desc { font-size: 14px; color: #ccc; font-style: italic; }
   .ld-meta-line { font-size: 12px; color: #c0c0c0; margin-top: 14px; display: flex; gap: 14px; flex-wrap: wrap; }
@@ -115,7 +115,7 @@ const css = `
 
   /* КНОПКА: НАПИСАТЬ */
   .ld-btn-msg {
-    background: #e8410a;
+    background: #2563eb;
     border: none; border-radius: 10px;
     color: #fff; font-size: 15px; font-weight: 700;
     padding: 14px 18px; cursor: pointer;
@@ -123,24 +123,24 @@ const css = `
     display: flex; align-items: center; justify-content: center; gap: 8px;
     text-decoration: none;
     letter-spacing: .01em;
-    box-shadow: 0 3px 14px rgba(232,65,10,.30);
+    box-shadow: 0 3px 14px rgba(37,99,235,.28);
     transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ld-btn-msg:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
+  .ld-btn-msg:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(37,99,235,.32); }
   .ld-btn-msg:active { transform: translateY(0); }
 
   /* КНОПКА: ПРИНЯТЬ */
   .ld-btn-accept {
     background: #fff;
-    border: 1.5px solid #e8410a; border-radius: 10px;
-    color: #e8410a; font-size: 15px; font-weight: 700;
+    border: 1.5px solid #2563eb; border-radius: 10px;
+    color: #2563eb; font-size: 15px; font-weight: 700;
     padding: 13px 18px; cursor: pointer;
     font-family: inherit;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     letter-spacing: .01em;
     transition: background .15s, transform .15s;
   }
-  .ld-btn-accept:hover { background: #fff4f1; transform: translateY(-1px); }
+  .ld-btn-accept:hover { background: #eff6ff; transform: translateY(-1px); }
   .ld-btn-accept:active { transform: translateY(0); }
   .ld-btn-accept:disabled { opacity: .5; cursor: not-allowed; }
 
@@ -148,17 +148,17 @@ const css = `
   .ld-success-banner { background: linear-gradient(135deg,#f0fdf4,#dcfce7); border: 1px solid #86efac; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #15803d; font-weight: 600; display: flex; gap: 8px; align-items: center; }
   .ld-pending-banner { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; font-size: 12.5px; color: #92400e; line-height: 1.55; }
   .ld-error-msg { font-size: 12px; color: #ef4444; font-weight: 600; padding: 2px 0; }
-  .ld-deals-link { display: block; text-align: center; font-size: 13px; color: #e8410a; font-weight: 600; background: none; border: none; cursor: pointer; font-family: inherit; padding: 2px 0; transition: opacity .15s; }
+  .ld-deals-link { display: block; text-align: center; font-size: 13px; color: #2563eb; font-weight: 600; background: none; border: none; cursor: pointer; font-family: inherit; padding: 2px 0; transition: opacity .15s; }
   .ld-deals-link:hover { opacity: .75; }
 
   /* SELLER */
   .ld-seller { background: #fff; border-radius: 16px; border: 1px solid #eaeaea; overflow: hidden; }
   .ld-seller-top { padding: 18px 18px 14px; display: flex; align-items: flex-start; gap: 14px; }
-  .ld-seller-ava { width: 54px; height: 54px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: linear-gradient(135deg,#e8410a,#ff8c55); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; font-weight: 800; box-shadow: 0 4px 12px rgba(232,65,10,.25); }
+  .ld-seller-ava { width: 54px; height: 54px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: linear-gradient(135deg,#64748b,#475569); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,.12); }
   .ld-seller-ava img { width: 100%; height: 100%; object-fit: cover; }
   .ld-seller-name { font-size: 15px; font-weight: 700; margin: 0 0 3px; color: #111; }
   .ld-seller-name a { color: inherit; text-decoration: none; }
-  .ld-seller-name a:hover { color: #e8410a; }
+  .ld-seller-name a:hover { color: #2563eb; }
   .ld-seller-since { font-size: 12px; color: #aaa; margin-bottom: 6px; }
   .ld-seller-verify { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; color: #16a34a; font-weight: 600; background: #f0fdf4; border-radius: 6px; padding: 3px 8px; }
   .ld-seller-stars { display: flex; align-items: center; gap: 2px; margin-bottom: 6px; }
@@ -169,13 +169,13 @@ const css = `
   .ld-sstat-num { font-size: 18px; font-weight: 800; color: #111; display: block; line-height: 1; }
   .ld-sstat-lbl { font-size: 10px; color: #bbb; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; display: block; }
   .ld-seller-footer { border-top: 1px solid #f4f4f4; padding: 12px 18px; }
-  .ld-seller-link { font-size: 13px; color: #e8410a; font-weight: 600; text-decoration: none; display: block; text-align: center; transition: opacity .15s; }
+  .ld-seller-link { font-size: 13px; color: #2563eb; font-weight: 600; text-decoration: none; display: block; text-align: center; transition: opacity .15s; }
   .ld-seller-link:hover { opacity: .75; }
 
   /* SIMILAR */
   .ld-similar { background: #fff; border-radius: 16px; border: 1px solid #eaeaea; padding: 16px 18px; }
   .ld-similar-head { font-size: 14px; font-weight: 700; margin: 0 0 12px; color: #111; display: flex; align-items: center; justify-content: space-between; }
-  .ld-similar-head a { font-size: 12px; color: #e8410a; text-decoration: none; font-weight: 600; }
+  .ld-similar-head a { font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 600; }
   .ld-similar-list { display: flex; flex-direction: column; gap: 2px; }
   .ld-sim-item { display: flex; gap: 12px; text-decoration: none; color: #111; align-items: center; padding: 8px 8px; border-radius: 10px; transition: background .15s; }
   .ld-sim-item:hover { background: #f7f7f7; }
@@ -303,7 +303,7 @@ export default function ListingDetailPage() {
       <div style={{textAlign:'center',padding:'80px 24px'}}>
         <div style={{fontSize:48,marginBottom:16}}>😕</div>
         <h2 style={{fontSize:20,fontWeight:700,marginBottom:8}}>Объявление не найдено</h2>
-        <Link to="/find-master" style={{color:'#e8410a',fontWeight:600}}>← Вернуться к поиску</Link>
+        <Link to="/find-master" style={{color:'#666',fontWeight:600}}>← Вернуться к поиску</Link>
       </div>
     </div>
   );
@@ -551,7 +551,7 @@ export default function ListingDetailPage() {
                 {rating > 0 && (
                   <div className="ld-seller-stars">
                     {[1,2,3,4,5].map(i => (
-                      <span key={i} className="ld-star" style={{color: i <= Math.round(rating) ? '#f59e0b' : '#e5e7eb'}}>★</span>
+                      <span key={i} className="ld-star" style={{color: i <= Math.round(rating) ? '#334155' : '#e5e7eb'}}>★</span>
                     ))}
                     <span style={{fontSize:12,color:'#555',fontWeight:600,marginLeft:3}}>{Number(rating).toFixed(1)}</span>
                     {reviews > 0 && <span style={{fontSize:11,color:'#aaa',marginLeft:3}}>({reviews})</span>}
