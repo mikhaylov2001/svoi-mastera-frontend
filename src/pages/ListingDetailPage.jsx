@@ -115,32 +115,32 @@ const css = `
 
   /* КНОПКА: НАПИСАТЬ */
   .ld-btn-msg {
-    background: #00aaff;
-    border: none; border-radius: 12px;
+    background: #e8410a;
+    border: none; border-radius: 10px;
     color: #fff; font-size: 15px; font-weight: 700;
     padding: 14px 18px; cursor: pointer;
     font-family: inherit;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     text-decoration: none;
-    letter-spacing: -.01em;
-    transition: background .18s, transform .15s, box-shadow .15s;
+    letter-spacing: .01em;
+    box-shadow: 0 3px 14px rgba(232,65,10,.30);
+    transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ld-btn-msg:hover { background: #0097e0; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,170,255,.32); }
+  .ld-btn-msg:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
   .ld-btn-msg:active { transform: translateY(0); }
 
   /* КНОПКА: ПРИНЯТЬ */
   .ld-btn-accept {
     background: #fff;
-    border: 2px solid #00aaff; border-radius: 12px;
-    color: #007ec8; font-size: 15px; font-weight: 700;
-    padding: 14px 18px; cursor: pointer;
+    border: 1.5px solid #e8410a; border-radius: 10px;
+    color: #e8410a; font-size: 15px; font-weight: 700;
+    padding: 13px 18px; cursor: pointer;
     font-family: inherit;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    box-shadow: none;
-    letter-spacing: -.01em;
-    transition: filter .18s, transform .15s, box-shadow .18s;
+    letter-spacing: .01em;
+    transition: background .15s, transform .15s;
   }
-  .ld-btn-accept:hover { background: #f0f9ff; transform: translateY(-1px); border-color: #0097e0; }
+  .ld-btn-accept:hover { background: #fff4f1; transform: translateY(-1px); }
   .ld-btn-accept:active { transform: translateY(0); }
   .ld-btn-accept:disabled { opacity: .5; cursor: not-allowed; }
 
