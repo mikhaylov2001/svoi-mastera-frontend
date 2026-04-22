@@ -51,20 +51,36 @@ const css = `
   .ld-action-btn:hover { background: #ececec; color: #222; }
 
   /* GALLERY */
-  .ld-gallery-main { position: relative; aspect-ratio: 16/10; background: #f0f0f0; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: zoom-in; }
-  .ld-gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s cubic-bezier(.25,.46,.45,.94); }
-  .ld-gallery-main:hover img { transform: scale(1.02); }
-  .ld-gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border: none; border-radius: 50%; background: rgba(255,255,255,.9); color: #222; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 3; box-shadow: 0 2px 12px rgba(0,0,0,.15); transition: background .15s, transform .15s; }
-  .ld-gallery-nav:hover { background: #fff; transform: translateY(-50%) scale(1.08); }
-  .ld-gallery-nav-prev { left: 14px; }
-  .ld-gallery-nav-next { right: 14px; }
-  .ld-gallery-ph { font-size: 56px; color: #ddd; }
-  .ld-gallery-count { position: absolute; bottom: 14px; right: 14px; background: rgba(0,0,0,.48); color: #fff; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; backdrop-filter: blur(4px); }
-  .ld-thumbs { display: flex; gap: 8px; padding: 10px 12px; background: #fafafa; border-top: 1px solid #f0f0f0; overflow-x: auto; }
-  .ld-thumb { width: 72px; height: 54px; border-radius: 8px; overflow: hidden; flex-shrink: 0; cursor: pointer; border: 2px solid transparent; transition: all .15s; opacity: .65; }
-  .ld-thumb.active { border-color: #e8410a; opacity: 1; box-shadow: 0 0 0 2px rgba(232,65,10,.2); }
-  .ld-thumb:hover { opacity: 1; }
-  .ld-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ld-gallery-wrap { position: relative; background: #111; border-radius: 16px 16px 0 0; overflow: hidden; user-select: none; }
+  .ld-gallery-main { position: relative; aspect-ratio: 16/10; background: #1a1a1a; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .ld-gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .22s ease; image-rendering: -webkit-optimize-contrast; }
+  .ld-gallery-ph { font-size: 56px; color: #555; }
+
+  /* зоны клика для перелистывания (левая / правая половина) */
+  .ld-gallery-zone { position: absolute; top: 0; bottom: 0; width: 45%; z-index: 3; cursor: pointer; display: flex; align-items: center; }
+  .ld-gallery-zone-prev { left: 0; justify-content: flex-start; padding-left: 14px; }
+  .ld-gallery-zone-next { right: 0; justify-content: flex-end; padding-right: 14px; }
+  .ld-gallery-arrow { width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.88); color: #111; font-size: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 14px rgba(0,0,0,.22); opacity: 0; transition: opacity .18s, transform .18s; font-weight: 300; line-height: 1; }
+  .ld-gallery-wrap:hover .ld-gallery-arrow { opacity: 1; }
+  .ld-gallery-zone:hover .ld-gallery-arrow { transform: scale(1.1); background: #fff; }
+
+  /* кнопка открыть лайтбокс */
+  .ld-gallery-zoom { position: absolute; bottom: 14px; right: 14px; z-index: 4; width: 36px; height: 36px; background: rgba(0,0,0,.48); border: 1.5px solid rgba(255,255,255,.25); border-radius: 8px; color: #fff; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: zoom-in; backdrop-filter: blur(4px); transition: background .15s; }
+  .ld-gallery-zoom:hover { background: rgba(0,0,0,.68); }
+  .ld-gallery-count { position: absolute; bottom: 14px; left: 14px; background: rgba(0,0,0,.48); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 20px; backdrop-filter: blur(4px); z-index: 4; pointer-events: none; }
+
+  /* точки-индикаторы */
+  .ld-gallery-dots { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 4; pointer-events: none; }
+  .ld-gallery-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.45); transition: all .2s; }
+  .ld-gallery-dot.active { background: #fff; width: 18px; border-radius: 3px; }
+
+  /* миниатюры */
+  .ld-thumbs { display: flex; gap: 8px; padding: 10px 14px; background: #f5f5f7; border-top: 1px solid #eaeaea; overflow-x: auto; scrollbar-width: none; }
+  .ld-thumbs::-webkit-scrollbar { display: none; }
+  .ld-thumb { width: 80px; height: 60px; border-radius: 10px; overflow: hidden; flex-shrink: 0; cursor: pointer; border: 2.5px solid transparent; transition: all .18s; opacity: .55; flex-shrink: 0; }
+  .ld-thumb.active { border-color: #e8410a; opacity: 1; box-shadow: 0 0 0 3px rgba(232,65,10,.15); }
+  .ld-thumb:hover { opacity: .85; transform: scale(1.04); }
+  .ld-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; image-rendering: -webkit-optimize-contrast; }
 
   /* INFO GRID */
   .ld-info-block { padding: 20px 24px; }
@@ -173,15 +189,24 @@ const css = `
   @keyframes ld-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
   /* LIGHTBOX */
-  .ld-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.93); z-index: 9999; display: flex; align-items: center; justify-content: center; cursor: zoom-out; }
-  .ld-lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 6px; }
-  .ld-lb-close { position: absolute; top: 18px; right: 18px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); border-radius: 50%; width: 40px; height: 40px; color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; }
-  .ld-lb-close:hover { background: rgba(255,255,255,.22); }
-  .ld-lb-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); border-radius: 50%; width: 48px; height: 48px; color: #fff; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; }
-  .ld-lb-nav:hover { background: rgba(255,255,255,.22); }
-  .ld-lb-prev { left: 18px; }
-  .ld-lb-next { right: 18px; }
-  .ld-lb-counter { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.6); font-size: 13px; background: rgba(255,255,255,.1); padding: 4px 12px; border-radius: 20px; }
+  .ld-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.95); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+  .ld-lightbox-img-wrap { position: relative; max-width: 92vw; max-height: 92vh; display: flex; align-items: center; justify-content: center; }
+  .ld-lightbox img { max-width: 92vw; max-height: 88vh; object-fit: contain; border-radius: 6px; display: block; image-rendering: -webkit-optimize-contrast; box-shadow: 0 24px 80px rgba(0,0,0,.6); }
+
+  /* зоны клика в лайтбоксе */
+  .ld-lb-zone { position: absolute; top: 0; bottom: 0; width: 50%; cursor: pointer; z-index: 2; }
+  .ld-lb-zone-prev { left: -60px; width: calc(50% + 60px); }
+  .ld-lb-zone-next { right: -60px; width: calc(50% + 60px); }
+
+  /* кнопки лайтбокса */
+  .ld-lb-close { position: fixed; top: 20px; right: 20px; background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.2); border-radius: 10px; width: 42px; height: 42px; color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; z-index: 10; font-weight: 300; }
+  .ld-lb-close:hover { background: rgba(255,255,255,.2); }
+  .ld-lb-nav { position: fixed; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.18); border-radius: 50%; width: 52px; height: 52px; color: #fff; font-size: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, transform .15s; z-index: 10; line-height: 1; }
+  .ld-lb-nav:hover { background: rgba(255,255,255,.2); transform: translateY(-50%) scale(1.06); }
+  .ld-lb-prev { left: 20px; }
+  .ld-lb-next { right: 20px; }
+  .ld-lb-counter { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.7); font-size: 14px; font-weight: 600; background: rgba(255,255,255,.1); padding: 5px 16px; border-radius: 20px; z-index: 10; }
+  .ld-lb-hint { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.35); font-size: 12px; white-space: nowrap; pointer-events: none; }
 
   @media(max-width:900px) { .ld-page { grid-template-columns: 1fr; } .ld-right { position: static; } .ld-info-grid { grid-template-columns: 1fr; } }
   @media(max-width:580px) { .ld-page { padding: 12px 12px 48px; } .ld-title { font-size: 19px; } .ld-price-big { font-size: 26px; } .ld-title-block,.ld-info-block,.ld-desc-block { padding-left: 16px; padding-right: 16px; } }
@@ -236,7 +261,7 @@ export default function ListingDetailPage() {
   const prevPhoto = useCallback(() => setActivePhoto(i => (allPhotos.length > 1 ? (i - 1 + allPhotos.length) % allPhotos.length : i)), [allPhotos.length]);
 
   useEffect(() => {
-    if (!lightbox || allPhotos.length <= 1) return;
+    if (allPhotos.length <= 1 && !lightbox) return;
     const onKey = e => {
       if (e.key === 'Escape') setLightbox(false);
       if (e.key === 'ArrowRight') nextPhoto();
@@ -298,14 +323,29 @@ export default function ListingDetailPage() {
 
       {/* Lightbox */}
       {lightbox && allPhotos.length > 0 && (
-        <div className="ld-lightbox" onClick={() => setLightbox(false)}>
+        <div className="ld-lightbox">
           <button className="ld-lb-close" onClick={() => setLightbox(false)}>✕</button>
+
           {allPhotos.length > 1 && <>
             <button className="ld-lb-nav ld-lb-prev" onClick={e => { e.stopPropagation(); prevPhoto(); }}>‹</button>
             <button className="ld-lb-nav ld-lb-next" onClick={e => { e.stopPropagation(); nextPhoto(); }}>›</button>
           </>}
-          <img src={allPhotos[activePhoto]} alt="" onClick={e => e.stopPropagation()}/>
+
+          <div className="ld-lightbox-img-wrap">
+            {/* Зоны клика по половинам */}
+            {allPhotos.length > 1 && <>
+              <div className="ld-lb-zone ld-lb-zone-prev" onClick={prevPhoto}/>
+              <div className="ld-lb-zone ld-lb-zone-next" onClick={nextPhoto}/>
+            </>}
+            <img
+              src={allPhotos[activePhoto]}
+              alt={listing?.title || ''}
+              onClick={() => allPhotos.length <= 1 && setLightbox(false)}
+            />
+          </div>
+
           {allPhotos.length > 1 && <div className="ld-lb-counter">{activePhoto + 1} / {allPhotos.length}</div>}
+          <div className="ld-lb-hint">← → клавиши или клик по краям · Esc — закрыть</div>
         </div>
       )}
 
@@ -338,27 +378,54 @@ export default function ListingDetailPage() {
           </div>
 
           {/* Gallery */}
-          <div className="ld-gallery">
-            <div className="ld-gallery-main" onClick={() => allPhotos.length && setLightbox(true)}>
-              {allPhotos.length > 0
-                ? <img src={allPhotos[activePhoto]} alt={listing.title}/>
-                : <div className="ld-gallery-ph">🔧</div>
-              }
-              {allPhotos.length > 1 && <>
-                <button className="ld-gallery-nav ld-gallery-nav-prev" onClick={e => { e.stopPropagation(); prevPhoto(); }}>‹</button>
-                <button className="ld-gallery-nav ld-gallery-nav-next" onClick={e => { e.stopPropagation(); nextPhoto(); }}>›</button>
-                <span className="ld-gallery-count">{activePhoto + 1} / {allPhotos.length}</span>
-              </>}
-            </div>
-            {allPhotos.length > 1 && (
-              <div className="ld-thumbs">
-                {allPhotos.map((p, i) => (
-                  <div key={i} className={`ld-thumb${i === activePhoto ? ' active' : ''}`} onClick={() => setActivePhoto(i)}>
-                    <img src={p} alt=""/>
+          <div className="ld-card" style={{overflow:'hidden'}}>
+            <div className="ld-gallery-wrap">
+              <div className="ld-gallery-main">
+                {allPhotos.length > 0
+                  ? <img src={allPhotos[activePhoto]} alt={listing.title} key={activePhoto}/>
+                  : <div className="ld-gallery-ph">🔧</div>
+                }
+
+                {/* Зоны-клика для перелистывания */}
+                {allPhotos.length > 1 && <>
+                  <div className="ld-gallery-zone ld-gallery-zone-prev" onClick={e => { e.stopPropagation(); prevPhoto(); }}>
+                    <div className="ld-gallery-arrow">‹</div>
                   </div>
-                ))}
+                  <div className="ld-gallery-zone ld-gallery-zone-next" onClick={e => { e.stopPropagation(); nextPhoto(); }}>
+                    <div className="ld-gallery-arrow">›</div>
+                  </div>
+                </>}
+
+                {/* Кнопка открыть */}
+                {allPhotos.length > 0 && (
+                  <div className="ld-gallery-zoom" onClick={() => setLightbox(true)} title="Открыть полноэкранно">⤢</div>
+                )}
+
+                {/* Точки-индикаторы */}
+                {allPhotos.length > 1 && allPhotos.length <= 8 && (
+                  <div className="ld-gallery-dots">
+                    {allPhotos.map((_, i) => (
+                      <div key={i} className={`ld-gallery-dot${i === activePhoto ? ' active' : ''}`}/>
+                    ))}
+                  </div>
+                )}
+
+                {/* Счётчик если много фото */}
+                {allPhotos.length > 8 && (
+                  <div className="ld-gallery-count">{activePhoto + 1} / {allPhotos.length}</div>
+                )}
               </div>
-            )}
+
+              {allPhotos.length > 1 && (
+                <div className="ld-thumbs">
+                  {allPhotos.map((p, i) => (
+                    <div key={i} className={`ld-thumb${i === activePhoto ? ' active' : ''}`} onClick={() => setActivePhoto(i)}>
+                      <img src={p} alt=""/>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Info grid */}
