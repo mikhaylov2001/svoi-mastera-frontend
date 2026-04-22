@@ -414,7 +414,8 @@ function CustomerHome({ userId, userName }) {
             <span className="av-hero-badge-text">Йошкар-Ола · Проверенные мастера рядом</span>
           </div>
           <h1 className="av-hero-h1">
-            Найдите мастера в&nbsp;<span className="h1-line2" style={{whiteSpace:'nowrap'}}>Йошкар-Оле</span> за&nbsp;10&nbsp;минут
+            <span style={{display:'block',whiteSpace:'nowrap'}}>Найдите мастера в&nbsp;<span className="h1-line2">Йошкар-Оле</span></span>
+            <span style={{display:'block'}}>за&nbsp;10&nbsp;минут</span>
           </h1>
           <p className="av-hero-sub">
             Ремонт, сантехника, красота и ещё 6 категорий — первый отклик в течение 10 минут
