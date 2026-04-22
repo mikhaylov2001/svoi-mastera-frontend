@@ -483,7 +483,6 @@ export default function ListingDetailPage() {
             <div className="ld-meta-line" style={{marginTop:14}}>
               <span>📍 Йошкар-Ола</span>
               {listing.category && <span>🏷️ {listing.category}</span>}
-              <span style={{marginLeft:'auto',color:'#d0d0d0'}}>ID {listing.id?.toString().slice(0,8)}</span>
             </div>
           </div>
         </div>
