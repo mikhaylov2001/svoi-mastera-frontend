@@ -289,8 +289,17 @@ function CustomerHome({ userId, userName }) {
     .av-promo-btn { width: 100%; background: #fff; border: none; border-radius: 7px; color: #e8410a; font-size: 13px; font-weight: 800; padding: 10px; cursor: pointer; font-family: Manrope, Arial, sans-serif; transition: background .15s; }
     .av-promo-btn:hover { background: #ffe8e0; }
 
+    /* ── HERO stats (в фоне, без карточки «Платформа») ── */
+    .av-hero-stats { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 0; margin-top: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; overflow: hidden; }
+    .av-hero-stat { padding: 14px 22px; text-align: center; border-right: 1px solid rgba(255,255,255,.08); }
+    .av-hero-stat:last-child { border-right: none; }
+    .av-hero-stat-num { font-size: 18px; font-weight: 900; color: #ff8a50; line-height: 1; letter-spacing: -0.3px; }
+    .av-hero-stat-lbl { font-size: 10px; color: rgba(255,255,255,.42); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-top: 5px; display: block; }
+
+    @keyframes av-pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.35)} }
+
     @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } }
-    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } .av-hero-stats { flex-direction: column; width: 100%; max-width: 320px; } .av-hero-stat { border-right: none; border-bottom: 1px solid rgba(255,255,255,.08); } .av-hero-stat:last-child { border-bottom: none; } }
   `;
 
   return (
@@ -308,7 +317,7 @@ function CustomerHome({ userId, userName }) {
         <div style={{position:'relative',zIndex:1,maxWidth:900,margin:'0 auto',padding:'48px 24px 44px',textAlign:'center'}}>
           {/* Бейдж */}
           <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(232,65,10,.15)',border:'1px solid rgba(232,65,10,.3)',borderRadius:20,padding:'5px 14px',fontSize:11,fontWeight:800,color:'#ff8055',letterSpacing:'.08em',textTransform:'uppercase',marginBottom:20}}>
-            <span style={{width:6,height:6,borderRadius:'50%',background:'#ff5722',animation:'pulse-dot 2s infinite',display:'inline-block'}}/>
+            <span style={{width:6,height:6,borderRadius:'50%',background:'#ff5722',animation:'av-pulse-dot 2s infinite',display:'inline-block'}}/>
             Йошкар-Ола · Проверенные мастера рядом
           </div>
 
@@ -316,7 +325,14 @@ function CustomerHome({ userId, userName }) {
           <h1 style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:54,fontWeight:900,color:'#fff',lineHeight:1.06,margin:'0 0 16px',letterSpacing:'-1.5px'}}>
             Найдите мастера в <em style={{fontStyle:'normal',color:'#e8410a'}}>Йошкар-Оле</em><br/>за 10 минут
           </h1>
-          <div style={{height:12}} />
+          <div className="av-hero-stats">
+            {[['24/7','Заявки'],['9','Категорий'],['5.0★','Рейтинг'],['≤10','Мин. отклик']].map(([n,l])=>(
+              <div key={l} className="av-hero-stat">
+                <span className="av-hero-stat-num">{n}</span>
+                <span className="av-hero-stat-lbl">{l}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -393,18 +409,6 @@ function CustomerHome({ userId, userName }) {
 
         {/* ── ПРАВАЯ КОЛОНКА ── */}
         <div className="av-side">
-          <div className="av-widget">
-            <div className="av-widget-title">Платформа</div>
-            <div className="av-stats-grid">
-              {[['24/7','Заявки'],['9','Категорий'],['5.0★','Рейтинг'],['≤10','Мин. отклик']].map(([n,l])=>(
-                <div key={l} className="av-stat-box">
-                  <span className="av-stat-num">{n}</span>
-                  <span className="av-stat-lbl">{l}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <div className="av-promo">
             <h3>Нужен мастер прямо сейчас?</h3>
             <p>Опишите задачу — первые отклики уже через 10 минут</p>
