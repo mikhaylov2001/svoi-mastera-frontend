@@ -117,31 +117,33 @@ const css = `
 
   /* КНОПКА: НАПИСАТЬ */
   .ld-btn-msg {
+    background: #111;
+    border: none; border-radius: 12px;
+    color: #fff; font-size: 15px; font-weight: 600;
+    padding: 14px 18px; cursor: pointer;
+    font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    text-decoration: none;
+    letter-spacing: -.01em;
+    transition: background .18s, transform .15s;
+  }
+  .ld-btn-msg:hover { background: #222; transform: translateY(-1px); }
+  .ld-btn-msg:active { transform: translateY(0); }
+
+  /* КНОПКА: ПРИНЯТЬ */
+  .ld-btn-accept {
     background: #e8410a;
     border: none; border-radius: 12px;
     color: #fff; font-size: 15px; font-weight: 700;
     padding: 14px 18px; cursor: pointer;
     font-family: inherit;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    text-decoration: none;
     box-shadow: 0 4px 16px rgba(232,65,10,.28);
-    transition: filter .18s, transform .18s, box-shadow .18s;
     letter-spacing: -.01em;
+    transition: filter .18s, transform .15s, box-shadow .18s;
   }
-  .ld-btn-msg:hover { filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232,65,10,.34); }
-  .ld-btn-msg:active { transform: translateY(0); }
-
-  /* КНОПКА: ПРИНЯТЬ */
-  .ld-btn-accept {
-    background: #fff;
-    border: 1.5px solid #d1d5db; border-radius: 12px;
-    color: #111; font-size: 15px; font-weight: 600;
-    padding: 13px 18px; cursor: pointer;
-    font-family: inherit;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: background .15s, border-color .15s, box-shadow .15s;
-  }
-  .ld-btn-accept:hover { background: #f9fafb; border-color: #9ca3af; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .ld-btn-accept:hover { filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232,65,10,.34); }
+  .ld-btn-accept:active { transform: translateY(0); }
   .ld-btn-accept:disabled { opacity: .5; cursor: not-allowed; }
 
   /* BANNERS */
@@ -503,7 +505,7 @@ export default function ListingDetailPage() {
                   to={userId ? `/chat/${listing.workerId}` : '/login'}
                   className="ld-btn-msg"
                 >
-                  💬 Написать мастеру
+                  Написать мастеру
                 </Link>
 
                 {accepted ? (
@@ -512,7 +514,7 @@ export default function ListingDetailPage() {
                   </div>
                 ) : (
                   <button className="ld-btn-accept" onClick={handleAcceptWork} disabled={accepting}>
-                    {accepting ? '⏳ Отправляем…' : '✔ Принять работу'}
+                    {accepting ? 'Отправляем…' : 'Принять работу'}
                   </button>
                 )}
 
