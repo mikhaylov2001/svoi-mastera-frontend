@@ -39,7 +39,7 @@ const css = `
   }
   .pw-breadcrumb-btn {
     background: none; border: none; cursor: pointer;
-    font-size: 13px; color: #257af4; font-family: inherit;
+    font-size: 13px; color: #e8410a; font-family: inherit;
     display: inline-flex; align-items: center; gap: 4px;
     padding: 0;
   }
@@ -81,7 +81,7 @@ const css = `
 
   .pw-review-link {
     display: inline-block;
-    font-size: 14px; color: #257af4;
+    font-size: 14px; color: #e8410a;
     text-decoration: none; margin-bottom: 6px;
     cursor: pointer; background: none; border: none;
     font-family: inherit; padding: 0;
@@ -97,10 +97,10 @@ const css = `
   .pw-badges { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
   .pw-badge {
     display: flex; align-items: center; gap: 8px;
-    background: #e8f4ff;
+    background: #fff4f1;
     border-radius: 8px;
     padding: 9px 12px;
-    font-size: 13px; color: #1464b0; font-weight: 500;
+    font-size: 13px; color: #c23300; font-weight: 500;
   }
   .pw-badge svg { flex-shrink: 0; }
 
@@ -140,8 +140,8 @@ const css = `
     white-space: nowrap;
   }
   .pw-tab.active {
-    color: #1a1a1a; font-weight: 700;
-    border-bottom-color: #1a1a1a;
+    color: #e8410a; font-weight: 700;
+    border-bottom-color: #e8410a;
   }
   .pw-tab:hover:not(.active) { color: #333; }
 
@@ -443,15 +443,15 @@ export default function PublicWorkerProfilePage() {
             <div className="pw-badges">
               <div className="pw-badge">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="8" cy="8" r="7.5" stroke="#e8410a" strokeWidth="1"/>
+                  <path d="M5 8l2 2 4-4" stroke="#e8410a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 Документы проверены
               </div>
               <div className="pw-badge">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="8" cy="8" r="7.5" stroke="#e8410a" strokeWidth="1"/>
+                  <path d="M5 8l2 2 4-4" stroke="#e8410a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 {worker?.city || 'Йошкар-Ола'}
               </div>
@@ -545,7 +545,7 @@ export default function PublicWorkerProfilePage() {
                           onClick={() => setPage(i)}
                           style={{
                             width:36,height:36,borderRadius:'50%',border:'none',
-                            background: i===page ? '#1a1a1a' : 'none',
+                            background: i===page ? '#e8410a' : 'none',
                             color: i===page ? '#fff' : '#555',
                             cursor:'pointer', fontWeight: i===page?700:400,
                             fontSize:14,
