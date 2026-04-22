@@ -311,54 +311,93 @@ function CustomerHome({ userId, userName }) {
     .av-promo-btn:active { transform: translateY(0); }
 
     /* ═══ HERO ═══ */
-    .av-hero-wrap { background: radial-gradient(ellipse 90% 100% at 70% 0%, rgba(232,65,10,.22) 0%, transparent 55%), linear-gradient(160deg,#0c0b0a 0%,#160a04 55%,#0f0b09 100%); position: relative; overflow: hidden; }
-    .av-hero-noise { position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E"); pointer-events: none; opacity: .5; }
-    .av-hero-glow { position: absolute; top: -160px; right: -100px; width: 640px; height: 640px; background: radial-gradient(circle, rgba(232,65,10,.28) 0%, transparent 65%); pointer-events: none; }
-    .av-hero-ring { position: absolute; bottom: -80px; left: -80px; width: 360px; height: 360px; border-radius: 50%; border: 1px solid rgba(232,65,10,.1); pointer-events: none; }
+    .av-hero-wrap {
+      background:
+        radial-gradient(ellipse 60% 80% at 50% -10%, rgba(232,65,10,.18) 0%, transparent 60%),
+        linear-gradient(180deg, #111110 0%, #0e0d0c 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    /* тонкая точечная сетка */
+    .av-hero-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(rgba(255,255,255,.055) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 75%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 75%, transparent 100%);
+    }
+    .av-hero-glow-top { position: absolute; top: -200px; left: 50%; transform: translateX(-50%); width: 900px; height: 500px; background: radial-gradient(ellipse, rgba(232,65,10,.14) 0%, transparent 68%); pointer-events: none; }
 
-    .av-hero-inner { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 64px 28px 72px; display: grid; grid-template-columns: 1fr 320px; gap: 32px 64px; align-items: center; }
-    .av-hero-left { min-width: 0; }
-    .av-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.13); border-radius: 999px; padding: 7px 14px; margin-bottom: 24px; }
-    .av-hero-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: #e8410a; animation: av-pulse-dot 2s infinite; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(232,65,10,.22); }
-    .av-hero-badge-text { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.72); letter-spacing: .08em; text-transform: uppercase; }
-    .av-hero-h1 { font-family: Manrope, Arial, sans-serif; font-size: clamp(34px, 4.6vw, 56px); font-weight: 900; color: #fff; line-height: 1.04; margin: 0 0 16px; letter-spacing: -1.5px; }
+    /* центрированный контент */
+    .av-hero-inner { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 80px 24px 0; text-align: center; }
+    .av-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 7px 16px; margin-bottom: 28px; }
+    .av-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #e8410a; animation: av-pulse-dot 2s infinite; flex-shrink: 0; }
+    .av-hero-badge-text { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.65); letter-spacing: .04em; }
+    .av-hero-h1 {
+      font-family: Manrope, Arial, sans-serif;
+      font-size: clamp(38px, 6vw, 68px);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.02;
+      margin: 0 0 20px;
+      letter-spacing: -2.5px;
+    }
     .av-hero-h1 em { font-style: normal; color: #e8410a; }
-    .av-hero-sub { font-size: 16px; color: rgba(255,255,255,.52); font-weight: 500; margin: 0 0 32px; line-height: 1.55; max-width: 420px; }
-    .av-hero-cta { display: inline-flex; align-items: center; gap: 10px; background: #e8410a; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 800; padding: 14px 28px; cursor: pointer; font-family: Manrope, Arial, sans-serif; box-shadow: 0 6px 22px rgba(232,65,10,.38); transition: filter .15s, transform .15s, box-shadow .15s; text-decoration: none; }
-    .av-hero-cta:hover { filter: brightness(1.08); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(232,65,10,.44); }
-    .av-hero-cta:active { transform: translateY(0); }
-    .av-hero-cta-arrow { font-size: 17px; transition: transform .2s; }
-    .av-hero-cta:hover .av-hero-cta-arrow { transform: translateX(3px); }
-
-    /* Карточка метрик */
-    .av-hero-right { position: relative; }
-    .av-stats-card {
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.13);
-      border-radius: 24px;
-      padding: 6px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 24px 48px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.1);
+    .av-hero-sub {
+      font-size: 17px;
+      color: rgba(255,255,255,.45);
+      font-weight: 400;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+      max-width: 480px;
+      letter-spacing: .01em;
     }
-    .av-stats-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-    .av-stat-cell {
-      display: flex; flex-direction: column; align-items: flex-start;
-      padding: 20px 18px 18px;
-      border-radius: 18px;
-      transition: background .2s;
-      cursor: default;
+    .av-hero-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 64px; }
+    .av-hero-btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #e8410a; color: #fff; border: none;
+      border-radius: 12px; font-size: 15px; font-weight: 700;
+      padding: 15px 32px; cursor: pointer; font-family: Manrope, Arial, sans-serif;
+      box-shadow: 0 0 0 0 rgba(232,65,10,0), 0 6px 24px rgba(232,65,10,.36);
+      transition: transform .18s, box-shadow .18s, filter .18s;
+      letter-spacing: -.01em;
     }
-    .av-stat-cell:hover { background: rgba(255,255,255,.05); }
-    .av-stat-icon { font-size: 22px; margin-bottom: 10px; line-height: 1; }
-    .av-stat-val { font-size: 26px; font-weight: 900; color: #fff; line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
-    .av-stat-desc { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .08em; margin-top: 6px; }
+    .av-hero-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 0 4px rgba(232,65,10,.18), 0 10px 28px rgba(232,65,10,.38); filter: brightness(1.06); }
+    .av-hero-btn-primary:active { transform: translateY(0); }
+    .av-hero-btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.06); color: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.14);
+      border-radius: 12px; font-size: 15px; font-weight: 600;
+      padding: 15px 28px; cursor: pointer; font-family: Manrope, Arial, sans-serif;
+      transition: background .18s, border-color .18s, color .18s;
+      text-decoration: none; letter-spacing: -.01em;
+    }
+    .av-hero-btn-ghost:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.24); color: #fff; }
 
-    @keyframes av-pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.45;transform:scale(1.4)} }
-    @keyframes av-fadein { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    /* trust bar */
+    .av-hero-trust {
+      position: relative; z-index: 1;
+      border-top: 1px solid rgba(255,255,255,.08);
+      display: flex; justify-content: center;
+    }
+    .av-hero-trust-inner {
+      max-width: 1200px; width: 100%; margin: 0 auto;
+      padding: 0 24px;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+    }
+    .av-trust-item {
+      padding: 22px 16px;
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,.07);
+    }
+    .av-trust-item:last-child { border-right: none; }
+    .av-trust-val { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; display: block; }
+    .av-trust-lbl { font-size: 11px; color: rgba(255,255,255,.38); font-weight: 600; margin-top: 6px; display: block; text-transform: uppercase; letter-spacing: .07em; }
 
-    @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } .av-hero-inner { grid-template-columns: 1fr; gap: 36px; padding: 48px 20px 52px; } .av-hero-right { max-width: 360px; } .av-hero-sub { max-width: 100%; } }
-    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } .av-stat-val { font-size: 22px; } .av-stat-cell { padding: 16px 14px 14px; } }
+    @keyframes av-pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.5)} }
+
+    @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } .av-hero-trust-inner { grid-template-columns: repeat(2,1fr); } .av-trust-item:nth-child(2) { border-right: none; } .av-trust-item:nth-child(1),.av-trust-item:nth-child(2) { border-bottom: 1px solid rgba(255,255,255,.07); } }
+    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } .av-hero-h1 { font-size: 38px; letter-spacing: -1.5px; } .av-hero-inner { padding: 56px 20px 0; } .av-hero-actions { margin-bottom: 48px; } }
   `;
 
   return (
@@ -367,43 +406,41 @@ function CustomerHome({ userId, userName }) {
 
       {/* ── HERO ── */}
       <div className="av-hero-wrap">
-        <div className="av-hero-noise"/>
-        <div className="av-hero-glow"/>
-        <div className="av-hero-ring"/>
+        <div className="av-hero-grid"/>
+        <div className="av-hero-glow-top"/>
 
+        {/* Центрированный контент */}
         <div className="av-hero-inner">
-          <div className="av-hero-left">
-            <div className="av-hero-badge">
-              <span className="av-hero-badge-dot"/>
-              <span className="av-hero-badge-text">Йошкар-Ола · Проверенные мастера рядом</span>
-            </div>
-            <h1 className="av-hero-h1">
-              Найдите мастера<br/>в <em>Йошкар-Оле</em><br/>за 10 минут
-            </h1>
-            <p className="av-hero-sub">Ремонт, сантехника, уборка и ещё 6 категорий — первый отклик в течение 10 минут</p>
-            <button className="av-hero-cta" onClick={()=>navigate('/categories')}>
-              Разместить заявку
-              <span className="av-hero-cta-arrow">→</span>
-            </button>
+          <div className="av-hero-badge">
+            <span className="av-hero-badge-dot"/>
+            <span className="av-hero-badge-text">Йошкар-Ола · Проверенные мастера рядом</span>
           </div>
+          <h1 className="av-hero-h1">
+            Найдите мастера<br/>в <em>Йошкар-Оле</em><br/>за&nbsp;10&nbsp;минут
+          </h1>
+          <p className="av-hero-sub">
+            Ремонт, сантехника, уборка и ещё 6 категорий.<br/>
+            Первый отклик — в течение 10 минут.
+          </p>
+          <div className="av-hero-actions">
+            <button className="av-hero-btn-primary" onClick={()=>navigate('/categories')}>
+              Разместить заявку →
+            </button>
+            <Link to="/find-master" className="av-hero-btn-ghost">
+              Найти мастера
+            </Link>
+          </div>
+        </div>
 
-          <div className="av-hero-right">
-            <div className="av-stats-card">
-              <div className="av-stats-grid2">
-                {[
-                  {icon:'🕐', val:'24/7', desc:'Приём заявок'},
-                  {icon:'📂', val:'9',    desc:'Категорий'},
-                  {icon:'⭐', val:'5.0',  desc:'Средний рейтинг'},
-                  {icon:'⚡', val:'≤10',  desc:'Мин. до отклика'},
-                ].map(s=>(
-                  <div key={s.desc} className="av-stat-cell">
-                    <span className="av-stat-icon">{s.icon}</span>
-                    <span className="av-stat-val">{s.val}</span>
-                    <span className="av-stat-desc">{s.desc}</span>
-                  </div>
-                ))}
+        {/* Trust bar */}
+        <div className="av-hero-trust">
+          <div className="av-hero-trust-inner">
+            {[['24/7','Приём заявок'],['9','Категорий'],['5.0★','Средний рейтинг'],['≤10 мин','До первого отклика']].map(([v,l])=>(
+              <div key={l} className="av-trust-item">
+                <span className="av-trust-val">{v}</span>
+                <span className="av-trust-lbl">{l}</span>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
