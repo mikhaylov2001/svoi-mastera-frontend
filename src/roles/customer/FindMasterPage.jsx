@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { getCategories, getListings } from '../api';
+import { getCategories, getListings } from '../../api';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 

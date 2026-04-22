@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { getMyDeals, uploadAvatar, getUserProfile } from '../api';
-import ReviewForm from '../components/ReviewForm';
+import { useAuth } from '../../context/AuthContext';
+import { getMyDeals, uploadAvatar, getUserProfile } from '../../api';
+import ReviewForm from '../../components/ReviewForm';
 
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { getMyDeals } from '../api';
+import { useAuth } from '../../context/AuthContext';
+import { getMyDeals } from '../../api';
 import './ActiveClientsPage.css';
 
 const STATUS_MAP = {

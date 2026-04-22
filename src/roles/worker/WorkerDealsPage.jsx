@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { getMyDeals, completeDeal, createCustomerReview } from '../api';
-import { useAuth } from '../context/AuthContext';
-import './DealsPage.css'; // используем те же стили что у клиента
+import { getMyDeals, completeDeal, createCustomerReview } from '../../api';
+import { useAuth } from '../../context/AuthContext';
+import '../customer/DealsPage.css'; // те же стили что у клиента
 
 const DEAL_STATUSES = {
   NEW:         { label: 'Новая',     emoji: '📋', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },

@@ -4,8 +4,8 @@ import {
   getMyDeals, completeDeal,
   getMyJobRequests, getOffersForRequest, acceptOffer, getCategories,
   createReview,
-} from '../api';
-import { useAuth } from '../context/AuthContext';
+} from '../../api';
+import { useAuth } from '../../context/AuthContext';
 import './DealsPage.css';
 
 const DEAL_STATUSES = {

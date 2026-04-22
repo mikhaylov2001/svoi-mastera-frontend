@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaMapMarkerAlt, FaCalendarAlt, FaBell, FaUser, FaCreditCard, FaClipboardList, FaCheckCircle, FaClock } from 'react-icons/fa';
-import { getCustomerProfile, getMyDeals, createReview } from '../api';
-import { useAuth } from '../context/AuthContext';
+import { getCustomerProfile, getMyDeals, createReview } from '../../api';
+import { useAuth } from '../../context/AuthContext';
 import './ProfilePage.css';
 
 const STATUS_MAP = {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getMyJobRequests, getOffersForRequest, acceptOffer, getCategories } from '../api';
-import { useAuth } from '../context/AuthContext';
+import { getMyJobRequests, getOffersForRequest, acceptOffer, getCategories } from '../../api';
+import { useAuth } from '../../context/AuthContext';
 import './MyOrdersPage.css';
 
 const STATUS_LABELS = {

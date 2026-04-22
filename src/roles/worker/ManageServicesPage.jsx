@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaTools, FaStar, FaMapMarkerAlt, FaClock, FaDollarSign, FaSave, FaTimes } from 'react-icons/fa';
-import { getMyWorkerServices, createWorkerService, updateWorkerService, deleteWorkerService } from '../api';
-import { useAuth } from '../context/AuthContext';
+import { getMyWorkerServices, createWorkerService, updateWorkerService, deleteWorkerService } from '../../api';
+import { useAuth } from '../../context/AuthContext';
 import './ManageServicesPage.css';
 
 const categories = ['Мебель', 'Строительство', 'Электрика', 'Сантехника', 'Компьютеры', 'Уборка', 'Бытовая техника'];

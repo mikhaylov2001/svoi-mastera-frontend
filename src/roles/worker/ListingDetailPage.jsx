@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { acceptListingDeal } from '../api';
+import { useAuth } from '../../context/AuthContext';
+import { acceptListingDeal } from '../../api';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 

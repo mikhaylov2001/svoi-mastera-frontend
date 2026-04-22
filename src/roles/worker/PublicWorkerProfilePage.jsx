@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -39,11 +39,11 @@ const css = `
   }
   .pw-breadcrumb-btn {
     background: none; border: none; cursor: pointer;
-    font-size: 13px; color: #e8410a; font-family: inherit;
+    font-size: 13px; color: #555; font-family: inherit;
     display: inline-flex; align-items: center; gap: 4px;
     padding: 0;
   }
-  .pw-breadcrumb-btn:hover { text-decoration: underline; }
+  .pw-breadcrumb-btn:hover { color: #333; text-decoration: underline; }
 
   /* ── wrap & layout ── */
   .pw-wrap { max-width: 1176px; margin: 0 auto; padding: 0 20px; }
@@ -81,12 +81,12 @@ const css = `
 
   .pw-review-link {
     display: inline-block;
-    font-size: 14px; color: #2563eb;
+    font-size: 14px; color: #555;
     text-decoration: none; margin-bottom: 6px;
     cursor: pointer; background: none; border: none;
     font-family: inherit; padding: 0;
   }
-  .pw-review-link:hover { text-decoration: underline; }
+  .pw-review-link:hover { color: #333; text-decoration: underline; }
 
   .pw-meta {
     font-size: 13px; color: #777;
@@ -97,10 +97,10 @@ const css = `
   .pw-badges { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
   .pw-badge {
     display: flex; align-items: center; gap: 8px;
-    background: #e8f4ff;
+    background: #f0f0f0;
     border-radius: 8px;
     padding: 9px 12px;
-    font-size: 13px; color: #1464b0; font-weight: 500;
+    font-size: 13px; color: #444; font-weight: 500;
   }
   .pw-badge svg { flex-shrink: 0; }
 
@@ -443,15 +443,15 @@ export default function PublicWorkerProfilePage() {
             <div className="pw-badges">
               <div className="pw-badge">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="8" cy="8" r="7.5" stroke="#666" strokeWidth="1"/>
+                  <path d="M5 8l2 2 4-4" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 Документы проверены
               </div>
               <div className="pw-badge">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="8" cy="8" r="7.5" stroke="#666" strokeWidth="1"/>
+                  <path d="M5 8l2 2 4-4" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 {worker?.city || 'Йошкар-Ола'}
               </div>
