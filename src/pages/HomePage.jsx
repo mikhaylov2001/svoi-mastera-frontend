@@ -228,7 +228,7 @@ function CustomerHome({ userId, userName }) {
     .av-body { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; display: grid; grid-template-columns: 1fr 296px; gap: 20px; align-items: flex-start; }
 
     /* ── КАТЕГОРИИ ── */
-    .av-cats-block { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+    .av-cats-block { background: #fff; border-radius: 16px; overflow: hidden; margin-bottom: 16px; border: 1px solid #ebebeb; box-shadow: 0 4px 20px rgba(0,0,0,.04); }
     .av-cats-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 0; }
     .av-cats-hdr-title { font-size: 18px; font-weight: 800; color: #1a1a1a; }
     .av-cats-hdr-link { font-size: 13px; color: #e8410a; text-decoration: none; font-weight: 600; }
@@ -283,38 +283,72 @@ function CustomerHome({ userId, userName }) {
     .av-stat-box { background: #f8f8f8; border-radius: 8px; padding: 12px 10px; text-align: center; }
     .av-stat-num { font-size: 20px; font-weight: 900; color: #e8410a; display: block; line-height: 1; }
     .av-stat-lbl { font-size: 10px; color: #aaa; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; display: block; }
-    .av-promo { background: linear-gradient(135deg, #1a0a00, #e8410a 140%); border-radius: 12px; padding: 18px; color: #fff; }
-    .av-promo h3 { font-size: 15px; font-weight: 800; margin: 0 0 6px; line-height: 1.3; }
-    .av-promo p { font-size: 12px; color: rgba(255,255,255,.65); margin: 0 0 14px; line-height: 1.55; }
-    .av-promo-btn { width: 100%; background: #fff; border: none; border-radius: 7px; color: #e8410a; font-size: 13px; font-weight: 800; padding: 10px; cursor: pointer; font-family: Manrope, Arial, sans-serif; transition: background .15s; }
-    .av-promo-btn:hover { background: #ffe8e0; }
-
-    /* ── HERO: асимметрия, метрики справа (glass / bento) ── */
-    .av-hero-inner { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 56px 24px 60px; display: grid; grid-template-columns: 1fr minmax(260px, 300px); gap: 48px 40px; align-items: center; }
-    .av-hero-left { text-align: left; min-width: 0; }
-    .av-hero-badge-row { display: flex; justify-content: flex-start; margin-bottom: 20px; }
-    .av-hero-left h1 { font-family: Manrope, Arial, sans-serif; font-size: clamp(32px, 5vw, 54px); font-weight: 900; color: #fff; line-height: 1.06; margin: 0; letter-spacing: -1.2px; }
-    .av-hero-right { justify-self: end; width: 100%; max-width: 300px; }
-    .av-hero-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .av-hero-stat {
-      padding: 16px 14px 15px;
-      text-align: left;
-      background: linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255,255,255,.12);
+    .av-promo {
+      background: #fff;
       border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.06);
-      transition: border-color .2s, box-shadow .2s, transform .2s;
+      padding: 20px 20px 18px;
+      color: #1a1a1a;
+      border: 1px solid #ebebeb;
+      box-shadow: 0 4px 20px rgba(0,0,0,.04);
     }
-    .av-hero-stat:hover { border-color: rgba(232,65,10,.35); box-shadow: 0 8px 32px rgba(232,65,10,.12), inset 0 1px 0 rgba(255,255,255,.08); transform: translateY(-1px); }
-    .av-hero-stat-num { font-size: 22px; font-weight: 900; color: #ffb090; line-height: 1; letter-spacing: -0.5px; text-shadow: 0 0 28px rgba(232,65,10,.35); }
-    .av-hero-stat-lbl { font-size: 9px; color: rgba(255,255,255,.48); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-top: 8px; display: block; }
+    .av-promo h3 { font-size: 16px; font-weight: 800; margin: 0 0 8px; line-height: 1.35; color: #111; letter-spacing: -0.02em; }
+    .av-promo p { font-size: 13px; color: #666; margin: 0 0 16px; line-height: 1.5; }
+    .av-promo-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #e03a08 0%, #e8410a 45%, #ff6b35 100%);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      padding: 12px 14px;
+      cursor: pointer;
+      font-family: Manrope, Arial, sans-serif;
+      box-shadow: 0 4px 14px rgba(232,65,10,.35);
+      transition: transform .15s, box-shadow .15s, filter .15s;
+    }
+    .av-promo-btn:hover { filter: brightness(1.06); box-shadow: 0 6px 20px rgba(232,65,10,.42); transform: translateY(-1px); }
+    .av-promo-btn:active { transform: translateY(0); }
+
+    /* ── HERO: одна панель метрик, без «четырёх коробок» ── */
+    .av-hero-inner { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 60px 24px 64px; display: grid; grid-template-columns: 1fr minmax(280px, 440px); gap: 40px 56px; align-items: center; }
+    .av-hero-left { text-align: left; min-width: 0; }
+    .av-hero-badge-row { display: flex; justify-content: flex-start; margin-bottom: 22px; }
+    .av-hero-left h1 { font-family: Manrope, Arial, sans-serif; font-size: clamp(30px, 4.6vw, 52px); font-weight: 900; color: #f7f5f4; line-height: 1.05; margin: 0; letter-spacing: -1.4px; }
+    .av-hero-right { justify-self: end; width: 100%; max-width: 440px; }
+    .av-hero-metrics-frame {
+      padding: 1px;
+      border-radius: 20px;
+      background: linear-gradient(150deg, rgba(255,255,255,.22), rgba(255,255,255,.06) 40%, rgba(232,65,10,.15));
+      box-shadow: 0 32px 64px -24px rgba(0,0,0,.45);
+    }
+    .av-hero-stats {
+      display: flex;
+      flex-wrap: nowrap;
+      border-radius: 19px;
+      overflow: hidden;
+      background: rgba(10,8,7,.78);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border: 1px solid rgba(255,255,255,.1);
+    }
+    .av-hero-stat {
+      flex: 1;
+      min-width: 0;
+      padding: 22px 12px 20px;
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,.07);
+      transition: background .2s ease;
+    }
+    .av-hero-stat:last-child { border-right: none; }
+    .av-hero-stat:hover { background: rgba(255,255,255,.04); }
+    .av-hero-stat-num { font-size: clamp(17px, 2.1vw, 23px); font-weight: 800; color: #fff; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+    .av-hero-stat-lbl { font-size: 10px; color: rgba(255,255,255,.45); font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-top: 10px; display: block; }
 
     @keyframes av-pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.35)} }
 
-    @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } .av-hero-inner { grid-template-columns: 1fr; gap: 32px; padding: 44px 20px 48px; text-align: center; } .av-hero-left { text-align: center; } .av-hero-badge-row { justify-content: center; } .av-hero-right { justify-self: center; max-width: 340px; } }
-    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } .av-hero-stats { gap: 8px; } .av-hero-stat { padding: 14px 12px; border-radius: 14px; } .av-hero-stat-num { font-size: 19px; } }
+    @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } .av-hero-inner { grid-template-columns: 1fr; gap: 28px; padding: 44px 20px 48px; text-align: center; } .av-hero-left { text-align: center; } .av-hero-badge-row { justify-content: center; } .av-hero-right { justify-self: center; max-width: 100%; width: 100%; } }
+    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } .av-hero-stats { display: grid; grid-template-columns: 1fr 1fr; } .av-hero-stat { padding: 18px 10px 16px; border-right: 1px solid rgba(255,255,255,.07); border-bottom: 1px solid rgba(255,255,255,.07); } .av-hero-stat:nth-child(2n) { border-right: none; } .av-hero-stat:nth-child(n+3) { border-bottom: none; } }
   `;
 
   return (
@@ -332,8 +366,8 @@ function CustomerHome({ userId, userName }) {
         <div className="av-hero-inner">
           <div className="av-hero-left">
             <div className="av-hero-badge-row">
-              <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(232,65,10,.12)',border:'1px solid rgba(232,65,10,.28)',borderRadius:999,padding:'6px 16px',fontSize:11,fontWeight:800,color:'#ff9a7a',letterSpacing:'.07em',textTransform:'uppercase'}}>
-                <span style={{width:6,height:6,borderRadius:'50%',background:'#ff5722',animation:'av-pulse-dot 2s infinite',display:'inline-block',flexShrink:0}}/>
+              <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:999,padding:'7px 16px',fontSize:11,fontWeight:800,color:'rgba(255,255,255,.82)',letterSpacing:'.06em',textTransform:'uppercase'}}>
+                <span style={{width:6,height:6,borderRadius:'50%',background:'#e8410a',animation:'av-pulse-dot 2s infinite',display:'inline-block',flexShrink:0,boxShadow:'0 0 0 3px rgba(232,65,10,.2)'}}/>
                 Йошкар-Ола · Проверенные мастера рядом
               </div>
             </div>
@@ -342,13 +376,15 @@ function CustomerHome({ userId, userName }) {
             </h1>
           </div>
           <div className="av-hero-right">
-            <div className="av-hero-stats" aria-label="Показатели сервиса">
-              {[['24/7','Заявки'],['9','Категорий'],['5.0★','Рейтинг'],['≤10','Мин. отклик']].map(([n,l])=>(
-                <div key={l} className="av-hero-stat">
-                  <span className="av-hero-stat-num">{n}</span>
-                  <span className="av-hero-stat-lbl">{l}</span>
-                </div>
-              ))}
+            <div className="av-hero-metrics-frame">
+              <div className="av-hero-stats" aria-label="Показатели сервиса">
+                {[['24/7','Заявки'],['9','Категорий'],['5.0★','Рейтинг'],['≤10','Мин. отклик']].map(([n,l])=>(
+                  <div key={l} className="av-hero-stat">
+                    <span className="av-hero-stat-num">{n}</span>
+                    <span className="av-hero-stat-lbl">{l}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
