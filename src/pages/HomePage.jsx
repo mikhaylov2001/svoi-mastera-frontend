@@ -328,41 +328,29 @@ function CustomerHome({ userId, userName }) {
     .av-hero-glow-top { position: absolute; top: -180px; left: 50%; transform: translateX(-50%); width: 1000px; height: 560px; background: radial-gradient(ellipse, rgba(232,65,10,.16) 0%, transparent 65%); pointer-events: none; }
 
     /* центрированный контент */
-    .av-hero-inner { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 96px 24px 0; text-align: center; }
-    .av-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.11); border-radius: 999px; padding: 7px 16px; margin-bottom: 32px; }
+    .av-hero-inner { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 52px 24px 0; text-align: center; }
+    .av-hero-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.11); border-radius: 999px; padding: 5px 14px; margin-bottom: 20px; }
     .av-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #e8410a; animation: av-pulse-dot 2s infinite; flex-shrink: 0; }
-    .av-hero-badge-text { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.6); letter-spacing: .05em; }
+    .av-hero-badge-text { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.55); letter-spacing: .05em; }
     .av-hero-h1 {
       font-family: Manrope, Arial, sans-serif;
-      font-size: clamp(48px, 8.5vw, 92px);
+      font-size: clamp(28px, 4.2vw, 50px);
       font-weight: 900;
       color: #fff;
-      line-height: 0.97;
-      margin: 0 0 28px;
-      letter-spacing: -3.5px;
+      line-height: 1.06;
+      margin: 0 0 14px;
+      letter-spacing: -1.5px;
     }
-    .av-hero-h1 .h1-line2 {
-      display: block;
-      color: #e8410a;
-      font-size: 1.05em;
-    }
-    .av-hero-h1 .h1-line3 {
-      display: block;
-      font-size: 0.78em;
-      color: rgba(255,255,255,.88);
-      font-weight: 800;
-      letter-spacing: -2px;
-      margin-top: 8px;
-    }
+    .av-hero-h1 .h1-line2 { color: #e8410a; }
     .av-hero-sub {
-      font-size: 17px;
+      font-size: 15px;
       color: rgba(255,255,255,.4);
       font-weight: 400;
-      margin: 0 auto 40px;
-      line-height: 1.65;
-      max-width: 440px;
+      margin: 0 auto 28px;
+      line-height: 1.6;
+      max-width: 420px;
     }
-    .av-hero-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 80px; }
+    .av-hero-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 52px; }
     .av-hero-btn-primary {
       display: inline-flex; align-items: center; gap: 10px;
       background: #e8410a; color: #fff; border: none;
@@ -426,9 +414,7 @@ function CustomerHome({ userId, userName }) {
             <span className="av-hero-badge-text">Йошкар-Ола · Проверенные мастера рядом</span>
           </div>
           <h1 className="av-hero-h1">
-            Найдите мастера
-            <span className="h1-line2">в Йошкар-Оле</span>
-            <span className="h1-line3">за&nbsp;10&nbsp;минут</span>
+            Найдите мастера в&nbsp;<span className="h1-line2">Йошкар-Оле</span> за&nbsp;10&nbsp;минут
           </h1>
           <p className="av-hero-sub">
             Ремонт, сантехника, красота и ещё 6 категорий — первый отклик в течение 10 минут
