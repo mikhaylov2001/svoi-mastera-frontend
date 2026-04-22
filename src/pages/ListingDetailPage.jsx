@@ -44,7 +44,7 @@ const css = `
   .ld-card { background: #fff; border-radius: 16px; border: 1px solid #eaeaea; overflow: hidden; }
 
   /* TITLE */
-  .ld-title-block { padding: 22px 24px 18px; }
+  .ld-title-block { background: #fff; border: 1px solid #e6e6e6; border-radius: 14px; padding: 22px 24px 18px; }
   .ld-title { font-size: 24px; font-weight: 700; margin: 0 0 14px; line-height: 1.3; color: #111; letter-spacing: -0.3px; }
   .ld-actions-row { display: flex; gap: 8px; }
   .ld-action-btn { display: inline-flex; align-items: center; gap: 6px; background: #f5f5f7; border: none; border-radius: 10px; font-size: 13px; font-weight: 500; color: #555; padding: 8px 14px; cursor: pointer; font-family: inherit; transition: background .15s, color .15s; }
@@ -55,14 +55,10 @@ const css = `
   .ld-gallery-main { position: relative; aspect-ratio: 16/10; background: #1a1a1a; display: flex; align-items: center; justify-content: center; overflow: hidden; }
   .ld-gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .22s ease; image-rendering: -webkit-optimize-contrast; }
   .ld-gallery-ph { font-size: 56px; color: #555; }
-
-  /* зоны клика для перелистывания (левая / правая половина) */
-  .ld-gallery-zone { position: absolute; top: 0; bottom: 0; width: 45%; z-index: 3; cursor: pointer; display: flex; align-items: center; }
-  .ld-gallery-zone-prev { left: 0; justify-content: flex-start; padding-left: 14px; }
-  .ld-gallery-zone-next { right: 0; justify-content: flex-end; padding-right: 14px; }
-  .ld-gallery-arrow { width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.88); color: #111; font-size: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 14px rgba(0,0,0,.22); opacity: 0; transition: opacity .18s, transform .18s; font-weight: 300; line-height: 1; }
-  .ld-gallery-wrap:hover .ld-gallery-arrow { opacity: 1; }
-  .ld-gallery-zone:hover .ld-gallery-arrow { transform: scale(1.1); background: #fff; }
+  .ld-gallery-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.65); background: rgba(255,255,255,.9); color: #111; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 14px rgba(0,0,0,.22); z-index: 5; transition: transform .15s, background .15s; line-height: 1; }
+  .ld-gallery-nav-btn:hover { transform: translateY(-50%) scale(1.06); background: #fff; }
+  .ld-gallery-nav-btn.prev { left: 12px; }
+  .ld-gallery-nav-btn.next { right: 12px; }
 
   /* кнопка открыть лайтбокс */
   .ld-gallery-zoom { position: absolute; bottom: 14px; right: 14px; z-index: 4; width: 36px; height: 36px; background: rgba(0,0,0,.48); border: 1.5px solid rgba(255,255,255,.25); border-radius: 8px; color: #fff; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: zoom-in; backdrop-filter: blur(4px); transition: background .15s; }
@@ -83,21 +79,23 @@ const css = `
   .ld-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; image-rendering: -webkit-optimize-contrast; }
 
   /* INFO GRID */
-  .ld-info-block { padding: 20px 24px; }
-  .ld-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #f0f0f0; border-radius: 12px; overflow: hidden; }
-  .ld-info-row { background: #fff; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .ld-info-block { background: #fff; border: 1px solid #e6e6e6; border-radius: 14px; padding: 16px; }
+  .ld-info-grid { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #ececec; border-radius: 12px; overflow: hidden; background: #fff; }
+  .ld-info-row { background: #fff; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid #ececec; border-bottom: 1px solid #ececec; }
+  .ld-info-row:nth-child(2n) { border-right: none; }
+  .ld-info-row:nth-last-child(-n+2) { border-bottom: none; }
   .ld-info-key { font-size: 11px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
   .ld-info-val { font-size: 14px; color: #111; font-weight: 600; }
 
   /* BADGES */
-  .ld-badges-block { padding: 14px 24px; display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid #f0f0f0; }
+  .ld-badges-block { background: #fff; border: 1px solid #e6e6e6; border-radius: 14px; padding: 14px 16px; display: flex; gap: 8px; flex-wrap: wrap; }
   .ld-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 8px; }
   .ld-badge-green { background: #f0fdf4; color: #16a34a; }
   .ld-badge-orange { background: #fff7ed; color: #ea580c; }
   .ld-badge-blue { background: #eff6ff; color: #2563eb; }
 
   /* DESCRIPTION */
-  .ld-desc-block { padding: 20px 24px; }
+  .ld-desc-block { background: #fff; border: 1px solid #e6e6e6; border-radius: 14px; padding: 20px 24px; }
   .ld-desc-head { font-size: 15px; font-weight: 700; margin: 0 0 12px; color: #111; }
   .ld-desc-text { font-size: 14px; color: #555; line-height: 1.8; margin: 0; white-space: pre-wrap; word-break: break-word; }
   .ld-desc-toggle { background: none; border: none; color: #e8410a; font-size: 13px; font-weight: 600; cursor: pointer; padding: 10px 0 0; font-family: inherit; transition: opacity .15s; }
@@ -117,32 +115,32 @@ const css = `
 
   /* КНОПКА: НАПИСАТЬ */
   .ld-btn-msg {
-    background: #111;
-    border: none; border-radius: 12px;
-    color: #fff; font-size: 15px; font-weight: 600;
-    padding: 14px 18px; cursor: pointer;
-    font-family: inherit;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    text-decoration: none;
-    letter-spacing: -.01em;
-    transition: background .18s, transform .15s;
-  }
-  .ld-btn-msg:hover { background: #222; transform: translateY(-1px); }
-  .ld-btn-msg:active { transform: translateY(0); }
-
-  /* КНОПКА: ПРИНЯТЬ */
-  .ld-btn-accept {
-    background: #e8410a;
+    background: #00aaff;
     border: none; border-radius: 12px;
     color: #fff; font-size: 15px; font-weight: 700;
     padding: 14px 18px; cursor: pointer;
     font-family: inherit;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    box-shadow: 0 4px 16px rgba(232,65,10,.28);
+    text-decoration: none;
+    letter-spacing: -.01em;
+    transition: background .18s, transform .15s, box-shadow .15s;
+  }
+  .ld-btn-msg:hover { background: #0097e0; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,170,255,.32); }
+  .ld-btn-msg:active { transform: translateY(0); }
+
+  /* КНОПКА: ПРИНЯТЬ */
+  .ld-btn-accept {
+    background: #fff;
+    border: 2px solid #00aaff; border-radius: 12px;
+    color: #007ec8; font-size: 15px; font-weight: 700;
+    padding: 14px 18px; cursor: pointer;
+    font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: none;
     letter-spacing: -.01em;
     transition: filter .18s, transform .15s, box-shadow .18s;
   }
-  .ld-btn-accept:hover { filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232,65,10,.34); }
+  .ld-btn-accept:hover { background: #f0f9ff; transform: translateY(-1px); border-color: #0097e0; }
   .ld-btn-accept:active { transform: translateY(0); }
   .ld-btn-accept:disabled { opacity: .5; cursor: not-allowed; }
 
@@ -210,7 +208,7 @@ const css = `
   .ld-lb-counter { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.7); font-size: 14px; font-weight: 600; background: rgba(255,255,255,.1); padding: 5px 16px; border-radius: 20px; z-index: 10; }
   .ld-lb-hint { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.35); font-size: 12px; white-space: nowrap; pointer-events: none; }
 
-  @media(max-width:900px) { .ld-page { grid-template-columns: 1fr; } .ld-right { position: static; } .ld-info-grid { grid-template-columns: 1fr; } }
+  @media(max-width:900px) { .ld-page { grid-template-columns: 1fr; } .ld-right { position: static; } .ld-info-grid { grid-template-columns: 1fr; } .ld-info-row { border-right: none; } .ld-info-row:nth-last-child(-n+2) { border-bottom: 1px solid #ececec; } .ld-info-row:last-child { border-bottom: none; } }
   @media(max-width:580px) { .ld-page { padding: 12px 12px 48px; } .ld-title { font-size: 19px; } .ld-price-big { font-size: 26px; } .ld-title-block,.ld-info-block,.ld-desc-block { padding-left: 16px; padding-right: 16px; } }
 `;
 
@@ -263,7 +261,7 @@ export default function ListingDetailPage() {
   const prevPhoto = useCallback(() => setActivePhoto(i => (allPhotos.length > 1 ? (i - 1 + allPhotos.length) % allPhotos.length : i)), [allPhotos.length]);
 
   useEffect(() => {
-    if (allPhotos.length <= 1 && !lightbox) return;
+    if (allPhotos.length <= 1) return;
     const onKey = e => {
       if (e.key === 'Escape') setLightbox(false);
       if (e.key === 'ArrowRight') nextPhoto();
@@ -382,20 +380,15 @@ export default function ListingDetailPage() {
           {/* Gallery */}
           <div className="ld-card" style={{overflow:'hidden'}}>
             <div className="ld-gallery-wrap">
-              <div className="ld-gallery-main">
+              <div className="ld-gallery-main" onClick={() => allPhotos.length && setLightbox(true)}>
                 {allPhotos.length > 0
                   ? <img src={allPhotos[activePhoto]} alt={listing.title} key={activePhoto}/>
                   : <div className="ld-gallery-ph">🔧</div>
                 }
 
-                {/* Зоны-клика для перелистывания */}
                 {allPhotos.length > 1 && <>
-                  <div className="ld-gallery-zone ld-gallery-zone-prev" onClick={e => { e.stopPropagation(); prevPhoto(); }}>
-                    <div className="ld-gallery-arrow">‹</div>
-                  </div>
-                  <div className="ld-gallery-zone ld-gallery-zone-next" onClick={e => { e.stopPropagation(); nextPhoto(); }}>
-                    <div className="ld-gallery-arrow">›</div>
-                  </div>
+                  <button className="ld-gallery-nav-btn prev" onClick={e => { e.stopPropagation(); prevPhoto(); }} aria-label="Предыдущее фото">‹</button>
+                  <button className="ld-gallery-nav-btn next" onClick={e => { e.stopPropagation(); nextPhoto(); }} aria-label="Следующее фото">›</button>
                 </>}
 
                 {/* Кнопка открыть */}
@@ -449,11 +442,11 @@ export default function ListingDetailPage() {
                 <span className="ld-info-key">Сделка</span>
                 <span className="ld-info-val">Безопасно в сервисе</span>
               </div>
-              <div className="ld-info-row" style={{borderBottom:'none',paddingBottom:0}}>
+              <div className="ld-info-row">
                 <span className="ld-info-key">Город</span>
                 <span className="ld-info-val">Йошкар-Ола</span>
               </div>
-              <div className="ld-info-row" style={{borderBottom:'none',paddingBottom:0}}>
+              <div className="ld-info-row">
                 <span className="ld-info-key">Категория</span>
                 <span className="ld-info-val">{listing.category || '—'}</span>
               </div>
