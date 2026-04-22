@@ -39,11 +39,11 @@ const css = `
   }
   .pw-breadcrumb-btn {
     background: none; border: none; cursor: pointer;
-    font-size: 13px; color: #757575; font-family: inherit;
+    font-size: 13px; color: #e8410a; font-family: inherit;
     display: inline-flex; align-items: center; gap: 4px;
     padding: 0;
   }
-  .pw-breadcrumb-btn:hover { color: #333; text-decoration: underline; }
+  .pw-breadcrumb-btn:hover { text-decoration: underline; }
 
   /* ── wrap & layout ── */
   .pw-wrap { max-width: 1176px; margin: 0 auto; padding: 0 20px; }
@@ -68,7 +68,7 @@ const css = `
   .pw-avatar-fb {
     width: 88px; height: 88px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #64748b, #475569);
+    background: linear-gradient(135deg, #e8410a, #ff7043);
     display: flex; align-items: center; justify-content: center;
     font-size: 30px; font-weight: 800; color: #fff;
     margin-bottom: 12px;
@@ -109,14 +109,14 @@ const css = `
   /* кнопки */
   .pw-btn-msg {
     display: block; width: 100%;
-    background: #2563eb; border: none; border-radius: 8px;
+    background: #e8410a; border: none; border-radius: 8px;
     color: #fff; font-size: 15px; font-weight: 700;
     padding: 13px 0; cursor: pointer;
     font-family: inherit; text-align: center;
     margin-bottom: 8px;
     transition: background .15s;
   }
-  .pw-btn-msg:hover { background: #1d4ed8; }
+  .pw-btn-msg:hover { background: #d03a09; }
 
   /* ══════════ MAIN ══════════ */
   .pw-main {}
@@ -140,8 +140,8 @@ const css = `
     white-space: nowrap;
   }
   .pw-tab.active {
-    color: #1a1a1a; font-weight: 700;
-    border-bottom-color: #1a1a1a;
+    color: #e8410a; font-weight: 700;
+    border-bottom-color: #e8410a;
   }
   .pw-tab:hover:not(.active) { color: #333; }
 
@@ -246,14 +246,14 @@ const css = `
   }
   .pw-rating-left { text-align: center; flex-shrink: 0; }
   .pw-rating-big { font-size: 48px; font-weight: 800; line-height: 1; color: #1a1a1a; }
-  .pw-rating-stars-big { color: #334155; font-size: 18px; letter-spacing: 2px; display: block; margin: 6px 0 4px; }
+  .pw-rating-stars-big { color: #f59e0b; font-size: 18px; letter-spacing: 2px; display: block; margin: 6px 0 4px; }
   .pw-rating-hint { font-size: 12px; color: #aaa; }
 
   .pw-rating-bars { flex: 1; display: flex; flex-direction: column; gap: 5px; }
   .pw-bar-row { display: flex; align-items: center; gap: 8px; }
-  .pw-bar-stars { font-size: 12px; color: #334155; white-space: nowrap; width: 80px; }
+  .pw-bar-stars { font-size: 12px; color: #f59e0b; white-space: nowrap; width: 80px; }
   .pw-bar-track { flex: 1; height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden; }
-  .pw-bar-fill { height: 100%; background: #334155; border-radius: 3px; transition: width .3s; }
+  .pw-bar-fill { height: 100%; background: #f59e0b; border-radius: 3px; transition: width .3s; }
   .pw-bar-cnt { font-size: 12px; color: #aaa; width: 20px; text-align: right; }
 
   .pw-review-list { display: flex; flex-direction: column; }
@@ -266,13 +266,13 @@ const css = `
   }
   .pw-review-ava-fb {
     width: 46px; height: 46px; border-radius: 50%;
-    background: linear-gradient(135deg, #64748b, #475569);
+    background: linear-gradient(135deg, #e8410a, #ff7043);
     display: flex; align-items: center; justify-content: center;
     color: #fff; font-weight: 700; font-size: 17px; flex-shrink: 0;
   }
   .pw-review-author { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
   .pw-review-date { font-size: 12px; color: #aaa; }
-  .pw-review-rating { color: #334155; font-size: 15px; margin-left: auto; letter-spacing: 1px; }
+  .pw-review-rating { color: #f59e0b; font-size: 15px; margin-left: auto; letter-spacing: 1px; }
   .pw-review-rating-empty { color: #e0e0e0; }
   .pw-review-text { font-size: 14px; color: #333; line-height: 1.65; padding-left: 58px; }
 
@@ -545,7 +545,7 @@ export default function PublicWorkerProfilePage() {
                           onClick={() => setPage(i)}
                           style={{
                             width:36,height:36,borderRadius:'50%',border:'none',
-                            background: i===page ? '#1a1a1a' : 'none',
+                            background: i===page ? '#e8410a' : 'none',
                             color: i===page ? '#fff' : '#555',
                             cursor:'pointer', fontWeight: i===page?700:400,
                             fontSize:14,
@@ -568,7 +568,7 @@ export default function PublicWorkerProfilePage() {
                   <div className="pw-rating-big">{avgRatingStr.replace('.', ',')}</div>
                   <span className="pw-rating-stars-big">
                     {Array.from({length:5}).map((_,i) => (
-                      <span key={i} style={{ color: i < starsFilled ? '#334155' : '#e0e0e0' }}>★</span>
+                      <span key={i} style={{ color: i < starsFilled ? '#f59e0b' : '#e0e0e0' }}>★</span>
                     ))}
                   </span>
                   <div className="pw-rating-hint">рейтинг{reviews.length===0?' пока нет':''}</div>
