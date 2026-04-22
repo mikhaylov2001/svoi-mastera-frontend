@@ -289,17 +289,32 @@ function CustomerHome({ userId, userName }) {
     .av-promo-btn { width: 100%; background: #fff; border: none; border-radius: 7px; color: #e8410a; font-size: 13px; font-weight: 800; padding: 10px; cursor: pointer; font-family: Manrope, Arial, sans-serif; transition: background .15s; }
     .av-promo-btn:hover { background: #ffe8e0; }
 
-    /* ── HERO stats (в фоне, без карточки «Платформа») ── */
-    .av-hero-stats { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 0; margin-top: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; overflow: hidden; }
-    .av-hero-stat { padding: 14px 22px; text-align: center; border-right: 1px solid rgba(255,255,255,.08); }
-    .av-hero-stat:last-child { border-right: none; }
-    .av-hero-stat-num { font-size: 18px; font-weight: 900; color: #ff8a50; line-height: 1; letter-spacing: -0.3px; }
-    .av-hero-stat-lbl { font-size: 10px; color: rgba(255,255,255,.42); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-top: 5px; display: block; }
+    /* ── HERO: асимметрия, метрики справа (glass / bento) ── */
+    .av-hero-inner { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 56px 24px 60px; display: grid; grid-template-columns: 1fr minmax(260px, 300px); gap: 48px 40px; align-items: center; }
+    .av-hero-left { text-align: left; min-width: 0; }
+    .av-hero-badge-row { display: flex; justify-content: flex-start; margin-bottom: 20px; }
+    .av-hero-left h1 { font-family: Manrope, Arial, sans-serif; font-size: clamp(32px, 5vw, 54px); font-weight: 900; color: #fff; line-height: 1.06; margin: 0; letter-spacing: -1.2px; }
+    .av-hero-right { justify-self: end; width: 100%; max-width: 300px; }
+    .av-hero-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .av-hero-stat {
+      padding: 16px 14px 15px;
+      text-align: left;
+      background: linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.06);
+      transition: border-color .2s, box-shadow .2s, transform .2s;
+    }
+    .av-hero-stat:hover { border-color: rgba(232,65,10,.35); box-shadow: 0 8px 32px rgba(232,65,10,.12), inset 0 1px 0 rgba(255,255,255,.08); transform: translateY(-1px); }
+    .av-hero-stat-num { font-size: 22px; font-weight: 900; color: #ffb090; line-height: 1; letter-spacing: -0.5px; text-shadow: 0 0 28px rgba(232,65,10,.35); }
+    .av-hero-stat-lbl { font-size: 9px; color: rgba(255,255,255,.48); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-top: 8px; display: block; }
 
     @keyframes av-pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.35)} }
 
-    @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } }
-    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } .av-hero-stats { flex-direction: column; width: 100%; max-width: 320px; } .av-hero-stat { border-right: none; border-bottom: 1px solid rgba(255,255,255,.08); } .av-hero-stat:last-child { border-bottom: none; } }
+    @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } .av-hero-inner { grid-template-columns: 1fr; gap: 32px; padding: 44px 20px 48px; text-align: center; } .av-hero-left { text-align: center; } .av-hero-badge-row { justify-content: center; } .av-hero-right { justify-self: center; max-width: 340px; } }
+    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } .av-hero-stats { gap: 8px; } .av-hero-stat { padding: 14px 12px; border-radius: 14px; } .av-hero-stat-num { font-size: 19px; } }
   `;
 
   return (
@@ -314,24 +329,27 @@ function CustomerHome({ userId, userName }) {
         {/* Декоративные круги */}
         <div style={{position:'absolute',top:-80,left:-80,width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
 
-        <div style={{position:'relative',zIndex:1,maxWidth:900,margin:'0 auto',padding:'48px 24px 44px',textAlign:'center'}}>
-          {/* Бейдж */}
-          <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(232,65,10,.15)',border:'1px solid rgba(232,65,10,.3)',borderRadius:20,padding:'5px 14px',fontSize:11,fontWeight:800,color:'#ff8055',letterSpacing:'.08em',textTransform:'uppercase',marginBottom:20}}>
-            <span style={{width:6,height:6,borderRadius:'50%',background:'#ff5722',animation:'av-pulse-dot 2s infinite',display:'inline-block'}}/>
-            Йошкар-Ола · Проверенные мастера рядом
-          </div>
-
-          {/* Заголовок */}
-          <h1 style={{fontFamily:'Manrope,Arial,sans-serif',fontSize:54,fontWeight:900,color:'#fff',lineHeight:1.06,margin:'0 0 16px',letterSpacing:'-1.5px'}}>
-            Найдите мастера в <em style={{fontStyle:'normal',color:'#e8410a'}}>Йошкар-Оле</em><br/>за 10 минут
-          </h1>
-          <div className="av-hero-stats">
-            {[['24/7','Заявки'],['9','Категорий'],['5.0★','Рейтинг'],['≤10','Мин. отклик']].map(([n,l])=>(
-              <div key={l} className="av-hero-stat">
-                <span className="av-hero-stat-num">{n}</span>
-                <span className="av-hero-stat-lbl">{l}</span>
+        <div className="av-hero-inner">
+          <div className="av-hero-left">
+            <div className="av-hero-badge-row">
+              <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(232,65,10,.12)',border:'1px solid rgba(232,65,10,.28)',borderRadius:999,padding:'6px 16px',fontSize:11,fontWeight:800,color:'#ff9a7a',letterSpacing:'.07em',textTransform:'uppercase'}}>
+                <span style={{width:6,height:6,borderRadius:'50%',background:'#ff5722',animation:'av-pulse-dot 2s infinite',display:'inline-block',flexShrink:0}}/>
+                Йошкар-Ола · Проверенные мастера рядом
               </div>
-            ))}
+            </div>
+            <h1>
+              Найдите мастера в <em style={{fontStyle:'normal',color:'#e8410a'}}>Йошкар-Оле</em><br/>за 10 минут
+            </h1>
+          </div>
+          <div className="av-hero-right">
+            <div className="av-hero-stats" aria-label="Показатели сервиса">
+              {[['24/7','Заявки'],['9','Категорий'],['5.0★','Рейтинг'],['≤10','Мин. отклик']].map(([n,l])=>(
+                <div key={l} className="av-hero-stat">
+                  <span className="av-hero-stat-num">{n}</span>
+                  <span className="av-hero-stat-lbl">{l}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
