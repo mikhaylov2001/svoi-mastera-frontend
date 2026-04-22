@@ -313,46 +313,56 @@ function CustomerHome({ userId, userName }) {
     /* ═══ HERO ═══ */
     .av-hero-wrap {
       background:
-        radial-gradient(ellipse 60% 80% at 50% -10%, rgba(232,65,10,.18) 0%, transparent 60%),
-        linear-gradient(180deg, #111110 0%, #0e0d0c 100%);
+        radial-gradient(ellipse 70% 60% at 50% 0%, rgba(232,65,10,.22) 0%, transparent 65%),
+        linear-gradient(180deg, #0f0e0d 0%, #0c0b0a 100%);
       position: relative;
       overflow: hidden;
     }
-    /* тонкая точечная сетка */
     .av-hero-grid {
       position: absolute; inset: 0; pointer-events: none;
-      background-image: radial-gradient(rgba(255,255,255,.055) 1px, transparent 1px);
-      background-size: 28px 28px;
-      mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 75%, transparent 100%);
-      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 75%, transparent 100%);
+      background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
     }
-    .av-hero-glow-top { position: absolute; top: -200px; left: 50%; transform: translateX(-50%); width: 900px; height: 500px; background: radial-gradient(ellipse, rgba(232,65,10,.14) 0%, transparent 68%); pointer-events: none; }
+    .av-hero-glow-top { position: absolute; top: -180px; left: 50%; transform: translateX(-50%); width: 1000px; height: 560px; background: radial-gradient(ellipse, rgba(232,65,10,.16) 0%, transparent 65%); pointer-events: none; }
 
     /* центрированный контент */
-    .av-hero-inner { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 80px 24px 0; text-align: center; }
-    .av-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 7px 16px; margin-bottom: 28px; }
+    .av-hero-inner { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 96px 24px 0; text-align: center; }
+    .av-hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.11); border-radius: 999px; padding: 7px 16px; margin-bottom: 32px; }
     .av-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #e8410a; animation: av-pulse-dot 2s infinite; flex-shrink: 0; }
-    .av-hero-badge-text { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.65); letter-spacing: .04em; }
+    .av-hero-badge-text { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.6); letter-spacing: .05em; }
     .av-hero-h1 {
       font-family: Manrope, Arial, sans-serif;
-      font-size: clamp(38px, 6vw, 68px);
+      font-size: clamp(48px, 8.5vw, 92px);
       font-weight: 900;
       color: #fff;
-      line-height: 1.02;
-      margin: 0 0 20px;
-      letter-spacing: -2.5px;
+      line-height: 0.97;
+      margin: 0 0 28px;
+      letter-spacing: -3.5px;
     }
-    .av-hero-h1 em { font-style: normal; color: #e8410a; }
+    .av-hero-h1 .h1-line2 {
+      display: block;
+      color: #e8410a;
+      font-size: 1.05em;
+    }
+    .av-hero-h1 .h1-line3 {
+      display: block;
+      font-size: 0.78em;
+      color: rgba(255,255,255,.88);
+      font-weight: 800;
+      letter-spacing: -2px;
+      margin-top: 8px;
+    }
     .av-hero-sub {
       font-size: 17px;
-      color: rgba(255,255,255,.45);
+      color: rgba(255,255,255,.4);
       font-weight: 400;
-      margin: 0 auto 36px;
-      line-height: 1.6;
-      max-width: 480px;
-      letter-spacing: .01em;
+      margin: 0 auto 40px;
+      line-height: 1.65;
+      max-width: 440px;
     }
-    .av-hero-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 64px; }
+    .av-hero-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 80px; }
     .av-hero-btn-primary {
       display: inline-flex; align-items: center; gap: 10px;
       background: #e8410a; color: #fff; border: none;
@@ -416,11 +426,12 @@ function CustomerHome({ userId, userName }) {
             <span className="av-hero-badge-text">Йошкар-Ола · Проверенные мастера рядом</span>
           </div>
           <h1 className="av-hero-h1">
-            Найдите мастера<br/>в <em>Йошкар-Оле</em><br/>за&nbsp;10&nbsp;минут
+            Найдите мастера
+            <span className="h1-line2">в Йошкар-Оле</span>
+            <span className="h1-line3">за&nbsp;10&nbsp;минут</span>
           </h1>
           <p className="av-hero-sub">
-            Ремонт, сантехника, уборка и ещё 6 категорий.<br/>
-            Первый отклик — в течение 10 минут.
+            Ремонт, сантехника, красота и ещё 6 категорий — первый отклик в течение 10 минут
           </p>
           <div className="av-hero-actions">
             <button className="av-hero-btn-primary" onClick={()=>navigate('/categories')}>
