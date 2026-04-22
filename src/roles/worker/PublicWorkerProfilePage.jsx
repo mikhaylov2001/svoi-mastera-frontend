@@ -504,7 +504,13 @@ export default function PublicWorkerProfilePage() {
                         <div
                           key={item.id}
                           className="pw-card"
-                          onClick={hasPhoto ? () => setLightbox({ photos: item.photos, index: 0 }) : undefined}
+                          onClick={() => {
+                            if (tab === 'active' && item.id) {
+                              navigate(`/listings/${item.id}`);
+                              return;
+                            }
+                            if (hasPhoto) setLightbox({ photos: item.photos, index: 0 });
+                          }}
                         >
                           <div className="pw-card-img-wrap">
                             {hasPhoto
