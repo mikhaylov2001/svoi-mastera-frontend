@@ -140,15 +140,7 @@ const css = `
     padding: 3px 9px; border-radius: 20px;
   }
 
-  .cp2-card-emoji-wrap {
-    position: absolute; bottom: -20px; left: 16px;
-    width: 44px; height: 44px; border-radius: 12px;
-    background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.12);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px;
-  }
-
-  .cp2-card-body { padding: 28px 16px 16px; flex: 1; display: flex; flex-direction: column; }
+  .cp2-card-body { padding: 16px 16px 16px; flex: 1; display: flex; flex-direction: column; }
   .cp2-card-name { font-size: 16px; font-weight: 800; color: #111; margin-bottom: 5px; line-height: 1.25; }
   .cp2-card-desc { font-size: 13px; color: #777; line-height: 1.55; flex: 1; margin-bottom: 14px; }
 
@@ -208,7 +200,6 @@ export default function CategoriesPage() {
               <div className="cp2-card-img">
                 <img src={cat.photo} alt={cat.name} />
                 <div className="cp2-card-badge">{cat.masters}</div>
-                <div className="cp2-card-emoji-wrap">{cat.emoji}</div>
               </div>
 
               <div className="cp2-card-body">

@@ -13,23 +13,11 @@ Object.entries(CATEGORIES_BY_SECTION).forEach(([sectionSlug, cats]) => {
   });
 });
 
-const CAT_TIPS = {
-  'remont-kvartir': ['Укажите площадь помещения', 'Опишите материалы (если уже выбраны)', 'Приложите фото — мастер оценит объём'],
-  'santehnika': ['Укажите тип работы: замена, установка, ремонт', 'Приложите фото протечки или неисправности', 'Напишите марку оборудования при наличии'],
-  'elektrika': ['Опишите проблему или что нужно сделать', 'Укажите тип щитка и количество розеток', 'Приложите фото для точной оценки'],
-  'uborka': ['Укажите площадь и тип уборки', 'Опишите особые пожелания (гипоаллергенные средства и т.д.)', 'Напишите удобное время'],
-  'parikhmaher': ['Опишите желаемую причёску или процедуру', 'Укажите длину и тип волос', 'Можно приложить фото желаемого результата'],
-  'manikur': ['Укажите вид маникюра/педикюра', 'Опишите дизайн или приложите фото', 'Укажите нужна ли гелевая база'],
-  'krasota-i-zdorovie': ['Опишите процедуру и желаемый результат', 'Укажите есть ли противопоказания', 'Приложите фото при необходимости'],
-  'repetitorstvo': ['Укажите предмет, класс и цель (ОГЭ/ЕГЭ/общее развитие)', 'Опишите текущий уровень знаний', 'Укажите формат: онлайн или очно'],
-  'kompyuternaya-pomosh': ['Опишите проблему максимально подробно', 'Укажите марку и ОС устройства', 'Приложите скриншот ошибки при возможности'],
-};
-
 const URGENCY_OPTIONS = [
   { value: '', label: 'Не важно' },
-  { value: 'urgent', label: '🔥 Срочно (сегодня-завтра)' },
-  { value: 'week', label: '📅 На этой неделе' },
-  { value: 'month', label: '🗓 В течение месяца' },
+  { value: 'urgent', label: 'Срочно (сегодня–завтра)' },
+  { value: 'week', label: 'На этой неделе' },
+  { value: 'month', label: 'В течение месяца' },
 ];
 
 const css = `
@@ -44,7 +32,11 @@ const css = `
   .cp-hero-back { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: rgba(255,255,255,.75); text-decoration: none; background: none; border: none; font-family: inherit; cursor: pointer; padding: 0; margin-bottom: 10px; transition: color .15s; }
   .cp-hero-back:hover { color: #fff; }
   .cp-hero-row { display: flex; align-items: center; gap: 14px; }
-  .cp-hero-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; background: rgba(255,255,255,.18); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.25); }
+  .cp-hero-thumb-wrap {
+    width: 52px; height: 52px; border-radius: 12px; overflow: hidden; flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,.4); box-shadow: 0 4px 16px rgba(0,0,0,.35);
+  }
+  .cp-hero-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
   .cp-hero-title { font-size: 24px; font-weight: 900; color: #fff; margin: 0 0 3px; }
   .cp-hero-sub { font-size: 14px; color: rgba(255,255,255,.75); margin: 0; }
 
@@ -63,16 +55,15 @@ const css = `
   .cp-photo-cell.main-photo { grid-column: span 2; grid-row: span 2; }
   .cp-photo-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
   .cp-photo-cell.filled:hover .cp-photo-img { transform: scale(1.05); }
-  .cp-photo-num { font-size: 11px; font-weight: 600; color: #aaa; margin-top: 4px; }
-  .cp-photo-add-icon { font-size: 28px; opacity: .5; }
+  .cp-photo-slot-title { font-size: 12px; font-weight: 700; color: #888; text-align: center; line-height: 1.25; }
+  .cp-photo-slot-sub { font-size: 11px; color: #bbb; margin-top: 2px; }
   .cp-photo-del { position: absolute; top: 5px; right: 5px; width: 26px; height: 26px; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; opacity: 0; transition: opacity .15s, background .15s; z-index: 2; }
   .cp-photo-cell.filled:hover .cp-photo-del { opacity: 1; }
   .cp-photo-del:hover { background: #dc2626 !important; }
   .cp-photo-main-badge { position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,.5); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
-  .cp-photo-zoom { position: absolute; inset: 0; background: rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; font-size: 20px; color: #fff; }
+  .cp-photo-zoom { position: absolute; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; }
+  .cp-photo-zoom-text { font-size: 12px; font-weight: 700; color: #fff; letter-spacing: .04em; text-transform: uppercase; }
   .cp-photo-cell.filled:hover .cp-photo-zoom { opacity: 1; }
-  .cp-photo-hint { font-size: 12px; color: #aaa; margin-top: 10px; }
-
   /* ── LIGHTBOX ── */
   .cp-lb { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.94); display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .cp-lb-img-wrap { position: relative; max-width: 92vw; max-height: 82vh; display: flex; align-items: center; justify-content: center; }
@@ -103,7 +94,6 @@ const css = `
   }
   .cp-field input.err { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.08); }
   .cp-field textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
-  .cp-field-hint { font-size: 12px; color: #aaa; margin-top: 5px; line-height: 1.4; }
   .cp-field-err { font-size: 12px; color: #ef4444; margin-top: 4px; font-weight: 600; }
   .cp-fields-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .cp-fields-row3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
@@ -132,14 +122,9 @@ const css = `
   .cp-sb-title { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
   .cp-sb-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #555; padding: 8px 0; border-bottom: 1px solid #f5f5f5; line-height: 1.5; }
   .cp-sb-item:last-child { border-bottom: none; padding-bottom: 0; }
-  .cp-sb-ico { font-size: 18px; flex-shrink: 0; }
   .cp-steps { display: flex; flex-direction: column; gap: 10px; }
   .cp-step { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; color: #555; }
   .cp-step-num { width: 24px; height: 24px; border-radius: 50%; background: #e8410a; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
-  .cp-tips-list { display: flex; flex-direction: column; gap: 6px; }
-  .cp-tip-item { font-size: 12px; color: #666; padding-left: 14px; position: relative; line-height: 1.5; }
-  .cp-tip-item::before { content: '💡'; position: absolute; left: 0; font-size: 11px; }
-
   /* urgency */
   .cp-urgency { display: flex; flex-wrap: wrap; gap: 8px; }
   .cp-urgency-opt { padding: 8px 14px; border: 1.5px solid #e0e0e0; border-radius: 20px; font-size: 13px; font-weight: 500; color: #555; cursor: pointer; transition: all .15s; background: #fff; font-family: inherit; }
@@ -187,7 +172,6 @@ export default function CategoryPage() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [apiCategoryId, setApiCategoryId] = useState(null);
   const [lightbox, setLightbox] = useState(null); // { index: 0 }
-  const tips = CAT_TIPS[slug] || [];
 
   // ── Keyboard for lightbox ──
   const handleLbKey = useCallback((e) => {
@@ -301,7 +285,7 @@ export default function CategoryPage() {
     setStatus('sending');
     try {
       const desc = form.urgency
-        ? `${form.description.trim()}\n\n⏰ Срочность: ${URGENCY_OPTIONS.find(o => o.value === form.urgency)?.label || form.urgency}`
+        ? `${form.description.trim()}\n\nСрочность: ${URGENCY_OPTIONS.find(o => o.value === form.urgency)?.label || form.urgency}`
         : form.description.trim();
       await createJobRequest(userId, {
         categoryId,
@@ -333,9 +317,9 @@ export default function CategoryPage() {
         <style>{css}</style>
         <div style={{ padding: '40px 20px' }}>
           <div className="cp-success">
-            <div className="cp-success-ico">🎉</div>
+            <div className="cp-success-ico" style={{ fontSize: 48, fontWeight: 800, color: '#22c55e' }}>✓</div>
             <h2>Заявка опубликована!</h2>
-            <p>Мастера уже видят вашу задачу{form.photos.length > 0 ? ' и фотографии' : ''}. Первые отклики обычно приходят в течение <strong>10 минут</strong>.</p>
+            <p>Мастера уже видят вашу задачу{form.photos.length > 0 ? ' и фотографии' : ''}.</p>
             <div className="cp-success-btns">
               <Link to="/deals" className="cp-success-btn-primary">Перейти к сделкам →</Link>
               <button className="cp-success-btn-outline" onClick={() => { setStatus('idle'); setForm(EMPTY_FORM); }}>Создать ещё</button>
@@ -362,10 +346,14 @@ export default function CategoryPage() {
         <div className="cp-hero-body">
           <Link to={`/sections/${sectionSlug}`} className="cp-hero-back">← Назад к категориям</Link>
           <div className="cp-hero-row">
-            <div className="cp-hero-icon">{category.emoji}</div>
+            {category.photo && (
+              <div className="cp-hero-thumb-wrap">
+                <img src={category.photo} alt="" className="cp-hero-thumb" />
+              </div>
+            )}
             <div>
               <h1 className="cp-hero-title">{category.name}</h1>
-              <p className="cp-hero-sub">Опишите задачу — мастера откликнутся сами</p>
+              {category.desc && <p className="cp-hero-sub">{category.desc}</p>}
             </div>
           </div>
         </div>
@@ -374,7 +362,7 @@ export default function CategoryPage() {
       <div className="cp-wrap">
         {/* ═══ ФОРМА ═══ */}
         <div>
-          {error && <div className="cp-error">⚠️ {error}</div>}
+          {error && <div className="cp-error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
 
@@ -401,7 +389,7 @@ export default function CategoryPage() {
                         >
                           <img src={photo.data} alt="" className="cp-photo-img" />
                           {i === 0 && <span className="cp-photo-main-badge">Главное</span>}
-                          <div className="cp-photo-zoom">🔍</div>
+                          <div className="cp-photo-zoom"><span className="cp-photo-zoom-text">Просмотр</span></div>
                           <button
                             type="button"
                             className="cp-photo-del"
@@ -417,8 +405,8 @@ export default function CategoryPage() {
                         style={isDragging ? { borderColor: '#e8410a', background: '#fff5f2' } : {}}
                         onClick={() => photoInputRef.current?.click()}
                       >
-                        <span className="cp-photo-add-icon">{i === 0 ? '📷' : '+'}</span>
-                        <span className="cp-photo-num">{i === 0 ? 'Добавить фото' : `Фото ${i + 1}`}</span>
+                        <div className="cp-photo-slot-title">{i === 0 ? 'Добавить фото' : `Фото ${i + 1}`}</div>
+                        <div className="cp-photo-slot-sub">до 10 МБ</div>
                       </div>
                     );
                   })}
@@ -431,11 +419,6 @@ export default function CategoryPage() {
                   style={{ display: 'none' }}
                   onChange={e => { handlePhotoUpload(e.target.files); e.target.value = ''; }}
                 />
-                <p className="cp-photo-hint">
-                  {photos.length > 0
-                    ? `${photos.length}/5 фото добавлено · Нажмите на фото чтобы просмотреть`
-                    : 'Перетащите файлы сюда или кликните по ячейке · PNG, JPG до 10 МБ'}
-                </p>
               </div>
             </div>
 
@@ -447,13 +430,12 @@ export default function CategoryPage() {
                   <label>Название задачи *</label>
                   <input
                     name="title"
-                    placeholder={`Например: «${category.name}»`}
+                    placeholder="Название задачи"
                     value={form.title}
                     onChange={e => { setError(''); setForm(p => ({ ...p, title: e.target.value })); }}
                     maxLength={120}
                     required
                   />
-                  <span className="cp-field-hint">Коротко и конкретно: что нужно сделать</span>
                 </div>
                 <div className="cp-field">
                   <div className="cp-field-top">
@@ -464,18 +446,13 @@ export default function CategoryPage() {
                   </div>
                   <textarea
                     name="description"
-                    placeholder="Подробно опишите что нужно сделать: объём работы, материалы, особые пожелания…"
+                    placeholder="Описание"
                     value={form.description}
                     onChange={e => { setError(''); setForm(p => ({ ...p, description: e.target.value })); }}
                     maxLength={MAX_DESC}
                     rows={5}
                     required
                   />
-                  {tips.length > 0 && (
-                    <div className="cp-tips-list" style={{ marginTop: 8 }}>
-                      {tips.map((t, i) => <span key={i} className="cp-tip-item">{t}</span>)}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -499,7 +476,6 @@ export default function CategoryPage() {
                       className="cp-city-input"
                       readOnly
                     />
-                    <span className="cp-field-hint">📍 Йошкар-Ола, Республика Марий Эл</span>
                   </div>
 
                   {/* Улица + дом + кв */}
@@ -507,7 +483,7 @@ export default function CategoryPage() {
                     <div className="cp-field" style={{ margin: 0 }}>
                       <label style={{ fontSize: 13, color: '#555', fontWeight: 600 }}>Улица *</label>
                       <input
-                        placeholder="Ленина"
+                        placeholder=""
                         value={form.addr.street}
                         onChange={e => setAddr('street', e.target.value)}
                         className={fieldErrors.street ? 'err' : ''}
@@ -517,7 +493,7 @@ export default function CategoryPage() {
                     <div className="cp-field" style={{ margin: 0 }}>
                       <label style={{ fontSize: 13, color: '#555', fontWeight: 600 }}>Дом *</label>
                       <input
-                        placeholder="12"
+                        placeholder=""
                         value={form.addr.house}
                         onChange={e => setAddr('house', e.target.value)}
                         className={fieldErrors.house ? 'err' : ''}
@@ -527,19 +503,13 @@ export default function CategoryPage() {
                     <div className="cp-field" style={{ margin: 0 }}>
                       <label style={{ fontSize: 13, color: '#888', fontWeight: 500 }}>Кв./офис</label>
                       <input
-                        placeholder="45"
+                        placeholder=""
                         value={form.addr.apt}
                         onChange={e => setAddr('apt', e.target.value)}
                       />
                     </div>
                   </div>
 
-                  {/* Превью собранного адреса */}
-                  {(form.addr.street || form.addr.house) && (
-                    <div style={{ marginTop: 8, padding: '8px 12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 6, fontSize: 13, color: '#166534' }}>
-                      📍 {[form.addr.city, form.addr.street, form.addr.house ? `д. ${form.addr.house}` : '', form.addr.apt ? `кв. ${form.addr.apt}` : ''].filter(Boolean).join(', ')}
-                    </div>
-                  )}
                 </div>
 
                 {/* Срочность */}
@@ -565,39 +535,17 @@ export default function CategoryPage() {
             <div className="cp-card">
               <div className="cp-card-title">Предварительная цена</div>
               <div className="cp-price-block">
-                <div className="cp-price-row" style={{ marginBottom: 12 }}>
-                  <div className="cp-field" style={{ margin: 0 }}>
-                    <label>Ваш бюджет, ₽ *</label>
-                    <input
-                      name="budget"
-                      type="number"
-                      min="1"
-                      placeholder="Например: 3 000"
-                      value={form.budget}
-                      onChange={e => { setError(''); setForm(p => ({ ...p, budget: e.target.value })); }}
-                      required
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                    {form.budget && Number(form.budget) > 0 ? (
-                      <div style={{ padding: '12px 14px', background: '#f0fdf4', border: '1.5px solid #bbf7d0', borderRadius: 8 }}>
-                        <div style={{ fontSize: 13, color: '#166534', fontWeight: 600 }}>
-                          ✅ Мастера увидят: <strong>{Number(form.budget).toLocaleString('ru-RU')} ₽</strong>
-                        </div>
-                        <div style={{ fontSize: 12, color: '#16a34a', marginTop: 3 }}>
-                          Они смогут принять или предложить свою цену
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ padding: '12px 14px', background: '#fafafa', border: '1.5px solid #e8e8e8', borderRadius: 8 }}>
-                        <div style={{ fontSize: 13, color: '#aaa' }}>Укажите сумму — мастера её увидят</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div style={{ fontSize: 13, color: '#888', lineHeight: 1.6, background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8, padding: '12px 14px' }}>
-                  <strong style={{ color: '#555' }}>Как работает цена:</strong> Ваш бюджет показывается мастерам.
-                  Мастер может нажать <em>«Готов за эту сумму»</em> или предложит другую цену — вы сравните и выберете.
+                <div className="cp-field" style={{ margin: 0 }}>
+                  <label>Ваш бюджет, ₽ *</label>
+                  <input
+                    name="budget"
+                    type="number"
+                    min="1"
+                    placeholder="0"
+                    value={form.budget}
+                    onChange={e => { setError(''); setForm(p => ({ ...p, budget: e.target.value })); }}
+                    required
+                  />
                 </div>
               </div>
             </div>
@@ -606,14 +554,11 @@ export default function CategoryPage() {
             <div className="cp-card">
               <div className="cp-submit-card">
                 <button type="submit" className="cp-btn-submit" disabled={status === 'sending'}>
-                  {status === 'sending' ? '⏳ Публикуем заявку…' : '📤 Опубликовать заявку мастерам'}
+                  {status === 'sending' ? 'Публикуем заявку…' : 'Опубликовать заявку мастерам'}
                 </button>
                 {!userId && (
                   <p className="cp-form-auth">Для отправки нужно <Link to="/login">войти в аккаунт</Link></p>
                 )}
-                <p style={{ fontSize: 12, color: '#bbb', textAlign: 'center', marginTop: 10, marginBottom: 0 }}>
-                  Размещение бесплатно · Мастера видят заявку сразу после публикации
-                </p>
               </div>
             </div>
 
@@ -623,7 +568,7 @@ export default function CategoryPage() {
         {/* ═══ САЙДБАР ═══ */}
         <div className="cp-sidebar">
           <div className="cp-sb-card">
-            <div className="cp-sb-title">⚡ Как это работает</div>
+            <div className="cp-sb-title">Как это работает</div>
             <div className="cp-steps">
               {[
                 ['Опубликуйте задачу', 'Опишите что нужно сделать и укажите бюджет'],
@@ -643,14 +588,13 @@ export default function CategoryPage() {
           </div>
 
           <div className="cp-sb-card">
-            <div className="cp-sb-title">🔒 Ваша безопасность</div>
+            <div className="cp-sb-title">Ваша безопасность</div>
             {[
-              ['🛡', 'Безопасная сделка', 'Оплата поступает мастеру только после вашего подтверждения'],
-              ['⭐', 'Проверенные мастера', 'Реальные отзывы — только от реальных заказчиков'],
-              ['💬', 'Прямая связь', 'Переписывайтесь с мастерами в чате до начала работ'],
-            ].map(([ico, title, desc]) => (
+              ['Безопасная сделка', 'Оплата поступает мастеру только после вашего подтверждения'],
+              ['Проверенные мастера', 'Реальные отзывы — только от реальных заказчиков'],
+              ['Прямая связь', 'Переписывайтесь с мастерами в чате до начала работ'],
+            ].map(([title, desc]) => (
               <div key={title} className="cp-sb-item">
-                <span className="cp-sb-ico">{ico}</span>
                 <div>
                   <div style={{ fontWeight: 600, color: '#333', marginBottom: 2 }}>{title}</div>
                   <div style={{ color: '#888', fontSize: 12 }}>{desc}</div>
@@ -658,15 +602,6 @@ export default function CategoryPage() {
               </div>
             ))}
           </div>
-
-          {tips.length > 0 && (
-            <div className="cp-sb-card">
-              <div className="cp-sb-title">💡 Советы для {category.name.toLowerCase()}</div>
-              <div className="cp-tips-list">
-                {tips.map((t, i) => <span key={i} className="cp-tip-item">{t}</span>)}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
