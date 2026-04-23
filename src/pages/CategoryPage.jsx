@@ -170,7 +170,7 @@ const css = `
 
 const MAX_DESC = 2000;
 
-const EMPTY_ADDR = { city: 'Йошкар-Ола', street: '', house: '', apt: '' };
+const EMPTY_ADDR = { city: 'Йошкар-Ола', street: '', apt: '' };
 const EMPTY_FORM = { title: '', description: '', addr: EMPTY_ADDR, budget: '', urgency: '', photos: [] };
 
 export default function CategoryPage() {
@@ -278,8 +278,7 @@ export default function CategoryPage() {
     e.preventDefault();
     setError('');
     const fe = {};
-    if (!form.addr.street.trim()) fe.street = 'Укажите улицу';
-    if (!form.addr.house.trim())  fe.house  = 'Укажите дом';
+    if (!form.addr.street.trim()) fe.street = 'Укажите улицу и номер дома';
     if (Object.keys(fe).length) { setFieldErrors(fe); setError('Заполните все обязательные поля адреса'); return; }
     if (!userId) { navigate('/login'); return; }
     if (!form.title.trim()) { setError('Укажите название задачи'); return; }
@@ -297,7 +296,7 @@ export default function CategoryPage() {
       } catch { setError('Не удалось загрузить категории'); return; }
     }
 
-    const parts = [form.addr.city, form.addr.street.trim(), `д. ${form.addr.house.trim()}`];
+    const parts = [form.addr.city, form.addr.street.trim()];
     if (form.addr.apt.trim()) parts.push(`кв. ${form.addr.apt.trim()}`);
     const addressText = parts.join(', ');
 
@@ -495,7 +494,7 @@ export default function CategoryPage() {
               <div className="cp-card-title">Место и сроки</div>
               <div className="cp-fields">
 
-                {/* Строка 1: улица (широкая) | дом | квартира */}
+                {/* Улица и дом одной строкой + квартира */}
                 <div>
                   <label style={{ fontSize: 14, fontWeight: 600, color: '#333', display: 'block', marginBottom: 8 }}>
                     Адрес выполнения *
@@ -512,10 +511,10 @@ export default function CategoryPage() {
                     <span className="cp-field-hint">📍 Йошкар-Ола, Республика Марий Эл</span>
                   </div>
 
-                  {/* Улица + дом + кв */}
-                  <div className="cp-fields-row3">
+                  {/* Улица (с номером дома) + кв */}
+                  <div className="cp-fields-row2" style={{ gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)' }}>
                     <div className="cp-field" style={{ margin: 0 }}>
-                      <label style={{ fontSize: 13, color: '#555', fontWeight: 600 }}>Улица *</label>
+                      <label style={{ fontSize: 13, color: '#555', fontWeight: 600 }}>Улица и дом *</label>
                       <input
                         placeholder=""
                         value={form.addr.street}
@@ -523,16 +522,6 @@ export default function CategoryPage() {
                         className={fieldErrors.street ? 'err' : ''}
                       />
                       {fieldErrors.street && <span className="cp-field-err">{fieldErrors.street}</span>}
-                    </div>
-                    <div className="cp-field" style={{ margin: 0 }}>
-                      <label style={{ fontSize: 13, color: '#555', fontWeight: 600 }}>Дом *</label>
-                      <input
-                        placeholder=""
-                        value={form.addr.house}
-                        onChange={e => setAddr('house', e.target.value)}
-                        className={fieldErrors.house ? 'err' : ''}
-                      />
-                      {fieldErrors.house && <span className="cp-field-err">{fieldErrors.house}</span>}
                     </div>
                     <div className="cp-field" style={{ margin: 0 }}>
                       <label style={{ fontSize: 13, color: '#888', fontWeight: 500 }}>Кв./офис</label>
@@ -544,9 +533,9 @@ export default function CategoryPage() {
                     </div>
                   </div>
 
-                  {(form.addr.street || form.addr.house) && (
+                  {form.addr.street.trim() && (
                     <div style={{ marginTop: 8, padding: '8px 12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 6, fontSize: 13, color: '#166534' }}>
-                      📍 {[form.addr.city, form.addr.street, form.addr.house ? `д. ${form.addr.house}` : '', form.addr.apt ? `кв. ${form.addr.apt}` : ''].filter(Boolean).join(', ')}
+                      📍 {[form.addr.city, form.addr.street.trim(), form.addr.apt.trim() ? `кв. ${form.addr.apt.trim()}` : ''].filter(Boolean).join(', ')}
                     </div>
                   )}
                 </div>
