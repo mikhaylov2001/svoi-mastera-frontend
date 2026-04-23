@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { createJobRequest, getCategories } from '../api';
 import { useAuth } from '../context/AuthContext';
@@ -34,62 +34,88 @@ const URGENCY_OPTIONS = [
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-  .cp-page { background: #f7f7f7; min-height: 100vh; font-family: Inter, Arial, sans-serif; }
-  .cp-breadcrumb { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 10px 0; }
-  .cp-breadcrumb-inner { max-width: 1080px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 6px; font-size: 13px; color: #999; }
-  .cp-breadcrumb-link { color: #555; text-decoration: none; }
-  .cp-breadcrumb-link:hover { text-decoration: underline; }
-  .cp-header { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 20px 0; }
-  .cp-header-inner { max-width: 1080px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 14px; }
-  .cp-header-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
-  .cp-header-title { font-size: 22px; font-weight: 800; color: #111; margin: 0 0 3px; }
-  .cp-header-sub { font-size: 14px; color: #999; margin: 0; }
-  .cp-wrap { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: flex-start; }
+  .cp-page { background: #f2f2f2; min-height: 100vh; font-family: Inter, Arial, sans-serif; }
 
-  /* ── CARD секции ── */
+  /* ── HERO HEADER ── */
+  .cp-hero { position: relative; height: 180px; overflow: hidden; }
+  .cp-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.55) saturate(1.1); }
+  .cp-hero-overlay { position: absolute; inset: 0; background: linear-gradient(175deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.6) 100%); }
+  .cp-hero-body { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 20px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 24px; }
+  .cp-hero-back { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: rgba(255,255,255,.75); text-decoration: none; background: none; border: none; font-family: inherit; cursor: pointer; padding: 0; margin-bottom: 10px; transition: color .15s; }
+  .cp-hero-back:hover { color: #fff; }
+  .cp-hero-row { display: flex; align-items: center; gap: 14px; }
+  .cp-hero-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; background: rgba(255,255,255,.18); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.25); }
+  .cp-hero-title { font-size: 24px; font-weight: 900; color: #fff; margin: 0 0 3px; }
+  .cp-hero-sub { font-size: 14px; color: rgba(255,255,255,.75); margin: 0; }
+
+  .cp-wrap { max-width: 1080px; margin: 0 auto; padding: 20px 20px 60px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: flex-start; }
+
+  /* ── CARD ── */
   .cp-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; margin-bottom: 12px; overflow: hidden; }
   .cp-card-title { font-size: 16px; font-weight: 700; color: #111; padding: 18px 20px 0; margin-bottom: 16px; }
 
-  /* ── ФОТО ── */
+  /* ── ФОТО СЕТКА ── */
   .cp-photos { padding: 18px 20px 20px; }
-  .cp-photo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 0; }
+  .cp-photo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
   .cp-photo-cell { aspect-ratio: 1; border-radius: 8px; overflow: hidden; position: relative; border: 1.5px dashed #d0d0d0; background: #fafafa; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all .18s; }
   .cp-photo-cell:hover { border-color: #e8410a; background: #fff5f2; }
-  .cp-photo-cell.filled { border: none; cursor: default; }
-  .cp-photo-cell.main-photo { grid-column: span 2; grid-row: span 2; aspect-ratio: auto; aspect-ratio: 1; }
-  .cp-photo-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cp-photo-cell.filled { border: none; cursor: zoom-in; }
+  .cp-photo-cell.main-photo { grid-column: span 2; grid-row: span 2; }
+  .cp-photo-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+  .cp-photo-cell.filled:hover .cp-photo-img { transform: scale(1.05); }
   .cp-photo-num { font-size: 11px; font-weight: 600; color: #aaa; margin-top: 4px; }
   .cp-photo-add-icon { font-size: 28px; opacity: .5; }
-  .cp-photo-add-text { font-size: 11px; color: #aaa; margin-top: 4px; text-align: center; line-height: 1.3; padding: 0 6px; }
-  .cp-photo-del { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; font-size: 14px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; opacity: 0; transition: opacity .15s; }
+  .cp-photo-del { position: absolute; top: 5px; right: 5px; width: 26px; height: 26px; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; opacity: 0; transition: opacity .15s, background .15s; z-index: 2; }
   .cp-photo-cell.filled:hover .cp-photo-del { opacity: 1; }
+  .cp-photo-del:hover { background: #dc2626 !important; }
   .cp-photo-main-badge { position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,.5); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+  .cp-photo-zoom { position: absolute; inset: 0; background: rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; font-size: 20px; color: #fff; }
+  .cp-photo-cell.filled:hover .cp-photo-zoom { opacity: 1; }
   .cp-photo-hint { font-size: 12px; color: #aaa; margin-top: 10px; }
+
+  /* ── LIGHTBOX ── */
+  .cp-lb { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.94); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .cp-lb-img-wrap { position: relative; max-width: 92vw; max-height: 82vh; display: flex; align-items: center; justify-content: center; }
+  .cp-lb-img { max-width: 90vw; max-height: 80vh; border-radius: 8px; box-shadow: 0 24px 80px rgba(0,0,0,.5); display: block; object-fit: contain; }
+  .cp-lb-close { position: fixed; top: 18px; right: 18px; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; }
+  .cp-lb-close:hover { background: rgba(255,255,255,.28); }
+  .cp-lb-counter { position: fixed; top: 22px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: 14px; font-weight: 700; padding: 6px 18px; border-radius: 20px; }
+  .cp-lb-btn { position: fixed; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; }
+  .cp-lb-btn:hover { background: rgba(255,255,255,.3); }
+  .cp-lb-prev { left: 18px; }
+  .cp-lb-next { right: 18px; }
+  .cp-lb-thumbs { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+  .cp-lb-thumb { width: 56px; height: 42px; border-radius: 6px; overflow: hidden; cursor: pointer; border: 2px solid transparent; opacity: .55; transition: all .2s; }
+  .cp-lb-thumb.active { border-color: #fff; opacity: 1; }
+  .cp-lb-thumb:hover { opacity: .85; }
+  .cp-lb-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
   /* ── ФОРМА ПОЛЯ ── */
   .cp-fields { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 16px; }
   .cp-field label { display: block; font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; }
-  .cp-field input, .cp-field textarea, .cp-field select {
+  .cp-field input, .cp-field textarea {
     width: 100%; padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 8px;
     font-size: 15px; font-family: inherit; color: #111; outline: none; box-sizing: border-box;
-    transition: border-color .15s, box-shadow .15s;
-    background: #fff;
+    transition: border-color .15s, box-shadow .15s; background: #fff;
   }
-  .cp-field input:focus, .cp-field textarea:focus, .cp-field select:focus {
+  .cp-field input:focus, .cp-field textarea:focus {
     border-color: #e8410a; box-shadow: 0 0 0 3px rgba(232,65,10,.08);
   }
+  .cp-field input.err { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.08); }
   .cp-field textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
   .cp-field-hint { font-size: 12px; color: #aaa; margin-top: 5px; line-height: 1.4; }
-  .cp-field-hint.tips { color: #777; }
-  .cp-fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cp-field-err { font-size: 12px; color: #ef4444; margin-top: 4px; font-weight: 600; }
+  .cp-fields-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cp-fields-row3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+
+  /* city pre-filled */
+  .cp-city-input { background: #f9fafb !important; color: #555 !important; }
 
   /* ── ЦЕНА ── */
   .cp-price-block { padding: 18px 20px 20px; }
   .cp-price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; }
-  .cp-price-tag { display: inline-flex; align-items: center; gap: 5px; background: #fff7ed; border: 1px solid #fcd34d; border-radius: 6px; padding: 6px 10px; font-size: 12px; color: #92400e; font-weight: 600; margin-top: 10px; }
-  .cp-price-visible { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
 
-  /* ── КНОПКА ОТПРАВКИ ── */
+  /* ── КНОПКА ── */
   .cp-submit-card { padding: 20px; }
   .cp-btn-submit { width: 100%; padding: 15px; background: #e8410a; border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; transition: background .15s; }
   .cp-btn-submit:hover { background: #c73208; }
@@ -107,24 +133,14 @@ const css = `
   .cp-sb-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #555; padding: 8px 0; border-bottom: 1px solid #f5f5f5; line-height: 1.5; }
   .cp-sb-item:last-child { border-bottom: none; padding-bottom: 0; }
   .cp-sb-ico { font-size: 18px; flex-shrink: 0; }
-  .cp-steps { counter-reset: step; display: flex; flex-direction: column; gap: 10px; }
+  .cp-steps { display: flex; flex-direction: column; gap: 10px; }
   .cp-step { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; color: #555; }
   .cp-step-num { width: 24px; height: 24px; border-radius: 50%; background: #e8410a; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
   .cp-tips-list { display: flex; flex-direction: column; gap: 6px; }
   .cp-tip-item { font-size: 12px; color: #666; padding-left: 14px; position: relative; line-height: 1.5; }
   .cp-tip-item::before { content: '💡'; position: absolute; left: 0; font-size: 11px; }
 
-  /* ── УСПЕХ ── */
-  .cp-success { max-width: 520px; margin: 80px auto; background: #fff; border-radius: 16px; border: 1px solid #e8e8e8; padding: 48px 36px; text-align: center; }
-  .cp-success-ico { font-size: 64px; margin-bottom: 16px; }
-  .cp-success h2 { font-size: 24px; font-weight: 800; color: #111; margin-bottom: 10px; }
-  .cp-success p { font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 24px; }
-  .cp-success-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .cp-success-btn-primary { padding: 13px 28px; background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; text-decoration: none; }
-  .cp-success-btn-outline { padding: 12px 24px; background: #fff; border: 1.5px solid #e0e0e0; border-radius: 8px; color: #555; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; }
-  .cp-success-btn-outline:hover { border-color: #999; }
-
-  /* urgency radio */
+  /* urgency */
   .cp-urgency { display: flex; flex-wrap: wrap; gap: 8px; }
   .cp-urgency-opt { padding: 8px 14px; border: 1.5px solid #e0e0e0; border-radius: 20px; font-size: 13px; font-weight: 500; color: #555; cursor: pointer; transition: all .15s; background: #fff; font-family: inherit; }
   .cp-urgency-opt.selected { border-color: #e8410a; background: #fff5f2; color: #e8410a; font-weight: 700; }
@@ -136,11 +152,23 @@ const css = `
   .cp-char-count.warn { color: #f59e0b; }
   .cp-char-count.over { color: #ef4444; }
 
+  /* ── УСПЕХ ── */
+  .cp-success { max-width: 520px; margin: 80px auto; background: #fff; border-radius: 16px; border: 1px solid #e8e8e8; padding: 48px 36px; text-align: center; }
+  .cp-success-ico { font-size: 64px; margin-bottom: 16px; }
+  .cp-success h2 { font-size: 24px; font-weight: 800; color: #111; margin-bottom: 10px; }
+  .cp-success p { font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 24px; }
+  .cp-success-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .cp-success-btn-primary { padding: 13px 28px; background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; text-decoration: none; }
+  .cp-success-btn-outline { padding: 12px 24px; background: #fff; border: 1.5px solid #e0e0e0; border-radius: 8px; color: #555; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; }
+
   @media(max-width: 860px) { .cp-wrap { grid-template-columns: 1fr; } .cp-sidebar { position: static; } }
-  @media(max-width: 560px) { .cp-photo-grid { grid-template-columns: repeat(3, 1fr); } .cp-fields-row { grid-template-columns: 1fr; } .cp-price-row { grid-template-columns: 1fr; } }
+  @media(max-width: 560px) { .cp-photo-grid { grid-template-columns: repeat(3, 1fr); } .cp-fields-row2 { grid-template-columns: 1fr; } .cp-fields-row3 { grid-template-columns: 1fr 1fr; } .cp-price-row { grid-template-columns: 1fr; } .cp-lb-btn { display: none; } }
 `;
 
 const MAX_DESC = 2000;
+
+const EMPTY_ADDR = { city: 'Йошкар-Ола', street: '', house: '', apt: '' };
+const EMPTY_FORM = { title: '', description: '', addr: EMPTY_ADDR, budget: '', urgency: '', photos: [] };
 
 export default function CategoryPage() {
   const { slug } = useParams();
@@ -152,12 +180,28 @@ export default function CategoryPage() {
   const category = ALL_CATEGORIES[slug];
   const sectionSlug = CAT_TO_SECTION[slug];
 
-  const [form, setForm] = useState({ title: '', description: '', address: '', budget: '', urgency: '', photos: [] });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [isDragging, setIsDragging] = useState(false);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [apiCategoryId, setApiCategoryId] = useState(null);
+  const [lightbox, setLightbox] = useState(null); // { index: 0 }
   const tips = CAT_TIPS[slug] || [];
+
+  // ── Keyboard for lightbox ──
+  const handleLbKey = useCallback((e) => {
+    if (!lightbox) return;
+    const n = form.photos.length;
+    if (e.key === 'ArrowRight') setLightbox(l => ({ index: (l.index + 1) % n }));
+    if (e.key === 'ArrowLeft')  setLightbox(l => ({ index: (l.index - 1 + n) % n }));
+    if (e.key === 'Escape')     setLightbox(null);
+  }, [lightbox, form.photos.length]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleLbKey);
+    return () => window.removeEventListener('keydown', handleLbKey);
+  }, [handleLbKey]);
 
   useEffect(() => {
     const qp = new URLSearchParams(location.search);
@@ -195,28 +239,48 @@ export default function CategoryPage() {
   const handlePhotoUpload = async (files) => {
     setError('');
     const validFiles = Array.from(files).filter(f => {
-      if (!f.type.startsWith('image/')) { setError('Можно загружать только изображения'); return false; }
-      if (f.size > 10 * 1024 * 1024) { setError('Файл слишком большой (максимум 10 МБ)'); return false; }
+      if (!f.type.startsWith('image/')) { setError('Только изображения'); return false; }
+      if (f.size > 10 * 1024 * 1024) { setError('Файл слишком большой (max 10 МБ)'); return false; }
       return true;
     });
     const remaining = 5 - form.photos.length;
     const toAdd = validFiles.slice(0, remaining);
-    if (validFiles.length > remaining) setError(`Максимум 5 фотографий`);
+    if (validFiles.length > remaining) setError('Максимум 5 фотографий');
     for (const file of toAdd) {
       const data = await compressPhoto(file);
       setForm(prev => ({ ...prev, photos: [...prev.photos, { id: Date.now() + Math.random(), data, name: file.name }] }));
     }
   };
 
-  const handleRemovePhoto = (id) => setForm(prev => ({ ...prev, photos: prev.photos.filter(p => p.id !== id) }));
+  const handleRemovePhoto = (id, e) => {
+    e.stopPropagation();
+    setForm(prev => {
+      const next = prev.photos.filter(p => p.id !== id);
+      return { ...prev, photos: next };
+    });
+    setLightbox(null);
+  };
+
+  const openLightbox = (i, e) => {
+    e.stopPropagation();
+    setLightbox({ index: i });
+  };
+
+  const setAddr = (key, val) => {
+    setFieldErrors(fe => ({ ...fe, [key]: '' }));
+    setForm(p => ({ ...p, addr: { ...p.addr, [key]: val } }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    const fe = {};
+    if (!form.addr.street.trim()) fe.street = 'Укажите улицу';
+    if (!form.addr.house.trim())  fe.house  = 'Укажите дом';
+    if (Object.keys(fe).length) { setFieldErrors(fe); setError('Заполните все обязательные поля адреса'); return; }
     if (!userId) { navigate('/login'); return; }
     if (!form.title.trim()) { setError('Укажите название задачи'); return; }
     if (!form.description.trim()) { setError('Добавьте подробное описание'); return; }
-    if (!form.address.trim()) { setError('Укажите адрес выполнения работы'); return; }
     if (!form.budget) { setError('Укажите предварительную цену'); return; }
     if (Number(form.budget) <= 0) { setError('Цена должна быть больше нуля'); return; }
 
@@ -230,6 +294,10 @@ export default function CategoryPage() {
       } catch { setError('Не удалось загрузить категории'); return; }
     }
 
+    const parts = [form.addr.city, form.addr.street.trim(), `д. ${form.addr.house.trim()}`];
+    if (form.addr.apt.trim()) parts.push(`кв. ${form.addr.apt.trim()}`);
+    const addressText = parts.join(', ');
+
     setStatus('sending');
     try {
       const desc = form.urgency
@@ -239,7 +307,7 @@ export default function CategoryPage() {
         categoryId,
         title: form.title.trim(),
         description: desc,
-        address: form.address.trim(),
+        address: addressText,
         budget: Number(form.budget),
         photos: form.photos.map(p => p.data),
       });
@@ -267,18 +335,10 @@ export default function CategoryPage() {
           <div className="cp-success">
             <div className="cp-success-ico">🎉</div>
             <h2>Заявка опубликована!</h2>
-            <p>
-              Мастера уже видят вашу задачу{form.photos.length > 0 ? ' и фотографии' : ''}.
-              Первые отклики обычно приходят в течение <strong>10 минут</strong>. Следите за предложениями в разделе «Мои сделки».
-            </p>
+            <p>Мастера уже видят вашу задачу{form.photos.length > 0 ? ' и фотографии' : ''}. Первые отклики обычно приходят в течение <strong>10 минут</strong>.</p>
             <div className="cp-success-btns">
               <Link to="/deals" className="cp-success-btn-primary">Перейти к сделкам →</Link>
-              <button
-                className="cp-success-btn-outline"
-                onClick={() => { setStatus('idle'); setForm({ title: '', description: '', address: '', budget: '', urgency: '', photos: [] }); }}
-              >
-                Создать ещё
-              </button>
+              <button className="cp-success-btn-outline" onClick={() => { setStatus('idle'); setForm(EMPTY_FORM); }}>Создать ещё</button>
             </div>
           </div>
         </div>
@@ -287,35 +347,32 @@ export default function CategoryPage() {
   }
 
   const descLen = form.description.length;
+  const photos = form.photos;
+  const n = photos.length;
 
   return (
     <div className="cp-page">
       <style>{css}</style>
 
-      {/* Хлебная крошка */}
-      <div className="cp-breadcrumb">
-        <div className="cp-breadcrumb-inner">
-          <Link to="/sections" className="cp-breadcrumb-link">Услуги</Link>
-          <span>›</span>
-          <Link to={`/sections/${sectionSlug}`} className="cp-breadcrumb-link">{category.name}</Link>
-          <span>›</span>
-          <span>Разместить заявку</span>
-        </div>
-      </div>
-
-      {/* Заголовок */}
-      <div className="cp-header">
-        <div className="cp-header-inner">
-          <div className="cp-header-icon" style={{ background: category.color }}>{category.emoji}</div>
-          <div>
-            <h1 className="cp-header-title">{category.name}</h1>
-            <p className="cp-header-sub">Опишите задачу — мастера откликнутся сами</p>
+      {/* ── HERO HEADER с фото категории ── */}
+      <div className="cp-hero">
+        {category.photo && <img src={category.photo} alt={category.name} className="cp-hero-img" />}
+        {!category.photo && <div style={{ position: 'absolute', inset: 0, background: '#1a1a2e' }} />}
+        <div className="cp-hero-overlay" />
+        <div className="cp-hero-body">
+          <Link to={`/sections/${sectionSlug}`} className="cp-hero-back">← Назад к категориям</Link>
+          <div className="cp-hero-row">
+            <div className="cp-hero-icon">{category.emoji}</div>
+            <div>
+              <h1 className="cp-hero-title">{category.name}</h1>
+              <p className="cp-hero-sub">Опишите задачу — мастера откликнутся сами</p>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="cp-wrap">
-        {/* ═══ ЛЕВАЯ КОЛОНКА — ФОРМА ═══ */}
+        {/* ═══ ФОРМА ═══ */}
         <div>
           {error && <div className="cp-error">⚠️ {error}</div>}
 
@@ -323,7 +380,9 @@ export default function CategoryPage() {
 
             {/* ── 1. ФОТОГРАФИИ ── */}
             <div className="cp-card">
-              <div className="cp-card-title">Фотографии <span style={{ fontSize: 13, color: '#aaa', fontWeight: 400 }}>(необязательно, до 5 шт.)</span></div>
+              <div className="cp-card-title">
+                Фотографии <span style={{ fontSize: 13, color: '#aaa', fontWeight: 400 }}>(необязательно, до 5 шт.)</span>
+              </div>
               <div className="cp-photos">
                 <div
                   className="cp-photo-grid"
@@ -331,22 +390,30 @@ export default function CategoryPage() {
                   onDragLeave={() => setIsDragging(false)}
                   onDrop={e => { e.preventDefault(); setIsDragging(false); handlePhotoUpload(e.dataTransfer.files); }}
                 >
-                  {/* Слоты фото */}
                   {Array.from({ length: 5 }).map((_, i) => {
-                    const photo = form.photos[i];
+                    const photo = photos[i];
                     if (photo) {
                       return (
-                        <div key={photo.id} className={`cp-photo-cell filled${i === 0 ? ' main-photo' : ''}`}>
+                        <div
+                          key={photo.id}
+                          className={`cp-photo-cell filled${i === 0 ? ' main-photo' : ''}`}
+                          onClick={e => openLightbox(i, e)}
+                        >
                           <img src={photo.data} alt="" className="cp-photo-img" />
                           {i === 0 && <span className="cp-photo-main-badge">Главное</span>}
-                          <button type="button" className="cp-photo-del" onClick={() => handleRemovePhoto(photo.id)}>×</button>
+                          <div className="cp-photo-zoom">🔍</div>
+                          <button
+                            type="button"
+                            className="cp-photo-del"
+                            onClick={e => handleRemovePhoto(photo.id, e)}
+                          >×</button>
                         </div>
                       );
                     }
                     return (
                       <div
                         key={i}
-                        className={`cp-photo-cell${isDragging ? ' dragging' : ''}`}
+                        className={`cp-photo-cell${isDragging ? '' : ''}`}
                         style={isDragging ? { borderColor: '#e8410a', background: '#fff5f2' } : {}}
                         onClick={() => photoInputRef.current?.click()}
                       >
@@ -365,8 +432,8 @@ export default function CategoryPage() {
                   onChange={e => { handlePhotoUpload(e.target.files); e.target.value = ''; }}
                 />
                 <p className="cp-photo-hint">
-                  {form.photos.length > 0
-                    ? `${form.photos.length}/5 фото добавлено · Первое фото — главное`
+                  {photos.length > 0
+                    ? `${photos.length}/5 фото добавлено · Нажмите на фото чтобы просмотреть`
                     : 'Перетащите файлы сюда или кликните по ячейке · PNG, JPG до 10 МБ'}
                 </p>
               </div>
@@ -413,21 +480,69 @@ export default function CategoryPage() {
               </div>
             </div>
 
-            {/* ── 3. МЕСТО И СРОКИ ── */}
+            {/* ── 3. АДРЕС И СРОКИ ── */}
             <div className="cp-card">
               <div className="cp-card-title">Место и сроки</div>
               <div className="cp-fields">
-                <div className="cp-field">
-                  <label>Адрес выполнения *</label>
-                  <input
-                    name="address"
-                    placeholder="Улица, дом, квартира"
-                    value={form.address}
-                    onChange={e => { setError(''); setForm(p => ({ ...p, address: e.target.value })); }}
-                    required
-                  />
-                  <span className="cp-field-hint">📍 Йошкар-Ола, Республика Марий Эл</span>
+
+                {/* Строка 1: улица (широкая) | дом | квартира */}
+                <div>
+                  <label style={{ fontSize: 14, fontWeight: 600, color: '#333', display: 'block', marginBottom: 8 }}>
+                    Адрес выполнения *
+                  </label>
+
+                  {/* Город (заблокирован) */}
+                  <div className="cp-field" style={{ marginBottom: 10 }}>
+                    <label style={{ fontSize: 13, color: '#888', fontWeight: 500 }}>Город</label>
+                    <input
+                      value={form.addr.city}
+                      className="cp-city-input"
+                      readOnly
+                    />
+                    <span className="cp-field-hint">📍 Йошкар-Ола, Республика Марий Эл</span>
+                  </div>
+
+                  {/* Улица + дом + кв */}
+                  <div className="cp-fields-row3">
+                    <div className="cp-field" style={{ margin: 0 }}>
+                      <label style={{ fontSize: 13, color: '#555', fontWeight: 600 }}>Улица *</label>
+                      <input
+                        placeholder="Ленина"
+                        value={form.addr.street}
+                        onChange={e => setAddr('street', e.target.value)}
+                        className={fieldErrors.street ? 'err' : ''}
+                      />
+                      {fieldErrors.street && <span className="cp-field-err">{fieldErrors.street}</span>}
+                    </div>
+                    <div className="cp-field" style={{ margin: 0 }}>
+                      <label style={{ fontSize: 13, color: '#555', fontWeight: 600 }}>Дом *</label>
+                      <input
+                        placeholder="12"
+                        value={form.addr.house}
+                        onChange={e => setAddr('house', e.target.value)}
+                        className={fieldErrors.house ? 'err' : ''}
+                      />
+                      {fieldErrors.house && <span className="cp-field-err">{fieldErrors.house}</span>}
+                    </div>
+                    <div className="cp-field" style={{ margin: 0 }}>
+                      <label style={{ fontSize: 13, color: '#888', fontWeight: 500 }}>Кв./офис</label>
+                      <input
+                        placeholder="45"
+                        value={form.addr.apt}
+                        onChange={e => setAddr('apt', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Превью собранного адреса */}
+                  {(form.addr.street || form.addr.house) && (
+                    <div style={{ marginTop: 8, padding: '8px 12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 6, fontSize: 13, color: '#166534' }}>
+                      📍 {[form.addr.city, form.addr.street, form.addr.house ? `д. ${form.addr.house}` : '', form.addr.apt ? `кв. ${form.addr.apt}` : ''].filter(Boolean).join(', ')}
+                    </div>
+                  )}
                 </div>
+
+                {/* Срочность */}
                 <div className="cp-field">
                   <label>Срочность</label>
                   <div className="cp-urgency">
@@ -450,7 +565,7 @@ export default function CategoryPage() {
             <div className="cp-card">
               <div className="cp-card-title">Предварительная цена</div>
               <div className="cp-price-block">
-                <div className="cp-fields-row" style={{ marginBottom: 12 }}>
+                <div className="cp-price-row" style={{ marginBottom: 12 }}>
                   <div className="cp-field" style={{ margin: 0 }}>
                     <label>Ваш бюджет, ₽ *</label>
                     <input
@@ -463,27 +578,26 @@ export default function CategoryPage() {
                       required
                     />
                   </div>
-                  <div style={{ padding: '6px 0 0', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                     {form.budget && Number(form.budget) > 0 ? (
                       <div style={{ padding: '12px 14px', background: '#f0fdf4', border: '1.5px solid #bbf7d0', borderRadius: 8 }}>
                         <div style={{ fontSize: 13, color: '#166534', fontWeight: 600 }}>
                           ✅ Мастера увидят: <strong>{Number(form.budget).toLocaleString('ru-RU')} ₽</strong>
                         </div>
                         <div style={{ fontSize: 12, color: '#16a34a', marginTop: 3 }}>
-                          Они смогут принять эту сумму или предложить свою
+                          Они смогут принять или предложить свою цену
                         </div>
                       </div>
                     ) : (
                       <div style={{ padding: '12px 14px', background: '#fafafa', border: '1.5px solid #e8e8e8', borderRadius: 8 }}>
-                        <div style={{ fontSize: 13, color: '#aaa' }}>Укажите сумму → мастера её увидят</div>
+                        <div style={{ fontSize: 13, color: '#aaa' }}>Укажите сумму — мастера её увидят</div>
                       </div>
                     )}
                   </div>
                 </div>
                 <div style={{ fontSize: 13, color: '#888', lineHeight: 1.6, background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8, padding: '12px 14px' }}>
-                  <strong style={{ color: '#555' }}>Как работает цена:</strong><br />
-                  Ваш бюджет показывается мастерам. Мастер может нажать <em>«Готов за эту сумму»</em> — 
-                  тогда вы видите его согласие. Или предложит другую цену — вы сравните и выберете.
+                  <strong style={{ color: '#555' }}>Как работает цена:</strong> Ваш бюджет показывается мастерам.
+                  Мастер может нажать <em>«Готов за эту сумму»</em> или предложит другую цену — вы сравните и выберете.
                 </div>
               </div>
             </div>
@@ -491,17 +605,11 @@ export default function CategoryPage() {
             {/* ── КНОПКА ── */}
             <div className="cp-card">
               <div className="cp-submit-card">
-                <button
-                  type="submit"
-                  className="cp-btn-submit"
-                  disabled={status === 'sending'}
-                >
+                <button type="submit" className="cp-btn-submit" disabled={status === 'sending'}>
                   {status === 'sending' ? '⏳ Публикуем заявку…' : '📤 Опубликовать заявку мастерам'}
                 </button>
                 {!userId && (
-                  <p className="cp-form-auth">
-                    Для отправки нужно <Link to="/login">войти в аккаунт</Link>
-                  </p>
+                  <p className="cp-form-auth">Для отправки нужно <Link to="/login">войти в аккаунт</Link></p>
                 )}
                 <p style={{ fontSize: 12, color: '#bbb', textAlign: 'center', marginTop: 10, marginBottom: 0 }}>
                   Размещение бесплатно · Мастера видят заявку сразу после публикации
@@ -514,7 +622,6 @@ export default function CategoryPage() {
 
         {/* ═══ САЙДБАР ═══ */}
         <div className="cp-sidebar">
-
           <div className="cp-sb-card">
             <div className="cp-sb-title">⚡ Как это работает</div>
             <div className="cp-steps">
@@ -539,8 +646,8 @@ export default function CategoryPage() {
             <div className="cp-sb-title">🔒 Ваша безопасность</div>
             {[
               ['🛡', 'Безопасная сделка', 'Оплата поступает мастеру только после вашего подтверждения'],
-              ['⭐', 'Проверенные мастера', 'Реальные отзывы и рейтинги — только от реальных заказчиков'],
-              ['💬', 'Прямая связь', 'Переписывайтесь с мастерами прямо в чате до начала работ'],
+              ['⭐', 'Проверенные мастера', 'Реальные отзывы — только от реальных заказчиков'],
+              ['💬', 'Прямая связь', 'Переписывайтесь с мастерами в чате до начала работ'],
             ].map(([ico, title, desc]) => (
               <div key={title} className="cp-sb-item">
                 <span className="cp-sb-ico">{ico}</span>
@@ -562,6 +669,45 @@ export default function CategoryPage() {
           )}
         </div>
       </div>
+
+      {/* ═══ LIGHTBOX ═══ */}
+      {lightbox !== null && photos.length > 0 && (
+        <div className="cp-lb" onClick={() => setLightbox(null)}>
+          <div className="cp-lb-counter">{lightbox.index + 1} / {n}</div>
+          <button className="cp-lb-close" onClick={() => setLightbox(null)}>×</button>
+
+          {n > 1 && (
+            <>
+              <button
+                className="cp-lb-btn cp-lb-prev"
+                onClick={e => { e.stopPropagation(); setLightbox(l => ({ index: (l.index - 1 + n) % n })); }}
+              >‹</button>
+              <button
+                className="cp-lb-btn cp-lb-next"
+                onClick={e => { e.stopPropagation(); setLightbox(l => ({ index: (l.index + 1) % n })); }}
+              >›</button>
+            </>
+          )}
+
+          <div className="cp-lb-img-wrap" onClick={e => e.stopPropagation()}>
+            <img src={photos[lightbox.index].data} alt="" className="cp-lb-img" />
+          </div>
+
+          {n > 1 && (
+            <div className="cp-lb-thumbs" onClick={e => e.stopPropagation()}>
+              {photos.map((p, i) => (
+                <div
+                  key={p.id}
+                  className={`cp-lb-thumb${i === lightbox.index ? ' active' : ''}`}
+                  onClick={() => setLightbox({ index: i })}
+                >
+                  <img src={p.data} alt="" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
