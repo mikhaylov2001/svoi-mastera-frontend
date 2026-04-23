@@ -189,9 +189,9 @@ export default function FindWorkPage() {
   const getRequestsForCategory = (cat) =>
     requests.filter(r => r.categoryId === cat.id);
 
-  const handleOpenOfferModal = (request) => {
+  const handleOpenOfferModal = (request, prefillPrice) => {
     setShowOfferModal(request);
-    setOfferForm({ price: '', comment: '', estimatedDays: '' });
+    setOfferForm({ price: prefillPrice ? String(prefillPrice) : '', comment: prefillPrice ? `Готов выполнить за ${Number(prefillPrice).toLocaleString('ru-RU')} ₽ — как указано в заявке` : '', estimatedDays: '' });
   };
 
   const handleCloseOfferModal = () => {
@@ -328,17 +328,33 @@ export default function FindWorkPage() {
 
               {/* Цена и кнопки */}
               <div style={{ background:'#fff', borderRadius:12, padding:'20px' }}>
-                <div style={{ fontSize:28, fontWeight:900, color:'#111827', marginBottom:16 }}>
-                  {budget}
+                <div style={{ marginBottom:14 }}>
+                  <div style={{ fontSize:12, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Бюджет заказчика</div>
+                  <div style={{ fontSize:28, fontWeight:900, color:'#111827' }}>{budget}</div>
+                  {req.budgetTo && (
+                    <div style={{ fontSize:12, color:'#6b7280', marginTop:4 }}>Сумма открыта мастерам · Вы можете принять её или предложить свою</div>
+                  )}
                 </div>
+
+                {/* Кнопка "Готов за эту сумму" — только если есть budgetTo */}
+                {req.budgetTo && (
+                  <button
+                    onClick={() => handleOpenOfferModal(req, req.budgetTo)}
+                    style={{ width:'100%', padding:'14px', background:'#16a34a', border:'none', borderRadius:8, color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:8, transition:'background .15s', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}
+                    onMouseEnter={e => e.currentTarget.style.background='#15803d'}
+                    onMouseLeave={e => e.currentTarget.style.background='#16a34a'}
+                  >
+                    ✅ Готов за {Number(req.budgetTo).toLocaleString('ru-RU')} ₽
+                  </button>
+                )}
 
                 <button
                   onClick={() => handleOpenOfferModal(req)}
-                  style={{ width:'100%', padding:'14px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:16, fontWeight:700, cursor:'pointer', marginBottom:10, transition:'background .15s' }}
-                  onMouseEnter={e => e.currentTarget.style.background='#c73208'}
-                  onMouseLeave={e => e.currentTarget.style.background='#e8410a'}
+                  style={{ width:'100%', padding:'13px', background: req.budgetTo ? '#fff' : '#e8410a', border: req.budgetTo ? '1.5px solid #e5e7eb' : 'none', borderRadius:8, color: req.budgetTo ? '#374151' : '#fff', fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:10, transition:'all .15s' }}
+                  onMouseEnter={e => { if (req.budgetTo) { e.currentTarget.style.borderColor='#374151'; } else { e.currentTarget.style.background='#c73208'; }}}
+                  onMouseLeave={e => { if (req.budgetTo) { e.currentTarget.style.borderColor='#e5e7eb'; } else { e.currentTarget.style.background='#e8410a'; }}}
                 >
-                  📩 Откликнуться
+                  📩 {req.budgetTo ? 'Предложить свою цену' : 'Откликнуться'}
                 </button>
 
                 {req.customerId && (
@@ -514,13 +530,23 @@ export default function FindWorkPage() {
                         {req.addressText || req.city || 'Йошкар-Ола'}
                         {req.createdAt && <span style={{ display:'block' }}>{new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'short' })}</span>}
                       </div>
+                      {req.budgetTo && (
+                        <button
+                          onClick={e => { e.stopPropagation(); handleOpenOfferModal(req, req.budgetTo); }}
+                          style={{ width:'100%', padding:'9px', background:'#16a34a', border:'none', borderRadius:6, color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', transition:'background .15s', marginBottom:6 }}
+                          onMouseEnter={e => e.currentTarget.style.background='#15803d'}
+                          onMouseLeave={e => e.currentTarget.style.background='#16a34a'}
+                        >
+                          ✅ Готов за {Number(req.budgetTo).toLocaleString('ru-RU')} ₽
+                        </button>
+                      )}
                       <button
                         onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
-                        style={{ width:'100%', padding:'9px', background:'#e8410a', border:'none', borderRadius:6, color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', transition:'background .15s' }}
-                        onMouseEnter={e => e.currentTarget.style.background='#c73208'}
-                        onMouseLeave={e => e.currentTarget.style.background='#e8410a'}
+                        style={{ width:'100%', padding:'9px', background: req.budgetTo ? '#fff' : '#e8410a', border: req.budgetTo ? '1.5px solid #e0e0e0' : 'none', borderRadius:6, color: req.budgetTo ? '#555' : '#fff', fontSize:13, fontWeight:600, cursor:'pointer', transition:'all .15s' }}
+                        onMouseEnter={e => { if (req.budgetTo) { e.currentTarget.style.borderColor='#999'; } else { e.currentTarget.style.background='#c73208'; } }}
+                        onMouseLeave={e => { if (req.budgetTo) { e.currentTarget.style.borderColor='#e0e0e0'; } else { e.currentTarget.style.background='#e8410a'; } }}
                       >
-                        📩 Откликнуться
+                        📩 {req.budgetTo ? 'Предложить цену' : 'Откликнуться'}
                       </button>
                     </div>
                   </div>

@@ -248,20 +248,40 @@ export default function MyOrdersPage() {
                             <p className="order-offers-empty">Откликов пока нет. Мастера увидят вашу заявку и предложат цену.</p>
                           )}
 
-                          {!offersLoading && offers.map(offer => (
-                            <div className="offer-card" key={offer.id}>
+                          {!offersLoading && offers.map(offer => {
+                            const agreedPrice = req.budgetTo && Number(offer.price) === Number(req.budgetTo);
+                            const cheaper = req.budgetTo && Number(offer.price) < Number(req.budgetTo);
+                            return (
+                            <div
+                              className="offer-card"
+                              key={offer.id}
+                              style={agreedPrice ? { borderColor: '#22c55e', background: '#f0fdf4' } : {}}
+                            >
                               <div className="offer-card-top">
-                                <div>
-                                  <span className="offer-card-price">{Number(offer.price).toLocaleString('ru-RU')} ₽</span>
-                                  {offer.estimatedDays && (
-                                    <span className="offer-card-days"> · {offer.estimatedDays} дн.</span>
-                                  )}
-                                  {req.budgetTo && Number(offer.price) !== Number(req.budgetTo) && (
-                                    <span className="offer-card-diff">
-                                      {Number(offer.price) < Number(req.budgetTo)
-                                        ? `−${Number(req.budgetTo) - Number(offer.price)} ₽`
-                                        : `+${Number(offer.price) - Number(req.budgetTo)} ₽`}
-                                    </span>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span className="offer-card-price">{Number(offer.price).toLocaleString('ru-RU')} ₽</span>
+                                    {offer.estimatedDays && (
+                                      <span className="offer-card-days">· {offer.estimatedDays} дн.</span>
+                                    )}
+                                    {agreedPrice && (
+                                      <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', background: '#dcfce7', padding: '2px 8px', borderRadius: 12 }}>
+                                        ✅ Принял вашу цену
+                                      </span>
+                                    )}
+                                    {cheaper && !agreedPrice && (
+                                      <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', background: '#dbeafe', padding: '2px 8px', borderRadius: 12 }}>
+                                        −{(Number(req.budgetTo) - Number(offer.price)).toLocaleString('ru-RU')} ₽ дешевле
+                                      </span>
+                                    )}
+                                    {req.budgetTo && Number(offer.price) > Number(req.budgetTo) && (
+                                      <span style={{ fontSize: 12, fontWeight: 600, color: '#d97706', background: '#fef3c7', padding: '2px 8px', borderRadius: 12 }}>
+                                        +{(Number(offer.price) - Number(req.budgetTo)).toLocaleString('ru-RU')} ₽ к бюджету
+                                      </span>
+                                    )}
+                                  </div>
+                                  {offer.workerName && (
+                                    <div style={{ fontSize: 13, color: '#666', fontWeight: 500 }}>👷 {offer.workerName}</div>
                                   )}
                                 </div>
                                 <button
@@ -276,7 +296,8 @@ export default function MyOrdersPage() {
                                 <p className="offer-card-msg">{offer.message}</p>
                               )}
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
