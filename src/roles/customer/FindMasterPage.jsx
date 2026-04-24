@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { getCategories, getListings, acceptListingDeal } from '../../api';
+import { getCategories, getListings, acceptListingDeal, getMyDeals } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 
@@ -714,18 +714,28 @@ const css = `
 
   .fmp-card-footer {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     gap: 8px;
     margin-top: auto;
     padding-top: 10px;
     border-top: 1px solid #f5f5f5;
+    flex-wrap: nowrap;
   }
-  .fmp-card-price { font-size: 18px; font-weight: 900; color: #1a1a1a; letter-spacing: -.3px; line-height: 1; }
-  .fmp-card-price-unit { font-size: 11px; color: #999; font-weight: 400; display: block; margin-top: 2px; }
+  .fmp-card-footer-pending {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid #f5f5f5;
+  }
+  .fmp-card-price-block { flex-shrink: 0; }
+  .fmp-card-price { font-size: 16px; font-weight: 900; color: #1a1a1a; letter-spacing: -.3px; line-height: 1; white-space: nowrap; }
+  .fmp-card-price-unit { font-size: 11px; color: #999; font-weight: 400; display: block; margin-top: 2px; white-space: nowrap; }
   .fmp-card-actions {
     display: flex; flex-direction: column; gap: 6px; align-items: stretch;
-    min-width: 138px;
+    min-width: 130px; flex-shrink: 0;
   }
   /* Главная: сразу оформить сделку по объявлению */
   .fmp-btn-accept {
@@ -787,14 +797,15 @@ const css = `
     background: #fffbeb;
     border: 1.5px solid #fde68a;
     border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 12px;
+    padding: 9px 12px;
+    font-size: 11px;
     font-weight: 600;
     color: #92400e;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     line-height: 1.45;
+    width: 100%;
   }
   .fmp-pending-link {
     font-size: 11px;
@@ -894,8 +905,21 @@ export default function FindMasterPage() {
   const [ratingMin,     setRatingMin]     = useState(0);
   const [acceptingId,   setAcceptingId]   = useState(null);
   const [acceptErr,     setAcceptErr]     = useState({});
-  // listingId → dealId  (после принятия ждём мастера)
+  // listingId → dealId  (состояние с бэка: NEW-сделка ожидает мастера)
   const [pendingDeals,  setPendingDeals]  = useState({});
+
+  // Строим pendingDeals из реальных сделок бэкенда (listingId → dealId)
+  const buildPendingFromDeals = useCallback((deals) => {
+    const map = {};
+    (deals || []).forEach(d => {
+      // Только NEW-сделки где мы — заказчик и есть sourceListingId/listingId
+      const lid = d.listingId || d.sourceListingId;
+      if (lid && d.status === 'NEW' && String(d.customerId) === String(userId)) {
+        map[lid] = d.id;
+      }
+    });
+    setPendingDeals(map);
+  }, [userId]);
 
   const handleAcceptListing = useCallback(async (listingId, workerId) => {
     if (!userId) { navigate('/login'); return; }
@@ -907,21 +931,25 @@ export default function FindMasterPage() {
     setAcceptErr(prev => ({ ...prev, [listingId]: '' }));
     try {
       const result = await acceptListingDeal(userId, listingId);
-      // Сохраняем dealId чтобы показать статус «ожидает мастера»
-      const dealId = result?.id || result?.dealId || true;
+      const dealId = result?.id || result?.dealId || listingId;
+      // Обновляем и локально (мгновенно) и перезагружаем с бэка
       setPendingDeals(prev => ({ ...prev, [listingId]: dealId }));
+      // Фоновое обновление сделок с бэка
+      getMyDeals(userId).then(buildPendingFromDeals).catch(() => {});
     } catch (e) {
       setAcceptErr(prev => ({ ...prev, [listingId]: e?.message || 'Не удалось оформить' }));
     } finally {
       setAcceptingId(null);
     }
-  }, [userId, navigate]);
+  }, [userId, navigate, buildPendingFromDeals]);
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([getCategories(), getListings()])
-      .then(([cats, listings]) => {
+    const dealsPromise = userId ? getMyDeals(userId).catch(() => []) : Promise.resolve([]);
+    Promise.all([getCategories(), getListings(), dealsPromise])
+      .then(([cats, listings, deals]) => {
         setCategories(cats);
+        buildPendingFromDeals(deals);
         const processed = (listings || []).map(item => ({
           ...item,
           workerId:  item.workerId,
@@ -942,7 +970,7 @@ export default function FindMasterPage() {
       })
       .catch(e => setError(e?.message || 'Ошибка загрузки'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [userId, buildPendingFromDeals]);
 
   const resetFilters = useCallback(() => {
     setSearchTerm(''); setSearchInput('');
@@ -1365,54 +1393,62 @@ export default function FindMasterPage() {
                         </div>
                       )}
 
-                      <div className="fmp-card-footer">
-                        <div>
-                          <div className="fmp-card-price">
-                            {s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
-                          </div>
-                          {s.priceUnit && <span className="fmp-card-price-unit">{s.priceUnit}</span>}
-                        </div>
-                        <div className="fmp-card-actions">
-                          {pendingDeals[s.id] ? (
-                            /* ── Заявка отправлена, ждём мастера ── */
-                            <div className="fmp-pending-banner">
-                              <span>⏳ Ждём подтверждения мастера</span>
-                              <span style={{ fontWeight: 400, color: '#78350f' }}>
-                                Мастер должен принять заказ — тогда он перейдёт в работу
-                              </span>
-                              <button
-                                type="button"
-                                className="fmp-pending-link"
-                                onClick={(e) => { e.stopPropagation(); navigate('/deals'); }}
-                              >
-                                Перейти к сделкам →
-                              </button>
+                      {pendingDeals[s.id] ? (
+                        /* ── Pending: цена + баннер стекуются вертикально ── */
+                        <div className="fmp-card-footer-pending">
+                          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                            <div className="fmp-card-price-block">
+                              <div className="fmp-card-price">
+                                {s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
+                              </div>
+                              {s.priceUnit && <span className="fmp-card-price-unit">{s.priceUnit}</span>}
                             </div>
-                          ) : (
-                            <>
-                              <button
-                                type="button"
-                                className="fmp-btn-accept"
-                                disabled={acceptingId === s.id || String(userId) === String(wid)}
-                                title={String(userId) === String(wid) ? 'Нельзя принять своё объявление' : ''}
-                                onClick={(e) => { e.stopPropagation(); handleAcceptListing(s.id, wid); }}
-                              >
-                                {acceptingId === s.id ? '⏳ Оформляем…' : '✓ Принять сразу'}
-                              </button>
-                              <button
-                                type="button"
-                                className="fmp-btn-msg"
-                                onClick={(e) => { e.stopPropagation(); navigate(`/chat/${wid}`); }}
-                              >
-                                💬 Написать
-                              </button>
-                              {acceptErr[s.id] && (
-                                <div className="fmp-card-action-err">{acceptErr[s.id]}</div>
-                              )}
-                            </>
-                          )}
+                            <button
+                              type="button"
+                              className="fmp-pending-link"
+                              onClick={(e) => { e.stopPropagation(); navigate('/deals'); }}
+                            >
+                              К сделкам →
+                            </button>
+                          </div>
+                          <div className="fmp-pending-banner">
+                            <span>⏳ Ждём подтверждения мастера</span>
+                            <span style={{ fontWeight: 400, color: '#78350f' }}>
+                              Мастер должен принять заказ
+                            </span>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="fmp-card-footer">
+                          <div className="fmp-card-price-block">
+                            <div className="fmp-card-price">
+                              {s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
+                            </div>
+                            {s.priceUnit && <span className="fmp-card-price-unit">{s.priceUnit}</span>}
+                          </div>
+                          <div className="fmp-card-actions">
+                            <button
+                              type="button"
+                              className="fmp-btn-accept"
+                              disabled={acceptingId === s.id || String(userId) === String(wid)}
+                              title={String(userId) === String(wid) ? 'Нельзя принять своё объявление' : ''}
+                              onClick={(e) => { e.stopPropagation(); handleAcceptListing(s.id, wid); }}
+                            >
+                              {acceptingId === s.id ? '⏳ Оформляем…' : '✓ Принять сразу'}
+                            </button>
+                            <button
+                              type="button"
+                              className="fmp-btn-msg"
+                              onClick={(e) => { e.stopPropagation(); navigate(`/chat/${wid}`); }}
+                            >
+                              💬 Написать
+                            </button>
+                            {acceptErr[s.id] && (
+                              <div className="fmp-card-action-err">{acceptErr[s.id]}</div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
