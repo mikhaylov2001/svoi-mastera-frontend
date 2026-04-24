@@ -782,6 +782,35 @@ const css = `
     max-width: 160px;
     align-self: flex-end;
   }
+  /* Баннер «ожидает мастера» */
+  .fmp-pending-banner {
+    background: #fffbeb;
+    border: 1.5px solid #fde68a;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #92400e;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    line-height: 1.45;
+  }
+  .fmp-pending-link {
+    font-size: 11px;
+    font-weight: 700;
+    color: #e8410a;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: Inter, sans-serif;
+  }
+  .fmp-pending-link:hover { opacity: .75; }
 
   /* ══ ПУСТОЕ СОСТОЯНИЕ ══ */
   .fmp-empty {
@@ -865,21 +894,22 @@ export default function FindMasterPage() {
   const [ratingMin,     setRatingMin]     = useState(0);
   const [acceptingId,   setAcceptingId]   = useState(null);
   const [acceptErr,     setAcceptErr]     = useState({});
+  // listingId → dealId  (после принятия ждём мастера)
+  const [pendingDeals,  setPendingDeals]  = useState({});
 
   const handleAcceptListing = useCallback(async (listingId, workerId) => {
-    if (!userId) {
-      navigate('/login');
-      return;
-    }
+    if (!userId) { navigate('/login'); return; }
     if (String(userId) === String(workerId)) {
-      setAcceptErr(prev => ({ ...prev, [listingId]: 'Это ваше объявление' }));
+      setAcceptErr(prev => ({ ...prev, [listingId]: 'Нельзя принять своё объявление' }));
       return;
     }
     setAcceptingId(listingId);
     setAcceptErr(prev => ({ ...prev, [listingId]: '' }));
     try {
-      await acceptListingDeal(userId, listingId);
-      navigate('/deals');
+      const result = await acceptListingDeal(userId, listingId);
+      // Сохраняем dealId чтобы показать статус «ожидает мастера»
+      const dealId = result?.id || result?.dealId || true;
+      setPendingDeals(prev => ({ ...prev, [listingId]: dealId }));
     } catch (e) {
       setAcceptErr(prev => ({ ...prev, [listingId]: e?.message || 'Не удалось оформить' }));
     } finally {
@@ -1343,24 +1373,43 @@ export default function FindMasterPage() {
                           {s.priceUnit && <span className="fmp-card-price-unit">{s.priceUnit}</span>}
                         </div>
                         <div className="fmp-card-actions">
-                          <button
-                            type="button"
-                            className="fmp-btn-accept"
-                            disabled={acceptingId === s.id || String(userId) === String(wid)}
-                            title={String(userId) === String(wid) ? 'Нельзя принять своё объявление' : ''}
-                            onClick={(e) => { e.stopPropagation(); handleAcceptListing(s.id, wid); }}
-                          >
-                            {acceptingId === s.id ? '⏳ Оформляем…' : '✓ Принять сразу'}
-                          </button>
-                          <button
-                            type="button"
-                            className="fmp-btn-msg"
-                            onClick={(e) => { e.stopPropagation(); navigate(`/chat/${wid}`); }}
-                          >
-                            💬 Написать
-                          </button>
-                          {acceptErr[s.id] && (
-                            <div className="fmp-card-action-err">{acceptErr[s.id]}</div>
+                          {pendingDeals[s.id] ? (
+                            /* ── Заявка отправлена, ждём мастера ── */
+                            <div className="fmp-pending-banner">
+                              <span>⏳ Ждём подтверждения мастера</span>
+                              <span style={{ fontWeight: 400, color: '#78350f' }}>
+                                Мастер должен принять заказ — тогда он перейдёт в работу
+                              </span>
+                              <button
+                                type="button"
+                                className="fmp-pending-link"
+                                onClick={(e) => { e.stopPropagation(); navigate('/deals'); }}
+                              >
+                                Перейти к сделкам →
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                className="fmp-btn-accept"
+                                disabled={acceptingId === s.id || String(userId) === String(wid)}
+                                title={String(userId) === String(wid) ? 'Нельзя принять своё объявление' : ''}
+                                onClick={(e) => { e.stopPropagation(); handleAcceptListing(s.id, wid); }}
+                              >
+                                {acceptingId === s.id ? '⏳ Оформляем…' : '✓ Принять сразу'}
+                              </button>
+                              <button
+                                type="button"
+                                className="fmp-btn-msg"
+                                onClick={(e) => { e.stopPropagation(); navigate(`/chat/${wid}`); }}
+                              >
+                                💬 Написать
+                              </button>
+                              {acceptErr[s.id] && (
+                                <div className="fmp-card-action-err">{acceptErr[s.id]}</div>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>

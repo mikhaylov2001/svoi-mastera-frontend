@@ -106,6 +106,15 @@ export async function acceptListingDeal(userId, listingId) {
   });
 }
 
+// Мастер принимает сделку со статусом NEW → IN_PROGRESS
+export async function workerStartDeal(userId, dealId) {
+  return apiCall(`/deals/${dealId}/start`, {
+    method: 'POST',
+    headers: { 'X-User-Id': userId },
+    body: JSON.stringify({}),
+  });
+}
+
 // ── DEALS ──
 export async function getMyDeals(userId) {
   return apiCall('/deals', { headers: { 'X-User-Id': userId }, cache: 'no-store' });

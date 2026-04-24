@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { getMyDeals, completeDeal, createCustomerReview } from '../../api';
+import { getMyDeals, completeDeal, createCustomerReview, workerStartDeal } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import '../customer/DealsPage.css'; // те же стили что у клиента
 
@@ -88,8 +88,15 @@ export default function WorkerDealsPage() {
     setActionId(null);
   };
 
+  const handleStartDeal = async (dealId) => {
+    setActionId(dealId);
+    try { await workerStartDeal(userId, dealId); await load(); } catch {}
+    setActionId(null);
+  };
+
   const counts = {
     ALL:         deals.length,
+    NEW:         deals.filter(d => d.status === 'NEW').length,
     IN_PROGRESS: deals.filter(d => d.status === 'IN_PROGRESS').length,
     COMPLETED:   deals.filter(d => d.status === 'COMPLETED').length,
   };
@@ -218,6 +225,32 @@ export default function WorkerDealsPage() {
                   💬 Написать заказчику
                 </button>
               </div>
+
+              {/* ─── NEW: Заказчик принял, мастер должен подтвердить ─── */}
+              {dealDetail.status === 'NEW' && (
+                <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px', border:'1.5px solid #fde68a' }}>
+                  <div style={{ fontSize:14, fontWeight:800, color:'#111827', marginBottom:6 }}>🔔 Новый заказ</div>
+                  <p style={{ fontSize:13, color:'#78350f', margin:'0 0 16px', lineHeight:1.55, background:'#fffbeb', borderRadius:8, padding:'10px 12px' }}>
+                    Заказчик выбрал вас и ждёт подтверждения.<br/>
+                    Примите заказ — и он перейдёт в работу.
+                  </p>
+                  <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                    <button
+                      disabled={actionId === dealDetail.id}
+                      onClick={() => handleStartDeal(dealDetail.id)}
+                      style={{ width:'100%', padding:'13px', background: actionId === dealDetail.id ? '#fca98e' : '#e8410a', border:'none', borderRadius:10, color:'#fff', fontSize:15, fontWeight:700, cursor: actionId === dealDetail.id ? 'not-allowed' : 'pointer', boxShadow:'0 4px 16px rgba(232,65,10,.3)', transition:'background .15s' }}
+                    >
+                      {actionId === dealDetail.id ? '⏳ Принимаем…' : '✅ Принять заказ'}
+                    </button>
+                    <button
+                      onClick={() => navigate(`/chat/${dealDetail.customerId}`)}
+                      style={{ width:'100%', padding:'11px', background:'rgba(14,165,233,.07)', border:'1.5px solid rgba(14,165,233,.2)', borderRadius:10, color:'#0ea5e9', fontSize:13, fontWeight:700, cursor:'pointer' }}
+                    >
+                      💬 Уточнить детали
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Подтверждение */}
               {dealDetail.status === 'IN_PROGRESS' && (
@@ -363,13 +396,15 @@ export default function WorkerDealsPage() {
         {/* Фильтры */}
         <div className="dpage-filters">
           {[
-            ['ALL',         'Все',       counts.ALL],
-            ['IN_PROGRESS', 'В работе',  counts.IN_PROGRESS],
-            ['COMPLETED',   'Завершены', counts.COMPLETED],
+            ['ALL',         'Все',            counts.ALL],
+            ['NEW',         '🔔 Новые',        counts.NEW],
+            ['IN_PROGRESS', 'В работе',        counts.IN_PROGRESS],
+            ['COMPLETED',   'Завершены',       counts.COMPLETED],
           ].map(([key, label, count]) => (
             <button
               key={key}
               className={`dpage-filter-btn ${filter === key ? 'active' : ''}`}
+              style={key === 'NEW' && counts.NEW > 0 ? { borderColor: '#f59e0b', color: '#92400e' } : {}}
               onClick={() => setFilter(key)}
             >
               {label} <span>{count}</span>
@@ -417,13 +452,19 @@ export default function WorkerDealsPage() {
             filtered.map(d => {
               const st = DEAL_STATUSES[d.status] || DEAL_STATUSES.NEW;
               const hasPhoto = d.photos && d.photos.length > 0;
+              const isNew = d.status === 'NEW';
               return (
-                <div key={d.id} className="dpage-card-avito" onClick={() => setDealDetail(d)}>
+                <div
+                  key={d.id}
+                  className="dpage-card-avito"
+                  style={isNew ? { borderLeft: '4px solid #f59e0b', background: '#fffdf7' } : {}}
+                  onClick={() => setDealDetail(d)}
+                >
                   <div className="dpage-card-avito-img">
                     {hasPhoto ? (
                       <img src={d.photos[0]} alt="" style={{ pointerEvents:'none' }} />
                     ) : (
-                      <div className="dpage-card-avito-img-placeholder"><span>🔨</span></div>
+                      <div className="dpage-card-avito-img-placeholder"><span>{isNew ? '🔔' : '🔨'}</span></div>
                     )}
                   </div>
                   <div className="dpage-card-avito-body">
@@ -443,6 +484,21 @@ export default function WorkerDealsPage() {
                       <span>👤 {d.customerName || 'Заказчик'}</span>
                       <span>🕐 {timeAgo(d.createdAt)}</span>
                     </div>
+                    {isNew && (
+                      <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <span style={{ fontSize: 12, color: '#92400e', background: '#fef3c7', borderRadius: 6, padding: '3px 8px', fontWeight: 600 }}>
+                          ⏳ Ждёт вашего подтверждения
+                        </span>
+                        <button
+                          type="button"
+                          disabled={actionId === d.id}
+                          onClick={(e) => { e.stopPropagation(); handleStartDeal(d.id); }}
+                          style={{ fontSize: 12, fontWeight: 700, padding: '4px 12px', background: '#e8410a', border: 'none', borderRadius: 6, color: '#fff', cursor: actionId === d.id ? 'not-allowed' : 'pointer', opacity: actionId === d.id ? .6 : 1 }}
+                        >
+                          {actionId === d.id ? '⏳…' : '✅ Принять'}
+                        </button>
+                      </div>
+                    )}
                     {d.status === 'IN_PROGRESS' && (
                       <div className="dpage-card-progress" style={{ marginTop:8 }}>
                         <div className={`dp-prog ${d.customerConfirmed ? 'ok' : ''}`}>
