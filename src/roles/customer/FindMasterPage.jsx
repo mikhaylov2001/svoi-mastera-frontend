@@ -912,10 +912,10 @@ export default function FindMasterPage() {
   const buildPendingFromDeals = useCallback((deals) => {
     const map = {};
     (deals || []).forEach(d => {
-      // Только NEW-сделки где мы — заказчик и есть sourceListingId/listingId
-      const lid = d.listingId || d.sourceListingId;
+      const lid = d.listingId;
+      // NEW-сделки из объявлений где мы — заказчик (ждём подтверждения мастера)
       if (lid && d.status === 'NEW' && String(d.customerId) === String(userId)) {
-        map[lid] = d.id;
+        map[String(lid)] = d.id;
       }
     });
     setPendingDeals(map);
@@ -932,8 +932,8 @@ export default function FindMasterPage() {
     try {
       const result = await acceptListingDeal(userId, listingId);
       const dealId = result?.id || result?.dealId || listingId;
-      // Обновляем и локально (мгновенно) и перезагружаем с бэка
-      setPendingDeals(prev => ({ ...prev, [listingId]: dealId }));
+      // Мгновенное обновление — listingId как строка
+      setPendingDeals(prev => ({ ...prev, [String(listingId)]: dealId }));
       // Фоновое обновление сделок с бэка
       getMyDeals(userId).then(buildPendingFromDeals).catch(() => {});
     } catch (e) {
@@ -1393,7 +1393,7 @@ export default function FindMasterPage() {
                         </div>
                       )}
 
-                      {pendingDeals[s.id] ? (
+                      {pendingDeals[String(s.id)] ? (
                         /* ── Pending: цена + баннер стекуются вертикально ── */
                         <div className="fmp-card-footer-pending">
                           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
