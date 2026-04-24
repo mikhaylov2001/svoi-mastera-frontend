@@ -9,10 +9,10 @@ import { useAuth } from '../../context/AuthContext';
 import './DealsPage.css';
 
 const DEAL_STATUSES = {
-  NEW:         { label: 'Новая',     emoji: '📋', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
-  IN_PROGRESS: { label: 'В работе',  emoji: '⚙️',  color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
-  COMPLETED:   { label: 'Завершена', emoji: '✅',  color: '#22c55e', bg: 'rgba(34,197,94,.12)'   },
-  CANCELLED:   { label: 'Отменена',  emoji: '❌',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'   },
+  NEW:         { label: 'Новая',           emoji: '⏳', color: '#b45309', bg: 'rgba(245,158,11,.12)'  },
+  IN_PROGRESS: { label: 'В работе',        emoji: '⚙️', color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
+  COMPLETED:   { label: 'Завершена',       emoji: '✅', color: '#22c55e', bg: 'rgba(34,197,94,.12)'   },
+  CANCELLED:   { label: 'Отменена',        emoji: '❌', color: '#ef4444', bg: 'rgba(239,68,68,.12)'   },
 };
 
 const REQ_STATUSES = {
@@ -322,6 +322,58 @@ export default function DealsPage() {
                     style={{ width:'100%', padding:'10px', background:'rgba(14,165,233,.07)', border:'1.5px solid rgba(14,165,233,.2)', borderRadius:8, color:'#0ea5e9', fontSize:13, fontWeight:700, cursor:'pointer' }}>
                     💬 Написать заказчику
                   </button>
+                </div>
+              )}
+
+              {/* ─── NEW: ожидаем подтверждения мастера (видит заказчик) ─── */}
+              {dealDetail.status === 'NEW' && im && (
+                <div style={{ background:'#fffbeb', borderRadius:12, padding:'20px', border:'1.5px solid #fde68a' }}>
+                  {/* Иконка + заголовок */}
+                  <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:14 }}>
+                    <div style={{ width:44, height:44, borderRadius:'50%', background:'#fef3c7', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontSize:22 }}>
+                      ⏳
+                    </div>
+                    <div>
+                      <div style={{ fontSize:15, fontWeight:800, color:'#92400e' }}>Ждём ответа мастера</div>
+                      <div style={{ fontSize:12, color:'#b45309', marginTop:2 }}>Заявка отправлена</div>
+                    </div>
+                  </div>
+
+                  {/* Шаги */}
+                  <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
+                    {[
+                      { done: true,  text: 'Вы выбрали мастера и отправили заявку' },
+                      { done: false, text: 'Мастер рассматривает вашу заявку' },
+                      { done: false, text: 'После подтверждения начнётся работа' },
+                    ].map(({ done, text }, i) => (
+                      <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+                        <div style={{ width:22, height:22, borderRadius:'50%', flexShrink:0, marginTop:1,
+                          background: done ? '#22c55e' : '#e5e7eb',
+                          display:'flex', alignItems:'center', justifyContent:'center',
+                          fontSize:11, fontWeight:800, color: done ? '#fff' : '#9ca3af' }}>
+                          {done ? '✓' : i + 1}
+                        </div>
+                        <span style={{ fontSize:13, color: done ? '#15803d' : '#78350f', fontWeight: done ? 600 : 400, lineHeight:1.45 }}>
+                          {text}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Подсказка */}
+                  <div style={{ background:'rgba(245,158,11,.1)', borderRadius:8, padding:'10px 12px', fontSize:12, color:'#92400e', lineHeight:1.5, marginBottom:14 }}>
+                    💡 Пока мастер не подтвердит, заказ находится в статусе <strong>«Новая»</strong>. Вы можете написать ему напрямую, чтобы уточнить детали.
+                  </div>
+
+                  {/* Кнопка чата */}
+                  {dealDetail.workerId && (
+                    <button
+                      onClick={() => navigate(`/chat/${dealDetail.workerId}`)}
+                      style={{ width:'100%', padding:'11px', background:'rgba(14,165,233,.08)', border:'1.5px solid rgba(14,165,233,.25)', borderRadius:9, color:'#0ea5e9', fontSize:13, fontWeight:700, cursor:'pointer' }}
+                    >
+                      💬 Написать мастеру
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -814,6 +866,11 @@ export default function DealsPage() {
                         <span>👤 {im ? (d.workerName || 'Мастер') : d.customerName}</span>
                         <span>🕐 {timeAgo(d.createdAt)}</span>
                       </div>
+                      {d.status === 'NEW' && (
+                        <div style={{ marginTop:6, display:'inline-flex', alignItems:'center', gap:5, background:'#fef3c7', borderRadius:6, padding:'3px 9px', fontSize:11, fontWeight:600, color:'#92400e' }}>
+                          ⏳ Ждём подтверждения мастера
+                        </div>
+                      )}
                       {d.status === 'IN_PROGRESS' && (
                         <div className="dpage-card-progress" style={{ marginTop:8 }}>
                           <div className={`dp-prog ${d.customerConfirmed ? 'ok' : ''}`}>{d.customerConfirmed ? '✅' : '⏳'} Заказчик</div>
