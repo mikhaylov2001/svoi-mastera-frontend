@@ -133,24 +133,12 @@ export async function cancelActiveDeal(userId, dealId, reason = '') {
   });
 }
 
-/** Мок-оплата работы заказчиком (AWAITING_PAYMENT → COMPLETED) */
-export async function mockPayDeal(userId, dealId) {
-  return apiCall(`/initiate?dealId=${dealId}`, {
-    method: 'POST',
-    headers: { 'X-User-Id': userId },
-    body: JSON.stringify({}),
-  });
-}
-
 // ── DEALS ──
 export async function getMyDeals(userId) {
   return apiCall('/deals', { headers: { 'X-User-Id': userId }, cache: 'no-store' });
 }
 export async function completeDeal(userId, dealId) {
   return apiCall(`/deals/${dealId}/complete`, { method: 'POST', headers: { 'X-User-Id': userId }, body: JSON.stringify({}) });
-}
-export async function initiatePayment(userId, dealId) {
-  return apiCall(`/initiate?dealId=${dealId}`, { method: 'POST', headers: { 'X-User-Id': userId }, body: JSON.stringify({}) });
 }
 
 

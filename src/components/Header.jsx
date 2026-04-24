@@ -131,8 +131,6 @@ function Header() {
     DEAL_NEW:        '🔔',
     DEAL_STARTED:    '🚀',
     DEAL_CANCELLED:  '❌',
-    PAYMENT_REQUIRED:'💳',
-    PAYMENT_DONE:    '💰',
   };
 
   function timeAgoShort(d) {

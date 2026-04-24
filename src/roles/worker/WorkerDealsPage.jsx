@@ -7,7 +7,6 @@ import '../customer/DealsPage.css'; // те же стили что у клиен
 const DEAL_STATUSES = {
   NEW:              { label: 'Новая',           emoji: '🔔', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
   IN_PROGRESS:      { label: 'В работе',         emoji: '⚙️', color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
-  AWAITING_PAYMENT: { label: 'Ожидает оплаты',   emoji: '💳', color: '#7c3aed', bg: 'rgba(124,58,237,.12)' },
   COMPLETED:        { label: 'Завершена',         emoji: '✅', color: '#22c55e', bg: 'rgba(34,197,94,.12)'  },
   CANCELLED:        { label: 'Отменена',          emoji: '❌', color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
 };
@@ -141,11 +140,10 @@ export default function WorkerDealsPage() {
   };
 
   const counts = {
-    ALL:              deals.length,
-    NEW:              deals.filter(d => d.status === 'NEW').length,
-    IN_PROGRESS:      deals.filter(d => d.status === 'IN_PROGRESS').length,
-    AWAITING_PAYMENT: deals.filter(d => d.status === 'AWAITING_PAYMENT').length,
-    COMPLETED:        deals.filter(d => d.status === 'COMPLETED').length,
+    ALL:         deals.length,
+    NEW:         deals.filter(d => d.status === 'NEW').length,
+    IN_PROGRESS: deals.filter(d => d.status === 'IN_PROGRESS').length,
+    COMPLETED:   deals.filter(d => d.status === 'COMPLETED').length,
   };
 
   const filtered = filter === 'ALL'
@@ -314,7 +312,7 @@ export default function WorkerDealsPage() {
                 <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px', border:'1.5px solid #e5e7eb' }}>
                   <div style={{ fontSize:14, fontWeight:800, color:'#111827', marginBottom:6 }}>Подтверждение выполнения</div>
                   <p style={{ fontSize:12, color:'#9ca3af', margin:'0 0 14px', lineHeight:1.5 }}>
-                    Нажмите кнопку когда работа выполнена. После подтверждения обеих сторон заказчик оплатит работу.
+                    Нажмите кнопку когда работа выполнена. Сделка завершится после подтверждения обеих сторон.
                   </p>
                   <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:14 }}>
                     {[
@@ -351,30 +349,8 @@ export default function WorkerDealsPage() {
                       🚫 Отказаться от сделки
                     </button>
                     <p style={{ margin:'6px 0 0', fontSize:11, color:'#a8a29e', textAlign:'center', lineHeight:1.4 }}>
-                      После подтверждения и оплаты заказчиком отмена невозможна
+                      После завершения сделки отмена невозможна
                     </p>
-                  </div>
-                </div>
-              )}
-
-              {/* AWAITING_PAYMENT — заказчик должен оплатить */}
-              {dealDetail.status === 'AWAITING_PAYMENT' && (
-                <div style={{ background:'rgba(124,58,237,.04)', borderRadius:12, padding:'16px 20px', border:'2px solid rgba(124,58,237,.2)' }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
-                    <div style={{ width:42, height:42, borderRadius:'50%', background:'linear-gradient(135deg,#7c3aed,#6366f1)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 }}>💳</div>
-                    <div>
-                      <div style={{ fontSize:15, fontWeight:800, color:'#111827' }}>Работа подтверждена!</div>
-                      <div style={{ fontSize:12, color:'#7c3aed' }}>Ждём оплату от заказчика</div>
-                    </div>
-                  </div>
-                  <div style={{ background:'rgba(124,58,237,.08)', borderRadius:10, padding:'12px 14px' }}>
-                    <div style={{ fontSize:12, color:'#6b7280', marginBottom:4 }}>Сумма к получению</div>
-                    <div style={{ fontSize:20, fontWeight:800, color:'#7c3aed' }}>
-                      {dealDetail.agreedPrice ? `${Number(dealDetail.agreedPrice).toLocaleString('ru')} ₽` : 'Договорная'}
-                    </div>
-                    <div style={{ fontSize:11, color:'#9ca3af', marginTop:4 }}>
-                      ✅ Обе стороны подтвердили выполнение
-                    </div>
                   </div>
                 </div>
               )}
@@ -390,7 +366,7 @@ export default function WorkerDealsPage() {
                 <div style={{ background:'rgba(34,197,94,.07)', borderRadius:12, padding:'16px 20px', border:'1px solid rgba(34,197,94,.2)', textAlign:'center' }}>
                   <div style={{ fontSize:28, marginBottom:6 }}>🏆</div>
                   <div style={{ fontSize:14, fontWeight:800, color:'#111827', marginBottom:4 }}>Работа завершена!</div>
-                  <div style={{ fontSize:12, color:'#6b7280', marginBottom:12 }}>Оплата получена от заказчика</div>
+                  <div style={{ fontSize:12, color:'#6b7280', marginBottom:12 }}>Обе стороны подтвердили выполнение</div>
                   {!dealDetail.hasWorkerReview && dealDetail.customerId && (
                     <button
                       onClick={() => { setReviewForm({ rating: 5, text: '' }); setReviewStatus('idle'); setReviewDeal(dealDetail); }}
@@ -559,12 +535,11 @@ export default function WorkerDealsPage() {
         {/* Фильтры */}
         <div className="dpage-filters">
           {[
-            ['ALL',              'Все',            counts.ALL],
-            ['NEW',              '🔔 Новые',        counts.NEW],
-            ['IN_PROGRESS',      'В работе',        counts.IN_PROGRESS],
-            counts.AWAITING_PAYMENT > 0 ? ['AWAITING_PAYMENT', '💳 Оплата', counts.AWAITING_PAYMENT] : null,
-            ['COMPLETED',        'Завершены',       counts.COMPLETED],
-          ].filter(Boolean).map(([key, label, count]) => (
+            ['ALL',         'Все',            counts.ALL],
+            ['NEW',         '🔔 Новые',        counts.NEW],
+            ['IN_PROGRESS', 'В работе',        counts.IN_PROGRESS],
+            ['COMPLETED',   'Завершены',       counts.COMPLETED],
+          ].map(([key, label, count]) => (
             <button
               key={key}
               className={`dpage-filter-btn ${filter === key ? 'active' : ''}`}
