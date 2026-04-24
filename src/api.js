@@ -124,6 +124,24 @@ export async function cancelPendingDeal(userId, dealId, reason = '') {
   });
 }
 
+/** Отмена активной сделки IN_PROGRESS (обе стороны) */
+export async function cancelActiveDeal(userId, dealId, reason = '') {
+  const qs = reason?.trim() ? `?reason=${encodeURIComponent(reason.trim())}` : '';
+  return apiCall(`/deals/${dealId}/cancel-active${qs}`, {
+    method: 'POST',
+    headers: { 'X-User-Id': userId },
+  });
+}
+
+/** Мок-оплата работы заказчиком (AWAITING_PAYMENT → COMPLETED) */
+export async function mockPayDeal(userId, dealId) {
+  return apiCall(`/initiate?dealId=${dealId}`, {
+    method: 'POST',
+    headers: { 'X-User-Id': userId },
+    body: JSON.stringify({}),
+  });
+}
+
 // ── DEALS ──
 export async function getMyDeals(userId) {
   return apiCall('/deals', { headers: { 'X-User-Id': userId }, cache: 'no-store' });
@@ -134,6 +152,7 @@ export async function completeDeal(userId, dealId) {
 export async function initiatePayment(userId, dealId) {
   return apiCall(`/initiate?dealId=${dealId}`, { method: 'POST', headers: { 'X-User-Id': userId }, body: JSON.stringify({}) });
 }
+
 
 // ── PROFILE ──
 export async function getCustomerProfile(userId) {

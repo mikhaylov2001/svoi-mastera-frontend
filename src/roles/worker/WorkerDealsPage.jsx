@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { getMyDeals, completeDeal, createCustomerReview, workerStartDeal, cancelPendingDeal } from '../../api';
+import { getMyDeals, completeDeal, createCustomerReview, workerStartDeal, cancelPendingDeal, cancelActiveDeal } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import '../customer/DealsPage.css'; // те же стили что у клиента
 
 const DEAL_STATUSES = {
-  NEW:         { label: 'Новая',     emoji: '📋', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
-  IN_PROGRESS: { label: 'В работе',  emoji: '⚙️',  color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
-  COMPLETED:   { label: 'Завершена', emoji: '✅',  color: '#22c55e', bg: 'rgba(34,197,94,.12)'   },
-  CANCELLED:   { label: 'Отменена',  emoji: '❌',  color: '#ef4444', bg: 'rgba(239,68,68,.12)'   },
+  NEW:              { label: 'Новая',           emoji: '🔔', color: '#6366f1', bg: 'rgba(99,102,241,.12)'  },
+  IN_PROGRESS:      { label: 'В работе',         emoji: '⚙️', color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
+  AWAITING_PAYMENT: { label: 'Ожидает оплаты',   emoji: '💳', color: '#7c3aed', bg: 'rgba(124,58,237,.12)' },
+  COMPLETED:        { label: 'Завершена',         emoji: '✅', color: '#22c55e', bg: 'rgba(34,197,94,.12)'  },
+  CANCELLED:        { label: 'Отменена',          emoji: '❌', color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
 };
 
 function timeAgo(d) {
@@ -32,11 +33,18 @@ export default function WorkerDealsPage() {
   const [dealDetail, setDealDetail] = useState(null);
   const [actionId,   setActionId]   = useState(null);
 
+  // Отмена NEW-сделки (отказ от заявки)
   const [cancelOpen,   setCancelOpen]   = useState(false);
   const [cancelNote,   setCancelNote]   = useState('');
   const [cancelBusy,   setCancelBusy]   = useState(false);
   const [cancelErrMsg, setCancelErrMsg] = useState('');
   const [decliningId,  setDecliningId]  = useState(null);
+
+  // Отмена IN_PROGRESS сделки
+  const [cancelActiveOpen,   setCancelActiveOpen]   = useState(false);
+  const [cancelActiveNote,   setCancelActiveNote]   = useState('');
+  const [cancelActiveBusy,   setCancelActiveBusy]   = useState(false);
+  const [cancelActiveErrMsg, setCancelActiveErrMsg] = useState('');
 
   // Отзыв заказчику
   const [reviewDeal,   setReviewDeal]   = useState(null);
@@ -116,11 +124,28 @@ export default function WorkerDealsPage() {
     setCancelBusy(false);
   };
 
+  const handleCancelActiveDeal = async () => {
+    if (!dealDetail?.id) return;
+    setCancelActiveBusy(true);
+    setCancelActiveErrMsg('');
+    try {
+      await cancelActiveDeal(userId, dealDetail.id, cancelActiveNote);
+      setCancelActiveOpen(false);
+      setCancelActiveNote('');
+      await load();
+      setDealDetail(null);
+    } catch (e) {
+      setCancelActiveErrMsg(e?.message || 'Не удалось отменить сделку');
+    }
+    setCancelActiveBusy(false);
+  };
+
   const counts = {
-    ALL:         deals.length,
-    NEW:         deals.filter(d => d.status === 'NEW').length,
-    IN_PROGRESS: deals.filter(d => d.status === 'IN_PROGRESS').length,
-    COMPLETED:   deals.filter(d => d.status === 'COMPLETED').length,
+    ALL:              deals.length,
+    NEW:              deals.filter(d => d.status === 'NEW').length,
+    IN_PROGRESS:      deals.filter(d => d.status === 'IN_PROGRESS').length,
+    AWAITING_PAYMENT: deals.filter(d => d.status === 'AWAITING_PAYMENT').length,
+    COMPLETED:        deals.filter(d => d.status === 'COMPLETED').length,
   };
 
   const filtered = filter === 'ALL'
@@ -286,10 +311,10 @@ export default function WorkerDealsPage() {
 
               {/* Подтверждение */}
               {dealDetail.status === 'IN_PROGRESS' && (
-                <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
+                <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px', border:'1.5px solid #e5e7eb' }}>
                   <div style={{ fontSize:14, fontWeight:800, color:'#111827', marginBottom:6 }}>Подтверждение выполнения</div>
                   <p style={{ fontSize:12, color:'#9ca3af', margin:'0 0 14px', lineHeight:1.5 }}>
-                    Нажмите кнопку когда работа выполнена. Сделка завершится после подтверждения обеих сторон.
+                    Нажмите кнопку когда работа выполнена. После подтверждения обеих сторон заказчик оплатит работу.
                   </p>
                   <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:14 }}>
                     {[
@@ -313,9 +338,51 @@ export default function WorkerDealsPage() {
                     </button>
                   ) : (
                     <div className="dp-wait">
-                      ✓ Вы подтвердили{!otherOk && ' — ожидаем заказчика…'}
+                      ✓ Вы подтвердили{!otherOk && ' — ожидаем подтверждения заказчика…'}
                     </div>
                   )}
+
+                  {/* Кнопка отмены активной сделки */}
+                  <div style={{ marginTop:12, borderTop:'1px solid #f3f4f6', paddingTop:12 }}>
+                    <button
+                      onClick={() => { setCancelActiveErrMsg(''); setCancelActiveOpen(true); }}
+                      style={{ width:'100%', padding:'10px', background:'transparent', border:'1.5px solid #fca5a5', borderRadius:10, color:'#ef4444', fontSize:13, fontWeight:700, cursor:'pointer' }}
+                    >
+                      🚫 Отказаться от сделки
+                    </button>
+                    <p style={{ margin:'6px 0 0', fontSize:11, color:'#a8a29e', textAlign:'center', lineHeight:1.4 }}>
+                      После подтверждения и оплаты заказчиком отмена невозможна
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* AWAITING_PAYMENT — заказчик должен оплатить */}
+              {dealDetail.status === 'AWAITING_PAYMENT' && (
+                <div style={{ background:'rgba(124,58,237,.04)', borderRadius:12, padding:'16px 20px', border:'2px solid rgba(124,58,237,.2)' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
+                    <div style={{ width:42, height:42, borderRadius:'50%', background:'linear-gradient(135deg,#7c3aed,#6366f1)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 }}>💳</div>
+                    <div>
+                      <div style={{ fontSize:15, fontWeight:800, color:'#111827' }}>Работа подтверждена!</div>
+                      <div style={{ fontSize:12, color:'#7c3aed' }}>Ждём оплату от заказчика</div>
+                    </div>
+                  </div>
+                  <div style={{ background:'rgba(124,58,237,.08)', borderRadius:10, padding:'12px 14px' }}>
+                    <div style={{ fontSize:12, color:'#6b7280', marginBottom:4 }}>Сумма к получению</div>
+                    <div style={{ fontSize:20, fontWeight:800, color:'#7c3aed' }}>
+                      {dealDetail.agreedPrice ? `${Number(dealDetail.agreedPrice).toLocaleString('ru')} ₽` : 'Договорная'}
+                    </div>
+                    <div style={{ fontSize:11, color:'#9ca3af', marginTop:4 }}>
+                      ✅ Обе стороны подтвердили выполнение
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {dealDetail.status === 'CANCELLED' && dealDetail.cancellationReason && (
+                <div style={{ background:'rgba(239,68,68,.05)', borderRadius:12, padding:'14px 16px', border:'1px solid rgba(239,68,68,.15)' }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:'#ef4444', marginBottom:4 }}>Причина отмены</div>
+                  <div style={{ fontSize:13, color:'#6b7280', lineHeight:1.5 }}>{dealDetail.cancellationReason}</div>
                 </div>
               )}
 
@@ -323,7 +390,7 @@ export default function WorkerDealsPage() {
                 <div style={{ background:'rgba(34,197,94,.07)', borderRadius:12, padding:'16px 20px', border:'1px solid rgba(34,197,94,.2)', textAlign:'center' }}>
                   <div style={{ fontSize:28, marginBottom:6 }}>🏆</div>
                   <div style={{ fontSize:14, fontWeight:800, color:'#111827', marginBottom:4 }}>Работа завершена!</div>
-                  <div style={{ fontSize:12, color:'#6b7280', marginBottom:12 }}>Обе стороны подтвердили выполнение</div>
+                  <div style={{ fontSize:12, color:'#6b7280', marginBottom:12 }}>Оплата получена от заказчика</div>
                   {!dealDetail.hasWorkerReview && dealDetail.customerId && (
                     <button
                       onClick={() => { setReviewForm({ rating: 5, text: '' }); setReviewStatus('idle'); setReviewDeal(dealDetail); }}
@@ -361,6 +428,42 @@ export default function WorkerDealsPage() {
                 <button type="button" disabled={cancelBusy} onClick={handleCancelPendingDeal}
                   style={{ padding:'10px 18px', borderRadius:8, border:'none', background:'#b91c1c', color:'#fff', fontWeight:700, cursor: cancelBusy ? 'not-allowed' : 'pointer' }}>
                   {cancelBusy ? 'Отправляем…' : 'Да, отказаться'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Модалка отмены IN_PROGRESS сделки для мастера */}
+        {cancelActiveOpen && (
+          <div style={{ position:'fixed', inset:0, zIndex:2100, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+            onClick={() => !cancelActiveBusy && setCancelActiveOpen(false)}>
+            <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:420, padding:24, boxShadow:'0 20px 50px rgba(0,0,0,.15)' }} onClick={e => e.stopPropagation()}>
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
+                <div style={{ width:38, height:38, borderRadius:'50%', background:'#fef2f2', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 }}>🚫</div>
+                <h3 style={{ margin:0, fontSize:17, fontWeight:800, color:'#111827' }}>Отказаться от сделки?</h3>
+              </div>
+              <div style={{ background:'rgba(239,68,68,.05)', borderRadius:10, padding:'10px 14px', marginBottom:14, border:'1px solid rgba(239,68,68,.12)' }}>
+                <p style={{ margin:0, fontSize:13, color:'#6b7280', lineHeight:1.5 }}>
+                  ⚠️ Сделка уже <b>в работе</b>. Заказчик получит уведомление. Это действие необратимо.
+                </p>
+              </div>
+              <textarea
+                value={cancelActiveNote}
+                onChange={e => setCancelActiveNote(e.target.value)}
+                placeholder="Причина отказа (необязательно)…"
+                rows={3}
+                style={{ width:'100%', padding:10, borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:13, resize:'vertical', boxSizing:'border-box', marginBottom:12 }}
+              />
+              {cancelActiveErrMsg && <div style={{ color:'#dc2626', fontSize:13, marginBottom:12 }}>{cancelActiveErrMsg}</div>}
+              <div style={{ display:'flex', gap:10 }}>
+                <button type="button" disabled={cancelActiveBusy} onClick={() => setCancelActiveOpen(false)}
+                  style={{ flex:1, padding:'11px', borderRadius:10, border:'1.5px solid #e5e7eb', background:'#fff', fontWeight:700, fontSize:14, cursor: cancelActiveBusy ? 'not-allowed' : 'pointer' }}>
+                  Не отменять
+                </button>
+                <button type="button" disabled={cancelActiveBusy} onClick={handleCancelActiveDeal}
+                  style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:'#dc2626', color:'#fff', fontWeight:700, fontSize:14, cursor: cancelActiveBusy ? 'not-allowed' : 'pointer' }}>
+                  {cancelActiveBusy ? 'Отменяем…' : 'Да, отказаться'}
                 </button>
               </div>
             </div>
@@ -456,11 +559,12 @@ export default function WorkerDealsPage() {
         {/* Фильтры */}
         <div className="dpage-filters">
           {[
-            ['ALL',         'Все',            counts.ALL],
-            ['NEW',         '🔔 Новые',        counts.NEW],
-            ['IN_PROGRESS', 'В работе',        counts.IN_PROGRESS],
-            ['COMPLETED',   'Завершены',       counts.COMPLETED],
-          ].map(([key, label, count]) => (
+            ['ALL',              'Все',            counts.ALL],
+            ['NEW',              '🔔 Новые',        counts.NEW],
+            ['IN_PROGRESS',      'В работе',        counts.IN_PROGRESS],
+            counts.AWAITING_PAYMENT > 0 ? ['AWAITING_PAYMENT', '💳 Оплата', counts.AWAITING_PAYMENT] : null,
+            ['COMPLETED',        'Завершены',       counts.COMPLETED],
+          ].filter(Boolean).map(([key, label, count]) => (
             <button
               key={key}
               className={`dpage-filter-btn ${filter === key ? 'active' : ''}`}

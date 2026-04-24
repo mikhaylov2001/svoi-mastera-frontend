@@ -123,11 +123,16 @@ function Header() {
   };
 
   const NOTIF_ICONS = {
-    NEW_OFFER:      '📩',
-    OFFER_ACCEPTED: '🎉',
-    DEAL_CONFIRMED: '✅',
-    DEAL_COMPLETED: '🏆',
-    NEW_MESSAGE:    '💬',
+    NEW_OFFER:       '📩',
+    OFFER_ACCEPTED:  '🎉',
+    DEAL_CONFIRMED:  '✅',
+    DEAL_COMPLETED:  '🏆',
+    NEW_MESSAGE:     '💬',
+    DEAL_NEW:        '🔔',
+    DEAL_STARTED:    '🚀',
+    DEAL_CANCELLED:  '❌',
+    PAYMENT_REQUIRED:'💳',
+    PAYMENT_DONE:    '💰',
   };
 
   function timeAgoShort(d) {

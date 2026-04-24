@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  getMyDeals, completeDeal, cancelPendingDeal,
+  getMyDeals, completeDeal, cancelPendingDeal, cancelActiveDeal, mockPayDeal,
   getMyJobRequests, getOffersForRequest, acceptOffer, getCategories,
   createReview,
 } from '../../api';
@@ -9,10 +9,11 @@ import { useAuth } from '../../context/AuthContext';
 import './DealsPage.css';
 
 const DEAL_STATUSES = {
-  NEW:         { label: 'Новая',           emoji: '⏳', color: '#b45309', bg: 'rgba(245,158,11,.12)'  },
-  IN_PROGRESS: { label: 'В работе',        emoji: '⚙️', color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
-  COMPLETED:   { label: 'Завершена',       emoji: '✅', color: '#22c55e', bg: 'rgba(34,197,94,.12)'   },
-  CANCELLED:   { label: 'Отменена',        emoji: '❌', color: '#ef4444', bg: 'rgba(239,68,68,.12)'   },
+  NEW:              { label: 'Новая',           emoji: '⏳', color: '#b45309', bg: 'rgba(245,158,11,.12)'  },
+  IN_PROGRESS:      { label: 'В работе',        emoji: '⚙️', color: '#f59e0b', bg: 'rgba(245,158,11,.12)' },
+  AWAITING_PAYMENT: { label: 'Ожидает оплаты',  emoji: '💳', color: '#7c3aed', bg: 'rgba(124,58,237,.12)' },
+  COMPLETED:        { label: 'Завершена',        emoji: '✅', color: '#22c55e', bg: 'rgba(34,197,94,.12)'  },
+  CANCELLED:        { label: 'Отменена',         emoji: '❌', color: '#ef4444', bg: 'rgba(239,68,68,.12)'  },
 };
 
 const REQ_STATUSES = {
@@ -63,6 +64,18 @@ export default function DealsPage() {
   const [cancelReason,    setCancelReason]    = useState('');
   const [cancelBusy,     setCancelBusy]     = useState(false);
   const [cancelErr,      setCancelErr]       = useState('');
+
+  // Отмена активной сделки IN_PROGRESS
+  const [cancelActiveOpen,   setCancelActiveOpen]   = useState(false);
+  const [cancelActiveReason, setCancelActiveReason] = useState('');
+  const [cancelActiveBusy,   setCancelActiveBusy]   = useState(false);
+  const [cancelActiveErr,    setCancelActiveErr]     = useState('');
+
+  // Мок-оплата
+  const [payModalOpen, setPayModalOpen] = useState(false);
+  const [payBusy,      setPayBusy]      = useState(false);
+  const [payErr,       setPayErr]       = useState('');
+  const [payDone,      setPayDone]      = useState(false);
 
   // ✅ ДОБАВЛЕНО: Стейты для отзыва
   const [reviewDeal, setReviewDeal] = useState(null);
@@ -156,6 +169,43 @@ export default function DealsPage() {
     setCancelBusy(false);
   };
 
+  // Отмена активной сделки IN_PROGRESS
+  const handleCancelActiveDeal = async () => {
+    if (!dealDetail?.id) return;
+    setCancelActiveBusy(true);
+    setCancelActiveErr('');
+    try {
+      await cancelActiveDeal(userId, dealDetail.id, cancelActiveReason);
+      setCancelActiveOpen(false);
+      setCancelActiveReason('');
+      await load();
+      setDealDetail(null);
+    } catch (e) {
+      setCancelActiveErr(e?.message || 'Не удалось отменить сделку');
+    }
+    setCancelActiveBusy(false);
+  };
+
+  // Мок-оплата работы
+  const handleMockPay = async () => {
+    if (!dealDetail?.id) return;
+    setPayBusy(true);
+    setPayErr('');
+    try {
+      await mockPayDeal(userId, dealDetail.id);
+      setPayDone(true);
+      await load();
+      // Небольшая задержка, потом закрываем модалку
+      setTimeout(() => {
+        setPayModalOpen(false);
+        setPayDone(false);
+      }, 2200);
+    } catch (e) {
+      setPayErr(e?.message || 'Ошибка при оплате');
+    }
+    setPayBusy(false);
+  };
+
   // ✅ ДОБАВЛЕНО: Обработчик отправки отзыва
   const handleReviewSubmit = async () => {
     if (!reviewDeal) return;
@@ -183,9 +233,12 @@ export default function DealsPage() {
     COMPLETED:   activeRequests.filter(r => r.status === 'COMPLETED').length,
   };
   const dealCounts = {
-    ALL:         deals.length,
-    IN_PROGRESS: deals.filter(d => d.status === 'IN_PROGRESS').length,
-    COMPLETED:   deals.filter(d => d.status === 'COMPLETED').length,
+    ALL:              deals.length,
+    NEW:              deals.filter(d => d.status === 'NEW').length,
+    IN_PROGRESS:      deals.filter(d => d.status === 'IN_PROGRESS').length,
+    AWAITING_PAYMENT: deals.filter(d => d.status === 'AWAITING_PAYMENT').length,
+    COMPLETED:        deals.filter(d => d.status === 'COMPLETED').length,
+    CANCELLED:        deals.filter(d => d.status === 'CANCELLED').length,
   };
 
   const filteredReqs = reqFilter === 'ALL' ? activeRequests
@@ -410,12 +463,12 @@ export default function DealsPage() {
                 </div>
               )}
 
-              {/* Подтверждение */}
+              {/* Подтверждение выполнения (IN_PROGRESS) */}
               {dealDetail.status === 'IN_PROGRESS' && (
-                <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
+                <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px', border:'1.5px solid #e5e7eb' }}>
                   <div style={{ fontSize:14, fontWeight:800, color:'#111827', marginBottom:6 }}>Подтверждение выполнения</div>
                   <p style={{ fontSize:12, color:'#9ca3af', margin:'0 0 14px', lineHeight:1.5 }}>
-                    Нажмите кнопку когда работа выполнена. Сделка завершится после подтверждения обеих сторон.
+                    Нажмите кнопку когда работа выполнена. После подтверждения обеих сторон откроется оплата.
                   </p>
                   <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:14 }}>
                     {[
@@ -438,8 +491,68 @@ export default function DealsPage() {
                       {actionId === dealDetail.id ? 'Подтверждаем…' : '✅ Подтвердить выполнение'}
                     </button>
                   ) : (
-                    <div className="dp-wait">✓ Вы подтвердили{!otherOk && ' — ожидаем другую сторону…'}</div>
+                    <div className="dp-wait">✓ Вы подтвердили{!otherOk && ' — ожидаем подтверждения мастера…'}</div>
                   )}
+
+                  {/* Кнопка отмены активной сделки */}
+                  <div style={{ marginTop:12, borderTop:'1px solid #f3f4f6', paddingTop:12 }}>
+                    <button
+                      onClick={() => { setCancelActiveErr(''); setCancelActiveOpen(true); }}
+                      style={{ width:'100%', padding:'10px', background:'transparent', border:'1.5px solid #fca5a5', borderRadius:10, color:'#ef4444', fontSize:13, fontWeight:700, cursor:'pointer' }}
+                    >
+                      🚫 Отменить сделку в работе
+                    </button>
+                    <p style={{ margin:'6px 0 0', fontSize:11, color:'#a8a29e', textAlign:'center', lineHeight:1.4 }}>
+                      После подтверждения и оплаты отмена невозможна
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* AWAITING_PAYMENT — нужна оплата */}
+              {dealDetail.status === 'AWAITING_PAYMENT' && (
+                <div style={{ background:'rgba(124,58,237,.04)', borderRadius:12, padding:'16px 20px', border:'2px solid rgba(124,58,237,.25)' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
+                    <div style={{ width:42, height:42, borderRadius:'50%', background:'linear-gradient(135deg,#7c3aed,#6366f1)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 }}>💳</div>
+                    <div>
+                      <div style={{ fontSize:15, fontWeight:800, color:'#111827' }}>Работа выполнена!</div>
+                      <div style={{ fontSize:12, color:'#7c3aed' }}>Обе стороны подтвердили — осталось оплатить</div>
+                    </div>
+                  </div>
+
+                  <div style={{ background:'rgba(124,58,237,.08)', borderRadius:10, padding:'12px 14px', marginBottom:14 }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+                      <span style={{ fontSize:12, color:'#6b7280' }}>Стоимость работы</span>
+                      <span style={{ fontSize:18, fontWeight:800, color:'#111827' }}>
+                        {dealDetail.agreedPrice ? `${Number(dealDetail.agreedPrice).toLocaleString('ru')} ₽` : 'Договорная'}
+                      </span>
+                    </div>
+                    <div style={{ display:'flex', gap:8, fontSize:11, color:'#9ca3af' }}>
+                      <span>✅ Заказчик подтвердил</span>
+                      <span>•</span>
+                      <span>✅ Мастер подтвердил</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => { setPayErr(''); setPayDone(false); setPayModalOpen(true); }}
+                    style={{ width:'100%', padding:'14px', background:'linear-gradient(135deg,#7c3aed,#6366f1)', border:'none', borderRadius:12, color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', boxShadow:'0 6px 20px rgba(124,58,237,.3)', transition:'transform .15s' }}
+                    onMouseEnter={e => e.currentTarget.style.transform='translateY(-1px)'}
+                    onMouseLeave={e => e.currentTarget.style.transform='translateY(0)'}
+                  >
+                    💳 Оплатить работу
+                  </button>
+
+                  <p style={{ margin:'8px 0 0', fontSize:11, color:'#a8a29e', textAlign:'center', lineHeight:1.4 }}>
+                    Безопасная передача средств. После оплаты сделка завершается.
+                  </p>
+                </div>
+              )}
+
+              {dealDetail.status === 'CANCELLED' && dealDetail.cancellationReason && (
+                <div style={{ background:'rgba(239,68,68,.05)', borderRadius:12, padding:'14px 16px', border:'1px solid rgba(239,68,68,.15)' }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:'#ef4444', marginBottom:4 }}>Причина отмены</div>
+                  <div style={{ fontSize:13, color:'#6b7280', lineHeight:1.5 }}>{dealDetail.cancellationReason}</div>
                 </div>
               )}
 
@@ -447,7 +560,7 @@ export default function DealsPage() {
                 <div style={{ background:'rgba(34,197,94,.07)', borderRadius:12, padding:'16px 20px', border:'1px solid rgba(34,197,94,.2)', textAlign:'center' }}>
                   <div style={{ fontSize:28, marginBottom:6 }}>🏆</div>
                   <div style={{ fontSize:14, fontWeight:800, color:'#111827', marginBottom:4 }}>Сделка завершена!</div>
-                  <div style={{ fontSize:12, color:'#6b7280', marginBottom:12 }}>Обе стороны подтвердили выполнение</div>
+                  <div style={{ fontSize:12, color:'#6b7280', marginBottom:12 }}>Работа выполнена и оплачена</div>
                   {im && !dealDetail.hasReview && (
                     <button
                       onClick={() => setReviewDeal(dealDetail)}
@@ -495,6 +608,91 @@ export default function DealsPage() {
                   {cancelBusy ? 'Отменяем…' : 'Да, отменить'}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Модалка отмены IN_PROGRESS сделки */}
+        {cancelActiveOpen && (
+          <div style={{ position:'fixed', inset:0, zIndex:2100, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+            onClick={() => !cancelActiveBusy && setCancelActiveOpen(false)}>
+            <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:420, padding:24, boxShadow:'0 20px 50px rgba(0,0,0,.15)' }} onClick={e => e.stopPropagation()}>
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
+                <div style={{ width:38, height:38, borderRadius:'50%', background:'#fef2f2', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 }}>🚫</div>
+                <h3 style={{ margin:0, fontSize:17, fontWeight:800, color:'#111827' }}>Отменить сделку?</h3>
+              </div>
+              <div style={{ background:'rgba(239,68,68,.05)', borderRadius:10, padding:'10px 14px', marginBottom:14, border:'1px solid rgba(239,68,68,.12)' }}>
+                <p style={{ margin:0, fontSize:13, color:'#6b7280', lineHeight:1.5 }}>
+                  ⚠️ Сделка уже <b>в работе</b>. Мастер получит уведомление об отмене. Это действие необратимо.
+                </p>
+              </div>
+              <div style={{ marginBottom:14 }}>
+                <label style={{ fontSize:12, fontWeight:600, color:'#374151', display:'block', marginBottom:6 }}>Причина отмены (необязательно)</label>
+                <textarea
+                  value={cancelActiveReason}
+                  onChange={e => setCancelActiveReason(e.target.value)}
+                  placeholder="Например: изменились обстоятельства, нашёл другого мастера…"
+                  rows={3}
+                  style={{ width:'100%', padding:10, borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:13, resize:'vertical', boxSizing:'border-box' }}
+                />
+              </div>
+              {cancelActiveErr && <div style={{ color:'#dc2626', fontSize:13, marginBottom:12 }}>{cancelActiveErr}</div>}
+              <div style={{ display:'flex', gap:10 }}>
+                <button type="button" disabled={cancelActiveBusy} onClick={() => setCancelActiveOpen(false)}
+                  style={{ flex:1, padding:'11px', borderRadius:10, border:'1.5px solid #e5e7eb', background:'#fff', fontWeight:700, fontSize:14, cursor: cancelActiveBusy ? 'not-allowed' : 'pointer' }}>
+                  Не отменять
+                </button>
+                <button type="button" disabled={cancelActiveBusy} onClick={handleCancelActiveDeal}
+                  style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:'#dc2626', color:'#fff', fontWeight:700, fontSize:14, cursor: cancelActiveBusy ? 'not-allowed' : 'pointer' }}>
+                  {cancelActiveBusy ? 'Отменяем…' : 'Да, отменить'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Модалка мок-оплаты */}
+        {payModalOpen && (
+          <div style={{ position:'fixed', inset:0, zIndex:2100, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+            onClick={() => !payBusy && !payDone && setPayModalOpen(false)}>
+            <div style={{ background:'#fff', borderRadius:20, width:'100%', maxWidth:400, padding:28, boxShadow:'0 24px 60px rgba(0,0,0,.18)', textAlign:'center' }} onClick={e => e.stopPropagation()}>
+              {payDone ? (
+                <div>
+                  <div style={{ fontSize:56, marginBottom:12 }}>✅</div>
+                  <div style={{ fontSize:20, fontWeight:800, color:'#111827', marginBottom:6 }}>Оплата прошла!</div>
+                  <div style={{ fontSize:14, color:'#22c55e', fontWeight:600 }}>Сделка успешно завершена</div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ width:56, height:56, borderRadius:'50%', background:'linear-gradient(135deg,#7c3aed,#6366f1)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:28, margin:'0 auto 16px' }}>💳</div>
+                  <h3 style={{ margin:'0 0 6px', fontSize:18, fontWeight:800, color:'#111827' }}>Оплата работы</h3>
+
+                  <div style={{ background:'rgba(124,58,237,.06)', borderRadius:12, padding:'16px', margin:'16px 0', border:'1.5px solid rgba(124,58,237,.15)' }}>
+                    <div style={{ fontSize:12, color:'#9ca3af', marginBottom:4 }}>К оплате</div>
+                    <div style={{ fontSize:32, fontWeight:900, color:'#7c3aed' }}>
+                      {dealDetail?.agreedPrice ? `${Number(dealDetail.agreedPrice).toLocaleString('ru')} ₽` : 'Договорная'}
+                    </div>
+                    <div style={{ fontSize:12, color:'#9ca3af', marginTop:4 }}>{dealDetail?.title}</div>
+                  </div>
+
+                  <div style={{ background:'#f0fdf4', borderRadius:10, padding:'10px 12px', marginBottom:16, border:'1px solid rgba(34,197,94,.2)', fontSize:12, color:'#166534', textAlign:'left' }}>
+                    🧪 <b>Тестовый платёж</b> — в будущем здесь будет настоящая платёжная система
+                  </div>
+
+                  {payErr && <div style={{ color:'#dc2626', fontSize:13, marginBottom:12 }}>{payErr}</div>}
+
+                  <div style={{ display:'flex', gap:10 }}>
+                    <button type="button" disabled={payBusy} onClick={() => setPayModalOpen(false)}
+                      style={{ flex:1, padding:'12px', borderRadius:10, border:'1.5px solid #e5e7eb', background:'#fff', fontWeight:700, fontSize:14, cursor: payBusy ? 'not-allowed' : 'pointer' }}>
+                      Назад
+                    </button>
+                    <button type="button" disabled={payBusy} onClick={handleMockPay}
+                      style={{ flex:1, padding:'12px', borderRadius:10, border:'none', background:'linear-gradient(135deg,#7c3aed,#6366f1)', color:'#fff', fontWeight:700, fontSize:14, cursor: payBusy ? 'not-allowed' : 'pointer', boxShadow:'0 4px 12px rgba(124,58,237,.3)' }}>
+                      {payBusy ? '⏳ Обрабатываем…' : '💳 Оплатить'}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -825,12 +1023,17 @@ export default function DealsPage() {
 
         {/* Единые фильтры */}
         <div className="dpage-filters">
-          {[
-            ['ALL',         'Все',          deals.length + activeRequests.length],
-            ['IN_PROGRESS', 'В работе',     dealCounts.IN_PROGRESS],
-            ['REQUESTS',    'Мои заявки',   activeRequests.length],
-            ['COMPLETED',   'Завершены',    dealCounts.COMPLETED],
-          ].map(([key, label, count]) => (
+          {((() => {
+            const tabs = [
+              ['ALL',              'Все',          deals.length + activeRequests.length],
+              ['REQUESTS',         'Заявки',        activeRequests.length],
+              ['IN_PROGRESS',      'В работе',      dealCounts.IN_PROGRESS],
+            ];
+            if (dealCounts.NEW > 0) tabs.splice(1, 0, ['NEW', '⏳ Ожидание', dealCounts.NEW]);
+            if (dealCounts.AWAITING_PAYMENT > 0) tabs.push(['AWAITING_PAYMENT', '💳 Оплата', dealCounts.AWAITING_PAYMENT]);
+            tabs.push(['COMPLETED', 'Завершены', dealCounts.COMPLETED]);
+            return tabs;
+          })()).map(([key, label, count]) => (
             <button
               key={key}
               className={`dpage-filter-btn ${unifiedFilter === key ? 'active' : ''}`}
@@ -863,8 +1066,12 @@ export default function DealsPage() {
                 ...deals.map(d => ({ _type:'deal', ...d })),
                 ...activeRequests.map(r => ({ _type:'req', ...r })),
               ].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+            } else if (unifiedFilter === 'NEW') {
+              items = deals.filter(d => d.status === 'NEW').map(d => ({ _type:'deal', ...d }));
             } else if (unifiedFilter === 'IN_PROGRESS') {
               items = deals.filter(d => d.status === 'IN_PROGRESS').map(d => ({ _type:'deal', ...d }));
+            } else if (unifiedFilter === 'AWAITING_PAYMENT') {
+              items = deals.filter(d => d.status === 'AWAITING_PAYMENT').map(d => ({ _type:'deal', ...d }));
             } else if (unifiedFilter === 'REQUESTS') {
               items = activeRequests.map(r => ({ _type:'req', ...r }));
             } else if (unifiedFilter === 'COMPLETED') {
@@ -963,6 +1170,17 @@ export default function DealsPage() {
                           <div className={`dp-prog ${d.customerConfirmed ? 'ok' : ''}`}>{d.customerConfirmed ? '✅' : '⏳'} Заказчик</div>
                           <span className="dp-prog-arrow">→</span>
                           <div className={`dp-prog ${d.workerConfirmed ? 'ok' : ''}`}>{d.workerConfirmed ? '✅' : '⏳'} Мастер</div>
+                        </div>
+                      )}
+                      {d.status === 'AWAITING_PAYMENT' && (
+                        <div style={{ marginTop:8, display:'flex', alignItems:'center', gap:8, padding:'6px 10px', background:'rgba(124,58,237,.08)', borderRadius:8, border:'1px solid rgba(124,58,237,.15)' }}>
+                          <span style={{ fontSize:14 }}>💳</span>
+                          <span style={{ fontSize:12, fontWeight:700, color:'#7c3aed' }}>Ожидает оплаты</span>
+                          <button
+                            onClick={e => { e.stopPropagation(); setDealDetail(d); setPayErr(''); setPayDone(false); setPayModalOpen(true); }}
+                            style={{ marginLeft:'auto', fontSize:11, fontWeight:700, padding:'4px 12px', borderRadius:6, border:'none', background:'#7c3aed', color:'#fff', cursor:'pointer' }}>
+                            Оплатить
+                          </button>
                         </div>
                       )}
                     </div>
