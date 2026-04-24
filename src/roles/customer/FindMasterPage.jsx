@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { getCategories, getListings } from '../../api';
+import { getCategories, getListings, acceptListingDeal } from '../../api';
+import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
@@ -722,19 +723,65 @@ const css = `
   }
   .fmp-card-price { font-size: 18px; font-weight: 900; color: #1a1a1a; letter-spacing: -.3px; line-height: 1; }
   .fmp-card-price-unit { font-size: 11px; color: #999; font-weight: 400; display: block; margin-top: 2px; }
-  .fmp-card-actions { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+  .fmp-card-actions {
+    display: flex; flex-direction: column; gap: 6px; align-items: stretch;
+    min-width: 138px;
+  }
+  /* Главная: сразу оформить сделку по объявлению */
+  .fmp-btn-accept {
+    background: #e8410a;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    font-family: Inter, sans-serif;
+    padding: 9px 12px;
+    cursor: pointer;
+    transition: background .15s, box-shadow .15s, transform .12s;
+    white-space: nowrap;
+    box-shadow: 0 2px 12px rgba(232,65,10,.35);
+    letter-spacing: .01em;
+  }
+  .fmp-btn-accept:hover:not(:disabled) {
+    background: #c73208;
+    box-shadow: 0 4px 16px rgba(232,65,10,.4);
+    transform: translateY(-1px);
+  }
+  .fmp-btn-accept:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+  /* Вторичная: чат */
   .fmp-btn-msg {
-    background: #e8410a; border: none; border-radius: 8px;
-    color: #fff; font-size: 12px; font-weight: 700; font-family: Inter, sans-serif;
-    padding: 8px 14px; cursor: pointer; transition: background .15s; white-space: nowrap;
+    background: #fff;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 8px;
+    color: #333;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: Inter, sans-serif;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
   }
-  .fmp-btn-msg:hover { background: #c73208; }
-  .fmp-btn-order {
-    background: #fff; border: 1.5px solid #e8e8e8; border-radius: 8px;
-    color: #333; font-size: 12px; font-weight: 600; font-family: Inter, sans-serif;
-    padding: 7px 14px; cursor: pointer; transition: all .15s; white-space: nowrap;
+  .fmp-btn-msg:hover {
+    border-color: #e8410a;
+    color: #e8410a;
+    background: #fff9f7;
   }
-  .fmp-btn-order:hover { border-color: #e8410a; color: #e8410a; }
+  .fmp-card-action-err {
+    font-size: 10px;
+    font-weight: 600;
+    color: #dc2626;
+    line-height: 1.35;
+    text-align: right;
+    max-width: 160px;
+    align-self: flex-end;
+  }
 
   /* ══ ПУСТОЕ СОСТОЯНИЕ ══ */
   .fmp-empty {
@@ -799,6 +846,7 @@ function CheckItem({ checked, onChange, children }) {
 export default function FindMasterPage() {
   const navigate  = useNavigate();
   const { categorySlug } = useParams();
+  const { userId } = useAuth();
 
   const [categories,  setCategories]  = useState([]);
   const [services,    setServices]    = useState([]);
@@ -815,6 +863,29 @@ export default function FindMasterPage() {
   const [priceMin,      setPriceMin]      = useState('');
   const [priceMax,      setPriceMax]      = useState('');
   const [ratingMin,     setRatingMin]     = useState(0);
+  const [acceptingId,   setAcceptingId]   = useState(null);
+  const [acceptErr,     setAcceptErr]     = useState({});
+
+  const handleAcceptListing = useCallback(async (listingId, workerId) => {
+    if (!userId) {
+      navigate('/login');
+      return;
+    }
+    if (String(userId) === String(workerId)) {
+      setAcceptErr(prev => ({ ...prev, [listingId]: 'Это ваше объявление' }));
+      return;
+    }
+    setAcceptingId(listingId);
+    setAcceptErr(prev => ({ ...prev, [listingId]: '' }));
+    try {
+      await acceptListingDeal(userId, listingId);
+      navigate('/deals');
+    } catch (e) {
+      setAcceptErr(prev => ({ ...prev, [listingId]: e?.message || 'Не удалось оформить' }));
+    } finally {
+      setAcceptingId(null);
+    }
+  }, [userId, navigate]);
 
   useEffect(() => {
     setLoading(true);
@@ -1272,8 +1343,25 @@ export default function FindMasterPage() {
                           {s.priceUnit && <span className="fmp-card-price-unit">{s.priceUnit}</span>}
                         </div>
                         <div className="fmp-card-actions">
-                          <button className="fmp-btn-msg" onClick={() => navigate(`/chat/${wid}`)}>💬 Написать</button>
-                          <button className="fmp-btn-order" onClick={() => navigate(`/categories/${categorySlug}`)}>Заказать</button>
+                          <button
+                            type="button"
+                            className="fmp-btn-accept"
+                            disabled={acceptingId === s.id || String(userId) === String(wid)}
+                            title={String(userId) === String(wid) ? 'Нельзя принять своё объявление' : ''}
+                            onClick={(e) => { e.stopPropagation(); handleAcceptListing(s.id, wid); }}
+                          >
+                            {acceptingId === s.id ? '⏳ Оформляем…' : '✓ Принять сразу'}
+                          </button>
+                          <button
+                            type="button"
+                            className="fmp-btn-msg"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/chat/${wid}`); }}
+                          >
+                            💬 Написать
+                          </button>
+                          {acceptErr[s.id] && (
+                            <div className="fmp-card-action-err">{acceptErr[s.id]}</div>
+                          )}
                         </div>
                       </div>
                     </div>
