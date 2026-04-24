@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { getMyDeals, completeDeal, createCustomerReview, workerStartDeal } from '../../api';
+import { getMyDeals, completeDeal, createCustomerReview, workerStartDeal, cancelPendingDeal } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import '../customer/DealsPage.css'; // те же стили что у клиента
 
@@ -31,6 +31,12 @@ export default function WorkerDealsPage() {
   const [filter,  setFilter]  = useState('ALL');
   const [dealDetail, setDealDetail] = useState(null);
   const [actionId,   setActionId]   = useState(null);
+
+  const [cancelOpen,   setCancelOpen]   = useState(false);
+  const [cancelNote,   setCancelNote]   = useState('');
+  const [cancelBusy,   setCancelBusy]   = useState(false);
+  const [cancelErrMsg, setCancelErrMsg] = useState('');
+  const [decliningId,  setDecliningId]  = useState(null);
 
   // Отзыв заказчику
   const [reviewDeal,   setReviewDeal]   = useState(null);
@@ -92,6 +98,22 @@ export default function WorkerDealsPage() {
     setActionId(dealId);
     try { await workerStartDeal(userId, dealId); await load(); } catch {}
     setActionId(null);
+  };
+
+  const handleCancelPendingDeal = async () => {
+    if (!dealDetail?.id) return;
+    setCancelBusy(true);
+    setCancelErrMsg('');
+    try {
+      await cancelPendingDeal(userId, dealDetail.id, cancelNote);
+      setCancelOpen(false);
+      setCancelNote('');
+      await load();
+      setDealDetail(null);
+    } catch (e) {
+      setCancelErrMsg(e?.message || 'Не удалось отменить');
+    }
+    setCancelBusy(false);
   };
 
   const counts = {
@@ -248,6 +270,16 @@ export default function WorkerDealsPage() {
                     >
                       💬 Уточнить детали
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => { setCancelErrMsg(''); setCancelNote(''); setCancelOpen(true); }}
+                      style={{ width:'100%', padding:'10px', background:'#fff', border:'1.5px solid #fecaca', borderRadius:10, color:'#b91c1c', fontSize:13, fontWeight:700, cursor:'pointer' }}
+                    >
+                      Отказаться от заказа
+                    </button>
+                    <p style={{ margin:0, fontSize:11, color:'#78716c', lineHeight:1.45, textAlign:'center' }}>
+                      Если заказ вам не подходит — откажитесь до принятия, заказчик сможет выбрать другого мастера
+                    </p>
                   </div>
                 </div>
               )}
@@ -306,6 +338,34 @@ export default function WorkerDealsPage() {
             </div>
           </div>
         </div>
+
+        {cancelOpen && dealDetail?.status === 'NEW' && (
+          <div style={{ position:'fixed', inset:0, zIndex:2100, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+            onClick={() => !cancelBusy && setCancelOpen(false)}>
+            <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:420, padding:24, boxShadow:'0 20px 50px rgba(0,0,0,.15)' }} onClick={e => e.stopPropagation()}>
+              <h3 style={{ margin:'0 0 8px', fontSize:18, fontWeight:800, color:'#111827' }}>Отказаться от заказа?</h3>
+              <p style={{ margin:'0 0 16px', fontSize:14, color:'#6b7280', lineHeight:1.5 }}>
+                Заказчик увидит, что вы не приняли заказ. Можно указать причину — это необязательно.
+              </p>
+              <textarea
+                value={cancelNote}
+                onChange={e => setCancelNote(e.target.value)}
+                placeholder="Например: занят, не мой профиль работ…"
+                rows={3}
+                style={{ width:'100%', padding:10, borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:14, resize:'vertical', boxSizing:'border-box', marginBottom:12 }}
+              />
+              {cancelErrMsg && <div style={{ color:'#dc2626', fontSize:13, marginBottom:12 }}>{cancelErrMsg}</div>}
+              <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+                <button type="button" disabled={cancelBusy} onClick={() => setCancelOpen(false)}
+                  style={{ padding:'10px 18px', borderRadius:8, border:'1.5px solid #e5e7eb', background:'#fff', fontWeight:700, cursor: cancelBusy ? 'not-allowed' : 'pointer' }}>Назад</button>
+                <button type="button" disabled={cancelBusy} onClick={handleCancelPendingDeal}
+                  style={{ padding:'10px 18px', borderRadius:8, border:'none', background:'#b91c1c', color:'#fff', fontWeight:700, cursor: cancelBusy ? 'not-allowed' : 'pointer' }}>
+                  {cancelBusy ? 'Отправляем…' : 'Да, отказаться'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Модалка отзыва о заказчике */}
         {reviewDeal && (
@@ -485,17 +545,37 @@ export default function WorkerDealsPage() {
                       <span>🕐 {timeAgo(d.createdAt)}</span>
                     </div>
                     {isNew && (
-                      <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 12, color: '#92400e', background: '#fef3c7', borderRadius: 6, padding: '3px 8px', fontWeight: 600 }}>
                           ⏳ Ждёт вашего подтверждения
                         </span>
                         <button
                           type="button"
-                          disabled={actionId === d.id}
+                          disabled={actionId === d.id || decliningId === d.id}
                           onClick={(e) => { e.stopPropagation(); handleStartDeal(d.id); }}
                           style={{ fontSize: 12, fontWeight: 700, padding: '4px 12px', background: '#e8410a', border: 'none', borderRadius: 6, color: '#fff', cursor: actionId === d.id ? 'not-allowed' : 'pointer', opacity: actionId === d.id ? .6 : 1 }}
                         >
                           {actionId === d.id ? '⏳…' : '✅ Принять'}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={actionId === d.id || decliningId === d.id}
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (!window.confirm('Отказаться от заказа? Заказчик сможет выбрать другого мастера.')) return;
+                            setDecliningId(d.id);
+                            try {
+                              await cancelPendingDeal(userId, d.id, '');
+                              await load();
+                            } catch (err) {
+                              window.alert(err?.message || 'Не удалось отменить');
+                            } finally {
+                              setDecliningId(null);
+                            }
+                          }}
+                          style={{ fontSize: 12, fontWeight: 700, padding: '4px 12px', background: '#fff', border: '1px solid #fecaca', borderRadius: 6, color: '#b91c1c', cursor: decliningId === d.id ? 'not-allowed' : 'pointer', opacity: decliningId === d.id ? .6 : 1 }}
+                        >
+                          {decliningId === d.id ? '…' : 'Отказать'}
                         </button>
                       </div>
                     )}

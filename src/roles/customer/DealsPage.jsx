@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  getMyDeals, completeDeal,
+  getMyDeals, completeDeal, cancelPendingDeal,
   getMyJobRequests, getOffersForRequest, acceptOffer, getCategories,
   createReview,
 } from '../../api';
@@ -57,6 +57,12 @@ export default function DealsPage() {
   const [offersLoading, setOffersLoading] = useState(false);
 
   const [actionId, setActionId] = useState(null);
+
+  // Отмена сделки в статусе NEW
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelReason,    setCancelReason]    = useState('');
+  const [cancelBusy,     setCancelBusy]     = useState(false);
+  const [cancelErr,      setCancelErr]       = useState('');
 
   // ✅ ДОБАВЛЕНО: Стейты для отзыва
   const [reviewDeal, setReviewDeal] = useState(null);
@@ -132,6 +138,22 @@ export default function DealsPage() {
     setActionId(dealId);
     try { await completeDeal(userId, dealId); await load(); } catch {}
     setActionId(null);
+  };
+
+  const handleCancelPendingDeal = async () => {
+    if (!dealDetail?.id) return;
+    setCancelBusy(true);
+    setCancelErr('');
+    try {
+      await cancelPendingDeal(userId, dealDetail.id, cancelReason);
+      setCancelModalOpen(false);
+      setCancelReason('');
+      await load();
+      setDealDetail(null);
+    } catch (e) {
+      setCancelErr(e?.message || 'Не удалось отменить заявку');
+    }
+    setCancelBusy(false);
   };
 
   // ✅ ДОБАВЛЕНО: Обработчик отправки отзыва
@@ -365,15 +387,26 @@ export default function DealsPage() {
                     💡 Пока мастер не подтвердит, заказ находится в статусе <strong>«Новая»</strong>. Вы можете написать ему напрямую, чтобы уточнить детали.
                   </div>
 
-                  {/* Кнопка чата */}
-                  {dealDetail.workerId && (
+                  <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                    {dealDetail.workerId && (
+                      <button
+                        onClick={() => navigate(`/chat/${dealDetail.workerId}`)}
+                        style={{ width:'100%', padding:'11px', background:'rgba(14,165,233,.08)', border:'1.5px solid rgba(14,165,233,.25)', borderRadius:9, color:'#0ea5e9', fontSize:13, fontWeight:700, cursor:'pointer' }}
+                      >
+                        💬 Написать мастеру
+                      </button>
+                    )}
                     <button
-                      onClick={() => navigate(`/chat/${dealDetail.workerId}`)}
-                      style={{ width:'100%', padding:'11px', background:'rgba(14,165,233,.08)', border:'1.5px solid rgba(14,165,233,.25)', borderRadius:9, color:'#0ea5e9', fontSize:13, fontWeight:700, cursor:'pointer' }}
+                      type="button"
+                      onClick={() => { setCancelErr(''); setCancelReason(''); setCancelModalOpen(true); }}
+                      style={{ width:'100%', padding:'10px', background:'#fff', border:'1.5px solid #fecaca', borderRadius:9, color:'#b91c1c', fontSize:13, fontWeight:700, cursor:'pointer' }}
                     >
-                      💬 Написать мастеру
+                      Отменить заявку
                     </button>
-                  )}
+                    <p style={{ margin:0, fontSize:11, color:'#a8a29e', lineHeight:1.45, textAlign:'center' }}>
+                      Пока мастер не принял заказ, вы можете отменить заявку без последствий
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -431,6 +464,40 @@ export default function DealsPage() {
             </div>
           </div>
         </div>
+
+        {/* Модалка отмены NEW-сделки */}
+        {cancelModalOpen && dealDetail?.status === 'NEW' && (
+          <div style={{ position:'fixed', inset:0, zIndex:2100, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+            onClick={() => !cancelBusy && setCancelModalOpen(false)}>
+            <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:420, padding:24, boxShadow:'0 20px 50px rgba(0,0,0,.15)' }} onClick={e => e.stopPropagation()}>
+              <h3 style={{ margin:'0 0 8px', fontSize:18, fontWeight:800, color:'#111827' }}>Отменить заявку?</h3>
+              <p style={{ margin:'0 0 16px', fontSize:14, color:'#6b7280', lineHeight:1.5 }}>
+                Мастер получит уведомление, что заявка снята. Объявление снова будет доступно для других заказчиков.
+              </p>
+              <div style={{ marginBottom:14 }}>
+                <label style={{ fontSize:12, fontWeight:600, color:'#374151', display:'block', marginBottom:6 }}>Комментарий (необязательно)</label>
+                <textarea
+                  value={cancelReason}
+                  onChange={e => setCancelReason(e.target.value)}
+                  placeholder="Например: передумал, нашёл другого мастера…"
+                  rows={3}
+                  style={{ width:'100%', padding:10, borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:14, resize:'vertical', boxSizing:'border-box' }}
+                />
+              </div>
+              {cancelErr && <div style={{ color:'#dc2626', fontSize:13, marginBottom:12 }}>{cancelErr}</div>}
+              <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+                <button type="button" disabled={cancelBusy} onClick={() => setCancelModalOpen(false)}
+                  style={{ padding:'10px 18px', borderRadius:8, border:'1.5px solid #e5e7eb', background:'#fff', fontWeight:700, cursor: cancelBusy ? 'not-allowed' : 'pointer' }}>
+                  Не отменять
+                </button>
+                <button type="button" disabled={cancelBusy} onClick={handleCancelPendingDeal}
+                  style={{ padding:'10px 18px', borderRadius:8, border:'none', background:'#b91c1c', color:'#fff', fontWeight:700, cursor: cancelBusy ? 'not-allowed' : 'pointer' }}>
+                  {cancelBusy ? 'Отменяем…' : 'Да, отменить'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* LIGHTBOX */}
         {lightbox && (
@@ -867,8 +934,28 @@ export default function DealsPage() {
                         <span>🕐 {timeAgo(d.createdAt)}</span>
                       </div>
                       {d.status === 'NEW' && (
-                        <div style={{ marginTop:6, display:'inline-flex', alignItems:'center', gap:5, background:'#fef3c7', borderRadius:6, padding:'3px 9px', fontSize:11, fontWeight:600, color:'#92400e' }}>
-                          ⏳ Ждём подтверждения мастера
+                        <div style={{ marginTop:8, display:'flex', flexWrap:'wrap', alignItems:'center', gap:8 }}>
+                          <div style={{ display:'inline-flex', alignItems:'center', gap:5, background:'#fef3c7', borderRadius:6, padding:'3px 9px', fontSize:11, fontWeight:600, color:'#92400e' }}>
+                            ⏳ Ждём подтверждения мастера
+                          </div>
+                          {im && (
+                            <button
+                              type="button"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (!window.confirm('Отменить заявку? Мастер ещё не принял заказ — отмена бесплатна.')) return;
+                                try {
+                                  await cancelPendingDeal(userId, d.id, '');
+                                  await load();
+                                } catch (err) {
+                                  window.alert(err?.message || 'Не удалось отменить');
+                                }
+                              }}
+                              style={{ fontSize:11, fontWeight:700, padding:'4px 10px', borderRadius:6, border:'1px solid #fecaca', background:'#fff', color:'#b91c1c', cursor:'pointer' }}
+                            >
+                              Отменить
+                            </button>
+                          )}
                         </div>
                       )}
                       {d.status === 'IN_PROGRESS' && (

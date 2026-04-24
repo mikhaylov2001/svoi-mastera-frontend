@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { getCategories, getListings, acceptListingDeal, getMyDeals } from '../../api';
+import { getCategories, getListings, acceptListingDeal, getMyDeals, cancelPendingDeal } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 
@@ -907,6 +907,7 @@ export default function FindMasterPage() {
   const [acceptErr,     setAcceptErr]     = useState({});
   // listingId → dealId  (состояние с бэка: NEW-сделка ожидает мастера)
   const [pendingDeals,  setPendingDeals]  = useState({});
+  const [cancellingListingId, setCancellingListingId] = useState(null);
 
   // Строим pendingDeals из реальных сделок бэкенда (listingId → dealId)
   const buildPendingFromDeals = useCallback((deals) => {
@@ -942,6 +943,23 @@ export default function FindMasterPage() {
       setAcceptingId(null);
     }
   }, [userId, navigate, buildPendingFromDeals]);
+
+  const handleCancelPendingListing = useCallback(async (listingId) => {
+    const dealId = pendingDeals[String(listingId)];
+    if (!dealId || !userId) return;
+    if (!window.confirm('Отменить заявку мастеру? Вы сможете оформить заказ снова позже.')) return;
+    setCancellingListingId(listingId);
+    setAcceptErr(prev => ({ ...prev, [listingId]: '' }));
+    try {
+      await cancelPendingDeal(userId, dealId, '');
+      const fresh = await getMyDeals(userId).catch(() => []);
+      buildPendingFromDeals(fresh);
+    } catch (e) {
+      setAcceptErr(prev => ({ ...prev, [listingId]: e?.message || 'Не удалось отменить' }));
+    } finally {
+      setCancellingListingId(null);
+    }
+  }, [userId, pendingDeals, buildPendingFromDeals]);
 
   useEffect(() => {
     setLoading(true);
@@ -1416,6 +1434,20 @@ export default function FindMasterPage() {
                             <span style={{ fontWeight: 400, color: '#78350f' }}>
                               Мастер должен принять заказ
                             </span>
+                            <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:4, alignItems:'center' }}>
+                              <button
+                                type="button"
+                                className="fmp-pending-link"
+                                disabled={cancellingListingId === s.id}
+                                onClick={(e) => { e.stopPropagation(); handleCancelPendingListing(s.id); }}
+                                style={{ color: '#b91c1c', fontWeight: 700 }}
+                              >
+                                {cancellingListingId === s.id ? 'Отменяем…' : 'Отменить заявку'}
+                              </button>
+                            </div>
+                            {acceptErr[s.id] && (
+                              <div className="fmp-card-action-err" style={{ alignSelf: 'stretch', textAlign: 'left', maxWidth: 'none' }}>{acceptErr[s.id]}</div>
+                            )}
                           </div>
                         </div>
                       ) : (

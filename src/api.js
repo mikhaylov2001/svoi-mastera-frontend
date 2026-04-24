@@ -115,6 +115,15 @@ export async function workerStartDeal(userId, dealId) {
   });
 }
 
+/** Отмена сделки в статусе NEW (заказчик или мастер) */
+export async function cancelPendingDeal(userId, dealId, reason = '') {
+  const qs = reason?.trim() ? `?reason=${encodeURIComponent(reason.trim())}` : '';
+  return apiCall(`/deals/${dealId}/cancel${qs}`, {
+    method: 'POST',
+    headers: { 'X-User-Id': userId },
+  });
+}
+
 // ── DEALS ──
 export async function getMyDeals(userId) {
   return apiCall('/deals', { headers: { 'X-User-Id': userId }, cache: 'no-store' });
