@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { getMyDeals, completeDeal, createCustomerReview, workerStartDeal, cancelPendingDeal, cancelActiveDeal } from '../../api';
+import {
+  getMyDeals, getListingsByWorker, completeDeal, createCustomerReview, workerStartDeal, cancelPendingDeal, cancelActiveDeal,
+} from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import '../customer/DealsPage.css'; // те же стили что у клиента
 
@@ -21,13 +23,21 @@ function timeAgo(d) {
   return `${Math.floor(h / 24)} дн. назад`;
 }
 
+function listingThumb(p) {
+  if (!p) return null;
+  if (p.startsWith('data:') || p.startsWith('http')) return p;
+  return `https://svoi-mastera-backend.onrender.com${p}`;
+}
+
 export default function WorkerDealsPage() {
   const { userId } = useAuth();
   const navigate   = useNavigate();
   const location   = useLocation();
 
   const [deals,   setDeals]   = useState([]);
+  const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pageTab, setPageTab] = useState('orders'); // 'orders' | 'listings'
   const [filter,  setFilter]  = useState('ALL');
   const [dealDetail, setDealDetail] = useState(null);
   const [actionId,   setActionId]   = useState(null);
@@ -66,10 +76,17 @@ export default function WorkerDealsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getMyDeals(userId);
-      // Только сделки где мы — мастер
-      setDeals((data || []).filter(d => d.workerId === userId));
-    } catch {}
+      const [data, lst] = await Promise.all([
+        getMyDeals(userId),
+        getListingsByWorker(userId).catch(() => []),
+      ]);
+      const uid = String(userId || '');
+      setDeals((data || []).filter(d => String(d.workerId || '') === uid));
+      setListings(Array.isArray(lst) ? lst : []);
+    } catch {
+      setDeals([]);
+      setListings([]);
+    }
     setLoading(false);
   }, [userId]);
 
@@ -145,6 +162,9 @@ export default function WorkerDealsPage() {
     IN_PROGRESS: deals.filter(d => d.status === 'IN_PROGRESS').length,
     COMPLETED:   deals.filter(d => d.status === 'COMPLETED').length,
   };
+
+  const activeListings = listings.filter(l => l.active);
+  const archivedListings = listings.filter(l => !l.active);
 
   const filtered = filter === 'ALL'
     ? deals
@@ -526,13 +546,122 @@ export default function WorkerDealsPage() {
       <div className="page-header-bar dpage-header">
         <div className="container">
           <h1>Мои заказы</h1>
-          <p>Активные сделки и завершённые работы</p>
+          <p>Сделки с заказчиками и ваши объявления в каталоге — всё подгружается с сервера</p>
         </div>
       </div>
 
       <div className="container" style={{ padding:'28px 0 60px' }}>
 
-        {/* Фильтры */}
+        {/* Заказы vs объявления (данные с бэкенда: /deals и /workers/.../listings) */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className={`dpage-filter-btn ${pageTab === 'orders' ? 'active' : ''}`}
+            onClick={() => setPageTab('orders')}
+          >
+            Заказы <span>{counts.ALL}</span>
+          </button>
+          <button
+            type="button"
+            className={`dpage-filter-btn ${pageTab === 'listings' ? 'active' : ''}`}
+            onClick={() => setPageTab('listings')}
+          >
+            Мои объявления <span>{listings.length}</span>
+            {activeListings.length > 0 && (
+              <span style={{ marginLeft: 4, fontSize: 11, color: '#16a34a', fontWeight: 800 }}>(активн. {activeListings.length})</span>
+            )}
+          </button>
+        </div>
+
+        {pageTab === 'listings' ? (
+          <div className="dpage-list">
+            {loading ? (
+              [1, 2, 3].map(i => <div key={i} className="dp-skeleton" style={{ height: 88 }} />)
+            ) : listings.length === 0 ? (
+              <div className="dpage-empty">
+                <span>📢</span>
+                <h3>Объявлений пока нет</h3>
+                <p>Разместите услугу — она появится в каталоге для заказчиков</p>
+                <Link to="/my-listings" className="btn btn-primary btn-sm">Мои объявления</Link>
+              </div>
+            ) : (
+              <>
+                {activeListings.length > 0 && (
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#64748b', margin: '0 0 10px', letterSpacing: '.04em' }}>АКТИВНЫЕ В КАТАЛОГЕ</div>
+                )}
+                {activeListings.map(l => {
+                  const thumb = listingThumb(l.photos?.[0]);
+                  return (
+                    <Link
+                      key={l.id}
+                      to={`/listings/${l.id}`}
+                      className="dpage-card-avito"
+                      style={{ borderLeft: '4px solid #7c3aed', textDecoration: 'none', color: 'inherit', marginBottom: 10 }}
+                    >
+                      <div className="dpage-card-avito-img">
+                        {thumb ? <img src={thumb} alt="" style={{ pointerEvents: 'none' }} /> : (
+                          <div className="dpage-card-avito-img-placeholder"><span>📢</span></div>
+                        )}
+                      </div>
+                      <div className="dpage-card-avito-body">
+                        <div className="dpage-card-avito-top">
+                          <h3 className="dpage-card-avito-title">{l.title}</h3>
+                          <span className="dp-badge" style={{ color: '#15803d', background: 'rgba(34,197,94,.12)' }}>● В каталоге</span>
+                        </div>
+                        {l.price != null && (
+                          <div className="dpage-card-avito-price">
+                            {Number(l.price).toLocaleString('ru-RU')} ₽
+                            {l.priceUnit && <span style={{ fontSize: 13, fontWeight: 600, color: '#9ca3af' }}> {l.priceUnit}</span>}
+                          </div>
+                        )}
+                        <div className="dpage-card-avito-meta">
+                          {l.category && <span>🏷 {l.category}</span>}
+                          {l.createdAt && <span>🕐 {timeAgo(l.createdAt)}</span>}
+                        </div>
+                      </div>
+                      <div className="dpage-card-chevron">›</div>
+                    </Link>
+                  );
+                })}
+                {archivedListings.length > 0 && (
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#64748b', margin: '18px 0 10px', letterSpacing: '.04em' }}>АРХИВ (СНЯТЫ С ПУБЛИКАЦИИ)</div>
+                )}
+                {archivedListings.map(l => {
+                  const thumb = listingThumb(l.photos?.[0]);
+                  return (
+                    <Link
+                      key={l.id}
+                      to="/my-listings"
+                      className="dpage-card-avito"
+                      style={{ opacity: 0.85, textDecoration: 'none', color: 'inherit', marginBottom: 10 }}
+                    >
+                      <div className="dpage-card-avito-img">
+                        {thumb ? <img src={thumb} alt="" style={{ pointerEvents: 'none' }} /> : (
+                          <div className="dpage-card-avito-img-placeholder"><span>📁</span></div>
+                        )}
+                      </div>
+                      <div className="dpage-card-avito-body">
+                        <div className="dpage-card-avito-top">
+                          <h3 className="dpage-card-avito-title">{l.title}</h3>
+                          <span className="dp-badge" style={{ color: '#64748b', background: '#f1f5f9' }}>Архив</span>
+                        </div>
+                        <div className="dpage-card-avito-meta">
+                          <span>Редактировать и вернуть в каталог — в «Мои объявления»</span>
+                        </div>
+                      </div>
+                      <div className="dpage-card-chevron">›</div>
+                    </Link>
+                  );
+                })}
+                <div style={{ marginTop: 16, textAlign: 'center' }}>
+                  <Link to="/my-listings" style={{ fontSize: 14, fontWeight: 700, color: '#e8410a' }}>Управление объявлениями →</Link>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <>
+        {/* Фильтры сделок */}
         <div className="dpage-filters">
           {[
             ['ALL',         'Все',            counts.ALL],
@@ -572,7 +701,7 @@ export default function WorkerDealsPage() {
           </Link>
         </div>
 
-        {/* Список */}
+        {/* Список сделок */}
         <div className="dpage-list">
           {loading ? (
             [1,2,3].map(i => (
@@ -583,6 +712,11 @@ export default function WorkerDealsPage() {
               <span>🤝</span>
               <h3>Заказов пока нет</h3>
               <p>Откликайтесь на заявки — заказы появятся здесь</p>
+              {activeListings.length > 0 && (
+                <p style={{ marginTop: 10, fontSize: 14, color: '#64748b', maxWidth: 420 }}>
+                  У вас есть <b>{activeListings.length}</b> активн. объявлени{activeListings.length === 1 ? 'е' : 'я'} в каталоге — откройте вкладку «Мои объявления» выше.
+                </p>
+              )}
               <Link to="/find-work" className="btn btn-primary btn-sm">
                 Найти работу
               </Link>
@@ -676,6 +810,8 @@ export default function WorkerDealsPage() {
             })
           )}
         </div>
+          </>
+        )}
       </div>
     </div>
   );

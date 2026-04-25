@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getMyDeals, getReviewsByWorker, uploadAvatar, getUserProfile } from '../../api';
+import { getMyDeals, getListingsByWorker, getReviewsByWorker, uploadAvatar, getUserProfile } from '../../api';
 import ReviewForm from '../../components/ReviewForm';
 import '../../styles/profileDashboard.css';
 
@@ -59,6 +59,7 @@ export default function WorkerProfilePage() {
 
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [deals, setDeals] = useState([]);
+  const [listings, setListings] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -74,9 +75,16 @@ export default function WorkerProfilePage() {
   useEffect(() => {
     if (!userId || userRole === 'CUSTOMER') return;
     setLoading(true);
-    Promise.all([getMyDeals(userId), getReviewsByWorker(userId), getUserProfile(userId)])
-      .then(([d, r, p]) => {
-        setDeals(d || []);
+    Promise.all([
+      getMyDeals(userId),
+      getListingsByWorker(userId).catch(() => []),
+      getReviewsByWorker(userId),
+      getUserProfile(userId),
+    ])
+      .then(([d, lst, r, p]) => {
+        const uid = String(userId || '');
+        setDeals((d || []).filter(x => String(x.workerId || '') === uid));
+        setListings(Array.isArray(lst) ? lst : []);
         setReviews((r || []).filter(x => x.status === 'APPROVED'));
         const prof = p || {};
         setProfile(prof);
@@ -116,7 +124,15 @@ export default function WorkerProfilePage() {
   };
 
   const reloadDeals = async () => {
-    try { setDeals(await getMyDeals(userId) || []); } catch {}
+    try {
+      const uid = String(userId || '');
+      const [d, lst] = await Promise.all([
+        getMyDeals(userId),
+        getListingsByWorker(userId).catch(() => []),
+      ]);
+      setDeals((d || []).filter(x => String(x.workerId || '') === uid));
+      setListings(Array.isArray(lst) ? lst : []);
+    } catch {}
   };
 
   const lastNameLive = profile?.lastName != null ? String(profile.lastName) : (userLastName || '');
@@ -137,6 +153,7 @@ export default function WorkerProfilePage() {
     () => deals.filter(d => ['IN_PROGRESS', 'NEW'].includes(d.status)).length,
     [deals],
   );
+  const activeListings = useMemo(() => listings.filter(l => l.active), [listings]);
 
   const tabCounts = useMemo(() => {
     const c = { ALL: deals.length, NEW: 0, IN_PROGRESS: 0, COMPLETED: 0, CANCELLED: 0 };
@@ -213,7 +230,13 @@ export default function WorkerProfilePage() {
                 <div>
                   <div className="pp-act-title">Мои сделки</div>
                   <div className="pp-act-sub" style={{ color: '#64748b' }}>
-                    Активных: <b style={{ color: '#e8410a', fontWeight: 900 }}>{activeDealsCount}</b>
+                    Заказов (активн.): <b style={{ color: '#e8410a', fontWeight: 900 }}>{activeDealsCount}</b>
+                    {activeListings.length > 0 && (
+                      <>
+                        {' · '}
+                        Объявл.: <b style={{ color: '#7c3aed', fontWeight: 900 }}>{activeListings.length}</b>
+                      </>
+                    )}
                   </div>
                 </div>
               </Link>
@@ -228,6 +251,57 @@ export default function WorkerProfilePage() {
                 </div>
               </Link>
             </div>
+
+            {activeListings.length > 0 && (
+              <div className="pp-deals" style={{ marginBottom: 16 }}>
+                <div className="pp-tabs" style={{ borderBottom: 'none' }}>
+                  <span className="pp-tab on" style={{ cursor: 'default' }}>
+                    Активные объявления
+                    <span className="pp-tab-n">{activeListings.length}</span>
+                  </span>
+                  <Link to="/my-listings" className="pp-tab-link">Управление →</Link>
+                </div>
+                <div className="pp-dl-body">
+                  {activeListings.slice(0, 4).map(l => {
+                    const photoRaw = l.photos?.[0] || null;
+                    const photoSrc = resolveUrl(photoRaw);
+                    return (
+                      <Link
+                        key={l.id}
+                        to={`/listings/${l.id}`}
+                        className="pp-dc"
+                        style={{ marginBottom: 10, border: '1.5px solid #e8eef8' }}
+                      >
+                        <div className="pp-dc-line" style={{ background: '#a78bfa' }} />
+                        <div className="pp-dc-photo" style={{ width: 100 }}>
+                          {photoSrc ? <img src={photoSrc} alt="" /> : <div className="pp-dc-photo-ph">📢</div>}
+                        </div>
+                        <div className="pp-dc-body">
+                          <div className="pp-dc-title">{l.title}</div>
+                          <div className="pp-dc-meta">
+                            {l.category && <span className="pp-dc-m">📂 <strong>{l.category}</strong></span>}
+                            {l.createdAt && <span className="pp-dc-m">📅 {fmtCard(l.createdAt)}</span>}
+                          </div>
+                          {l.price != null && (
+                            <div className="pp-dc-price">
+                              {Number(l.price).toLocaleString('ru-RU')} ₽
+                              {l.priceUnit ? ` ${l.priceUnit}` : ''}
+                            </div>
+                          )}
+                        </div>
+                        <div className="pp-dc-right">
+                          <span className="pp-badge" style={{ background: '#f0fdf4', color: '#15803d' }}>
+                            <span className="pp-badge-dot" style={{ background: '#22c55e' }} />
+                            В каталоге
+                          </span>
+                          <span className="pp-dc-btn bl">Как у заказчиков →</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="pp-deals">
               <div className="pp-tabs">
