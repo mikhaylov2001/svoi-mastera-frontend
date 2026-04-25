@@ -5,271 +5,219 @@ import { getUserProfile, updateUserProfile, changePassword } from '../api';
 import { useToast } from '../context/ToastContext';
 import './PersonalSettingsPage.css';
 
-function initials(displayName, lastName) {
-  const a = (displayName || '').trim().split(/\s+/)[0]?.[0] || '';
-  const b = (lastName || '').trim()[0] || '';
+function getInitials(first, last) {
+  const a = (first || '').trim()[0] || '';
+  const b = (last  || '').trim()[0] || '';
   return (a + b).toUpperCase() || '?';
 }
 
-function profileCompletePct(f) {
+function completePct(f) {
   let n = 0;
-  if (f.displayName?.trim()) n += 30;
-  if (f.lastName?.trim()) n += 20;
-  if (f.phone?.trim()) n += 25;
-  if (f.city?.trim()) n += 25;
+  if ((f.displayName || '').trim()) n += 30;
+  if ((f.lastName    || '').trim()) n += 20;
+  if ((f.phone       || '').trim()) n += 25;
+  if ((f.city        || '').trim()) n += 25;
   return Math.min(100, n);
 }
+
+/* SVG ring progress */
+function Ring({ pct }) {
+  const r = 24;
+  const circ = 2 * Math.PI * r;
+  const offset = circ * (1 - pct / 100);
+  return (
+    <div className="psp-complete-ring">
+      <svg width="56" height="56" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r={r} fill="none" stroke="rgba(255,255,255,.12)" strokeWidth="4" />
+        <circle
+          cx="28" cy="28" r={r} fill="none"
+          stroke={pct >= 100 ? '#22c55e' : '#ff6b35'}
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray={circ}
+          strokeDashoffset={offset}
+        />
+      </svg>
+      <div className="psp-complete-val">{pct}%</div>
+    </div>
+  );
+}
+
+const ROLE_LABEL = { WORKER: 'Мастер', CUSTOMER: 'Заказчик' };
 
 export default function PersonalSettingsPage() {
   const { userId, userRole, login, userAvatar } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]           = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
-  const [savingPassword, setSavingPassword] = useState(false);
+  const [savedProfile, setSavedProfile]   = useState(false);
+  const [savingPw, setSavingPw]           = useState(false);
 
   const [form, setForm] = useState({
-    displayName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    city: '',
+    displayName: '', lastName: '', email: '', phone: '', city: '',
+  });
+  const [pw, setPw] = useState({
+    currentPassword: '', newPassword: '', confirmPassword: '',
   });
 
-  const [passwordForm, setPasswordForm] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
-
-  const completePct = useMemo(() => profileCompletePct(form), [form]);
-
-  const roleLabel = userRole === 'WORKER' ? 'Мастер' : 'Заказчик';
+  const pct = useMemo(() => completePct(form), [form]);
+  const ini = useMemo(() => getInitials(form.displayName, form.lastName), [form.displayName, form.lastName]);
+  const fullName = [form.displayName, form.lastName].filter(Boolean).join(' ') || '—';
 
   useEffect(() => {
-    loadProfile();
+    if (!userId) return;
+    setLoading(true);
+    getUserProfile(userId)
+      .then(d => {
+        setForm({
+          displayName: d.displayName || '',
+          lastName:    d.lastName    || '',
+          email:       d.email       || '',
+          phone:       d.phone       || '',
+          city:        d.city        || '',
+        });
+      })
+      .catch(() => showToast('Не удалось загрузить профиль', 'error'))
+      .finally(() => setLoading(false));
   }, [userId]);
 
-  const loadProfile = async () => {
-    setLoading(true);
-    try {
-      const data = await getUserProfile(userId);
-      setForm({
-        displayName: data.displayName || '',
-        lastName: data.lastName || '',
-        email: data.email || '',
-        phone: data.phone || '',
-        city: data.city || '',
-      });
-    } catch (err) {
-      console.error('Failed to load profile:', err);
-      showToast('Не удалось загрузить профиль', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveProfile = async (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (!form.displayName.trim()) {
-      showToast('Введите имя', 'error');
-      return;
-    }
-    setSavingProfile(true);
+    if (!(form.displayName || '').trim()) { showToast('Введите имя', 'error'); return; }
+    setSavingProfile(true); setSavedProfile(false);
     try {
       await updateUserProfile(userId, {
         displayName: form.displayName.trim(),
-        lastName: form.lastName.trim(),
-        phone: form.phone.trim(),
-        city: form.city.trim(),
+        lastName:    form.lastName.trim(),
+        phone:       form.phone.trim(),
+        city:        form.city.trim(),
       });
       login(userId, userRole, form.displayName.trim(), userAvatar, form.lastName.trim());
+      setSavedProfile(true);
+      setTimeout(() => setSavedProfile(false), 3000);
       showToast('Профиль обновлён', 'success');
-    } catch (err) {
-      console.error('Failed to update profile:', err);
-      showToast('Не удалось сохранить изменения', 'error');
-    } finally {
-      setSavingProfile(false);
-    }
+    } catch {
+      showToast('Не удалось сохранить', 'error');
+    } finally { setSavingProfile(false); }
   };
 
-  const handleChangePassword = async (e) => {
+  const handlePw = async (e) => {
     e.preventDefault();
-    if (!passwordForm.currentPassword || !passwordForm.newPassword) {
-      showToast('Заполните все поля', 'error');
-      return;
-    }
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      showToast('Пароли не совпадают', 'error');
-      return;
-    }
-    if (passwordForm.newPassword.length < 6) {
-      showToast('Пароль не менее 6 символов', 'error');
-      return;
-    }
-    setSavingPassword(true);
+    if (!pw.currentPassword || !pw.newPassword) { showToast('Заполните все поля', 'error'); return; }
+    if (pw.newPassword !== pw.confirmPassword)   { showToast('Пароли не совпадают', 'error'); return; }
+    if (pw.newPassword.length < 6) { showToast('Пароль — минимум 6 символов', 'error'); return; }
+    setSavingPw(true);
     try {
-      await changePassword(userId, {
-        currentPassword: passwordForm.currentPassword,
-        newPassword: passwordForm.newPassword,
-      });
+      await changePassword(userId, { currentPassword: pw.currentPassword, newPassword: pw.newPassword });
       showToast('Пароль изменён', 'success');
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (err) {
-      console.error('Failed to change password:', err);
+      setPw({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch {
       showToast('Неверный текущий пароль', 'error');
-    } finally {
-      setSavingPassword(false);
-    }
+    } finally { setSavingPw(false); }
   };
 
-  const fullName = [form.displayName, form.lastName].filter(Boolean).join(' ') || '—';
+  const setF = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+  const setP = (k) => (e) => setPw(p  => ({ ...p, [k]: e.target.value }));
 
-  if (loading) {
-    return (
-      <div className="psp-root">
-        <div className="psp-top">
-          <div className="container">
-            <button type="button" onClick={() => navigate(-1)} className="psp-back">
-              ← Назад
-            </button>
-            <h1 className="psp-title">Личные данные</h1>
-          </div>
+  if (loading) return (
+    <div className="psp-root">
+      <div className="psp-bar">
+        <div className="psp-bar-inner">
+          <button type="button" onClick={() => navigate(-1)} className="psp-back">← Назад</button>
+          <span className="psp-bar-title">Личные данные</span>
         </div>
-        <div className="container">
-          <div className="psp-panel" style={{ padding: 20 }}>
-            <div style={{ height: 14, background: '#f1f5f9', borderRadius: 6, width: '40%', marginBottom: 16 }} />
-            <div style={{ height: 40, background: '#f1f5f9', borderRadius: 8, marginBottom: 10 }} />
-            <div style={{ height: 40, background: '#f1f5f9', borderRadius: 8, marginBottom: 10 }} />
-            <div style={{ height: 40, background: '#f1f5f9', borderRadius: 8 }} />
+      </div>
+      <div className="psp-content">
+        <div className="psp-skeleton" style={{ height: 90, marginBottom: 16 }} />
+        <div className="psp-panel">
+          <div className="psp-section">
+            {[80, 100, 56].map((h, i) => (
+              <div key={i} className="psp-skeleton" style={{ height: h, marginBottom: 12 }} />
+            ))}
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
     <div className="psp-root">
-      <div className="psp-top">
-        <div className="container">
+
+      {/* ── top bar ── */}
+      <div className="psp-bar">
+        <div className="psp-bar-inner">
           <button type="button" onClick={() => navigate(-1)} className="psp-back">
             ← Назад к профилю
           </button>
-          <h1 className="psp-title">Личные данные</h1>
+          <span className="psp-bar-title">Личные данные</span>
         </div>
       </div>
 
-      <div className="container">
-        {/* Сводка: кто вы, контакты, заполненность */}
-        <div className="psp-summary">
-          <div className="psp-ava">{initials(form.displayName, form.lastName)}</div>
-          <div className="psp-sum-main">
-            <div className="psp-sum-name">{fullName}</div>
-            <div className="psp-sum-meta">
-              <span><strong>{roleLabel}</strong></span>
-              {form.email && (
-                <span>
-                  Email: <strong>{form.email}</strong>
-                </span>
-              )}
-              {form.city?.trim() && (
-                <span>
-                  Город: <strong>{form.city.trim()}</strong>
-                </span>
-              )}
-              {form.phone?.trim() && (
-                <span>
-                  Тел.: <strong>{form.phone.trim()}</strong>
-                </span>
-              )}
+      <div className="psp-content">
+
+        {/* ── identity card (dark) ── */}
+        <div className="psp-identity">
+          <div className="psp-ava">{ini}</div>
+          <div className="psp-id-main">
+            <div className="psp-id-name">{fullName}</div>
+            <div className="psp-id-meta">
+              <span className="psp-id-chip">{ROLE_LABEL[userRole] || 'Пользователь'}</span>
+              {form.email   && <span className="psp-id-chip"><strong>{form.email}</strong></span>}
+              {form.city?.trim()  && <span className="psp-id-chip">📍 <strong>{form.city.trim()}</strong></span>}
+              {form.phone?.trim() && <span className="psp-id-chip">📞 <strong>{form.phone.trim()}</strong></span>}
             </div>
           </div>
-          <div className="psp-meter">
-            <div className="psp-meter-val">{completePct}%</div>
-            <div className="psp-meter-lbl">профиль</div>
+          <div className="psp-complete">
+            <Ring pct={pct} />
           </div>
         </div>
 
+        {/* ── main panel ── */}
         <div className="psp-panel">
-          <div className="psp-sec">
-            <div className="psp-sec-head">
-              <h2 className="psp-sec-title">Основное</h2>
-              <p className="psp-sec-hint">Имя, контакты и город в анкете</p>
+
+          {/* основное */}
+          <div className="psp-section">
+            <div className="psp-sec-hd">
+              <span className="psp-sec-label">Основное</span>
+              <span className="psp-sec-hint">Имя, контакты и город</span>
             </div>
-            <form onSubmit={handleSaveProfile}>
+            <form onSubmit={handleSave}>
               <div className="psp-grid">
-                <div>
-                  <label className="psp-label" htmlFor="psp-name">
-                    Имя <span style={{ color: '#e8410a' }}>*</span>
-                  </label>
-                  <input
-                    id="psp-name"
-                    type="text"
-                    className="psp-input"
-                    placeholder="Иван"
-                    value={form.displayName}
-                    onChange={(e) => setForm({ ...form, displayName: e.target.value })}
-                    required
-                  />
+                <div className="psp-field">
+                  <label className="psp-label" htmlFor="fn">Имя<span className="psp-req">*</span></label>
+                  <input id="fn" type="text" className="psp-input" placeholder="Иван"
+                    value={form.displayName} onChange={setF('displayName')} required />
                 </div>
-                <div>
-                  <label className="psp-label" htmlFor="psp-last">
-                    Фамилия
-                  </label>
-                  <input
-                    id="psp-last"
-                    type="text"
-                    className="psp-input"
-                    placeholder="Иванов"
-                    value={form.lastName}
-                    onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                  />
+                <div className="psp-field">
+                  <label className="psp-label" htmlFor="ln">Фамилия</label>
+                  <input id="ln" type="text" className="psp-input" placeholder="Иванов"
+                    value={form.lastName} onChange={setF('lastName')} />
                 </div>
 
-                <div className="psp-field-full">
-                  <label className="psp-label" htmlFor="psp-email">
-                    Email
-                  </label>
-                  <input
-                    id="psp-email"
-                    type="email"
-                    className="psp-input"
-                    value={form.email}
-                    disabled
-                  />
-                  <div className="psp-hint">Логин и вход по email — изменить нельзя</div>
+                <div className="psp-field psp-full">
+                  <label className="psp-label" htmlFor="em">Email</label>
+                  <input id="em" type="email" className="psp-input" value={form.email} disabled />
+                  <div className="psp-hint">Логин и адрес входа — изменить нельзя</div>
                 </div>
 
-                <div>
-                  <label className="psp-label" htmlFor="psp-phone">
-                    Телефон
-                  </label>
-                  <input
-                    id="psp-phone"
-                    type="tel"
-                    className="psp-input"
-                    placeholder="+7 999 123-45-67"
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  />
+                <div className="psp-field">
+                  <label className="psp-label" htmlFor="ph">Телефон</label>
+                  <input id="ph" type="tel" className="psp-input" placeholder="+7 999 123-45-67"
+                    value={form.phone} onChange={setF('phone')} />
                 </div>
-                <div>
-                  <label className="psp-label" htmlFor="psp-city">
-                    Город
-                  </label>
-                  <input
-                    id="psp-city"
-                    type="text"
-                    className="psp-input"
-                    placeholder="Йошкар-Ола"
-                    value={form.city}
-                    onChange={(e) => setForm({ ...form, city: e.target.value })}
-                  />
+                <div className="psp-field">
+                  <label className="psp-label" htmlFor="ct">Город</label>
+                  <input id="ct" type="text" className="psp-input" placeholder="Йошкар-Ола"
+                    value={form.city} onChange={setF('city')} />
                 </div>
               </div>
 
-              <div className="psp-actions">
+              <div className="psp-save-row">
+                {savedProfile && (
+                  <span className="psp-saved">✓ Сохранено</span>
+                )}
                 <button type="submit" className="psp-btn psp-btn-primary" disabled={savingProfile}>
                   {savingProfile ? 'Сохранение…' : 'Сохранить'}
                 </button>
@@ -277,66 +225,38 @@ export default function PersonalSettingsPage() {
             </form>
           </div>
 
-          <div className="psp-sec">
-            <div className="psp-sec-head">
-              <h2 className="psp-sec-title">Пароль</h2>
-              <p className="psp-sec-hint">Минимум 6 символов</p>
+          {/* пароль */}
+          <div className="psp-section">
+            <div className="psp-sec-hd">
+              <span className="psp-sec-label">Пароль</span>
+              <span className="psp-sec-hint">Минимум 6 символов</span>
             </div>
-            <form onSubmit={handleChangePassword}>
+            <form onSubmit={handlePw}>
               <div className="psp-grid">
-                <div className="psp-field-full">
-                  <label className="psp-label" htmlFor="psp-cur-pw">
-                    Текущий пароль
-                  </label>
-                  <input
-                    id="psp-cur-pw"
-                    type="password"
-                    className="psp-input"
-                    autoComplete="current-password"
-                    value={passwordForm.currentPassword}
-                    onChange={(e) =>
-                      setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
-                    }
-                  />
+                <div className="psp-field psp-full">
+                  <label className="psp-label" htmlFor="cpw">Текущий пароль</label>
+                  <input id="cpw" type="password" className="psp-input" autoComplete="current-password"
+                    value={pw.currentPassword} onChange={setP('currentPassword')} />
                 </div>
-                <div>
-                  <label className="psp-label" htmlFor="psp-new-pw">
-                    Новый пароль
-                  </label>
-                  <input
-                    id="psp-new-pw"
-                    type="password"
-                    className="psp-input"
-                    autoComplete="new-password"
-                    value={passwordForm.newPassword}
-                    onChange={(e) =>
-                      setPasswordForm({ ...passwordForm, newPassword: e.target.value })
-                    }
-                  />
+                <div className="psp-field">
+                  <label className="psp-label" htmlFor="npw">Новый пароль</label>
+                  <input id="npw" type="password" className="psp-input" autoComplete="new-password"
+                    value={pw.newPassword} onChange={setP('newPassword')} />
                 </div>
-                <div>
-                  <label className="psp-label" htmlFor="psp-confirm-pw">
-                    Повторите
-                  </label>
-                  <input
-                    id="psp-confirm-pw"
-                    type="password"
-                    className="psp-input"
-                    autoComplete="new-password"
-                    value={passwordForm.confirmPassword}
-                    onChange={(e) =>
-                      setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
-                    }
-                  />
+                <div className="psp-field">
+                  <label className="psp-label" htmlFor="cpw2">Повторите</label>
+                  <input id="cpw2" type="password" className="psp-input" autoComplete="new-password"
+                    value={pw.confirmPassword} onChange={setP('confirmPassword')} />
                 </div>
               </div>
-              <div className="psp-actions">
-                <button type="submit" className="psp-btn psp-btn-primary" disabled={savingPassword}>
-                  {savingPassword ? 'Меняем…' : 'Сменить пароль'}
+              <div className="psp-save-row">
+                <button type="submit" className="psp-btn psp-btn-primary" disabled={savingPw}>
+                  {savingPw ? 'Меняем…' : 'Сменить пароль'}
                 </button>
               </div>
             </form>
           </div>
+
         </div>
       </div>
     </div>
