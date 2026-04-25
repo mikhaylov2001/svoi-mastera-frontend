@@ -8,384 +8,274 @@ const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 
 function fmt(d) {
   if (!d) return '';
-  return new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 }
+function fmtShort(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' });
+}
+
+const STATUS_ICO   = { NEW: '⏳', IN_PROGRESS: '⚡', COMPLETED: '✓', CANCELLED: '✕' };
+const STATUS_LABEL = { NEW: 'Ожидает', IN_PROGRESS: 'В работе', COMPLETED: 'Готово', CANCELLED: 'Отменена' };
 
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-.cxp * { box-sizing: border-box; }
-.cxp {
-  min-height: 100vh;
-  background: #f1f5f9;
-  font-family: Inter, -apple-system, sans-serif;
-  color: #0f172a;
-}
+.qp{font-family:Inter,-apple-system,sans-serif;color:#0a0f1e;background:#f0f2f7;min-height:100vh}
+.qp *{box-sizing:border-box}
 
-/* ───── COVER ───── */
-.cxp-cover {
-  height: 200px;
-  background: linear-gradient(130deg, #0f172a 0%, #1e293b 40%, #ff4500 100%);
-  position: relative;
-  overflow: hidden;
+/* ─── HERO ─── */
+.qp-hero{
+  position:relative;overflow:hidden;
+  background:#0a0f1e;
+  padding:48px 0 80px;
 }
-.cxp-cover::before {
-  content: '';
-  position: absolute;
-  inset: 0;
+.qp-hero-mesh{
+  position:absolute;inset:0;
   background:
-    radial-gradient(ellipse 55% 80% at 85% 50%, rgba(255,90,20,.45), transparent),
-    radial-gradient(ellipse 40% 60% at 10% 80%, rgba(255,255,255,.04), transparent);
+    radial-gradient(ellipse 70% 120% at 90% -20%, #ff5a1f66, transparent),
+    radial-gradient(ellipse 50% 80% at -10% 110%, #7c3aed44, transparent),
+    radial-gradient(ellipse 40% 60% at 50% 50%, #1e40af22, transparent);
 }
-.cxp-cover-pattern {
-  position: absolute;
-  inset: 0;
-  opacity: .06;
-  background-image: repeating-linear-gradient(
-    45deg,
-    #fff 0, #fff 1px,
-    transparent 0, transparent 50%
-  );
-  background-size: 22px 22px;
+.qp-hero-noise{
+  position:absolute;inset:0;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px;
+}
+.qp-hero-inner{
+  position:relative;z-index:1;
+  max-width:1140px;margin:0 auto;padding:0 20px;
+  display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+}
+.qp-ava{
+  width:88px;height:88px;border-radius:24px;
+  border:2px solid rgba(255,255,255,.15);
+  overflow:hidden;background:linear-gradient(135deg,#ff5a1f,#ff8c00);
+  display:flex;align-items:center;justify-content:center;
+  font-size:34px;font-weight:900;color:#fff;
+  cursor:pointer;position:relative;flex-shrink:0;
+  transition:transform .2s;
+}
+.qp-ava:hover{transform:scale(1.04);}
+.qp-ava img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.qp-ava-over{
+  position:absolute;inset:0;background:rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;opacity:0;transition:opacity .18s;border-radius:24px;
+}
+.qp-ava:hover .qp-ava-over{opacity:1;}
+
+.qp-hero-info{flex:1;min-width:0;}
+.qp-hero-name{
+  font-size:clamp(24px,3vw,36px);font-weight:900;
+  letter-spacing:-.04em;color:#fff;line-height:1.05;
+}
+.qp-hero-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.qp-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  border-radius:999px;font-size:12px;font-weight:700;
+  padding:5px 12px;backdrop-filter:blur(12px);
+  white-space:nowrap;
+}
+.qp-pill-o{background:rgba(255,90,31,.22);color:#ffa07a;border:1px solid rgba(255,90,31,.3);}
+.qp-pill-g{background:rgba(34,197,94,.18);color:#4ade80;border:1px solid rgba(34,197,94,.25);}
+.qp-pill-w{background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.12);}
+
+.qp-hero-acts{display:flex;gap:8px;align-self:flex-start;padding-top:8px;}
+.qp-hbtn{
+  display:inline-flex;align-items:center;gap:6px;
+  border-radius:10px;font-size:13px;font-weight:700;font-family:inherit;
+  padding:10px 16px;cursor:pointer;border:none;transition:all .18s;
+  text-decoration:none;
+}
+.qp-hbtn-pri{
+  background:linear-gradient(135deg,#ff5a1f,#e8410a);color:#fff;
+  box-shadow:0 6px 20px rgba(232,65,10,.4);
+}
+.qp-hbtn-pri:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(232,65,10,.5);}
+.qp-hbtn-sec{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15);}
+.qp-hbtn-sec:hover{background:rgba(255,255,255,.16);}
+
+/* ─── WRAP ─── */
+.qp-wrap{max-width:1140px;margin:-44px auto 64px;padding:0 20px;position:relative;z-index:2;}
+
+/* ─── BENTO GRID ─── */
+.qp-bento{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:12px;
 }
 
-/* ───── CONTAINER ───── */
-.cxp-wrap { max-width: 1180px; margin: 0 auto; padding: 0 18px 64px; }
+/* ─── BASE CARD ─── */
+.qp-card{
+  background:#fff;border:1px solid #e4e9f4;
+  border-radius:20px;padding:22px;
+  box-shadow:0 2px 12px rgba(10,15,30,.05);
+  transition:box-shadow .2s,transform .2s;
+}
+.qp-card:hover{box-shadow:0 8px 28px rgba(10,15,30,.09);transform:translateY(-2px);}
+.qp-card-label{font-size:11px;font-weight:800;letter-spacing:.08em;color:#94a3b8;text-transform:uppercase;margin-bottom:10px;}
+.qp-card-num{font-size:48px;font-weight:900;letter-spacing:-.04em;line-height:1;}
+.qp-card-sub{font-size:13px;color:#64748b;margin-top:4px;font-weight:500;}
 
-/* ───── PROFILE CARD ───── */
-.cxp-profile-card {
-  background: #fff;
-  border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  margin-top: -70px;
-  padding: 20px 24px 20px;
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  gap: 20px;
-  box-shadow: 0 4px 28px rgba(15,23,42,.08);
-}
+/* ─── STAT CARDS ─── */
+.qp-s1{grid-column:span 3;}
+.qp-s2{grid-column:span 3;}
+.qp-s3{grid-column:span 3;}
+.qp-s4{grid-column:span 3;}
 
-.cxp-ava-ring {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 4px solid #fff;
-  box-shadow: 0 6px 24px rgba(15,23,42,.18);
-  overflow: hidden;
-  cursor: pointer;
-  flex-shrink: 0;
-  position: relative;
-  background: linear-gradient(135deg, #ff5a1f, #ff8c5a);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
-  font-weight: 900;
-  color: #fff;
-  transition: box-shadow .2s;
-}
-.cxp-ava-ring:hover { box-shadow: 0 8px 30px rgba(15,23,42,.26); }
-.cxp-ava-ring img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-.cxp-ava-overlay {
-  position: absolute; inset: 0; background: rgba(0,0,0,.45);
-  display: flex; align-items:center; justify-content: center;
-  font-size: 22px; opacity: 0; transition: opacity .18s;
-}
-.cxp-ava-ring:hover .cxp-ava-overlay { opacity: 1; }
+.qp-num-orange{color:#e8410a;}
+.qp-num-blue  {color:#2563eb;}
+.qp-num-green {color:#16a34a;}
+.qp-num-gray  {color:#94a3b8;}
 
-.cxp-profile-info { flex: 1; min-width: 0; padding-bottom: 2px; }
-.cxp-profile-name {
-  font-size: clamp(20px, 2.4vw, 26px);
-  font-weight: 900;
-  letter-spacing: -.03em;
-  color: #0f172a;
-  line-height: 1.1;
-}
-.cxp-profile-meta {
-  margin-top: 6px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-.cxp-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 11px;
-  white-space: nowrap;
-}
-.cxp-chip-role { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
-.cxp-chip-ok   { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-.cxp-chip-city { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
-.cxp-chip-time { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+/* ─── ACTION CARDS ─── */
+.qp-act-find{grid-column:span 5;}
+.qp-act-deals{grid-column:span 4;}
+.qp-act-msg{grid-column:span 3;}
 
-.cxp-profile-actions {
-  display: flex;
-  gap: 10px;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  padding-bottom: 2px;
+.qp-action-card{
+  display:flex;flex-direction:column;justify-content:space-between;
+  text-decoration:none;color:inherit;
+  min-height:160px;
 }
-.cxp-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 10px 16px;
-  cursor: pointer;
-  border: none;
-  text-decoration: none;
-  transition: all .18s ease;
+.qp-action-card.a-accent{
+  background:linear-gradient(150deg,#ff5a1f 0%,#c73000 100%);
+  border:none;color:#fff;
 }
-.cxp-btn-primary {
-  background: linear-gradient(135deg,#ff5a1f,#e8410a);
-  color: #fff;
-  box-shadow: 0 6px 18px rgba(232,65,10,.32);
-}
-.cxp-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 9px 22px rgba(232,65,10,.38); }
-.cxp-btn-ghost {
-  background: #f8fafc;
-  color: #334155;
-  border: 1px solid #e2e8f0;
-}
-.cxp-btn-ghost:hover { background: #f1f5f9; border-color: #cbd5e1; }
-.cxp-btn-logout {
-  background: #fff;
-  color: #94a3b8;
-  border: 1px solid #e2e8f0;
-}
-.cxp-btn-logout:hover { color: #ef4444; border-color: #fecaca; }
+.qp-action-card.a-accent:hover{box-shadow:0 14px 36px rgba(200,48,0,.4);transform:translateY(-3px);}
+.qp-action-card.a-dark{background:#0a0f1e;border:none;color:#fff;}
+.qp-action-card.a-dark:hover{box-shadow:0 14px 36px rgba(10,15,30,.3);transform:translateY(-3px);}
 
-/* ───── STATS BAR ───── */
-.cxp-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin: 16px 0;
+.qp-ac-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.qp-ac-ico{
+  width:48px;height:48px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;flex-shrink:0;
 }
-.cxp-stat {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 18px 16px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  box-shadow: 0 2px 8px rgba(15,23,42,.04);
-  transition: all .2s;
-}
-.cxp-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15,23,42,.07); }
-.cxp-stat-icon {
-  width: 44px; height: 44px;
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-.cxp-stat-icon.total   { background: #fff7ed; }
-.cxp-stat-icon.active  { background: #eff6ff; }
-.cxp-stat-icon.done    { background: #f0fdf4; }
-.cxp-stat-icon.cancel  { background: #fff1f2; }
-.cxp-stat-body {}
-.cxp-stat-num { font-size: 26px; font-weight: 900; color: #0f172a; line-height: 1; }
-.cxp-stat-lbl { font-size: 12px; color: #64748b; font-weight: 600; margin-top: 3px; }
+.qp-ac-ico-w{background:rgba(255,255,255,.18);}
+.qp-ac-ico-o{background:rgba(255,90,31,.1);}
+.qp-ac-arr{font-size:22px;opacity:.5;}
 
-/* ───── MAIN GRID ───── */
-.cxp-main { display: grid; grid-template-columns: 1fr 340px; gap: 14px; align-items: start; }
+.qp-ac-title{font-size:20px;font-weight:900;letter-spacing:-.02em;margin-bottom:4px;}
+.qp-ac-sub{font-size:13px;opacity:.7;line-height:1.4;}
 
-/* ───── QUICK ACTIONS ───── */
-.cxp-quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
-.cxp-qa {
-  background: #fff;
-  border: 1.5px solid #e8eef7;
-  border-radius: 16px;
-  padding: 18px;
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: all .2s;
-  cursor: pointer;
-}
-.cxp-qa:hover { border-color: #c7d8f0; transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,42,.07); }
-.cxp-qa.accent {
-  background: linear-gradient(145deg, #ff5a1f, #e8410a);
-  border-color: transparent;
-  color: #fff;
-  box-shadow: 0 14px 30px rgba(232,65,10,.28);
-}
-.cxp-qa.accent:hover { box-shadow: 0 18px 36px rgba(232,65,10,.36); }
-.cxp-qa-ico { font-size: 26px; }
-.cxp-qa-title { font-size: 14px; font-weight: 800; letter-spacing: -.01em; }
-.cxp-qa-sub { font-size: 12px; opacity: .75; line-height: 1.3; }
+/* ─── DEALS SECTION ─── */
+.qp-deals-col{grid-column:span 8;}
+.qp-right-col{grid-column:span 4;display:grid;gap:12px;align-content:start;}
 
-/* ───── SECTION ───── */
-.cxp-section {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  padding: 18px;
-  box-shadow: 0 2px 8px rgba(15,23,42,.04);
+.qp-deals-list{display:grid;gap:6px;margin-top:2px;}
+.qp-dl{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:14px;
+  border:1px solid #edf2fa;background:#fafcff;
+  text-decoration:none;color:inherit;
+  transition:all .17s;
 }
-.cxp-section + .cxp-section { margin-top: 14px; }
-.cxp-section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
+.qp-dl:hover{border-color:#dde7f8;background:#fff;box-shadow:0 4px 16px rgba(10,15,30,.06);}
+.qp-dl-ico{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;font-weight:900;
 }
-.cxp-section-title { font-size: 18px; font-weight: 900; letter-spacing: -.02em; color: #0f172a; }
-.cxp-section-link { font-size: 13px; font-weight: 700; color: #e8410a; text-decoration: none; }
-.cxp-section-link:hover { text-decoration: underline; }
+.qp-dl-ico.sNEW        {background:#fff7ed;color:#c2410c;}
+.qp-dl-ico.sIN_PROGRESS{background:#eff6ff;color:#1d4ed8;}
+.qp-dl-ico.sCOMPLETED  {background:#f0fdf4;color:#16a34a;}
+.qp-dl-ico.sCANCELLED  {background:#fef2f2;color:#dc2626;}
+.qp-dl-body{flex:1;min-width:0;}
+.qp-dl-title{font-size:14px;font-weight:800;color:#0a0f1e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qp-dl-meta{font-size:12px;color:#64748b;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;}
+.qp-dl-badge{
+  flex-shrink:0;font-size:11px;font-weight:800;
+  border-radius:999px;padding:4px 10px;white-space:nowrap;
+}
+.qp-dl-badge.sNEW        {background:#fff7ed;color:#c2410c;}
+.qp-dl-badge.sIN_PROGRESS{background:#eff6ff;color:#1d4ed8;}
+.qp-dl-badge.sCOMPLETED  {background:#f0fdf4;color:#16a34a;}
+.qp-dl-badge.sCANCELLED  {background:#fef2f2;color:#dc2626;}
 
-/* ───── DEALS ───── */
-.cxp-deals { display: grid; gap: 8px; }
-.cxp-deal-card {
-  border: 1px solid #edf2f8;
-  border-radius: 14px;
-  overflow: hidden;
-  transition: all .18s;
+.qp-review-wrap{padding:0 14px 12px;}
+.qp-review-btn{
+  width:100%;padding:10px;border:1px solid #e2e8f0;
+  border-radius:10px;background:#f8fafc;font-size:13px;
+  font-weight:700;color:#334155;cursor:pointer;font-family:inherit;
+  transition:all .18s;
 }
-.cxp-deal-card:hover { border-color: #d0dcee; box-shadow: 0 8px 20px rgba(15,23,42,.06); }
-.cxp-deal-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px;
-  text-decoration: none;
-  color: inherit;
-}
-.cxp-deal-thumb {
-  width: 46px; height: 46px;
-  border-radius: 12px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-}
-.cxp-deal-thumb.s-NEW       { background: #fff7ed; }
-.cxp-deal-thumb.s-IN_PROGRESS { background: #eff6ff; }
-.cxp-deal-thumb.s-COMPLETED  { background: #f0fdf4; }
-.cxp-deal-thumb.s-CANCELLED  { background: #fff1f2; }
-.cxp-deal-body { flex: 1; min-width: 0; }
-.cxp-deal-title {
-  font-size: 14px; font-weight: 800; color: #0f172a;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  margin-bottom: 4px;
-}
-.cxp-deal-meta { font-size: 12px; color: #64748b; display: flex; flex-wrap: wrap; gap: 6px; }
-.cxp-badge {
-  flex-shrink: 0;
-  font-size: 11px; font-weight: 800;
-  border-radius: 999px; padding: 4px 10px;
-}
-.cxp-badge.s-NEW              { background: #fff7ed; color: #c2410c; }
-.cxp-badge.s-IN_PROGRESS      { background: #eff6ff; color: #1d4ed8; }
-.cxp-badge.s-COMPLETED        { background: #f0fdf4; color: #15803d; }
-.cxp-badge.s-CANCELLED        { background: #fff1f2; color: #b91c1c; }
-.cxp-deal-review {
-  padding: 0 14px 12px;
-}
-.cxp-review-btn {
-  width: 100%; padding: 10px;
-  background: #f8fafc; border: 1px solid #e2e8f0;
-  border-radius: 10px; font-size: 13px; font-weight: 700;
-  color: #334155; cursor: pointer; font-family: inherit;
-  transition: all .18s;
-}
-.cxp-review-btn:hover { border-color: #ff5a1f; color: #e8410a; background: #fff7ed; }
-.cxp-review-ok {
-  padding: 10px 14px; background: #f0fdf4;
-  border-radius: 10px; font-size: 13px; font-weight: 700;
-  color: #16a34a; text-align: center;
-}
+.qp-review-btn:hover{border-color:#ff5a1f;color:#e8410a;background:#fff7ed;}
+.qp-review-ok{padding:10px 14px;background:#f0fdf4;border-radius:10px;font-size:13px;font-weight:700;color:#16a34a;text-align:center;}
 
-/* ───── EMPTY ───── */
-.cxp-empty { padding: 36px 16px; text-align: center; color: #64748b; font-size: 14px; }
-.cxp-empty-ico { font-size: 44px; margin-bottom: 8px; }
+.qp-empty{padding:48px 20px;text-align:center;color:#64748b;}
+.qp-empty-ico{font-size:48px;margin-bottom:10px;}
 
-/* ───── RIGHT COLUMN ───── */
-.cxp-right { display: grid; gap: 14px; }
+/* ─── NAV CARD ─── */
+.qp-nav-list{display:grid;gap:2px;}
+.qp-nav-it{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 12px;border-radius:12px;
+  font-size:14px;font-weight:700;color:#334155;
+  text-decoration:none;background:none;border:none;
+  cursor:pointer;font-family:inherit;width:100%;
+  transition:all .15s;
+}
+.qp-nav-it:hover{background:#f1f5f9;color:#0a0f1e;}
+.qp-nav-it.qp-nav-act{background:#fff7ed;color:#c2410c;}
+.qp-nav-ico{
+  width:32px;height:32px;border-radius:9px;
+  background:#f1f5f9;display:flex;align-items:center;
+  justify-content:center;font-size:15px;flex-shrink:0;
+}
+.qp-nav-it.qp-nav-act .qp-nav-ico{background:#fed7aa;}
 
-/* ───── NAV CARD ───── */
-.cxp-nav { padding: 8px; }
-.cxp-nav-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 11px 10px; border-radius: 10px;
-  font-size: 14px; font-weight: 700; color: #334155;
-  text-decoration: none; background: none;
-  border: none; width: 100%; cursor: pointer;
-  transition: all .15s; font-family: inherit;
+/* ─── TIP CARD ─── */
+.qp-tip{
+  border-radius:18px;overflow:hidden;
+  background:linear-gradient(145deg,#0a0f1e,#1e293b);
+  border:none;color:#fff;padding:22px;
 }
-.cxp-nav-item:hover { background: #f1f5f9; color: #0f172a; }
-.cxp-nav-item.act { background: #fff7ed; color: #c2410c; }
-.cxp-nav-ico {
-  width: 34px; height: 34px; border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex-shrink: 0;
-  background: #f1f5f9;
+.qp-tip:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(10,15,30,.25);}
+.qp-tip-tag{font-size:11px;font-weight:800;letter-spacing:.1em;color:#ff8c5a;text-transform:uppercase;margin-bottom:8px;}
+.qp-tip-text{font-size:14px;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:14px;}
+.qp-tip-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,#ff5a1f,#e8410a);
+  color:#fff;border-radius:10px;padding:10px 16px;
+  font-size:13px;font-weight:800;text-decoration:none;
+  box-shadow:0 6px 18px rgba(232,65,10,.35);
+  transition:all .18s;
 }
-.cxp-nav-item.act .cxp-nav-ico { background: #fed7aa; }
+.qp-tip-btn:hover{transform:translateY(-1px);box-shadow:0 9px 22px rgba(232,65,10,.45);}
 
-/* ───── SETTINGS ───── */
-.cxp-set-list { display: grid; gap: 6px; }
-.cxp-set-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9;
-  text-decoration: none; color: inherit;
-  transition: all .18s; position: relative;
-  background: #fafcff;
+/* ─── SETTINGS ─── */
+.qp-set-list{display:grid;gap:6px;}
+.qp-set-it{
+  display:flex;align-items:center;gap:12px;
+  padding:12px;border-radius:12px;
+  border:1px solid #f1f5f9;background:#fafcff;
+  text-decoration:none;color:inherit;transition:all .18s;position:relative;
 }
-.cxp-set-item:hover:not(.cxp-set-dis) { border-color: #e2e8f0; background: #fff; box-shadow: 0 4px 12px rgba(15,23,42,.05); }
-.cxp-set-dis { opacity: .5; cursor: default; }
-.cxp-set-ico {
-  width: 40px; height: 40px; border-radius: 10px;
-  background: #f1f5f9; font-size: 20px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.cxp-set-info { flex: 1; min-width: 0; }
-.cxp-set-title { font-size: 14px; font-weight: 800; color: #0f172a; }
-.cxp-set-desc  { font-size: 12px; color: #64748b; margin-top: 2px; }
-.cxp-set-arr   { color: #cbd5e1; font-size: 20px; }
-.cxp-soon {
-  position: absolute; top: 8px; right: 8px;
-  font-size: 10px; font-weight: 800;
-  background: #eff6ff; color: #2563eb;
-  border-radius: 999px; padding: 3px 8px;
-}
+.qp-set-it:hover:not(.qp-set-dis){border-color:#e2e8f0;background:#fff;box-shadow:0 4px 12px rgba(10,15,30,.05);}
+.qp-set-dis{opacity:.45;cursor:default;}
+.qp-set-ico{width:38px;height:38px;border-radius:10px;background:#f1f5f9;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.qp-set-info{flex:1;min-width:0;}
+.qp-set-t{font-size:14px;font-weight:800;color:#0a0f1e;}
+.qp-set-d{font-size:12px;color:#64748b;margin-top:2px;}
+.qp-set-arr{color:#cbd5e1;font-size:18px;}
+.qp-soon{position:absolute;top:8px;right:8px;font-size:10px;font-weight:800;background:#eff6ff;color:#2563eb;border-radius:999px;padding:3px 8px;}
 
-/* ───── RESPONSIVE ───── */
-@media (max-width: 980px) {
-  .cxp-main { grid-template-columns: 1fr; }
-  .cxp-stats { grid-template-columns: repeat(2, 1fr); }
+/* ─── RESPONSIVE ─── */
+@media(max-width:1000px){
+  .qp-s1,.qp-s2,.qp-s3,.qp-s4{grid-column:span 6;}
+  .qp-act-find{grid-column:span 12;}
+  .qp-act-deals,.qp-act-msg{grid-column:span 6;}
+  .qp-deals-col,.qp-right-col{grid-column:span 12;}
 }
-@media (max-width: 680px) {
-  .cxp-quick { grid-template-columns: 1fr; }
-  .cxp-profile-card { flex-wrap: wrap; }
-  .cxp-profile-actions { width: 100%; }
-  .cxp-cover { height: 150px; }
-  .cxp-stats { grid-template-columns: repeat(2, 1fr); }
+@media(max-width:640px){
+  .qp-s1,.qp-s2,.qp-s3,.qp-s4{grid-column:span 6;}
+  .qp-act-find,.qp-act-deals,.qp-act-msg{grid-column:span 12;}
+  .qp-hero{padding:32px 0 72px;}
+  .qp-hero-acts{flex-wrap:wrap;}
 }
 `;
-
-const STATUS_ICO = {
-  NEW: '⏳', IN_PROGRESS: '🛠', COMPLETED: '✅', CANCELLED: '✕',
-};
-const STATUS_LABEL = {
-  NEW: 'Ожидает мастера', IN_PROGRESS: 'В работе',
-  COMPLETED: 'Завершена', CANCELLED: 'Отменена',
-};
 
 export default function CustomerProfilePage() {
   const { userId, userName, userRole, userAvatar, updateAvatar, logout } = useAuth();
@@ -393,7 +283,7 @@ export default function CustomerProfilePage() {
   const fileRef = useRef(null);
 
   const [avatarLoading, setAvatarLoading] = useState(false);
-  const [deals, setDeals] = useState([]);
+  const [deals, setDeals]     = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [section, setSection] = useState('deals');
@@ -465,218 +355,218 @@ export default function CustomerProfilePage() {
   if (userRole === 'WORKER') return null;
 
   return (
-    <div className="cxp">
+    <div className="qp">
       <style>{css}</style>
 
-      {/* ── COVER ── */}
-      <div className="cxp-cover">
-        <div className="cxp-cover-pattern" />
-      </div>
-
-      <div className="cxp-wrap">
-
-        {/* ── PROFILE CARD ── */}
-        <div className="cxp-profile-card">
+      {/* ── HERO ── */}
+      <div className="qp-hero">
+        <div className="qp-hero-mesh" />
+        <div className="qp-hero-noise" />
+        <div className="qp-hero-inner">
           <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onAvatar} />
-          <div className="cxp-ava-ring" onClick={() => fileRef.current?.click()}>
+          <div className="qp-ava" onClick={() => fileRef.current?.click()}>
             {avatarUrl ? <img src={avatarUrl} alt="" /> : initials}
-            <div className="cxp-ava-overlay">{avatarLoading ? '⏳' : '📷'}</div>
+            <div className="qp-ava-over">{avatarLoading ? '⏳' : '📷'}</div>
           </div>
 
-          <div className="cxp-profile-info">
-            <div className="cxp-profile-name">{fullName}</div>
-            <div className="cxp-profile-meta">
-              <span className="cxp-chip cxp-chip-role">👤 Заказчик</span>
-              <span className="cxp-chip cxp-chip-ok">✅ Документы проверены</span>
-              <span className="cxp-chip cxp-chip-city">📍 Йошкар-Ола</span>
-              {since && <span className="cxp-chip cxp-chip-time">🕐 С {since}</span>}
+          <div className="qp-hero-info">
+            <div className="qp-hero-name">{fullName}</div>
+            <div className="qp-hero-row">
+              <span className="qp-pill qp-pill-o">👤 Заказчик</span>
+              <span className="qp-pill qp-pill-g">✓ Документы проверены</span>
+              <span className="qp-pill qp-pill-w">📍 Йошкар-Ола</span>
+              {since && <span className="qp-pill qp-pill-w">На сервисе с {since}</span>}
             </div>
           </div>
 
-          <div className="cxp-profile-actions">
-            <button className="cxp-btn cxp-btn-ghost" onClick={() => fileRef.current?.click()}>
-              📷 {avatarLoading ? 'Загрузка...' : avatarUrl ? 'Сменить фото' : 'Добавить фото'}
+          <div className="qp-hero-acts">
+            <button className="qp-hbtn qp-hbtn-sec" onClick={() => fileRef.current?.click()}>
+              {avatarLoading ? '⏳' : avatarUrl ? '📷 Сменить фото' : '📷 Добавить фото'}
             </button>
-            <button className="cxp-btn cxp-btn-logout" onClick={() => { logout(); navigate('/login'); }}>
+            <button className="qp-hbtn qp-hbtn-sec" onClick={() => { logout(); navigate('/login'); }}>
               Выйти
             </button>
           </div>
         </div>
+      </div>
 
-        {/* ── STATS BAR ── */}
-        <div className="cxp-stats">
+      {/* ── BENTO ── */}
+      <div className="qp-wrap">
+        <div className="qp-bento">
+
+          {/* ─── STATS ─── */}
           {[
-            { icon: '📊', cls: 'total',  num: stats.total,     lbl: 'Всего сделок' },
-            { icon: '🔥', cls: 'active', num: stats.active,    lbl: 'Активных' },
-            { icon: '✅', cls: 'done',   num: stats.done,      lbl: 'Завершено' },
-            { icon: '✕', cls: 'cancel', num: stats.cancelled, lbl: 'Отменено' },
+            { cls: 'qp-s1', numCls: 'qp-num-orange', num: stats.total,     lbl: 'Всего сделок',   desc: 'За всё время' },
+            { cls: 'qp-s2', numCls: 'qp-num-blue',   num: stats.active,    lbl: 'Активных',       desc: 'Сейчас в работе' },
+            { cls: 'qp-s3', numCls: 'qp-num-green',  num: stats.done,      lbl: 'Завершено',      desc: 'Успешно закрыто' },
+            { cls: 'qp-s4', numCls: 'qp-num-gray',   num: stats.cancelled, lbl: 'Отменено',       desc: 'По разным причинам' },
           ].map(s => (
-            <div className="cxp-stat" key={s.cls}>
-              <div className={`cxp-stat-icon ${s.cls}`}>{s.icon}</div>
-              <div className="cxp-stat-body">
-                <div className="cxp-stat-num">{s.num}</div>
-                <div className="cxp-stat-lbl">{s.lbl}</div>
-              </div>
+            <div key={s.cls} className={`qp-card ${s.cls}`}>
+              <div className="qp-card-label">{s.lbl}</div>
+              <div className={`qp-card-num ${s.numCls}`}>{s.num}</div>
+              <div className="qp-card-sub">{s.desc}</div>
             </div>
           ))}
-        </div>
 
-        {/* ── MAIN GRID ── */}
-        <div className="cxp-main">
+          {/* ─── QUICK ACTIONS ─── */}
+          <Link to="/categories" className={`qp-card qp-action-card a-accent qp-act-find`}>
+            <div className="qp-ac-top">
+              <div className="qp-ac-ico qp-ac-ico-w">🚀</div>
+              <span className="qp-ac-arr">↗</span>
+            </div>
+            <div>
+              <div className="qp-ac-title">Найти мастера</div>
+              <div className="qp-ac-sub">Каталог специалистов по категориям и районам</div>
+            </div>
+          </Link>
 
-          {/* ── LEFT ── */}
-          <div>
-            {/* Быстрые действия */}
-            <div className="cxp-quick">
-              <Link to="/categories" className="cxp-qa accent">
-                <div className="cxp-qa-ico">🚀</div>
-                <div className="cxp-qa-title">Найти мастера</div>
-                <div className="cxp-qa-sub">Каталог услуг по категориям</div>
-              </Link>
-              <Link to="/deals" className="cxp-qa">
-                <div className="cxp-qa-ico">🤝</div>
-                <div className="cxp-qa-title">Все мои сделки</div>
-                <div className="cxp-qa-sub">Активных: {stats.active}</div>
-              </Link>
-              <Link to="/chat" className="cxp-qa">
-                <div className="cxp-qa-ico">💬</div>
-                <div className="cxp-qa-title">Сообщения</div>
-                <div className="cxp-qa-sub">Чат с мастерами</div>
-              </Link>
+          <Link to="/deals" className={`qp-card qp-action-card qp-act-deals`}>
+            <div className="qp-ac-top">
+              <div className="qp-ac-ico qp-ac-ico-o">🤝</div>
+              <span className="qp-ac-arr" style={{color:'#cbd5e1'}}>↗</span>
+            </div>
+            <div>
+              <div className="qp-ac-title">Мои сделки</div>
+              <div className="qp-ac-sub" style={{color:'#64748b'}}>Активных: <b style={{color:'#e8410a'}}>{stats.active}</b></div>
+            </div>
+          </Link>
+
+          <Link to="/chat" className={`qp-card qp-action-card qp-act-msg`}>
+            <div className="qp-ac-top">
+              <div className="qp-ac-ico qp-ac-ico-o">💬</div>
+              <span className="qp-ac-arr" style={{color:'#cbd5e1'}}>↗</span>
+            </div>
+            <div>
+              <div className="qp-ac-title">Сообщения</div>
+              <div className="qp-ac-sub" style={{color:'#64748b'}}>Чат с мастерами</div>
+            </div>
+          </Link>
+
+          {/* ─── DEALS / SETTINGS ─── */}
+          <div className={`qp-card qp-deals-col`} style={{padding:'22px 22px 16px'}}>
+            {/* Tab switcher */}
+            <div style={{display:'flex',gap:8,marginBottom:18}}>
+              {[['deals','📋 Сделки'],['settings','⚙️ Настройки']].map(([k,l])=>(
+                <button key={k} onClick={()=>setSection(k)} style={{
+                  border:'none',borderRadius:10,padding:'8px 16px',
+                  fontFamily:'inherit',fontSize:13,fontWeight:800,cursor:'pointer',
+                  background: section===k ? '#0a0f1e' : '#f1f5f9',
+                  color: section===k ? '#fff' : '#64748b',
+                  transition:'all .18s',
+                }}>{l}</button>
+              ))}
+              {section === 'deals' && (
+                <Link to="/deals" style={{marginLeft:'auto',fontSize:13,fontWeight:700,color:'#e8410a',textDecoration:'none',display:'flex',alignItems:'center'}}>
+                  Все →
+                </Link>
+              )}
             </div>
 
-            {/* Сделки / Настройки */}
+            {/* ── DEALS ── */}
             {section === 'deals' && (
-              <div className="cxp-section">
-                <div className="cxp-section-head">
-                  <div className="cxp-section-title">Последние сделки</div>
-                  <Link to="/deals" className="cxp-section-link">Все сделки →</Link>
+              loading ? (
+                <div className="qp-empty"><div className="qp-empty-ico">⏳</div>Загружаем...</div>
+              ) : deals.length === 0 ? (
+                <div className="qp-empty">
+                  <div className="qp-empty-ico">🔍</div>
+                  <div style={{marginBottom:16}}>Сделок пока нет — найдите первого мастера</div>
+                  <Link to="/categories" style={{display:'inline-flex',alignItems:'center',gap:6,background:'linear-gradient(135deg,#ff5a1f,#e8410a)',color:'#fff',textDecoration:'none',borderRadius:10,padding:'10px 18px',fontWeight:800,fontSize:13,boxShadow:'0 6px 18px rgba(232,65,10,.35)'}}>
+                    🚀 Найти мастера
+                  </Link>
                 </div>
-                {loading ? (
-                  <div className="cxp-empty"><div className="cxp-empty-ico">⏳</div>Загружаем...</div>
-                ) : deals.length === 0 ? (
-                  <div className="cxp-empty">
-                    <div className="cxp-empty-ico">🔍</div>
-                    <div>Сделок пока нет — начните с поиска мастера</div>
-                    <Link to="/categories" style={{ display:'inline-flex', alignItems:'center', gap:6, marginTop:14, background:'linear-gradient(135deg,#ff5a1f,#e8410a)', color:'#fff', textDecoration:'none', borderRadius:10, padding:'10px 16px', fontWeight:800, fontSize:13 }}>
-                      🚀 Найти мастера
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="cxp-deals">
-                    {deals.slice(0, 10).map(deal => {
-                      const s = deal.status || 'IN_PROGRESS';
-                      return (
-                        <div key={deal.id} className="cxp-deal-card">
-                          <Link to={`/deals?dealId=${deal.id}`} className="cxp-deal-link">
-                            <div className={`cxp-deal-thumb s-${s}`}>{STATUS_ICO[s] || '📋'}</div>
-                            <div className="cxp-deal-body">
-                              <div className="cxp-deal-title">{deal.title || 'Сделка'}</div>
-                              <div className="cxp-deal-meta">
-                                {deal.workerName && <span>👤 {deal.workerName}</span>}
-                                {deal.agreedPrice && <span>💰 {Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</span>}
-                                {deal.createdAt && <span>🗓 {new Date(deal.createdAt).toLocaleDateString('ru-RU')}</span>}
-                              </div>
+              ) : (
+                <div className="qp-deals-list">
+                  {deals.slice(0, 12).map(deal => {
+                    const s = deal.status || 'IN_PROGRESS';
+                    return (
+                      <div key={deal.id} style={{borderRadius:14,overflow:'hidden',border:'1px solid #edf2fa'}}>
+                        <Link to={`/deals?dealId=${deal.id}`} className="qp-dl">
+                          <div className={`qp-dl-ico s${s}`}>{STATUS_ICO[s]}</div>
+                          <div className="qp-dl-body">
+                            <div className="qp-dl-title">{deal.title || 'Сделка'}</div>
+                            <div className="qp-dl-meta">
+                              {deal.workerName && <span>👤 {deal.workerName}</span>}
+                              {deal.agreedPrice && <span>💰 {Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</span>}
+                              {deal.createdAt && <span>{fmtShort(deal.createdAt)}</span>}
                             </div>
-                            <span className={`cxp-badge s-${s}`}>{STATUS_LABEL[s] || s}</span>
-                          </Link>
+                          </div>
+                          <span className={`qp-dl-badge s${s}`}>{STATUS_LABEL[s]}</span>
+                        </Link>
 
-                          {s === 'COMPLETED' && !deal.hasReview && (
-                            <div className="cxp-deal-review">
-                              {reviewFor === deal.id ? (
-                                <ReviewForm dealId={deal.id} onSuccess={() => { setReviewFor(null); reloadDeals(); }} />
-                              ) : (
-                                <button className="cxp-review-btn" onClick={() => setReviewFor(deal.id)}>
-                                  ⭐ Оставить отзыв о мастере
-                                </button>
-                              )}
-                            </div>
-                          )}
-                          {s === 'COMPLETED' && deal.hasReview && (
-                            <div className="cxp-deal-review">
-                              <div className="cxp-review-ok">✅ Отзыв уже отправлен</div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+                        {s === 'COMPLETED' && !deal.hasReview && (
+                          <div className="qp-review-wrap">
+                            {reviewFor === deal.id
+                              ? <ReviewForm dealId={deal.id} onSuccess={() => { setReviewFor(null); reloadDeals(); }} />
+                              : <button className="qp-review-btn" onClick={() => setReviewFor(deal.id)}>⭐ Оставить отзыв</button>
+                            }
+                          </div>
+                        )}
+                        {s === 'COMPLETED' && deal.hasReview && (
+                          <div className="qp-review-wrap"><div className="qp-review-ok">✓ Отзыв отправлен</div></div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )
             )}
 
+            {/* ── SETTINGS ── */}
             {section === 'settings' && (
-              <div className="cxp-section">
-                <div className="cxp-section-head">
-                  <div className="cxp-section-title">Настройки профиля</div>
-                </div>
-                <div className="cxp-set-list">
-                  {[
-                    { to: '/settings/personal', ico: '👤', title: 'Личные данные', desc: 'Имя, контакты, информация' },
-                    { to: '/settings/notifications', ico: '🔔', title: 'Уведомления', desc: 'Push и email по сделкам' },
-                  ].map(item => (
-                    <Link key={item.to} to={item.to} className="cxp-set-item">
-                      <div className="cxp-set-ico">{item.ico}</div>
-                      <div className="cxp-set-info">
-                        <div className="cxp-set-title">{item.title}</div>
-                        <div className="cxp-set-desc">{item.desc}</div>
-                      </div>
-                      <div className="cxp-set-arr">›</div>
-                    </Link>
-                  ))}
-                  <div className="cxp-set-item cxp-set-dis">
-                    <div className="cxp-soon">СКОРО</div>
-                    <div className="cxp-set-ico">🧩</div>
-                    <div className="cxp-set-info">
-                      <div className="cxp-set-title">Дополнительные опции</div>
-                      <div className="cxp-set-desc">Новые возможности — скоро</div>
-                    </div>
-                  </div>
+              <div className="qp-set-list">
+                {[
+                  { to:'/settings/personal',      ico:'👤', t:'Личные данные',    d:'Имя, контакты, информация' },
+                  { to:'/settings/notifications',  ico:'🔔', t:'Уведомления',      d:'Push и email по сделкам' },
+                ].map(item => (
+                  <Link key={item.to} to={item.to} className="qp-set-it">
+                    <div className="qp-set-ico">{item.ico}</div>
+                    <div className="qp-set-info"><div className="qp-set-t">{item.t}</div><div className="qp-set-d">{item.d}</div></div>
+                    <div className="qp-set-arr">›</div>
+                  </Link>
+                ))}
+                <div className="qp-set-it qp-set-dis">
+                  <div className="qp-soon">СКОРО</div>
+                  <div className="qp-set-ico">🧩</div>
+                  <div className="qp-set-info"><div className="qp-set-t">Дополнительные опции</div><div className="qp-set-d">Новые возможности — скоро</div></div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* ── RIGHT ── */}
-          <div className="cxp-right">
-            {/* Навигация */}
-            <div className="cxp-section">
-              <nav className="cxp-nav">
+          {/* ─── RIGHT COLUMN ─── */}
+          <div className="qp-right-col">
+            {/* Navigation */}
+            <div className="qp-card" style={{padding:'14px'}}>
+              <nav className="qp-nav-list">
                 {[
-                  { key: 'deals',    ico: '📋', label: 'Мои сделки' },
-                  { key: 'settings', ico: '⚙️', label: 'Настройки' },
+                  { key:'deals',    ico:'📋', lbl:'Мои сделки',    action: ()=>setSection('deals') },
+                  { key:'settings', ico:'⚙️', lbl:'Настройки',     action: ()=>setSection('settings') },
                 ].map(n => (
-                  <button
-                    key={n.key}
-                    type="button"
-                    className={`cxp-nav-item${section === n.key ? ' act' : ''}`}
-                    onClick={() => setSection(n.key)}
-                  >
-                    <div className="cxp-nav-ico">{n.ico}</div>
-                    {n.label}
+                  <button key={n.key} type="button"
+                    className={`qp-nav-it${section===n.key ? ' qp-nav-act':''}`}
+                    onClick={n.action}>
+                    <div className="qp-nav-ico">{n.ico}</div>{n.lbl}
                   </button>
                 ))}
-                <Link to="/categories" className="cxp-nav-item">
-                  <div className="cxp-nav-ico">🔍</div>Найти мастера
-                </Link>
-                <Link to="/chat" className="cxp-nav-item">
-                  <div className="cxp-nav-ico">💬</div>Сообщения
-                </Link>
-                <Link to="/deals" className="cxp-nav-item">
-                  <div className="cxp-nav-ico">🤝</div>Все сделки
-                </Link>
+                {[
+                  { to:'/categories', ico:'🔍', lbl:'Найти мастера' },
+                  { to:'/chat',       ico:'💬', lbl:'Сообщения' },
+                  { to:'/deals',      ico:'🤝', lbl:'Все сделки' },
+                ].map(n => (
+                  <Link key={n.to} to={n.to} className="qp-nav-it">
+                    <div className="qp-nav-ico">{n.ico}</div>{n.lbl}
+                  </Link>
+                ))}
               </nav>
             </div>
 
-            {/* Мини-подсказка */}
-            <div className="cxp-section" style={{ background:'linear-gradient(145deg,#fff7ed,#fff)', borderColor:'#fed7aa' }}>
-              <div style={{ fontSize:13, fontWeight:800, color:'#c2410c', marginBottom:8 }}>💡 Совет</div>
-              <div style={{ fontSize:13, color:'#78350f', lineHeight:1.55 }}>
-                Оставляйте отзывы — так мастерам легче развиваться, а вам проще выбирать проверенных специалистов в будущем.
+            {/* Tip card */}
+            <div className="qp-card qp-tip" style={{border:'none'}}>
+              <div className="qp-tip-tag">Совет дня</div>
+              <div className="qp-tip-text">
+                Оставляйте отзывы — мастера растут, а вам проще находить проверенных специалистов.
               </div>
-              <Link to="/categories" style={{ display:'inline-flex', alignItems:'center', gap:6, marginTop:12, background:'linear-gradient(135deg,#ff5a1f,#e8410a)', color:'#fff', textDecoration:'none', borderRadius:9, padding:'9px 14px', fontWeight:800, fontSize:13 }}>
-                Найти мастера →
-              </Link>
+              <Link to="/categories" className="qp-tip-btn">🚀 Найти мастера</Link>
             </div>
           </div>
 
