@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getMyDeals, uploadAvatar, getUserProfile } from '../../api';
@@ -8,96 +8,102 @@ const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 
 function memberSince(d) {
   if (!d) return null;
-  return 'На сервисе с ' + new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+  return `На сервисе с ${new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}`;
 }
 
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  .cp2-page { background: #fff; min-height: 100vh; font-family: Inter, Arial, sans-serif; color: #1a1a1a; }
-  .cp2-wrap { max-width: 1176px; margin: 0 auto; padding: 0 20px; }
-  .cp2-layout { display: grid; grid-template-columns: 280px 1fr; gap: 24px; padding: 28px 0 60px; align-items: flex-start; }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  * { box-sizing: border-box; }
+  .cp3-page { min-height: 100vh; background: radial-gradient(1200px 440px at 80% -120px, rgba(255,110,64,.10), transparent), linear-gradient(180deg, #f7f9fc 0%, #fff 42%); font-family: Inter, Arial, sans-serif; color: #161b22; }
+  .cp3-wrap { max-width: 1240px; margin: 0 auto; padding: 28px 18px 56px; }
+  .cp3-grid { display: grid; grid-template-columns: 320px 1fr; gap: 22px; align-items: start; }
 
-  /* ── SIDEBAR ── */
-  .cp2-ava-wrap { position: relative; display: inline-block; margin-bottom: 14px; cursor: pointer; }
-  .cp2-ava { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; display: block; border: 2px solid #f0f0f0; }
-  .cp2-ava-fb { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, #257af4, #1a5cbf); display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; color: #fff; }
-  .cp2-ava-overlay { position: absolute; inset: 0; border-radius: 50%; background: rgba(0,0,0,.42); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .18s; }
-  .cp2-ava-wrap:hover .cp2-ava-overlay { opacity: 1; }
-  .cp2-ava-lbl { display: block; font-size: 12px; color: #e8410a; font-weight: 600; margin-top: 4px; cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; text-align: left; }
+  .cp3-panel { background: #fff; border: 1px solid #edf0f5; border-radius: 18px; box-shadow: 0 12px 40px rgba(20,24,39,.05); overflow: hidden; }
+  .cp3-sidebar-top { padding: 20px; background: linear-gradient(145deg, #0f172a, #1d2a4a 70%, #243d6d); color: #fff; position: relative; }
+  .cp3-avatar-wrap { position: relative; width: 94px; height: 94px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,.5); overflow: hidden; box-shadow: 0 12px 26px rgba(8,15,32,.35); }
+  .cp3-avatar { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cp3-avatar-fallback { width: 100%; height: 100%; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg,#ff5f2e,#ff894f); font-size: 34px; font-weight: 800; }
+  .cp3-avatar-overlay { position:absolute; inset:0; background: rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; opacity:0; transition: opacity .18s ease; }
+  .cp3-avatar-wrap:hover .cp3-avatar-overlay { opacity:1; }
+  .cp3-avatar-btn { margin-top: 10px; border: none; background: rgba(255,255,255,.12); color:#fff; border-radius: 9px; padding: 7px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .cp3-avatar-btn:hover { background: rgba(255,255,255,.2); }
+  .cp3-name { margin-top: 14px; font-size: 24px; line-height: 1.12; font-weight: 800; letter-spacing: -.02em; }
+  .cp3-role { margin-top: 8px; display:inline-flex; align-items:center; gap:6px; background: rgba(255,255,255,.14); color:#e7efff; border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:4px 10px; font-size:12px; font-weight:700; }
+  .cp3-since { margin-top: 10px; font-size: 12px; color: rgba(235,242,255,.84); }
 
-  .cp2-name { font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; color: #111; }
-  .cp2-role { display: inline-block; font-size: 12px; font-weight: 600; color: #257af4; background: #e8f4ff; border-radius: 20px; padding: 3px 10px; margin-bottom: 8px; }
-  .cp2-since { font-size: 13px; color: #999; margin-bottom: 14px; }
+  .cp3-sidebar-body { padding: 16px; }
+  .cp3-kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+  .cp3-kpi { background: #f8fafc; border: 1px solid #edf2f8; border-radius: 12px; padding: 12px; }
+  .cp3-kpi-num { font-size: 22px; font-weight: 900; line-height: 1; color: #121926; }
+  .cp3-kpi-lbl { margin-top: 4px; font-size: 11px; color: #748197; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  .cp3-hints { display: grid; gap: 8px; margin-bottom: 12px; }
+  .cp3-hint { display:flex; align-items:center; gap:8px; background: linear-gradient(120deg,#fff4ed,#fff); border:1px solid #ffe3d6; color:#9b451b; border-radius:10px; padding:8px 10px; font-size:12px; font-weight:600; }
+  .cp3-nav { display:grid; gap: 6px; margin-bottom: 12px; }
+  .cp3-nav-item { display:flex; align-items:center; gap:10px; border:none; width:100%; background:#fff; border-radius:10px; padding:10px; text-decoration:none; font-size:14px; font-weight:700; color:#243247; cursor:pointer; transition:all .15s ease; text-align:left; }
+  .cp3-nav-item:hover { background:#f5f8fc; }
+  .cp3-nav-item.active { background: linear-gradient(120deg,#eef5ff,#f7fbff); color:#175cc8; border:1px solid #dfeafc; }
+  .cp3-logout { width:100%; border:1px solid #e2e8f0; background:#fff; border-radius:10px; padding:10px; font-size:13px; font-weight:700; color:#5f6a7f; cursor:pointer; }
+  .cp3-logout:hover { border-color:#bac5d7; color:#1f2937; }
 
-  .cp2-badges { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-  .cp2-badge { display: flex; align-items: center; gap: 8px; background: #e8f4ff; border-radius: 8px; padding: 9px 12px; font-size: 13px; color: #1464b0; font-weight: 500; }
+  .cp3-main { display: grid; gap: 16px; }
+  .cp3-hero { background: linear-gradient(145deg,#ffffff,#f8fbff); border:1px solid #e8eef8; border-radius: 18px; padding: 18px; }
+  .cp3-hero-title { font-size: 26px; font-weight: 900; letter-spacing: -.02em; color:#131b2b; }
+  .cp3-hero-sub { margin-top: 6px; font-size: 14px; color:#6b778b; }
+  .cp3-actions { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .cp3-action { border:1px solid #ebeff7; border-radius: 14px; padding: 14px; text-decoration:none; color:inherit; background:#fff; transition: all .2s ease; }
+  .cp3-action:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(20,24,39,.08); border-color:#dde6f4; }
+  .cp3-action.hot { background: linear-gradient(140deg,#ff5a1f,#f2460e 70%); color:#fff; border-color:transparent; box-shadow: 0 16px 26px rgba(231,65,10,.26); }
+  .cp3-action-ico { font-size: 24px; }
+  .cp3-action-title { margin-top: 8px; font-size: 14px; font-weight: 800; }
+  .cp3-action-desc { margin-top: 4px; font-size: 12px; opacity: .82; line-height:1.35; }
 
-  .cp2-stats-strip { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
-  .cp2-strip-cell { padding: 12px 6px; text-align: center; border-right: 1px solid #f0f0f0; }
-  .cp2-strip-cell:last-child { border-right: none; }
-  .cp2-strip-num { font-size: 20px; font-weight: 800; color: #111; line-height: 1; }
-  .cp2-strip-lbl { font-size: 10px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; display: block; }
+  .cp3-section { background: #fff; border:1px solid #ecf1f8; border-radius: 18px; padding: 16px; }
+  .cp3-section-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom: 10px; }
+  .cp3-section-title { font-size: 19px; font-weight: 900; color:#1a2233; letter-spacing: -.01em; }
+  .cp3-section-link { font-size: 13px; font-weight: 700; color:#2563eb; text-decoration:none; }
 
-  .cp2-nav { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
-  .cp2-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: #333; text-decoration: none; transition: background .15s; cursor: pointer; background: none; border: none; font-family: inherit; text-align: left; width: 100%; }
-  .cp2-nav-item:hover { background: #f5f5f5; }
-  .cp2-nav-item.active { background: #e8f4ff; color: #257af4; font-weight: 700; }
-  .cp2-nav-ico { font-size: 18px; flex-shrink: 0; width: 22px; }
+  .cp3-deals { display:grid; gap:10px; }
+  .cp3-deal { border:1px solid #edf2f8; border-radius:14px; padding: 14px; text-decoration:none; color:inherit; background:#fff; transition: all .18s ease; }
+  .cp3-deal:hover { border-color:#dae4f3; box-shadow: 0 10px 24px rgba(20,24,39,.06); }
+  .cp3-deal-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .cp3-deal-title { font-size: 15px; font-weight: 800; color:#1a2436; margin-bottom: 4px; }
+  .cp3-deal-meta { font-size: 12px; color:#738198; display:flex; flex-wrap:wrap; gap:8px; }
+  .cp3-badge { font-size: 11px; font-weight:800; border-radius:999px; padding:5px 10px; white-space:nowrap; }
+  .cp3-badge.new { background:#fff5df; color:#a05a00; }
+  .cp3-badge.work { background:#eaf4ff; color:#1060d3; }
+  .cp3-badge.done { background:#eafdf1; color:#0d8f42; }
+  .cp3-badge.cancel { background:#fff0f0; color:#c62828; }
+  .cp3-deal-review-wrap { margin-top:10px; padding-top:10px; border-top:1px dashed #e9eef6; }
+  .cp3-review-btn { width:100%; border:1px solid #dbe5f2; background:#f7fbff; color:#36557d; border-radius:10px; padding:10px; font-size:13px; font-weight:700; cursor:pointer; }
+  .cp3-review-btn:hover { border-color:#c7d8ee; }
+  .cp3-review-ok { padding:10px; border-radius:10px; background:#edfdf1; color:#138f47; font-weight:700; font-size:13px; }
 
-  .cp2-btn-logout { display: block; width: 100%; padding: 11px 0; background: none; border: 1.5px solid #e0e0e0; border-radius: 8px; color: #777; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: border-color .15s, color .15s; }
-  .cp2-btn-logout:hover { border-color: #999; color: #333; }
+  .cp3-settings { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .cp3-setting { border:1px solid #ebeff7; background:#fff; border-radius:14px; padding:14px; text-decoration:none; color:inherit; transition: all .18s ease; position:relative; }
+  .cp3-setting:hover { border-color:#d7e3f4; box-shadow: 0 10px 24px rgba(20,24,39,.06); }
+  .cp3-setting.disabled { opacity:.56; pointer-events:none; }
+  .cp3-setting-title { margin-top: 6px; font-size:14px; font-weight: 800; color:#182335; }
+  .cp3-setting-desc { margin-top: 4px; font-size:12px; color:#728197; line-height:1.35; }
+  .cp3-soon { position:absolute; top:10px; right:10px; font-size:10px; font-weight:800; color:#1f6feb; background:#e9f2ff; border-radius:999px; padding:4px 8px; }
 
-  /* ── MAIN ── */
-  .cp2-section-title { font-size: 20px; font-weight: 700; margin-bottom: 18px; color: #111; }
+  .cp3-empty { padding: 36px 16px; text-align:center; color:#738198; font-size:14px; }
+  .cp3-empty-ico { font-size: 40px; margin-bottom: 8px; }
+  .cp3-empty-btn { margin-top:12px; display:inline-flex; align-items:center; gap:8px; background: linear-gradient(140deg,#ff5a1f,#f2460e); color:#fff; text-decoration:none; border-radius:10px; padding:10px 14px; font-weight:800; font-size:13px; }
 
-  .cp2-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
-  .cp2-action { display: flex; flex-direction: column; align-items: flex-start; padding: 18px; border: 1px solid #f0f0f0; border-radius: 12px; text-decoration: none; color: inherit; transition: box-shadow .18s, transform .18s; }
-  .cp2-action:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-2px); }
-  .cp2-action-primary { background: #e8410a; border-color: #e8410a; color: #fff; }
-  .cp2-action-primary:hover { background: #d03a09; box-shadow: 0 4px 18px rgba(232,65,10,.25); }
-  .cp2-action-ico { font-size: 26px; margin-bottom: 10px; }
-  .cp2-action-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
-  .cp2-action-desc { font-size: 12px; opacity: .7; }
-
-  .cp2-deals-list { display: flex; flex-direction: column; gap: 1px; border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
-  .cp2-deal-row { display: flex; align-items: center; gap: 16px; padding: 16px 18px; background: #fff; text-decoration: none; color: inherit; transition: background .15s; }
-  .cp2-deal-row:hover { background: #fafafa; }
-  .cp2-deal-row + .cp2-deal-row { border-top: 1px solid #f0f0f0; }
-  .cp2-deal-ico { font-size: 24px; flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; }
-  .cp2-deal-info { flex: 1; min-width: 0; }
-  .cp2-deal-title { font-size: 15px; font-weight: 600; color: #111; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cp2-deal-meta { font-size: 12px; color: #aaa; }
-  .cp2-deal-badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
-  .cp2-deal-badge-done { background: #dcfce7; color: #16a34a; }
-  .cp2-deal-badge-active { background: #fef3c7; color: #d97706; }
-  .cp2-deal-badge-pending { background: #e8f4ff; color: #1464b0; }
-
-  .cp2-review-btn { width: 100%; padding: 10px; background: none; border: 1px solid #e0e0e0; border-radius: 8px; color: #555; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 8px; transition: border-color .15s; }
-  .cp2-review-btn:hover { border-color: #e8410a; color: #e8410a; }
-  .cp2-review-sent { font-size: 13px; color: #16a34a; font-weight: 600; margin-top: 8px; padding: 8px 12px; background: #f0fdf4; border-radius: 8px; }
-
-  .cp2-settings { display: flex; flex-direction: column; gap: 1px; border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
-  .cp2-setting-row { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: #fff; text-decoration: none; color: inherit; transition: background .15s; border: none; font-family: inherit; cursor: pointer; text-align: left; width: 100%; }
-  .cp2-setting-row:hover { background: #fafafa; }
-  .cp2-setting-row + .cp2-setting-row { border-top: 1px solid #f0f0f0; }
-  .cp2-setting-ico { font-size: 22px; flex-shrink: 0; }
-  .cp2-setting-info { flex: 1; }
-  .cp2-setting-title { font-size: 15px; font-weight: 600; color: #111; margin-bottom: 2px; }
-  .cp2-setting-desc { font-size: 12px; color: #aaa; }
-  .cp2-setting-arrow { color: #ccc; font-size: 18px; }
-  .cp2-setting-soon { font-size: 11px; font-weight: 700; color: #257af4; background: #e8f4ff; padding: 3px 8px; border-radius: 4px; }
-
-  .cp2-empty { padding: 48px 0; text-align: center; color: #aaa; font-size: 14px; }
-  .cp2-empty-ico { font-size: 40px; margin-bottom: 10px; }
-
-  @media(max-width:900px) { .cp2-layout { grid-template-columns: 1fr; } .cp2-actions { grid-template-columns: 1fr; } }
+  @media (max-width: 1100px) {
+    .cp3-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 820px) {
+    .cp3-actions { grid-template-columns: 1fr; }
+    .cp3-settings { grid-template-columns: 1fr; }
+  }
 `;
 
 export default function CustomerProfilePage() {
   const { userId, userName, userRole, userAvatar, updateAvatar, logout } = useAuth();
   const navigate = useNavigate();
   const avatarInputRef = useRef(null);
+
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [deals, setDeals] = useState([]);
   const [profile, setProfile] = useState(null);
@@ -110,19 +116,19 @@ export default function CustomerProfilePage() {
     : '';
 
   useEffect(() => {
-    if (userRole === 'WORKER') { navigate('/worker-profile', { replace: true }); }
+    if (userRole === 'WORKER') navigate('/worker-profile', { replace: true });
   }, [userRole, navigate]);
 
   useEffect(() => {
     if (!userId || userRole === 'WORKER') return;
     setLoading(true);
-    Promise.all([
-      getMyDeals(userId),
-      getUserProfile(userId),
-    ]).then(([d, p]) => {
-      setDeals(d || []);
-      setProfile(p || {});
-    }).catch(() => {}).finally(() => setLoading(false));
+    Promise.all([getMyDeals(userId), getUserProfile(userId)])
+      .then(([d, p]) => {
+        setDeals(d || []);
+        setProfile(p || {});
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [userId, userRole]);
 
   const compressImage = (file) => new Promise((resolve) => {
@@ -131,13 +137,20 @@ export default function CustomerProfilePage() {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX = 400;
-        let w = img.width, h = img.height;
-        if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
-        else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
-        canvas.width = w; canvas.height = h;
+        const max = 420;
+        let w = img.width;
+        let h = img.height;
+        if (w > h && w > max) {
+          h = (h * max) / w;
+          w = max;
+        } else if (h >= w && h > max) {
+          w = (w * max) / h;
+          h = max;
+        }
+        canvas.width = w;
+        canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.82));
+        resolve(canvas.toDataURL('image/jpeg', 0.84));
       };
       img.src = e.target.result;
     };
@@ -153,222 +166,254 @@ export default function CustomerProfilePage() {
       try {
         const res = await uploadAvatar(userId, base64);
         updateAvatar(res?.avatarUrl || base64);
-      } catch { updateAvatar(base64); }
-    } finally { setAvatarLoading(false); }
+      } catch {
+        updateAvatar(base64);
+      }
+    } finally {
+      setAvatarLoading(false);
+    }
     e.target.value = '';
   };
 
-  const loadDeals = async () => {
+  const reloadDeals = async () => {
     try {
       const d = await getMyDeals(userId);
       setDeals(d || []);
     } catch {}
   };
 
-  if (userRole === 'WORKER') return null;
+  const initials = (userName || 'З')
+    .trim()
+    .split(' ')
+    .map((p) => p[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 
-  const initials = (userName || 'З').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0,2);
   const fullName = [userName, profile?.lastName].filter(Boolean).join(' ');
   const since = memberSince(profile?.registeredAt || profile?.createdAt);
 
-  const completedDeals = deals.filter(d => d.status === 'COMPLETED').length;
-  const activeDeals    = deals.filter(d => d.status === 'IN_PROGRESS').length;
-  const pendingDeals   = deals.filter(d => d.status === 'PENDING').length;
+  const stats = useMemo(() => {
+    const total = deals.length;
+    const completed = deals.filter((d) => d.status === 'COMPLETED').length;
+    const active = deals.filter((d) => d.status === 'IN_PROGRESS' || d.status === 'NEW').length;
+    const cancelled = deals.filter((d) => d.status === 'CANCELLED').length;
+    return { total, completed, active, cancelled };
+  }, [deals]);
 
-  const dealStatusLabel = (s) => {
-    if (s === 'COMPLETED') return { label: 'Завершена', cls: 'cp2-deal-badge-done' };
-    if (s === 'IN_PROGRESS') return { label: 'В работе', cls: 'cp2-deal-badge-active' };
-    if (s === 'PENDING') return { label: 'Ожидает', cls: 'cp2-deal-badge-pending' };
-    return { label: s, cls: 'cp2-deal-badge-active' };
+  const statusInfo = (status) => {
+    if (status === 'NEW') return { label: 'Ожидает подтверждения', cls: 'new', icon: '⏳' };
+    if (status === 'IN_PROGRESS') return { label: 'В работе', cls: 'work', icon: '🛠️' };
+    if (status === 'COMPLETED') return { label: 'Завершена', cls: 'done', icon: '✅' };
+    if (status === 'CANCELLED') return { label: 'Отменена', cls: 'cancel', icon: '❌' };
+    return { label: status || 'Сделка', cls: 'work', icon: '📋' };
   };
 
+  if (userRole === 'WORKER') return null;
+
   return (
-    <div className="cp2-page">
+    <div className="cp3-page">
       <style>{css}</style>
-
-      <div className="cp2-wrap">
-        <div className="cp2-layout">
-
-          {/* ══ САЙДБАР ══ */}
-          <div>
-            <div className="cp2-ava-wrap" onClick={() => avatarInputRef.current?.click()}>
-              {fullAvatarUrl
-                ? <img src={fullAvatarUrl} alt="" className="cp2-ava" />
-                : <div className="cp2-ava-fb">{initials}</div>
-              }
-              <div className="cp2-ava-overlay">
-                <span style={{color:'#fff',fontSize:20}}>{avatarLoading ? '⏳' : '📷'}</span>
+      <div className="cp3-wrap">
+        <div className="cp3-grid">
+          <aside className="cp3-panel">
+            <div className="cp3-sidebar-top">
+              <div className="cp3-avatar-wrap" onClick={() => avatarInputRef.current?.click()}>
+                {fullAvatarUrl ? (
+                  <img src={fullAvatarUrl} alt="" className="cp3-avatar" />
+                ) : (
+                  <div className="cp3-avatar-fallback">{initials}</div>
+                )}
+                <div className="cp3-avatar-overlay">{avatarLoading ? '⏳' : '📷'}</div>
               </div>
-            </div>
-            <input ref={avatarInputRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleAvatarChange} />
-            <button className="cp2-ava-lbl" onClick={() => avatarInputRef.current?.click()}>
-              {avatarLoading ? 'Загрузка...' : fullAvatarUrl ? 'Изменить фото' : '+ Добавить фото'}
-            </button>
-
-            <h1 className="cp2-name" style={{marginTop:10}}>{fullName || 'Заказчик'}</h1>
-            <span className="cp2-role">Заказчик</span>
-            {since && <div className="cp2-since">{since}</div>}
-
-            <div className="cp2-badges">
-              <div className="cp2-badge">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Документы проверены
-              </div>
-              <div className="cp2-badge">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Йошкар-Ола
-              </div>
-            </div>
-
-            <div className="cp2-stats-strip">
-              <div className="cp2-strip-cell">
-                <div className="cp2-strip-num">{deals.length}</div>
-                <span className="cp2-strip-lbl">Сделок</span>
-              </div>
-              <div className="cp2-strip-cell">
-                <div className="cp2-strip-num">{completedDeals}</div>
-                <span className="cp2-strip-lbl">Завершено</span>
-              </div>
-              <div className="cp2-strip-cell">
-                <div className="cp2-strip-num">{activeDeals + pendingDeals}</div>
-                <span className="cp2-strip-lbl">Активных</span>
-              </div>
-            </div>
-
-            <nav className="cp2-nav">
-              <button className={`cp2-nav-item${section==='deals'?' active':''}`} onClick={() => setSection('deals')}>
-                <span className="cp2-nav-ico">📋</span> Мои сделки
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleAvatarChange}
+              />
+              <button className="cp3-avatar-btn" onClick={() => avatarInputRef.current?.click()}>
+                {avatarLoading ? 'Загружаем...' : fullAvatarUrl ? 'Изменить фото' : 'Добавить фото'}
               </button>
-              <Link to="/categories" className="cp2-nav-item">
-                <span className="cp2-nav-ico">🔍</span> Найти мастера
-              </Link>
-              <Link to="/chat" className="cp2-nav-item">
-                <span className="cp2-nav-ico">💬</span> Сообщения
-              </Link>
-              <button className={`cp2-nav-item${section==='settings'?' active':''}`} onClick={() => setSection('settings')}>
-                <span className="cp2-nav-ico">⚙️</span> Настройки
-              </button>
-            </nav>
 
-            <button className="cp2-btn-logout" onClick={() => { logout(); navigate('/login'); }}>
-              Выйти
-            </button>
-          </div>
-
-          {/* ══ ОСНОВНОЙ КОНТЕНТ ══ */}
-          <div>
-
-            {/* Быстрые действия */}
-            <div className="cp2-actions">
-              <Link to="/categories" className="cp2-action cp2-action-primary">
-                <span className="cp2-action-ico">🔍</span>
-                <div className="cp2-action-name">Найти мастера</div>
-                <div className="cp2-action-desc">Все категории услуг</div>
-              </Link>
-              <Link to="/deals" className="cp2-action">
-                <span className="cp2-action-ico">📋</span>
-                <div className="cp2-action-name">Мои сделки</div>
-                <div className="cp2-action-desc">Активных: {activeDeals + pendingDeals}</div>
-              </Link>
-              <Link to="/chat" className="cp2-action">
-                <span className="cp2-action-ico">💬</span>
-                <div className="cp2-action-name">Сообщения</div>
-                <div className="cp2-action-desc">Чат с мастерами</div>
-              </Link>
+              <div className="cp3-name">{fullName || 'Заказчик'}</div>
+              <div className="cp3-role">👤 Заказчик</div>
+              {since && <div className="cp3-since">{since}</div>}
             </div>
 
-            {/* Сделки */}
-            {section === 'deals' && (
-              <>
-                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16}}>
-                  <h2 className="cp2-section-title" style={{marginBottom:0}}>Мои сделки</h2>
-                  <Link to="/deals" style={{fontSize:13,color:'#257af4',textDecoration:'none'}}>Все сделки →</Link>
+            <div className="cp3-sidebar-body">
+              <div className="cp3-kpis">
+                <div className="cp3-kpi">
+                  <div className="cp3-kpi-num">{stats.total}</div>
+                  <div className="cp3-kpi-lbl">Сделок</div>
                 </div>
+                <div className="cp3-kpi">
+                  <div className="cp3-kpi-num">{stats.active}</div>
+                  <div className="cp3-kpi-lbl">Активных</div>
+                </div>
+                <div className="cp3-kpi">
+                  <div className="cp3-kpi-num">{stats.completed}</div>
+                  <div className="cp3-kpi-lbl">Завершено</div>
+                </div>
+                <div className="cp3-kpi">
+                  <div className="cp3-kpi-num">{stats.cancelled}</div>
+                  <div className="cp3-kpi-lbl">Отменено</div>
+                </div>
+              </div>
+
+              <div className="cp3-hints">
+                <div className="cp3-hint">✅ Документы проверены</div>
+                <div className="cp3-hint">📍 Йошкар-Ола</div>
+              </div>
+
+              <nav className="cp3-nav">
+                <button
+                  type="button"
+                  className={`cp3-nav-item${section === 'deals' ? ' active' : ''}`}
+                  onClick={() => setSection('deals')}
+                >
+                  📋 Мои сделки
+                </button>
+                <button
+                  type="button"
+                  className={`cp3-nav-item${section === 'settings' ? ' active' : ''}`}
+                  onClick={() => setSection('settings')}
+                >
+                  ⚙️ Настройки
+                </button>
+                <Link to="/categories" className="cp3-nav-item">🔍 Найти мастера</Link>
+                <Link to="/chat" className="cp3-nav-item">💬 Сообщения</Link>
+              </nav>
+
+              <button className="cp3-logout" onClick={() => { logout(); navigate('/login'); }}>
+                Выйти из аккаунта
+              </button>
+            </div>
+          </aside>
+
+          <main className="cp3-main">
+            <section className="cp3-hero">
+              <div className="cp3-hero-title">Личный кабинет заказчика</div>
+              <div className="cp3-hero-sub">
+                Управляйте сделками, общением с мастерами и профилем в одном месте.
+              </div>
+              <div className="cp3-actions">
+                <Link to="/categories" className="cp3-action hot">
+                  <div className="cp3-action-ico">🚀</div>
+                  <div className="cp3-action-title">Найти мастера</div>
+                  <div className="cp3-action-desc">Каталог услуг и быстрый выбор специалиста</div>
+                </Link>
+                <Link to="/deals" className="cp3-action">
+                  <div className="cp3-action-ico">🤝</div>
+                  <div className="cp3-action-title">Все сделки</div>
+                  <div className="cp3-action-desc">Активно сейчас: {stats.active}</div>
+                </Link>
+                <Link to="/chat" className="cp3-action">
+                  <div className="cp3-action-ico">💬</div>
+                  <div className="cp3-action-title">Сообщения</div>
+                  <div className="cp3-action-desc">Обсудить детали прямо в чате</div>
+                </Link>
+              </div>
+            </section>
+
+            {section === 'deals' && (
+              <section className="cp3-section">
+                <div className="cp3-section-head">
+                  <div className="cp3-section-title">Последние сделки</div>
+                  <Link to="/deals" className="cp3-section-link">Открыть все →</Link>
+                </div>
+
                 {loading ? (
-                  <div className="cp2-empty"><div className="cp2-empty-ico">⏳</div><p>Загрузка...</p></div>
+                  <div className="cp3-empty">
+                    <div className="cp3-empty-ico">⏳</div>
+                    Загрузка сделок...
+                  </div>
                 ) : deals.length === 0 ? (
-                  <div className="cp2-empty">
-                    <div className="cp2-empty-ico">📋</div>
-                    <p>Сделок пока нет</p>
-                    <Link to="/categories" style={{display:'inline-block',marginTop:12,padding:'10px 20px',background:'#e8410a',color:'#fff',borderRadius:8,fontWeight:700,textDecoration:'none',fontSize:14}}>Найти мастера</Link>
+                  <div className="cp3-empty">
+                    <div className="cp3-empty-ico">📋</div>
+                    <div>Пока нет сделок — выберите мастера и начните первую</div>
+                    <Link to="/categories" className="cp3-empty-btn">🔍 Перейти в каталог</Link>
                   </div>
                 ) : (
-                  <div className="cp2-deals-list">
-                    {deals.slice(0, 10).map(deal => {
-                      const { label, cls } = dealStatusLabel(deal.status);
+                  <div className="cp3-deals">
+                    {deals.slice(0, 10).map((deal) => {
+                      const info = statusInfo(deal.status);
                       return (
-                        <div key={deal.id}>
-                          <Link to={`/deals?dealId=${deal.id}`} className="cp2-deal-row">
-                            <div className="cp2-deal-ico">
-                              {deal.status === 'COMPLETED' ? '✅' : deal.status === 'PENDING' ? '⏳' : '🔨'}
-                            </div>
-                            <div className="cp2-deal-info">
-                              <div className="cp2-deal-title">{deal.title || 'Сделка'}</div>
-                              <div className="cp2-deal-meta">
-                                {deal.workerName && `${deal.workerName} · `}
-                                {deal.agreedPrice && `${Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽ · `}
-                                {new Date(deal.createdAt).toLocaleDateString('ru-RU')}
+                        <div key={deal.id} className="cp3-deal">
+                          <Link to={`/deals?dealId=${deal.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <div className="cp3-deal-top">
+                              <div>
+                                <div className="cp3-deal-title">
+                                  {info.icon} {deal.title || 'Сделка'}
+                                </div>
+                                <div className="cp3-deal-meta">
+                                  {deal.workerName && <span>👤 {deal.workerName}</span>}
+                                  {deal.agreedPrice && <span>💰 {Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</span>}
+                                  {deal.createdAt && <span>🗓 {new Date(deal.createdAt).toLocaleDateString('ru-RU')}</span>}
+                                </div>
                               </div>
+                              <span className={`cp3-badge ${info.cls}`}>{info.label}</span>
                             </div>
-                            <div className={`cp2-deal-badge ${cls}`}>{label}</div>
                           </Link>
 
                           {deal.status === 'COMPLETED' && !deal.hasReview && (
-                            showReviewForm === deal.id
-                              ? <div style={{padding:'0 18px 14px'}}><ReviewForm dealId={deal.id} onSuccess={() => { setShowReviewForm(null); loadDeals(); }} /></div>
-                              : <div style={{padding:'0 18px 12px'}}><button className="cp2-review-btn" onClick={() => setShowReviewForm(deal.id)}>⭐ Оставить отзыв</button></div>
+                            <div className="cp3-deal-review-wrap">
+                              {showReviewForm === deal.id ? (
+                                <ReviewForm
+                                  dealId={deal.id}
+                                  onSuccess={() => {
+                                    setShowReviewForm(null);
+                                    reloadDeals();
+                                  }}
+                                />
+                              ) : (
+                                <button className="cp3-review-btn" onClick={() => setShowReviewForm(deal.id)}>
+                                  ⭐ Оставить отзыв о мастере
+                                </button>
+                              )}
+                            </div>
                           )}
+
                           {deal.status === 'COMPLETED' && deal.hasReview && (
-                            <div style={{padding:'0 18px 12px'}}><div className="cp2-review-sent">✅ Отзыв отправлен</div></div>
+                            <div className="cp3-deal-review-wrap">
+                              <div className="cp3-review-ok">✅ Отзыв уже оставлен</div>
+                            </div>
                           )}
                         </div>
                       );
                     })}
                   </div>
                 )}
-              </>
+              </section>
             )}
 
-            {/* Настройки */}
             {section === 'settings' && (
-              <>
-                <h2 className="cp2-section-title">Настройки</h2>
-                <div className="cp2-settings">
-                  <Link to="/settings/personal" className="cp2-setting-row">
-                    <span className="cp2-setting-ico">👤</span>
-                    <div className="cp2-setting-info">
-                      <div className="cp2-setting-title">Личные данные</div>
-                      <div className="cp2-setting-desc">Имя, контактная информация</div>
-                    </div>
-                    <span className="cp2-setting-arrow">›</span>
+              <section className="cp3-section">
+                <div className="cp3-section-head">
+                  <div className="cp3-section-title">Настройки профиля</div>
+                </div>
+                <div className="cp3-settings">
+                  <Link to="/settings/personal" className="cp3-setting">
+                    <div style={{ fontSize: 28 }}>👤</div>
+                    <div className="cp3-setting-title">Личные данные</div>
+                    <div className="cp3-setting-desc">Контакты, имя и профильная информация</div>
                   </Link>
-                  <Link to="/settings/notifications" className="cp2-setting-row">
-                    <span className="cp2-setting-ico">🔔</span>
-                    <div className="cp2-setting-info">
-                      <div className="cp2-setting-title">Уведомления</div>
-                      <div className="cp2-setting-desc">Push и email уведомления</div>
-                    </div>
-                    <span className="cp2-setting-arrow">›</span>
+                  <Link to="/settings/notifications" className="cp3-setting">
+                    <div style={{ fontSize: 28 }}>🔔</div>
+                    <div className="cp3-setting-title">Уведомления</div>
+                    <div className="cp3-setting-desc">Push и email уведомления по сделкам</div>
                   </Link>
-                  <div className="cp2-setting-row" style={{cursor:'default'}}>
-                    <span className="cp2-setting-ico">💳</span>
-                    <div className="cp2-setting-info">
-                      <div className="cp2-setting-title">Платёжные данные</div>
-                      <div className="cp2-setting-desc">Способы оплаты</div>
-                    </div>
-                    <span className="cp2-setting-soon">СКОРО</span>
+                  <div className="cp3-setting disabled">
+                    <div className="cp3-soon">СКОРО</div>
+                    <div style={{ fontSize: 28 }}>🧩</div>
+                    <div className="cp3-setting-title">Дополнительные опции</div>
+                    <div className="cp3-setting-desc">Новые возможности профиля появятся здесь</div>
                   </div>
                 </div>
-              </>
+              </section>
             )}
-
-          </div>
+          </main>
         </div>
       </div>
     </div>
