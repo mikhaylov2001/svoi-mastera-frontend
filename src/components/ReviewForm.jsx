@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { createReview } from '../api';
+import { createReview, createCustomerReview } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import './ReviewForm.css';
 
-export default function ReviewForm({ dealId, onSuccess }) {
+export default function ReviewForm({ dealId, onSuccess, forWorker = false }) {
   const { userId } = useAuth();
   const { showToast } = useToast();
   const [rating, setRating] = useState(0);
@@ -22,7 +22,8 @@ export default function ReviewForm({ dealId, onSuccess }) {
 
     setSubmitting(true);
     try {
-      await createReview(userId, dealId, {
+      const api = forWorker ? createCustomerReview : createReview;
+      await api(userId, dealId, {
         rating,
         text: text.trim() || null
       });
@@ -41,7 +42,7 @@ export default function ReviewForm({ dealId, onSuccess }) {
 
   return (
     <form onSubmit={handleSubmit} className="review-form">
-      <h3 className="review-form-title">Оставить отзыв</h3>
+      <h3 className="review-form-title">{forWorker ? 'Отзыв о заказчике' : 'Оставить отзыв'}</h3>
 
       <div className="review-rating">
         <label>Оценка:</label>
@@ -67,7 +68,7 @@ export default function ReviewForm({ dealId, onSuccess }) {
           id="review-text"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Расскажите о работе мастера..."
+          placeholder={forWorker ? 'Как прошло общение и постановка задачи…' : 'Расскажите о работе мастера…'}
           rows={4}
           maxLength={500}
         />
