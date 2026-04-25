@@ -6,112 +6,400 @@ import ReviewForm from '../../components/ReviewForm';
 
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 
-function memberSince(d) {
-  if (!d) return null;
-  return `На сервисе с ${new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}`;
+function fmt(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
 }
 
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-  * { box-sizing: border-box; }
-  .cp3-page { min-height: 100vh; background: radial-gradient(1200px 440px at 80% -120px, rgba(255,110,64,.10), transparent), linear-gradient(180deg, #f7f9fc 0%, #fff 42%); font-family: Inter, Arial, sans-serif; color: #161b22; }
-  .cp3-wrap { max-width: 1240px; margin: 0 auto; padding: 28px 18px 56px; }
-  .cp3-grid { display: grid; grid-template-columns: 320px 1fr; gap: 22px; align-items: start; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-  .cp3-panel { background: #fff; border: 1px solid #edf0f5; border-radius: 18px; box-shadow: 0 12px 40px rgba(20,24,39,.05); overflow: hidden; }
-  .cp3-sidebar-top { padding: 20px; background: linear-gradient(145deg, #0f172a, #1d2a4a 70%, #243d6d); color: #fff; position: relative; }
-  .cp3-avatar-wrap { position: relative; width: 94px; height: 94px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,.5); overflow: hidden; box-shadow: 0 12px 26px rgba(8,15,32,.35); }
-  .cp3-avatar { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .cp3-avatar-fallback { width: 100%; height: 100%; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg,#ff5f2e,#ff894f); font-size: 34px; font-weight: 800; }
-  .cp3-avatar-overlay { position:absolute; inset:0; background: rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; opacity:0; transition: opacity .18s ease; }
-  .cp3-avatar-wrap:hover .cp3-avatar-overlay { opacity:1; }
-  .cp3-avatar-btn { margin-top: 10px; border: none; background: rgba(255,255,255,.12); color:#fff; border-radius: 9px; padding: 7px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
-  .cp3-avatar-btn:hover { background: rgba(255,255,255,.2); }
-  .cp3-name { margin-top: 14px; font-size: 24px; line-height: 1.12; font-weight: 800; letter-spacing: -.02em; }
-  .cp3-role { margin-top: 8px; display:inline-flex; align-items:center; gap:6px; background: rgba(255,255,255,.14); color:#e7efff; border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:4px 10px; font-size:12px; font-weight:700; }
-  .cp3-since { margin-top: 10px; font-size: 12px; color: rgba(235,242,255,.84); }
+.cxp * { box-sizing: border-box; }
+.cxp {
+  min-height: 100vh;
+  background: #f1f5f9;
+  font-family: Inter, -apple-system, sans-serif;
+  color: #0f172a;
+}
 
-  .cp3-sidebar-body { padding: 16px; }
-  .cp3-kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
-  .cp3-kpi { background: #f8fafc; border: 1px solid #edf2f8; border-radius: 12px; padding: 12px; }
-  .cp3-kpi-num { font-size: 22px; font-weight: 900; line-height: 1; color: #121926; }
-  .cp3-kpi-lbl { margin-top: 4px; font-size: 11px; color: #748197; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
-  .cp3-hints { display: grid; gap: 8px; margin-bottom: 12px; }
-  .cp3-hint { display:flex; align-items:center; gap:8px; background: linear-gradient(120deg,#fff4ed,#fff); border:1px solid #ffe3d6; color:#9b451b; border-radius:10px; padding:8px 10px; font-size:12px; font-weight:600; }
-  .cp3-nav { display:grid; gap: 6px; margin-bottom: 12px; }
-  .cp3-nav-item { display:flex; align-items:center; gap:10px; border:none; width:100%; background:#fff; border-radius:10px; padding:10px; text-decoration:none; font-size:14px; font-weight:700; color:#243247; cursor:pointer; transition:all .15s ease; text-align:left; }
-  .cp3-nav-item:hover { background:#f5f8fc; }
-  .cp3-nav-item.active { background: linear-gradient(120deg,#eef5ff,#f7fbff); color:#175cc8; border:1px solid #dfeafc; }
-  .cp3-logout { width:100%; border:1px solid #e2e8f0; background:#fff; border-radius:10px; padding:10px; font-size:13px; font-weight:700; color:#5f6a7f; cursor:pointer; }
-  .cp3-logout:hover { border-color:#bac5d7; color:#1f2937; }
+/* ───── COVER ───── */
+.cxp-cover {
+  height: 200px;
+  background: linear-gradient(130deg, #0f172a 0%, #1e293b 40%, #ff4500 100%);
+  position: relative;
+  overflow: hidden;
+}
+.cxp-cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 55% 80% at 85% 50%, rgba(255,90,20,.45), transparent),
+    radial-gradient(ellipse 40% 60% at 10% 80%, rgba(255,255,255,.04), transparent);
+}
+.cxp-cover-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: .06;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #fff 0, #fff 1px,
+    transparent 0, transparent 50%
+  );
+  background-size: 22px 22px;
+}
 
-  .cp3-main { display: grid; gap: 16px; }
-  .cp3-hero { background: linear-gradient(145deg,#ffffff,#f8fbff); border:1px solid #e8eef8; border-radius: 18px; padding: 18px; }
-  .cp3-hero-title { font-size: 26px; font-weight: 900; letter-spacing: -.02em; color:#131b2b; }
-  .cp3-hero-sub { margin-top: 6px; font-size: 14px; color:#6b778b; }
-  .cp3-actions { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
-  .cp3-action { border:1px solid #ebeff7; border-radius: 14px; padding: 14px; text-decoration:none; color:inherit; background:#fff; transition: all .2s ease; }
-  .cp3-action:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(20,24,39,.08); border-color:#dde6f4; }
-  .cp3-action.hot { background: linear-gradient(140deg,#ff5a1f,#f2460e 70%); color:#fff; border-color:transparent; box-shadow: 0 16px 26px rgba(231,65,10,.26); }
-  .cp3-action-ico { font-size: 24px; }
-  .cp3-action-title { margin-top: 8px; font-size: 14px; font-weight: 800; }
-  .cp3-action-desc { margin-top: 4px; font-size: 12px; opacity: .82; line-height:1.35; }
+/* ───── CONTAINER ───── */
+.cxp-wrap { max-width: 1180px; margin: 0 auto; padding: 0 18px 64px; }
 
-  .cp3-section { background: #fff; border:1px solid #ecf1f8; border-radius: 18px; padding: 16px; }
-  .cp3-section-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom: 10px; }
-  .cp3-section-title { font-size: 19px; font-weight: 900; color:#1a2233; letter-spacing: -.01em; }
-  .cp3-section-link { font-size: 13px; font-weight: 700; color:#2563eb; text-decoration:none; }
+/* ───── PROFILE CARD ───── */
+.cxp-profile-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  margin-top: -70px;
+  padding: 20px 24px 20px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  box-shadow: 0 4px 28px rgba(15,23,42,.08);
+}
 
-  .cp3-deals { display:grid; gap:10px; }
-  .cp3-deal { border:1px solid #edf2f8; border-radius:14px; padding: 14px; text-decoration:none; color:inherit; background:#fff; transition: all .18s ease; }
-  .cp3-deal:hover { border-color:#dae4f3; box-shadow: 0 10px 24px rgba(20,24,39,.06); }
-  .cp3-deal-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
-  .cp3-deal-title { font-size: 15px; font-weight: 800; color:#1a2436; margin-bottom: 4px; }
-  .cp3-deal-meta { font-size: 12px; color:#738198; display:flex; flex-wrap:wrap; gap:8px; }
-  .cp3-badge { font-size: 11px; font-weight:800; border-radius:999px; padding:5px 10px; white-space:nowrap; }
-  .cp3-badge.new { background:#fff5df; color:#a05a00; }
-  .cp3-badge.work { background:#eaf4ff; color:#1060d3; }
-  .cp3-badge.done { background:#eafdf1; color:#0d8f42; }
-  .cp3-badge.cancel { background:#fff0f0; color:#c62828; }
-  .cp3-deal-review-wrap { margin-top:10px; padding-top:10px; border-top:1px dashed #e9eef6; }
-  .cp3-review-btn { width:100%; border:1px solid #dbe5f2; background:#f7fbff; color:#36557d; border-radius:10px; padding:10px; font-size:13px; font-weight:700; cursor:pointer; }
-  .cp3-review-btn:hover { border-color:#c7d8ee; }
-  .cp3-review-ok { padding:10px; border-radius:10px; background:#edfdf1; color:#138f47; font-weight:700; font-size:13px; }
+.cxp-ava-ring {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  box-shadow: 0 6px 24px rgba(15,23,42,.18);
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  background: linear-gradient(135deg, #ff5a1f, #ff8c5a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 900;
+  color: #fff;
+  transition: box-shadow .2s;
+}
+.cxp-ava-ring:hover { box-shadow: 0 8px 30px rgba(15,23,42,.26); }
+.cxp-ava-ring img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.cxp-ava-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,.45);
+  display: flex; align-items:center; justify-content: center;
+  font-size: 22px; opacity: 0; transition: opacity .18s;
+}
+.cxp-ava-ring:hover .cxp-ava-overlay { opacity: 1; }
 
-  .cp3-settings { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .cp3-setting { border:1px solid #ebeff7; background:#fff; border-radius:14px; padding:14px; text-decoration:none; color:inherit; transition: all .18s ease; position:relative; }
-  .cp3-setting:hover { border-color:#d7e3f4; box-shadow: 0 10px 24px rgba(20,24,39,.06); }
-  .cp3-setting.disabled { opacity:.56; pointer-events:none; }
-  .cp3-setting-title { margin-top: 6px; font-size:14px; font-weight: 800; color:#182335; }
-  .cp3-setting-desc { margin-top: 4px; font-size:12px; color:#728197; line-height:1.35; }
-  .cp3-soon { position:absolute; top:10px; right:10px; font-size:10px; font-weight:800; color:#1f6feb; background:#e9f2ff; border-radius:999px; padding:4px 8px; }
+.cxp-profile-info { flex: 1; min-width: 0; padding-bottom: 2px; }
+.cxp-profile-name {
+  font-size: clamp(20px, 2.4vw, 26px);
+  font-weight: 900;
+  letter-spacing: -.03em;
+  color: #0f172a;
+  line-height: 1.1;
+}
+.cxp-profile-meta {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.cxp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 11px;
+  white-space: nowrap;
+}
+.cxp-chip-role { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+.cxp-chip-ok   { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.cxp-chip-city { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+.cxp-chip-time { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
 
-  .cp3-empty { padding: 36px 16px; text-align:center; color:#738198; font-size:14px; }
-  .cp3-empty-ico { font-size: 40px; margin-bottom: 8px; }
-  .cp3-empty-btn { margin-top:12px; display:inline-flex; align-items:center; gap:8px; background: linear-gradient(140deg,#ff5a1f,#f2460e); color:#fff; text-decoration:none; border-radius:10px; padding:10px 14px; font-weight:800; font-size:13px; }
+.cxp-profile-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding-bottom: 2px;
+}
+.cxp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 16px;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: all .18s ease;
+}
+.cxp-btn-primary {
+  background: linear-gradient(135deg,#ff5a1f,#e8410a);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(232,65,10,.32);
+}
+.cxp-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 9px 22px rgba(232,65,10,.38); }
+.cxp-btn-ghost {
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+.cxp-btn-ghost:hover { background: #f1f5f9; border-color: #cbd5e1; }
+.cxp-btn-logout {
+  background: #fff;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+}
+.cxp-btn-logout:hover { color: #ef4444; border-color: #fecaca; }
 
-  @media (max-width: 1100px) {
-    .cp3-grid { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 820px) {
-    .cp3-actions { grid-template-columns: 1fr; }
-    .cp3-settings { grid-template-columns: 1fr; }
-  }
+/* ───── STATS BAR ───── */
+.cxp-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 16px 0;
+}
+.cxp-stat {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(15,23,42,.04);
+  transition: all .2s;
+}
+.cxp-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15,23,42,.07); }
+.cxp-stat-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.cxp-stat-icon.total   { background: #fff7ed; }
+.cxp-stat-icon.active  { background: #eff6ff; }
+.cxp-stat-icon.done    { background: #f0fdf4; }
+.cxp-stat-icon.cancel  { background: #fff1f2; }
+.cxp-stat-body {}
+.cxp-stat-num { font-size: 26px; font-weight: 900; color: #0f172a; line-height: 1; }
+.cxp-stat-lbl { font-size: 12px; color: #64748b; font-weight: 600; margin-top: 3px; }
+
+/* ───── MAIN GRID ───── */
+.cxp-main { display: grid; grid-template-columns: 1fr 340px; gap: 14px; align-items: start; }
+
+/* ───── QUICK ACTIONS ───── */
+.cxp-quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.cxp-qa {
+  background: #fff;
+  border: 1.5px solid #e8eef7;
+  border-radius: 16px;
+  padding: 18px;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all .2s;
+  cursor: pointer;
+}
+.cxp-qa:hover { border-color: #c7d8f0; transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,42,.07); }
+.cxp-qa.accent {
+  background: linear-gradient(145deg, #ff5a1f, #e8410a);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 14px 30px rgba(232,65,10,.28);
+}
+.cxp-qa.accent:hover { box-shadow: 0 18px 36px rgba(232,65,10,.36); }
+.cxp-qa-ico { font-size: 26px; }
+.cxp-qa-title { font-size: 14px; font-weight: 800; letter-spacing: -.01em; }
+.cxp-qa-sub { font-size: 12px; opacity: .75; line-height: 1.3; }
+
+/* ───── SECTION ───── */
+.cxp-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.cxp-section + .cxp-section { margin-top: 14px; }
+.cxp-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.cxp-section-title { font-size: 18px; font-weight: 900; letter-spacing: -.02em; color: #0f172a; }
+.cxp-section-link { font-size: 13px; font-weight: 700; color: #e8410a; text-decoration: none; }
+.cxp-section-link:hover { text-decoration: underline; }
+
+/* ───── DEALS ───── */
+.cxp-deals { display: grid; gap: 8px; }
+.cxp-deal-card {
+  border: 1px solid #edf2f8;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all .18s;
+}
+.cxp-deal-card:hover { border-color: #d0dcee; box-shadow: 0 8px 20px rgba(15,23,42,.06); }
+.cxp-deal-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  text-decoration: none;
+  color: inherit;
+}
+.cxp-deal-thumb {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+.cxp-deal-thumb.s-NEW       { background: #fff7ed; }
+.cxp-deal-thumb.s-IN_PROGRESS { background: #eff6ff; }
+.cxp-deal-thumb.s-COMPLETED  { background: #f0fdf4; }
+.cxp-deal-thumb.s-CANCELLED  { background: #fff1f2; }
+.cxp-deal-body { flex: 1; min-width: 0; }
+.cxp-deal-title {
+  font-size: 14px; font-weight: 800; color: #0f172a;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.cxp-deal-meta { font-size: 12px; color: #64748b; display: flex; flex-wrap: wrap; gap: 6px; }
+.cxp-badge {
+  flex-shrink: 0;
+  font-size: 11px; font-weight: 800;
+  border-radius: 999px; padding: 4px 10px;
+}
+.cxp-badge.s-NEW              { background: #fff7ed; color: #c2410c; }
+.cxp-badge.s-IN_PROGRESS      { background: #eff6ff; color: #1d4ed8; }
+.cxp-badge.s-COMPLETED        { background: #f0fdf4; color: #15803d; }
+.cxp-badge.s-CANCELLED        { background: #fff1f2; color: #b91c1c; }
+.cxp-deal-review {
+  padding: 0 14px 12px;
+}
+.cxp-review-btn {
+  width: 100%; padding: 10px;
+  background: #f8fafc; border: 1px solid #e2e8f0;
+  border-radius: 10px; font-size: 13px; font-weight: 700;
+  color: #334155; cursor: pointer; font-family: inherit;
+  transition: all .18s;
+}
+.cxp-review-btn:hover { border-color: #ff5a1f; color: #e8410a; background: #fff7ed; }
+.cxp-review-ok {
+  padding: 10px 14px; background: #f0fdf4;
+  border-radius: 10px; font-size: 13px; font-weight: 700;
+  color: #16a34a; text-align: center;
+}
+
+/* ───── EMPTY ───── */
+.cxp-empty { padding: 36px 16px; text-align: center; color: #64748b; font-size: 14px; }
+.cxp-empty-ico { font-size: 44px; margin-bottom: 8px; }
+
+/* ───── RIGHT COLUMN ───── */
+.cxp-right { display: grid; gap: 14px; }
+
+/* ───── NAV CARD ───── */
+.cxp-nav { padding: 8px; }
+.cxp-nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 10px; border-radius: 10px;
+  font-size: 14px; font-weight: 700; color: #334155;
+  text-decoration: none; background: none;
+  border: none; width: 100%; cursor: pointer;
+  transition: all .15s; font-family: inherit;
+}
+.cxp-nav-item:hover { background: #f1f5f9; color: #0f172a; }
+.cxp-nav-item.act { background: #fff7ed; color: #c2410c; }
+.cxp-nav-ico {
+  width: 34px; height: 34px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+  background: #f1f5f9;
+}
+.cxp-nav-item.act .cxp-nav-ico { background: #fed7aa; }
+
+/* ───── SETTINGS ───── */
+.cxp-set-list { display: grid; gap: 6px; }
+.cxp-set-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9;
+  text-decoration: none; color: inherit;
+  transition: all .18s; position: relative;
+  background: #fafcff;
+}
+.cxp-set-item:hover:not(.cxp-set-dis) { border-color: #e2e8f0; background: #fff; box-shadow: 0 4px 12px rgba(15,23,42,.05); }
+.cxp-set-dis { opacity: .5; cursor: default; }
+.cxp-set-ico {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: #f1f5f9; font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.cxp-set-info { flex: 1; min-width: 0; }
+.cxp-set-title { font-size: 14px; font-weight: 800; color: #0f172a; }
+.cxp-set-desc  { font-size: 12px; color: #64748b; margin-top: 2px; }
+.cxp-set-arr   { color: #cbd5e1; font-size: 20px; }
+.cxp-soon {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 10px; font-weight: 800;
+  background: #eff6ff; color: #2563eb;
+  border-radius: 999px; padding: 3px 8px;
+}
+
+/* ───── RESPONSIVE ───── */
+@media (max-width: 980px) {
+  .cxp-main { grid-template-columns: 1fr; }
+  .cxp-stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 680px) {
+  .cxp-quick { grid-template-columns: 1fr; }
+  .cxp-profile-card { flex-wrap: wrap; }
+  .cxp-profile-actions { width: 100%; }
+  .cxp-cover { height: 150px; }
+  .cxp-stats { grid-template-columns: repeat(2, 1fr); }
+}
 `;
+
+const STATUS_ICO = {
+  NEW: '⏳', IN_PROGRESS: '🛠', COMPLETED: '✅', CANCELLED: '✕',
+};
+const STATUS_LABEL = {
+  NEW: 'Ожидает мастера', IN_PROGRESS: 'В работе',
+  COMPLETED: 'Завершена', CANCELLED: 'Отменена',
+};
 
 export default function CustomerProfilePage() {
   const { userId, userName, userRole, userAvatar, updateAvatar, logout } = useAuth();
   const navigate = useNavigate();
-  const avatarInputRef = useRef(null);
+  const fileRef = useRef(null);
 
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [deals, setDeals] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [section, setSection] = useState('deals');
-  const [showReviewForm, setShowReviewForm] = useState(null);
+  const [reviewFor, setReviewFor] = useState(null);
 
-  const fullAvatarUrl = userAvatar
+  const avatarUrl = userAvatar
     ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND + userAvatar)
     : '';
 
@@ -123,261 +411,190 @@ export default function CustomerProfilePage() {
     if (!userId || userRole === 'WORKER') return;
     setLoading(true);
     Promise.all([getMyDeals(userId), getUserProfile(userId)])
-      .then(([d, p]) => {
-        setDeals(d || []);
-        setProfile(p || {});
-      })
+      .then(([d, p]) => { setDeals(d || []); setProfile(p || {}); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [userId, userRole]);
 
-  const compressImage = (file) => new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
+  const compress = (file) => new Promise((res) => {
+    const r = new FileReader();
+    r.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const max = 420;
-        let w = img.width;
-        let h = img.height;
-        if (w > h && w > max) {
-          h = (h * max) / w;
-          w = max;
-        } else if (h >= w && h > max) {
-          w = (w * max) / h;
-          h = max;
-        }
-        canvas.width = w;
-        canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.84));
+        const c = document.createElement('canvas');
+        const M = 420;
+        let w = img.width, h = img.height;
+        if (w > M) { h = h * M / w; w = M; }
+        else if (h > M) { w = w * M / h; h = M; }
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        res(c.toDataURL('image/jpeg', 0.84));
       };
       img.src = e.target.result;
     };
-    reader.readAsDataURL(file);
+    r.readAsDataURL(file);
   });
 
-  const handleAvatarChange = async (e) => {
+  const onAvatar = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setAvatarLoading(true);
     try {
-      const base64 = await compressImage(file);
-      try {
-        const res = await uploadAvatar(userId, base64);
-        updateAvatar(res?.avatarUrl || base64);
-      } catch {
-        updateAvatar(base64);
-      }
-    } finally {
-      setAvatarLoading(false);
-    }
+      const b64 = await compress(file);
+      try { const r = await uploadAvatar(userId, b64); updateAvatar(r?.avatarUrl || b64); }
+      catch { updateAvatar(b64); }
+    } finally { setAvatarLoading(false); }
     e.target.value = '';
   };
 
   const reloadDeals = async () => {
-    try {
-      const d = await getMyDeals(userId);
-      setDeals(d || []);
-    } catch {}
+    try { setDeals(await getMyDeals(userId) || []); } catch {}
   };
 
-  const initials = (userName || 'З')
-    .trim()
-    .split(' ')
-    .map((p) => p[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+  const initials = (userName || 'З').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
+  const fullName = [userName, profile?.lastName].filter(Boolean).join(' ') || 'Заказчик';
+  const since = fmt(profile?.registeredAt || profile?.createdAt);
 
-  const fullName = [userName, profile?.lastName].filter(Boolean).join(' ');
-  const since = memberSince(profile?.registeredAt || profile?.createdAt);
-
-  const stats = useMemo(() => {
-    const total = deals.length;
-    const completed = deals.filter((d) => d.status === 'COMPLETED').length;
-    const active = deals.filter((d) => d.status === 'IN_PROGRESS' || d.status === 'NEW').length;
-    const cancelled = deals.filter((d) => d.status === 'CANCELLED').length;
-    return { total, completed, active, cancelled };
-  }, [deals]);
-
-  const statusInfo = (status) => {
-    if (status === 'NEW') return { label: 'Ожидает подтверждения', cls: 'new', icon: '⏳' };
-    if (status === 'IN_PROGRESS') return { label: 'В работе', cls: 'work', icon: '🛠️' };
-    if (status === 'COMPLETED') return { label: 'Завершена', cls: 'done', icon: '✅' };
-    if (status === 'CANCELLED') return { label: 'Отменена', cls: 'cancel', icon: '❌' };
-    return { label: status || 'Сделка', cls: 'work', icon: '📋' };
-  };
+  const stats = useMemo(() => ({
+    total: deals.length,
+    active: deals.filter(d => ['IN_PROGRESS', 'NEW'].includes(d.status)).length,
+    done: deals.filter(d => d.status === 'COMPLETED').length,
+    cancelled: deals.filter(d => d.status === 'CANCELLED').length,
+  }), [deals]);
 
   if (userRole === 'WORKER') return null;
 
   return (
-    <div className="cp3-page">
+    <div className="cxp">
       <style>{css}</style>
-      <div className="cp3-wrap">
-        <div className="cp3-grid">
-          <aside className="cp3-panel">
-            <div className="cp3-sidebar-top">
-              <div className="cp3-avatar-wrap" onClick={() => avatarInputRef.current?.click()}>
-                {fullAvatarUrl ? (
-                  <img src={fullAvatarUrl} alt="" className="cp3-avatar" />
-                ) : (
-                  <div className="cp3-avatar-fallback">{initials}</div>
-                )}
-                <div className="cp3-avatar-overlay">{avatarLoading ? '⏳' : '📷'}</div>
-              </div>
-              <input
-                ref={avatarInputRef}
-                type="file"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={handleAvatarChange}
-              />
-              <button className="cp3-avatar-btn" onClick={() => avatarInputRef.current?.click()}>
-                {avatarLoading ? 'Загружаем...' : fullAvatarUrl ? 'Изменить фото' : 'Добавить фото'}
-              </button>
 
-              <div className="cp3-name">{fullName || 'Заказчик'}</div>
-              <div className="cp3-role">👤 Заказчик</div>
-              {since && <div className="cp3-since">{since}</div>}
+      {/* ── COVER ── */}
+      <div className="cxp-cover">
+        <div className="cxp-cover-pattern" />
+      </div>
+
+      <div className="cxp-wrap">
+
+        {/* ── PROFILE CARD ── */}
+        <div className="cxp-profile-card">
+          <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onAvatar} />
+          <div className="cxp-ava-ring" onClick={() => fileRef.current?.click()}>
+            {avatarUrl ? <img src={avatarUrl} alt="" /> : initials}
+            <div className="cxp-ava-overlay">{avatarLoading ? '⏳' : '📷'}</div>
+          </div>
+
+          <div className="cxp-profile-info">
+            <div className="cxp-profile-name">{fullName}</div>
+            <div className="cxp-profile-meta">
+              <span className="cxp-chip cxp-chip-role">👤 Заказчик</span>
+              <span className="cxp-chip cxp-chip-ok">✅ Документы проверены</span>
+              <span className="cxp-chip cxp-chip-city">📍 Йошкар-Ола</span>
+              {since && <span className="cxp-chip cxp-chip-time">🕐 С {since}</span>}
+            </div>
+          </div>
+
+          <div className="cxp-profile-actions">
+            <button className="cxp-btn cxp-btn-ghost" onClick={() => fileRef.current?.click()}>
+              📷 {avatarLoading ? 'Загрузка...' : avatarUrl ? 'Сменить фото' : 'Добавить фото'}
+            </button>
+            <button className="cxp-btn cxp-btn-logout" onClick={() => { logout(); navigate('/login'); }}>
+              Выйти
+            </button>
+          </div>
+        </div>
+
+        {/* ── STATS BAR ── */}
+        <div className="cxp-stats">
+          {[
+            { icon: '📊', cls: 'total',  num: stats.total,     lbl: 'Всего сделок' },
+            { icon: '🔥', cls: 'active', num: stats.active,    lbl: 'Активных' },
+            { icon: '✅', cls: 'done',   num: stats.done,      lbl: 'Завершено' },
+            { icon: '✕', cls: 'cancel', num: stats.cancelled, lbl: 'Отменено' },
+          ].map(s => (
+            <div className="cxp-stat" key={s.cls}>
+              <div className={`cxp-stat-icon ${s.cls}`}>{s.icon}</div>
+              <div className="cxp-stat-body">
+                <div className="cxp-stat-num">{s.num}</div>
+                <div className="cxp-stat-lbl">{s.lbl}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── MAIN GRID ── */}
+        <div className="cxp-main">
+
+          {/* ── LEFT ── */}
+          <div>
+            {/* Быстрые действия */}
+            <div className="cxp-quick">
+              <Link to="/categories" className="cxp-qa accent">
+                <div className="cxp-qa-ico">🚀</div>
+                <div className="cxp-qa-title">Найти мастера</div>
+                <div className="cxp-qa-sub">Каталог услуг по категориям</div>
+              </Link>
+              <Link to="/deals" className="cxp-qa">
+                <div className="cxp-qa-ico">🤝</div>
+                <div className="cxp-qa-title">Все мои сделки</div>
+                <div className="cxp-qa-sub">Активных: {stats.active}</div>
+              </Link>
+              <Link to="/chat" className="cxp-qa">
+                <div className="cxp-qa-ico">💬</div>
+                <div className="cxp-qa-title">Сообщения</div>
+                <div className="cxp-qa-sub">Чат с мастерами</div>
+              </Link>
             </div>
 
-            <div className="cp3-sidebar-body">
-              <div className="cp3-kpis">
-                <div className="cp3-kpi">
-                  <div className="cp3-kpi-num">{stats.total}</div>
-                  <div className="cp3-kpi-lbl">Сделок</div>
-                </div>
-                <div className="cp3-kpi">
-                  <div className="cp3-kpi-num">{stats.active}</div>
-                  <div className="cp3-kpi-lbl">Активных</div>
-                </div>
-                <div className="cp3-kpi">
-                  <div className="cp3-kpi-num">{stats.completed}</div>
-                  <div className="cp3-kpi-lbl">Завершено</div>
-                </div>
-                <div className="cp3-kpi">
-                  <div className="cp3-kpi-num">{stats.cancelled}</div>
-                  <div className="cp3-kpi-lbl">Отменено</div>
-                </div>
-              </div>
-
-              <div className="cp3-hints">
-                <div className="cp3-hint">✅ Документы проверены</div>
-                <div className="cp3-hint">📍 Йошкар-Ола</div>
-              </div>
-
-              <nav className="cp3-nav">
-                <button
-                  type="button"
-                  className={`cp3-nav-item${section === 'deals' ? ' active' : ''}`}
-                  onClick={() => setSection('deals')}
-                >
-                  📋 Мои сделки
-                </button>
-                <button
-                  type="button"
-                  className={`cp3-nav-item${section === 'settings' ? ' active' : ''}`}
-                  onClick={() => setSection('settings')}
-                >
-                  ⚙️ Настройки
-                </button>
-                <Link to="/categories" className="cp3-nav-item">🔍 Найти мастера</Link>
-                <Link to="/chat" className="cp3-nav-item">💬 Сообщения</Link>
-              </nav>
-
-              <button className="cp3-logout" onClick={() => { logout(); navigate('/login'); }}>
-                Выйти из аккаунта
-              </button>
-            </div>
-          </aside>
-
-          <main className="cp3-main">
-            <section className="cp3-hero">
-              <div className="cp3-hero-title">Личный кабинет заказчика</div>
-              <div className="cp3-hero-sub">
-                Управляйте сделками, общением с мастерами и профилем в одном месте.
-              </div>
-              <div className="cp3-actions">
-                <Link to="/categories" className="cp3-action hot">
-                  <div className="cp3-action-ico">🚀</div>
-                  <div className="cp3-action-title">Найти мастера</div>
-                  <div className="cp3-action-desc">Каталог услуг и быстрый выбор специалиста</div>
-                </Link>
-                <Link to="/deals" className="cp3-action">
-                  <div className="cp3-action-ico">🤝</div>
-                  <div className="cp3-action-title">Все сделки</div>
-                  <div className="cp3-action-desc">Активно сейчас: {stats.active}</div>
-                </Link>
-                <Link to="/chat" className="cp3-action">
-                  <div className="cp3-action-ico">💬</div>
-                  <div className="cp3-action-title">Сообщения</div>
-                  <div className="cp3-action-desc">Обсудить детали прямо в чате</div>
-                </Link>
-              </div>
-            </section>
-
+            {/* Сделки / Настройки */}
             {section === 'deals' && (
-              <section className="cp3-section">
-                <div className="cp3-section-head">
-                  <div className="cp3-section-title">Последние сделки</div>
-                  <Link to="/deals" className="cp3-section-link">Открыть все →</Link>
+              <div className="cxp-section">
+                <div className="cxp-section-head">
+                  <div className="cxp-section-title">Последние сделки</div>
+                  <Link to="/deals" className="cxp-section-link">Все сделки →</Link>
                 </div>
-
                 {loading ? (
-                  <div className="cp3-empty">
-                    <div className="cp3-empty-ico">⏳</div>
-                    Загрузка сделок...
-                  </div>
+                  <div className="cxp-empty"><div className="cxp-empty-ico">⏳</div>Загружаем...</div>
                 ) : deals.length === 0 ? (
-                  <div className="cp3-empty">
-                    <div className="cp3-empty-ico">📋</div>
-                    <div>Пока нет сделок — выберите мастера и начните первую</div>
-                    <Link to="/categories" className="cp3-empty-btn">🔍 Перейти в каталог</Link>
+                  <div className="cxp-empty">
+                    <div className="cxp-empty-ico">🔍</div>
+                    <div>Сделок пока нет — начните с поиска мастера</div>
+                    <Link to="/categories" style={{ display:'inline-flex', alignItems:'center', gap:6, marginTop:14, background:'linear-gradient(135deg,#ff5a1f,#e8410a)', color:'#fff', textDecoration:'none', borderRadius:10, padding:'10px 16px', fontWeight:800, fontSize:13 }}>
+                      🚀 Найти мастера
+                    </Link>
                   </div>
                 ) : (
-                  <div className="cp3-deals">
-                    {deals.slice(0, 10).map((deal) => {
-                      const info = statusInfo(deal.status);
+                  <div className="cxp-deals">
+                    {deals.slice(0, 10).map(deal => {
+                      const s = deal.status || 'IN_PROGRESS';
                       return (
-                        <div key={deal.id} className="cp3-deal">
-                          <Link to={`/deals?dealId=${deal.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                            <div className="cp3-deal-top">
-                              <div>
-                                <div className="cp3-deal-title">
-                                  {info.icon} {deal.title || 'Сделка'}
-                                </div>
-                                <div className="cp3-deal-meta">
-                                  {deal.workerName && <span>👤 {deal.workerName}</span>}
-                                  {deal.agreedPrice && <span>💰 {Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</span>}
-                                  {deal.createdAt && <span>🗓 {new Date(deal.createdAt).toLocaleDateString('ru-RU')}</span>}
-                                </div>
+                        <div key={deal.id} className="cxp-deal-card">
+                          <Link to={`/deals?dealId=${deal.id}`} className="cxp-deal-link">
+                            <div className={`cxp-deal-thumb s-${s}`}>{STATUS_ICO[s] || '📋'}</div>
+                            <div className="cxp-deal-body">
+                              <div className="cxp-deal-title">{deal.title || 'Сделка'}</div>
+                              <div className="cxp-deal-meta">
+                                {deal.workerName && <span>👤 {deal.workerName}</span>}
+                                {deal.agreedPrice && <span>💰 {Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</span>}
+                                {deal.createdAt && <span>🗓 {new Date(deal.createdAt).toLocaleDateString('ru-RU')}</span>}
                               </div>
-                              <span className={`cp3-badge ${info.cls}`}>{info.label}</span>
                             </div>
+                            <span className={`cxp-badge s-${s}`}>{STATUS_LABEL[s] || s}</span>
                           </Link>
 
-                          {deal.status === 'COMPLETED' && !deal.hasReview && (
-                            <div className="cp3-deal-review-wrap">
-                              {showReviewForm === deal.id ? (
-                                <ReviewForm
-                                  dealId={deal.id}
-                                  onSuccess={() => {
-                                    setShowReviewForm(null);
-                                    reloadDeals();
-                                  }}
-                                />
+                          {s === 'COMPLETED' && !deal.hasReview && (
+                            <div className="cxp-deal-review">
+                              {reviewFor === deal.id ? (
+                                <ReviewForm dealId={deal.id} onSuccess={() => { setReviewFor(null); reloadDeals(); }} />
                               ) : (
-                                <button className="cp3-review-btn" onClick={() => setShowReviewForm(deal.id)}>
+                                <button className="cxp-review-btn" onClick={() => setReviewFor(deal.id)}>
                                   ⭐ Оставить отзыв о мастере
                                 </button>
                               )}
                             </div>
                           )}
-
-                          {deal.status === 'COMPLETED' && deal.hasReview && (
-                            <div className="cp3-deal-review-wrap">
-                              <div className="cp3-review-ok">✅ Отзыв уже оставлен</div>
+                          {s === 'COMPLETED' && deal.hasReview && (
+                            <div className="cxp-deal-review">
+                              <div className="cxp-review-ok">✅ Отзыв уже отправлен</div>
                             </div>
                           )}
                         </div>
@@ -385,35 +602,84 @@ export default function CustomerProfilePage() {
                     })}
                   </div>
                 )}
-              </section>
+              </div>
             )}
 
             {section === 'settings' && (
-              <section className="cp3-section">
-                <div className="cp3-section-head">
-                  <div className="cp3-section-title">Настройки профиля</div>
+              <div className="cxp-section">
+                <div className="cxp-section-head">
+                  <div className="cxp-section-title">Настройки профиля</div>
                 </div>
-                <div className="cp3-settings">
-                  <Link to="/settings/personal" className="cp3-setting">
-                    <div style={{ fontSize: 28 }}>👤</div>
-                    <div className="cp3-setting-title">Личные данные</div>
-                    <div className="cp3-setting-desc">Контакты, имя и профильная информация</div>
-                  </Link>
-                  <Link to="/settings/notifications" className="cp3-setting">
-                    <div style={{ fontSize: 28 }}>🔔</div>
-                    <div className="cp3-setting-title">Уведомления</div>
-                    <div className="cp3-setting-desc">Push и email уведомления по сделкам</div>
-                  </Link>
-                  <div className="cp3-setting disabled">
-                    <div className="cp3-soon">СКОРО</div>
-                    <div style={{ fontSize: 28 }}>🧩</div>
-                    <div className="cp3-setting-title">Дополнительные опции</div>
-                    <div className="cp3-setting-desc">Новые возможности профиля появятся здесь</div>
+                <div className="cxp-set-list">
+                  {[
+                    { to: '/settings/personal', ico: '👤', title: 'Личные данные', desc: 'Имя, контакты, информация' },
+                    { to: '/settings/notifications', ico: '🔔', title: 'Уведомления', desc: 'Push и email по сделкам' },
+                  ].map(item => (
+                    <Link key={item.to} to={item.to} className="cxp-set-item">
+                      <div className="cxp-set-ico">{item.ico}</div>
+                      <div className="cxp-set-info">
+                        <div className="cxp-set-title">{item.title}</div>
+                        <div className="cxp-set-desc">{item.desc}</div>
+                      </div>
+                      <div className="cxp-set-arr">›</div>
+                    </Link>
+                  ))}
+                  <div className="cxp-set-item cxp-set-dis">
+                    <div className="cxp-soon">СКОРО</div>
+                    <div className="cxp-set-ico">🧩</div>
+                    <div className="cxp-set-info">
+                      <div className="cxp-set-title">Дополнительные опции</div>
+                      <div className="cxp-set-desc">Новые возможности — скоро</div>
+                    </div>
                   </div>
                 </div>
-              </section>
+              </div>
             )}
-          </main>
+          </div>
+
+          {/* ── RIGHT ── */}
+          <div className="cxp-right">
+            {/* Навигация */}
+            <div className="cxp-section">
+              <nav className="cxp-nav">
+                {[
+                  { key: 'deals',    ico: '📋', label: 'Мои сделки' },
+                  { key: 'settings', ico: '⚙️', label: 'Настройки' },
+                ].map(n => (
+                  <button
+                    key={n.key}
+                    type="button"
+                    className={`cxp-nav-item${section === n.key ? ' act' : ''}`}
+                    onClick={() => setSection(n.key)}
+                  >
+                    <div className="cxp-nav-ico">{n.ico}</div>
+                    {n.label}
+                  </button>
+                ))}
+                <Link to="/categories" className="cxp-nav-item">
+                  <div className="cxp-nav-ico">🔍</div>Найти мастера
+                </Link>
+                <Link to="/chat" className="cxp-nav-item">
+                  <div className="cxp-nav-ico">💬</div>Сообщения
+                </Link>
+                <Link to="/deals" className="cxp-nav-item">
+                  <div className="cxp-nav-ico">🤝</div>Все сделки
+                </Link>
+              </nav>
+            </div>
+
+            {/* Мини-подсказка */}
+            <div className="cxp-section" style={{ background:'linear-gradient(145deg,#fff7ed,#fff)', borderColor:'#fed7aa' }}>
+              <div style={{ fontSize:13, fontWeight:800, color:'#c2410c', marginBottom:8 }}>💡 Совет</div>
+              <div style={{ fontSize:13, color:'#78350f', lineHeight:1.55 }}>
+                Оставляйте отзывы — так мастерам легче развиваться, а вам проще выбирать проверенных специалистов в будущем.
+              </div>
+              <Link to="/categories" style={{ display:'inline-flex', alignItems:'center', gap:6, marginTop:12, background:'linear-gradient(135deg,#ff5a1f,#e8410a)', color:'#fff', textDecoration:'none', borderRadius:9, padding:'9px 14px', fontWeight:800, fontSize:13 }}>
+                Найти мастера →
+              </Link>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
