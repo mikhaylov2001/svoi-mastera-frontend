@@ -73,18 +73,33 @@
   background: radial-gradient(circle, rgba(255,90,31,.22), transparent 65%);
 }
 .psp-ava {
-  width: 52px; height: 52px;
+  width: 56px; height: 56px;
   border-radius: 16px;
   background: linear-gradient(135deg, #ff5a1f, #e8410a);
   color: #fff;
-  font-size: 20px;
-  font-weight: 900;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,.14);
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+}
+.psp-ava-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.psp-ava-fallback {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  font-size: 20px;
+  font-weight: 900;
   letter-spacing: -.02em;
-  position: relative;
 }
 .psp-id-main { flex: 1; min-width: 0; position: relative; }
 .psp-id-name {
@@ -110,26 +125,6 @@
   gap: 4px;
 }
 .psp-id-chip strong { color: rgba(255,255,255,.78); font-weight: 600; }
-
-/* completeness */
-.psp-complete { position: relative; text-align: right; flex-shrink: 0; }
-.psp-complete-ring {
-  width: 56px; height: 56px;
-  position: relative;
-}
-.psp-complete-ring svg { transform: rotate(-90deg); }
-.psp-complete-ring circle { transition: stroke-dashoffset .4s ease; }
-.psp-complete-val {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 900;
-  color: #fff;
-  letter-spacing: -.03em;
-}
 
 /* ── PANEL ── */
 .psp-panel {

@@ -11,38 +11,6 @@ function getInitials(first, last) {
   return (a + b).toUpperCase() || '?';
 }
 
-function completePct(f) {
-  let n = 0;
-  if ((f.displayName || '').trim()) n += 30;
-  if ((f.lastName    || '').trim()) n += 20;
-  if ((f.phone       || '').trim()) n += 25;
-  if ((f.city        || '').trim()) n += 25;
-  return Math.min(100, n);
-}
-
-/* SVG ring progress */
-function Ring({ pct }) {
-  const r = 24;
-  const circ = 2 * Math.PI * r;
-  const offset = circ * (1 - pct / 100);
-  return (
-    <div className="psp-complete-ring">
-      <svg width="56" height="56" viewBox="0 0 56 56">
-        <circle cx="28" cy="28" r={r} fill="none" stroke="rgba(255,255,255,.12)" strokeWidth="4" />
-        <circle
-          cx="28" cy="28" r={r} fill="none"
-          stroke={pct >= 100 ? '#22c55e' : '#ff6b35'}
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeDasharray={circ}
-          strokeDashoffset={offset}
-        />
-      </svg>
-      <div className="psp-complete-val">{pct}%</div>
-    </div>
-  );
-}
-
 const ROLE_LABEL = { WORKER: 'Мастер', CUSTOMER: 'Заказчик' };
 
 export default function PersonalSettingsPage() {
@@ -61,10 +29,24 @@ export default function PersonalSettingsPage() {
   const [pw, setPw] = useState({
     currentPassword: '', newPassword: '', confirmPassword: '',
   });
+  const [avatarImgErr, setAvatarImgErr] = useState(false);
+  /** `undefined` — профиль ещё не загружен; строка (в т.ч. пустая) — с сервера */
+  const [avatarFromProfile, setAvatarFromProfile] = useState(undefined);
 
-  const pct = useMemo(() => completePct(form), [form]);
   const ini = useMemo(() => getInitials(form.displayName, form.lastName), [form.displayName, form.lastName]);
   const fullName = [form.displayName, form.lastName].filter(Boolean).join(' ') || '—';
+  const avatarSrc = useMemo(() => {
+    if (avatarFromProfile !== undefined) {
+      const s = (avatarFromProfile || '').trim();
+      if (s.length > 12) return s;
+    }
+    return (userAvatar || '').trim();
+  }, [avatarFromProfile, userAvatar]);
+  const showAvatarPhoto = Boolean(avatarSrc && avatarSrc.length > 12 && !avatarImgErr);
+
+  useEffect(() => {
+    setAvatarImgErr(false);
+  }, [avatarSrc]);
 
   useEffect(() => {
     if (!userId) return;
@@ -78,6 +60,7 @@ export default function PersonalSettingsPage() {
           phone:       d.phone       || '',
           city:        d.city        || '',
         });
+        setAvatarFromProfile(d.avatarUrl != null ? String(d.avatarUrl) : '');
       })
       .catch(() => showToast('Не удалось загрузить профиль', 'error'))
       .finally(() => setLoading(false));
@@ -159,7 +142,18 @@ export default function PersonalSettingsPage() {
 
         {/* ── identity card (dark) ── */}
         <div className="psp-identity">
-          <div className="psp-ava">{ini}</div>
+          <div className="psp-ava" aria-hidden>
+            {showAvatarPhoto ? (
+              <img
+                className="psp-ava-img"
+                src={avatarSrc}
+                alt=""
+                onError={() => setAvatarImgErr(true)}
+              />
+            ) : (
+              <span className="psp-ava-fallback">{ini}</span>
+            )}
+          </div>
           <div className="psp-id-main">
             <div className="psp-id-name">{fullName}</div>
             <div className="psp-id-meta">
@@ -168,9 +162,6 @@ export default function PersonalSettingsPage() {
               {form.city?.trim()  && <span className="psp-id-chip">📍 <strong>{form.city.trim()}</strong></span>}
               {form.phone?.trim() && <span className="psp-id-chip">📞 <strong>{form.phone.trim()}</strong></span>}
             </div>
-          </div>
-          <div className="psp-complete">
-            <Ring pct={pct} />
           </div>
         </div>
 
