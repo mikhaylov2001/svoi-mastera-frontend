@@ -291,21 +291,6 @@ export default function WorkerProfilePage() {
                 <Link to="/deals" className="pp-tab-link">Все →</Link>
               </div>
 
-              {tab === 'ALL' && (
-                <div className="pp-feed-hd" style={{ marginTop: 0, borderTop: 'none', borderRadius: '0 0 12px 12px' }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="pp-feed-title" style={{ fontSize: 15 }}>Сделки и объявления</div>
-                    <div className="pp-feed-sub">
-                      Активные объявления и все сделки в одной ленте, новые сверху. Фиолетовая полоса — объявление; сделки со статусом «ждут подтверждения» — здесь и на отдельной вкладке.
-                    </div>
-                  </div>
-                  <div className="pp-feed-actions">
-                    <Link to="/deals" className="pp-feed-link">Все сделки →</Link>
-                    <Link to="/my-listings" className="pp-feed-link">Мои объявления →</Link>
-                  </div>
-                </div>
-              )}
-
               <div className="pp-dl-body">
                 {loading ? (
                   <div className="pp-empty">
