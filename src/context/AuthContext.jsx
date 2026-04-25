@@ -40,15 +40,14 @@ export function AuthProvider({ children }) {
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (!data) return;
-        // Обновляем фамилию
-        if (data.lastName) {
-          setUserLastName(data.lastName);
-          localStorage.setItem('userLastName', data.lastName);
-        }
-        // Обновляем имя
-        if (data.displayName) {
-          setUserName(data.displayName);
-          localStorage.setItem('userName', data.displayName);
+        // Всегда синхронизируем с бэком (в т.ч. пустая строка), чтобы фамилия не «пропадала» до следующего запроса
+        const ln = data.lastName != null ? String(data.lastName) : '';
+        setUserLastName(ln);
+        localStorage.setItem('userLastName', ln);
+        const dn = data.displayName != null ? String(data.displayName) : '';
+        if (dn) {
+          setUserName(dn);
+          localStorage.setItem('userName', dn);
         }
       })
       .catch(() => {})

@@ -391,7 +391,7 @@ const css = `
 `;
 
 export default function CustomerProfilePage() {
-  const { userId, userName, userRole, userAvatar, updateAvatar, logout } = useAuth();
+  const { userId, userName, userLastName, userRole, userAvatar, updateAvatar, updateLastName, logout } = useAuth();
   const navigate  = useNavigate();
   const fileRef   = useRef(null);
 
@@ -412,7 +412,13 @@ export default function CustomerProfilePage() {
     if (!userId || userRole === 'WORKER') return;
     setLoading(true);
     Promise.all([getMyDeals(userId), getUserProfile(userId)])
-      .then(([d, p]) => { setDeals(d || []); setProfile(p || {}); })
+      .then(([d, p]) => {
+        setDeals(d || []);
+        const prof = p || {};
+        setProfile(prof);
+        // Сразу обновляем контекст — имя/фамилия в шапке без ожидания «второго» источника
+        if (prof.lastName != null) updateLastName(String(prof.lastName));
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [userId, userRole]);
@@ -450,8 +456,13 @@ export default function CustomerProfilePage() {
     try { setDeals(await getMyDeals(userId) || []); } catch {}
   };
 
-  const initials = (userName || 'З').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
-  const fullName  = [userName, profile?.lastName].filter(Boolean).join(' ') || 'Заказчик';
+  const lastNameLive = profile?.lastName != null ? String(profile.lastName) : (userLastName || '');
+  const initials = useMemo(() => {
+    const first = (userName || 'З').trim().split(/\s+/)[0]?.[0] || 'З';
+    const last = lastNameLive.trim()[0] || '';
+    return (first + last).toUpperCase().slice(0, 2);
+  }, [userName, lastNameLive]);
+  const fullName = [userName, lastNameLive.trim()].filter(Boolean).join(' ') || 'Заказчик';
   const since     = fmtSince(profile?.registeredAt || profile?.createdAt);
 
   const activeDealsCount = useMemo(
