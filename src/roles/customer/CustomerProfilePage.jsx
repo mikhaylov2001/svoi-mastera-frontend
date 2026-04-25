@@ -93,17 +93,10 @@ const css = `
   background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1px);
   background-size: 28px 28px;
 }
-/* horizontal light streak */
-.pp-hero-streak {
-  position: absolute; left: 0; right: 0;
-  height: 1px; bottom: 80px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.08) 30%, rgba(255,90,31,.25) 55%, rgba(255,255,255,.08) 80%, transparent);
-}
-
 /* profile row */
 .pp-hero-inner {
   position: relative; z-index: 2;
-  max-width: 1160px; margin: 0 auto; padding: 52px 24px 0;
+  max-width: 1160px; margin: 0 auto; padding: 52px 24px 40px;
   display: flex; align-items: flex-start; gap: 28px; flex-wrap: wrap;
 }
 
@@ -162,32 +155,6 @@ const css = `
 .pp-hbtn:hover { background: rgba(255,255,255,.18); }
 .pp-hbtn-logout { border-color: rgba(255,90,90,.3); }
 .pp-hbtn-logout:hover { background: rgba(239,68,68,.15); color: #fca5a5; }
-
-/* ── STATS INLINE (inside hero, bottom) ── */
-.pp-hero-stats {
-  position: relative; z-index: 2;
-  max-width: 1160px; margin: 0 auto;
-  padding: 32px 24px 28px;
-  display: flex; align-items: center; gap: 0;
-  border-top: 1px solid rgba(255,255,255,.08);
-}
-.pp-hstat {
-  flex: 1; display: flex; align-items: baseline; gap: 10px;
-  padding: 0 28px; position: relative;
-}
-.pp-hstat + .pp-hstat::before {
-  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  height: 28px; width: 1px; background: rgba(255,255,255,.1);
-}
-.pp-hstat:first-child { padding-left: 0; }
-.pp-hstat-num {
-  font-size: 40px; font-weight: 900; letter-spacing: -.06em; line-height: 1; color: #fff;
-}
-.pp-hstat-num.o { color: #ff7040; }
-.pp-hstat-num.b { color: #60a5fa; }
-.pp-hstat-num.g { color: #34d399; }
-.pp-hstat-num.s { color: rgba(255,255,255,.28); }
-.pp-hstat-lbl { font-size: 13px; font-weight: 500; color: rgba(255,255,255,.42); }
 
 /* bottom curve */
 .pp-hero-curve {
@@ -409,7 +376,6 @@ const css = `
 @media(max-width:980px){
   .pp-layout { grid-template-columns: 1fr; }
   .pp-right { grid-template-columns: 1fr 1fr; }
-  .pp-hero-stats { gap: 0; }
   .pp-acts { grid-template-columns: 1fr 1fr; }
   .pp-act.accent { grid-column: span 2; }
 }
@@ -488,12 +454,10 @@ export default function CustomerProfilePage() {
   const fullName  = [userName, profile?.lastName].filter(Boolean).join(' ') || 'Заказчик';
   const since     = fmtSince(profile?.registeredAt || profile?.createdAt);
 
-  const stats = useMemo(() => ({
-    total:     deals.length,
-    active:    deals.filter(d => ['IN_PROGRESS','NEW'].includes(d.status)).length,
-    done:      deals.filter(d => d.status === 'COMPLETED').length,
-    cancelled: deals.filter(d => d.status === 'CANCELLED').length,
-  }), [deals]);
+  const activeDealsCount = useMemo(
+    () => deals.filter(d => ['IN_PROGRESS', 'NEW'].includes(d.status)).length,
+    [deals],
+  );
 
   const tabCounts = useMemo(() => {
     const c = { ALL: deals.length, NEW: 0, IN_PROGRESS: 0, COMPLETED: 0, CANCELLED: 0 };
@@ -514,7 +478,6 @@ export default function CustomerProfilePage() {
         <div className="pp-hero-ring" />
         <div className="pp-hero-atm" />
         <div className="pp-hero-grid" />
-        <div className="pp-hero-streak" />
 
         {/* Profile row */}
         <div className="pp-hero-inner">
@@ -544,21 +507,6 @@ export default function CustomerProfilePage() {
               Выйти
             </button>
           </div>
-        </div>
-
-        {/* Stats — inline, no containers */}
-        <div className="pp-hero-stats">
-          {[
-            { n: stats.total,     l: 'сделок',    c: 'o' },
-            { n: stats.active,    l: 'активных',  c: 'b' },
-            { n: stats.done,      l: 'завершено', c: 'g' },
-            { n: stats.cancelled, l: 'отменено',  c: 's' },
-          ].map((s, i) => (
-            <div key={i} className="pp-hstat">
-              <div className={`pp-hstat-num ${s.c}`}>{s.n}</div>
-              <div className="pp-hstat-lbl">{s.l}</div>
-            </div>
-          ))}
         </div>
       </div>
 
@@ -591,7 +539,7 @@ export default function CustomerProfilePage() {
                 <div>
                   <div className="pp-act-title">Мои сделки</div>
                   <div className="pp-act-sub" style={{color:'#64748b'}}>
-                    Активных: <b style={{color:'#e8410a',fontWeight:900}}>{stats.active}</b>
+                    Активных: <b style={{color:'#e8410a',fontWeight:900}}>{activeDealsCount}</b>
                   </div>
                 </div>
               </Link>
