@@ -163,32 +163,31 @@ const css = `
 .pp-hbtn-logout { border-color: rgba(255,90,90,.3); }
 .pp-hbtn-logout:hover { background: rgba(239,68,68,.15); color: #fca5a5; }
 
-/* ── STATS GLASS BAR (inside hero, bottom) ── */
+/* ── STATS INLINE (inside hero, bottom) ── */
 .pp-hero-stats {
   position: relative; z-index: 2;
   max-width: 1160px; margin: 0 auto;
-  padding: 24px 24px 0;
-  display: flex; gap: 2px;
+  padding: 32px 24px 28px;
+  display: flex; align-items: center; gap: 0;
+  border-top: 1px solid rgba(255,255,255,.08);
 }
 .pp-hstat {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
-  padding: 18px 10px;
-  background: rgba(255,255,255,.06);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,.1);
-  transition: background .2s;
+  flex: 1; display: flex; align-items: baseline; gap: 10px;
+  padding: 0 28px; position: relative;
 }
-.pp-hstat:first-child { border-radius: 16px 0 0 0; }
-.pp-hstat:last-child  { border-radius: 0 16px 0 0; }
-.pp-hstat:hover { background: rgba(255,255,255,.1); }
+.pp-hstat + .pp-hstat::before {
+  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  height: 28px; width: 1px; background: rgba(255,255,255,.1);
+}
+.pp-hstat:first-child { padding-left: 0; }
 .pp-hstat-num {
-  font-size: 34px; font-weight: 900; letter-spacing: -.05em; line-height: 1; color: #fff;
+  font-size: 40px; font-weight: 900; letter-spacing: -.06em; line-height: 1; color: #fff;
 }
-.pp-hstat-num.o { color: #ff8a4c; }
-.pp-hstat-num.b { color: #7eb3ff; }
-.pp-hstat-num.g { color: #6ee7b7; }
-.pp-hstat-num.s { color: rgba(255,255,255,.38); }
-.pp-hstat-lbl { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.48); margin-top: 4px; text-transform: uppercase; letter-spacing: .06em; }
+.pp-hstat-num.o { color: #ff7040; }
+.pp-hstat-num.b { color: #60a5fa; }
+.pp-hstat-num.g { color: #34d399; }
+.pp-hstat-num.s { color: rgba(255,255,255,.28); }
+.pp-hstat-lbl { font-size: 13px; font-weight: 500; color: rgba(255,255,255,.42); }
 
 /* bottom curve */
 .pp-hero-curve {
@@ -350,20 +349,18 @@ const css = `
 .pp-right { display: grid; gap: 14px; align-content: start; }
 
 /* nav */
-.pp-nav { background: #fff; border: 1.5px solid #dde5f6; border-radius: 20px; padding: 10px; box-shadow: 0 2px 12px rgba(10,15,30,.05); }
+.pp-nav { background: #fff; border: 1px solid #e8edf6; border-radius: 16px; padding: 6px; }
 .pp-ni {
-  display: flex; align-items: center; gap: 10px;
-  padding: 11px 12px; border-radius: 12px;
-  font-size: 14px; font-weight: 700; color: #334155;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-radius: 10px;
+  font-size: 14px; font-weight: 600; color: #334155;
   text-decoration: none; background: none; border: none;
   cursor: pointer; font-family: inherit; width: 100%; transition: all .15s;
+  letter-spacing: -.01em;
 }
-.pp-ni:hover { background: #f1f5f9; color: #0a0f1e; }
-.pp-ni-ic {
-  width: 34px; height: 34px; border-radius: 10px;
-  background: #f1f5f9; display: flex; align-items: center;
-  justify-content: center; font-size: 16px; flex-shrink: 0;
-}
+.pp-ni:hover { background: #f8faff; color: #0a0f1e; }
+.pp-ni-arr { font-size: 16px; color: #cbd5e1; transition: transform .15s; }
+.pp-ni:hover .pp-ni-arr { transform: translateX(3px); color: #94a3b8; }
 
 /* profile card in right col */
 .pp-pcard {
@@ -390,20 +387,23 @@ const css = `
 .pp-pcard-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(232,65,10,.54); }
 
 /* settings */
-.pp-set { background: #fff; border: 1.5px solid #dde5f6; border-radius: 20px; padding: 16px; box-shadow: 0 2px 12px rgba(10,15,30,.05); }
-.pp-set-hd { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 12px; }
+.pp-set { background: #fff; border: 1px solid #e8edf6; border-radius: 16px; padding: 16px 6px 6px; }
+.pp-set-hd { font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; padding: 0 14px 10px; border-bottom: 1px solid #f1f5f9; }
 .pp-si {
-  display: flex; align-items: center; gap: 12px; padding: 11px 12px;
-  border-radius: 12px; border: 1.5px solid #f1f5f9; background: #fafcff;
-  text-decoration: none; color: inherit; transition: all .18s; margin-bottom: 8px; position: relative;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-radius: 10px;
+  text-decoration: none; color: inherit; transition: background .15s; margin-bottom: 0;
+  position: relative;
 }
-.pp-si:last-child { margin-bottom: 0; }
-.pp-si:hover:not(.pp-dis) { border-color: #dde5f4; background: #fff; box-shadow: 0 4px 14px rgba(10,15,30,.06); }
-.pp-dis { opacity: .45; cursor: default; }
-.pp-si-ic { width: 36px; height: 36px; border-radius: 10px; background: #f1f5f9; font-size: 17px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.pp-si-t { font-size: 13px; font-weight: 800; color: #0a0f1e; }
-.pp-si-d { font-size: 11px; color: #64748b; margin-top: 2px; }
-.pp-soon { position:absolute; top:7px; right:8px; font-size:9px; font-weight:800; background:#eff6ff; color:#2563eb; border-radius:999px; padding:2px 7px; }
+.pp-si:hover:not(.pp-dis) { background: #f8faff; }
+.pp-dis { opacity: .38; cursor: default; }
+.pp-si-left { display: flex; flex-direction: column; gap: 2px; }
+.pp-si-t { font-size: 14px; font-weight: 600; color: #1e293b; letter-spacing: -.01em; }
+.pp-si-d { font-size: 12px; color: #94a3b8; font-weight: 400; }
+.pp-si-right { display: flex; align-items: center; gap: 8px; }
+.pp-soon { font-size: 10px; font-weight: 700; background: #f0f4ff; color: #6366f1; border-radius: 6px; padding: 2px 8px; }
+.pp-si-arr { font-size: 16px; color: #cbd5e1; transition: transform .15s; }
+.pp-si:hover:not(.pp-dis) .pp-si-arr { transform: translateX(2px); color: #94a3b8; }
 
 /* ═══════════ RESPONSIVE ═══════════ */
 @media(max-width:980px){
@@ -546,13 +546,13 @@ export default function CustomerProfilePage() {
           </div>
         </div>
 
-        {/* Stats inside hero */}
+        {/* Stats — inline, no containers */}
         <div className="pp-hero-stats">
           {[
-            { n: stats.total,     l: 'Всего сделок', c: 'o' },
-            { n: stats.active,    l: 'Активных',     c: 'b' },
-            { n: stats.done,      l: 'Завершено',    c: 'g' },
-            { n: stats.cancelled, l: 'Отменено',     c: 's' },
+            { n: stats.total,     l: 'сделок',    c: 'o' },
+            { n: stats.active,    l: 'активных',  c: 'b' },
+            { n: stats.done,      l: 'завершено', c: 'g' },
+            { n: stats.cancelled, l: 'отменено',  c: 's' },
           ].map((s, i) => (
             <div key={i} className="pp-hstat">
               <div className={`pp-hstat-num ${s.c}`}>{s.n}</div>
@@ -712,42 +712,54 @@ export default function CustomerProfilePage() {
 
           {/* ── RIGHT ── */}
           <div className="pp-right">
+            {/* Nav — clean text links, no icon boxes */}
             <div className="pp-nav">
               <nav>
                 {[
-                  { to:'/categories', ico:'🔍', lbl:'Найти мастера' },
-                  { to:'/deals',      ico:'🤝', lbl:'Мои сделки' },
-                  { to:'/chat',       ico:'💬', lbl:'Сообщения' },
+                  { to:'/categories', lbl:'Найти мастера' },
+                  { to:'/deals',      lbl:'Мои сделки' },
+                  { to:'/chat',       lbl:'Сообщения' },
                 ].map(n => (
                   <Link key={n.to} to={n.to} className="pp-ni">
-                    <div className="pp-ni-ic">{n.ico}</div>{n.lbl}
+                    {n.lbl}
+                    <span className="pp-ni-arr">›</span>
                   </Link>
                 ))}
               </nav>
             </div>
 
+            {/* Dark CTA card */}
             <div className="pp-pcard">
               <div className="pp-pcard-tag">Совет</div>
               <div className="pp-pcard-q">Оставляйте отзывы — мастерам это помогает расти, а вам легче выбирать проверенных специалистов.</div>
-              <Link to="/categories" className="pp-pcard-btn">🚀 Найти мастера</Link>
+              <Link to="/categories" className="pp-pcard-btn">Найти мастера →</Link>
             </div>
 
+            {/* Settings — no icon boxes, just clean rows */}
             <div className="pp-set">
               <div className="pp-set-hd">Настройки</div>
               {[
-                { to:'/settings/personal',      ico:'👤', t:'Личные данные', d:'Имя и контакты' },
-                { to:'/settings/notifications', ico:'🔔', t:'Уведомления',   d:'Push и email' },
+                { to:'/settings/personal',      t:'Личные данные', d:'Имя и контакты' },
+                { to:'/settings/notifications', t:'Уведомления',   d:'Push и email' },
               ].map(item => (
                 <Link key={item.to} to={item.to} className="pp-si">
-                  <div className="pp-si-ic">{item.ico}</div>
-                  <div style={{flex:1}}><div className="pp-si-t">{item.t}</div><div className="pp-si-d">{item.d}</div></div>
-                  <div style={{color:'#cbd5e1',fontSize:18}}>›</div>
+                  <div className="pp-si-left">
+                    <div className="pp-si-t">{item.t}</div>
+                    <div className="pp-si-d">{item.d}</div>
+                  </div>
+                  <div className="pp-si-right">
+                    <span className="pp-si-arr">›</span>
+                  </div>
                 </Link>
               ))}
               <div className="pp-si pp-dis">
-                <div className="pp-soon">СКОРО</div>
-                <div className="pp-si-ic">🧩</div>
-                <div style={{flex:1}}><div className="pp-si-t">Доп. опции</div><div className="pp-si-d">Новые возможности</div></div>
+                <div className="pp-si-left">
+                  <div className="pp-si-t">Дополнительные опции</div>
+                  <div className="pp-si-d">Новые возможности</div>
+                </div>
+                <div className="pp-si-right">
+                  <span className="pp-soon">Скоро</span>
+                </div>
               </div>
             </div>
           </div>
