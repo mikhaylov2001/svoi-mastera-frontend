@@ -11,14 +11,13 @@ function resolveUrl(url) {
   if (url.startsWith('data:') || url.startsWith('http')) return url;
   return BACKEND + url;
 }
-
-function fmt(d) {
+function fmtSince(d) {
   if (!d) return '';
-  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+  return new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
 }
 function fmtCard(d) {
   if (!d) return '';
-  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
 const TABS = [
@@ -30,256 +29,398 @@ const TABS = [
 ];
 
 const ST = {
-  NEW:         { label: 'Ожидает мастера',  bg: '#fff7ed', fg: '#c2410c', dot: '#fb923c', btn: 'Ждём подтверждения' },
-  IN_PROGRESS: { label: 'В работе',          bg: '#eff6ff', fg: '#1d4ed8', dot: '#3b82f6', btn: 'Открыть сделку'     },
-  COMPLETED:   { label: 'Завершена',         bg: '#f0fdf4', fg: '#15803d', dot: '#22c55e', btn: 'Детали'             },
-  CANCELLED:   { label: 'Отменена',          bg: '#fff1f2', fg: '#be123c', dot: '#f43f5e', btn: 'Детали'             },
+  NEW:         { label: 'Ожидает мастера',  bg:'#fff7ed', fg:'#c2410c', accent:'#fb923c', btn:'Ждём подтверждения', btnStyle:'or' },
+  IN_PROGRESS: { label: 'В работе',          bg:'#eff6ff', fg:'#1d4ed8', accent:'#3b82f6', btn:'Открыть',            btnStyle:'bl' },
+  COMPLETED:   { label: 'Завершена',         bg:'#f0fdf4', fg:'#15803d', accent:'#22c55e', btn:'Детали',             btnStyle:'gr' },
+  CANCELLED:   { label: 'Отменена',          bg:'#fff1f2', fg:'#be123c', accent:'#f43f5e', btn:'Детали',             btnStyle:'dk' },
 };
 
-/* emoji fallback by title */
-function dealEmoji(title = '') {
-  const t = title.toLowerCase();
-  if (t.includes('розетк') || t.includes('электр')) return '⚡';
-  if (t.includes('сантех') || t.includes('труб'))   return '🚿';
-  if (t.includes('ремонт') || t.includes('отдел'))  return '🏗';
-  if (t.includes('мебел') || t.includes('сборк'))   return '🪑';
-  if (t.includes('уборк') || t.includes('клин'))    return '🧹';
-  if (t.includes('груз')  || t.includes('перевоз')) return '🚚';
-  if (t.includes('компьют') || t.includes('ноутб')) return '💻';
-  if (t.includes('замок') || t.includes('дверь'))   return '🔐';
-  if (t.includes('сад')   || t.includes('дача'))    return '🌿';
-  if (t.includes('маляр') || t.includes('краск'))   return '🎨';
+function dealEmoji(t = '') {
+  const s = t.toLowerCase();
+  if (s.includes('розетк') || s.includes('электр')) return '⚡';
+  if (s.includes('сантех') || s.includes('труб'))   return '🚿';
+  if (s.includes('ремонт') || s.includes('отдел'))  return '🏗';
+  if (s.includes('мебел')  || s.includes('сборк'))  return '🪑';
+  if (s.includes('уборк')  || s.includes('клин'))   return '🧹';
+  if (s.includes('груз')   || s.includes('перевоз'))return '🚚';
+  if (s.includes('компьют')|| s.includes('ноутб'))  return '💻';
+  if (s.includes('замок')  || s.includes('дверь'))  return '🔐';
+  if (s.includes('сад')    || s.includes('дача'))   return '🌿';
+  if (s.includes('маляр')  || s.includes('краск'))  return '🎨';
   return '🔧';
 }
 
 const css = `
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-.vp{font-family:Inter,-apple-system,sans-serif;color:#0a0f1e;background:#eef1f8;min-height:100vh}
-.vp *{box-sizing:border-box;margin:0;padding:0}
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900&display=swap');
 
-/* ══ HERO ══ */
-.vp-hero{
-  position:relative;overflow:hidden;background:#06080f;
-  padding:56px 0 94px;
+.pp { font-family: Inter, -apple-system, sans-serif; color: #0a0f1e; background: #eceef5; min-height: 100vh; }
+.pp * { box-sizing: border-box; }
+
+/* ═══════════ HERO ═══════════ */
+.pp-hero {
+  position: relative; overflow: hidden;
+  background: #080b14;
+  padding-bottom: 0;
 }
-/* animated conic glow */
-.vp-hero-glow{
-  position:absolute;width:700px;height:700px;
-  right:-120px;top:-200px;border-radius:50%;
-  background:conic-gradient(from 0deg,#ff5a1f55,#9333ea33,#0ea5e955,#ff5a1f55);
-  filter:blur(56px);animation:vp-spin 22s linear infinite;
-}
-@keyframes vp-spin{to{transform:rotate(360deg)}}
-/* mesh radials */
-.vp-hero-mesh{
-  position:absolute;inset:0;
+
+/* multi-layer atmosphere */
+.pp-hero-atm {
+  position: absolute; inset: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse 85% 160% at 100% -15%, rgba(255,80,10,.5), transparent 60%),
-    radial-gradient(ellipse 55% 90%  at -5%  115%, rgba(109,40,217,.38), transparent 55%),
-    radial-gradient(ellipse 40% 70%  at 45%  55%,  rgba(14,116,255,.14), transparent 65%);
+    radial-gradient(ellipse 90% 180% at 105%  -5%, rgba(255,72,0,.52) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 100% at -8%  120%, rgba(124,58,237,.42) 0%, transparent 52%),
+    radial-gradient(ellipse 45% 80%  at  48%  50%, rgba(14,116,255,.15) 0%, transparent 65%),
+    radial-gradient(ellipse 30% 60%  at  20% -25%, rgba(255,180,30,.1)  0%, transparent 60%);
 }
-/* subtle dot grid */
-.vp-hero-grid{
-  position:absolute;inset:0;
-  background-image:radial-gradient(rgba(255,255,255,.065) 1px,transparent 1px);
-  background-size:26px 26px;
+/* spinning conic glow */
+.pp-hero-ring {
+  position: absolute;
+  width: 800px; height: 800px;
+  right: -160px; top: -260px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    rgba(255,90,31,.4) 0deg,
+    rgba(147,51,234,.28) 90deg,
+    rgba(14,116,255,.32) 180deg,
+    rgba(255,90,31,.4) 360deg);
+  filter: blur(64px);
+  animation: pp-spin 24s linear infinite;
 }
-.vp-hero-inner{
-  position:relative;z-index:2;
-  max-width:1160px;margin:0 auto;padding:0 24px;
-  display:flex;align-items:center;gap:26px;flex-wrap:wrap;
+@keyframes pp-spin { to { transform: rotate(360deg); } }
+/* grid */
+.pp-hero-grid {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
+/* horizontal light streak */
+.pp-hero-streak {
+  position: absolute; left: 0; right: 0;
+  height: 1px; bottom: 80px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.08) 30%, rgba(255,90,31,.25) 55%, rgba(255,255,255,.08) 80%, transparent);
+}
+
+/* profile row */
+.pp-hero-inner {
+  position: relative; z-index: 2;
+  max-width: 1160px; margin: 0 auto; padding: 52px 24px 0;
+  display: flex; align-items: flex-start; gap: 28px; flex-wrap: wrap;
+}
+
 /* avatar */
-.vp-ava{
-  width:96px;height:96px;border-radius:28px;flex-shrink:0;
-  border:2.5px solid rgba(255,255,255,.2);overflow:hidden;
-  background:linear-gradient(145deg,#ff5a1f,#ff9500);
-  display:flex;align-items:center;justify-content:center;
-  font-size:38px;font-weight:900;color:#fff;cursor:pointer;position:relative;
-  transition:transform .2s,box-shadow .2s;
-  box-shadow:0 10px 36px rgba(255,90,31,.38);
+.pp-ava {
+  width: 100px; height: 100px; border-radius: 28px; flex-shrink: 0;
+  border: 2.5px solid rgba(255,255,255,.22);
+  background: linear-gradient(145deg, #ff5a1f, #ff9c00);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px; font-weight: 900; color: #fff;
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: transform .22s, box-shadow .22s;
+  box-shadow: 0 12px 42px rgba(255,90,31,.42);
 }
-.vp-ava:hover{transform:scale(1.05);box-shadow:0 14px 44px rgba(255,90,31,.52);}
-.vp-ava img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.vp-ava-ov{position:absolute;inset:0;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;font-size:28px;opacity:0;transition:opacity .18s;border-radius:28px;}
-.vp-ava:hover .vp-ava-ov{opacity:1;}
-/* hero text */
-.vp-hero-txt{flex:1;min-width:0;}
-.vp-hero-name{font-size:clamp(26px,3.5vw,42px);font-weight:900;letter-spacing:-.045em;color:#fff;line-height:1;text-shadow:0 2px 24px rgba(0,0,0,.35);}
-.vp-hero-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px;}
-.vp-pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;font-size:12px;font-weight:700;padding:5px 13px;backdrop-filter:blur(14px);white-space:nowrap;}
-.vp-pill-o{background:rgba(255,90,31,.22);color:#ffb085;border:1px solid rgba(255,90,31,.35);}
-.vp-pill-g{background:rgba(34,197,94,.18);color:#6ee7b7;border:1px solid rgba(34,197,94,.3);}
-.vp-pill-w{background:rgba(255,255,255,.1);color:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.14);}
-/* hero buttons */
-.vp-hero-btns{display:flex;gap:8px;align-self:flex-start;padding-top:4px;}
-.vp-hbtn{display:inline-flex;align-items:center;gap:6px;border-radius:12px;font-size:13px;font-weight:700;padding:10px 18px;cursor:pointer;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);font-family:inherit;text-decoration:none;transition:all .18s;}
-.vp-hbtn:hover{background:rgba(255,255,255,.18);}
-
-/* ══ WRAP ══ */
-.vp-wrap{max-width:1160px;margin:-54px auto 72px;padding:0 24px;position:relative;z-index:3;}
-
-/* ══ STATS ══ */
-.vp-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
-.vp-stat{
-  background:#fff;border:1px solid #e3eaf7;border-radius:18px;
-  padding:18px 20px;display:flex;align-items:center;gap:14px;
-  box-shadow:0 2px 10px rgba(10,15,30,.05);transition:all .2s;
+.pp-ava:hover { transform: scale(1.06); box-shadow: 0 16px 52px rgba(255,90,31,.58); }
+.pp-ava img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pp-ava-ov {
+  position: absolute; inset: 0; background: rgba(0,0,0,.5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; opacity: 0; transition: opacity .18s; border-radius: 28px;
 }
-.vp-stat:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(10,15,30,.09);}
-.vp-si{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
-.vp-si.t{background:#fff7ed;}.vp-si.a{background:#eff6ff;}.vp-si.d{background:#f0fdf4;}.vp-si.c{background:#fff1f2;}
-.vp-stat-num{font-size:30px;font-weight:900;letter-spacing:-.04em;line-height:1;}
-.vp-stat-lbl{font-size:12px;color:#64748b;font-weight:600;margin-top:3px;}
-.vp-no{color:#e8410a;}.vp-nb{color:#2563eb;}.vp-ng{color:#16a34a;}.vp-ns{color:#94a3b8;}
+.pp-ava:hover .pp-ava-ov { opacity: 1; }
 
-/* ══ LAYOUT ══ */
-.vp-layout{display:grid;grid-template-columns:1fr 296px;gap:16px;align-items:start;}
-
-/* ══ ACTIONS ══ */
-.vp-acts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;}
-.vp-act{
-  display:flex;flex-direction:column;justify-content:space-between;min-height:130px;
-  border-radius:18px;padding:18px;text-decoration:none;color:inherit;
-  border:1px solid #e3eaf7;background:#fff;transition:all .2s;
+/* name + meta */
+.pp-hero-txt { flex: 1; min-width: 0; padding-top: 4px; }
+.pp-hero-name {
+  font-size: clamp(28px, 3.8vw, 46px);
+  font-weight: 900; letter-spacing: -.048em; color: #fff;
+  line-height: 1; text-shadow: 0 2px 30px rgba(0,0,0,.4);
 }
-.vp-act:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(10,15,30,.09);}
-.vp-act.ac{background:linear-gradient(145deg,#ff5a1f,#d63800);border:none;color:#fff;box-shadow:0 12px 32px rgba(214,56,0,.38);}
-.vp-act.ac:hover{box-shadow:0 18px 44px rgba(214,56,0,.5);}
-.vp-act-ic{font-size:28px;margin-bottom:auto;}
-.vp-act-title{font-size:15px;font-weight:900;letter-spacing:-.02em;}
-.vp-act-sub{font-size:12px;margin-top:3px;opacity:.68;}
+.pp-hero-role {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 10px; margin-bottom: 10px;
+  font-size: 13px; font-weight: 700; color: rgba(255,255,255,.55);
+}
+.pp-hero-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pp-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  border-radius: 999px; font-size: 12px; font-weight: 700;
+  padding: 5px 13px; backdrop-filter: blur(14px); white-space: nowrap;
+}
+.pp-pill-o { background: rgba(255,90,31,.22); color: #ffb085; border: 1px solid rgba(255,90,31,.35); }
+.pp-pill-g { background: rgba(34,197,94,.18); color: #6ee7b7;  border: 1px solid rgba(34,197,94,.3); }
+.pp-pill-w { background: rgba(255,255,255,.1); color: rgba(255,255,255,.78); border: 1px solid rgba(255,255,255,.14); }
 
-/* ══ DEALS CARD ══ */
-.vp-deals-card{background:#fff;border:1px solid #e3eaf7;border-radius:20px;box-shadow:0 2px 10px rgba(10,15,30,.04);overflow:hidden;}
+/* header buttons */
+.pp-hero-btns { display: flex; gap: 8px; padding-top: 4px; }
+.pp-hbtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 12px; font-size: 13px; font-weight: 700;
+  padding: 10px 18px; cursor: pointer;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.1); color: rgba(255,255,255,.88);
+  font-family: inherit; text-decoration: none; transition: all .18s;
+}
+.pp-hbtn:hover { background: rgba(255,255,255,.18); }
+.pp-hbtn-logout { border-color: rgba(255,90,90,.3); }
+.pp-hbtn-logout:hover { background: rgba(239,68,68,.15); color: #fca5a5; }
+
+/* ── STATS GLASS BAR (inside hero, bottom) ── */
+.pp-hero-stats {
+  position: relative; z-index: 2;
+  max-width: 1160px; margin: 0 auto;
+  padding: 24px 24px 0;
+  display: flex; gap: 2px;
+}
+.pp-hstat {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 18px 10px;
+  background: rgba(255,255,255,.06);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,.1);
+  transition: background .2s;
+}
+.pp-hstat:first-child { border-radius: 16px 0 0 0; }
+.pp-hstat:last-child  { border-radius: 0 16px 0 0; }
+.pp-hstat:hover { background: rgba(255,255,255,.1); }
+.pp-hstat-num {
+  font-size: 34px; font-weight: 900; letter-spacing: -.05em; line-height: 1; color: #fff;
+}
+.pp-hstat-num.o { color: #ff8a4c; }
+.pp-hstat-num.b { color: #7eb3ff; }
+.pp-hstat-num.g { color: #6ee7b7; }
+.pp-hstat-num.s { color: rgba(255,255,255,.38); }
+.pp-hstat-lbl { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.48); margin-top: 4px; text-transform: uppercase; letter-spacing: .06em; }
+
+/* bottom curve */
+.pp-hero-curve {
+  position: relative; z-index: 3;
+  height: 32px; background: #eceef5;
+  border-radius: 24px 24px 0 0;
+  margin-top: -1px;
+  box-shadow: 0 -12px 40px rgba(10,15,30,.08);
+}
+
+/* ═══════════ WRAP ═══════════ */
+.pp-wrap { max-width: 1160px; margin: 0 auto 80px; padding: 20px 24px 0; }
+
+/* ═══════════ LAYOUT ═══════════ */
+.pp-layout { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
+
+/* ═══════════ ACTIONS ═══════════ */
+.pp-acts { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.pp-act {
+  display: flex; flex-direction: column; justify-content: space-between;
+  min-height: 138px; border-radius: 20px; padding: 20px;
+  text-decoration: none; color: inherit;
+  border: 1.5px solid #dde5f6; background: #fff;
+  transition: all .22s; position: relative; overflow: hidden;
+}
+.pp-act::before { content:''; position:absolute; inset:0; opacity:0; transition:opacity .22s; background:radial-gradient(circle at 80% 20%, rgba(255,90,31,.06), transparent 70%); }
+.pp-act:hover { transform: translateY(-4px); box-shadow: 0 18px 44px rgba(10,15,30,.1); border-color: #c8d6f0; }
+.pp-act:hover::before { opacity:1; }
+.pp-act.accent {
+  background: linear-gradient(145deg, #ff5a1f 0%, #d23500 100%);
+  border: none; color: #fff;
+  box-shadow: 0 14px 36px rgba(210,53,0,.38);
+}
+.pp-act.accent::before { background: radial-gradient(circle at 80% 10%, rgba(255,255,255,.18), transparent 65%); opacity:1; }
+.pp-act.accent:hover { box-shadow: 0 20px 48px rgba(210,53,0,.52); }
+.pp-act-top { display:flex; justify-content:space-between; align-items:flex-start; }
+.pp-act-ico { font-size: 30px; }
+.pp-act-arr { font-size: 20px; opacity: .4; }
+.pp-act-title { font-size: 17px; font-weight: 900; letter-spacing: -.02em; margin-bottom: 3px; }
+.pp-act-sub { font-size: 12px; opacity: .65; line-height: 1.35; }
+
+/* ═══════════ DEALS CARD ═══════════ */
+.pp-deals {
+  background: #fff; border: 1.5px solid #dde5f6; border-radius: 22px;
+  box-shadow: 0 2px 14px rgba(10,15,30,.05); overflow: hidden;
+}
 
 /* tabs */
-.vp-tabs{display:flex;align-items:center;padding:0 14px;border-bottom:1.5px solid #edf2fb;overflow-x:auto;scrollbar-width:none;}
-.vp-tabs::-webkit-scrollbar{display:none;}
-.vp-tab{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:14px 12px;font-size:13px;font-weight:700;
-  color:#64748b;cursor:pointer;border:none;background:none;
-  font-family:inherit;white-space:nowrap;position:relative;transition:color .15s;
+.pp-tabs {
+  display: flex; align-items: center;
+  padding: 0 16px; border-bottom: 1.5px solid #edf2fb;
+  overflow-x: auto; scrollbar-width: none; gap: 2px;
 }
-.vp-tab:hover{color:#0a0f1e;}
-.vp-tab.act{color:#e8410a;}
-.vp-tab.act::after{content:'';position:absolute;bottom:-1.5px;left:0;right:0;height:2.5px;background:linear-gradient(90deg,#ff5a1f,#e8410a);border-radius:2px 2px 0 0;}
-.vp-tab-n{min-width:19px;height:19px;border-radius:999px;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;}
-.vp-tab.act .vp-tab-n{background:#fff0eb;color:#e8410a;}
-.vp-tab:not(.act) .vp-tab-n{background:#f1f5f9;color:#64748b;}
-.vp-tab-all-link{margin-left:auto;flex-shrink:0;display:flex;align-items:center;padding:0 6px;font-size:12px;font-weight:700;color:#e8410a;text-decoration:none;white-space:nowrap;}
+.pp-tabs::-webkit-scrollbar { display: none; }
+.pp-tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 15px 13px; font-size: 13px; font-weight: 700;
+  color: #94a3b8; cursor: pointer; border: none; background: none;
+  font-family: inherit; white-space: nowrap; position: relative; transition: color .15s;
+}
+.pp-tab:hover { color: #334155; }
+.pp-tab.on { color: #e8410a; }
+.pp-tab.on::after {
+  content: ''; position: absolute; bottom: -1.5px; left: 0; right: 0;
+  height: 2.5px; background: linear-gradient(90deg, #ff5a1f, #e8410a);
+  border-radius: 2px 2px 0 0;
+}
+.pp-tab-n {
+  min-width: 20px; height: 20px; border-radius: 999px;
+  font-size: 11px; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center; padding: 0 5px;
+}
+.pp-tab.on .pp-tab-n { background: #fff0eb; color: #e8410a; }
+.pp-tab:not(.on) .pp-tab-n { background: #f1f5f9; color: #64748b; }
+.pp-tab-link {
+  margin-left: auto; flex-shrink: 0;
+  padding: 0 4px; font-size: 12px; font-weight: 700;
+  color: #e8410a; text-decoration: none; white-space: nowrap;
+}
 
 /* deal list */
-.vp-dl-wrap{padding:12px 14px 14px;}
-.vp-empty{padding:54px 20px;text-align:center;color:#94a3b8;}
-.vp-empty-ico{font-size:54px;margin-bottom:12px;}
+.pp-dl-body { padding: 14px 16px 16px; }
+.pp-empty { padding: 60px 20px; text-align: center; color: #94a3b8; }
+.pp-empty-ico { font-size: 56px; margin-bottom: 12px; }
+.pp-empty-text { font-size: 15px; font-weight: 700; color: #64748b; margin-bottom: 6px; }
+.pp-empty-sub { font-size: 13px; color: #94a3b8; }
 
-/* ── DEAL CARD (Avito style) ── */
-.vp-dc{
-  display:flex;align-items:stretch;
-  border:1.5px solid #e8eef8;border-radius:16px;overflow:hidden;
-  background:#fafcff;margin-bottom:10px;cursor:pointer;
-  transition:all .18s;text-decoration:none;color:inherit;
+/* ── DEAL CARD ── */
+.pp-dc {
+  display: flex; align-items: stretch;
+  border: 1.5px solid #e8eef8; border-radius: 18px;
+  overflow: hidden; background: #fafcff; margin-bottom: 10px;
+  text-decoration: none; color: inherit;
+  transition: all .2s; position: relative;
 }
-.vp-dc:last-child{margin-bottom:0;}
-.vp-dc:hover{border-color:#c8d9f5;box-shadow:0 8px 26px rgba(10,15,30,.09);background:#fff;transform:translateY(-1px);}
+.pp-dc:last-child { margin-bottom: 0; }
+.pp-dc:hover {
+  border-color: #c8d9f5; background: #fff;
+  box-shadow: 0 10px 32px rgba(10,15,30,.1);
+  transform: translateY(-2px);
+}
 
-/* photo / thumb */
-.vp-dc-img{
-  width:110px;flex-shrink:0;position:relative;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;
-  background:#f0f4ff;border-right:1.5px solid #e8eef8;
-}
-.vp-dc-img img{width:100%;height:100%;object-fit:cover;}
-.vp-dc-img-ph{font-size:36px;opacity:.85;}
+/* left accent line */
+.pp-dc-line { width: 4px; flex-shrink: 0; }
 
-/* status stripe */
-.vp-dc-stripe{
-  position:absolute;bottom:0;left:0;right:0;height:3px;
+/* photo */
+.pp-dc-photo {
+  width: 120px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #f1f5fb; position: relative; overflow: hidden;
+  border-right: 1.5px solid #e8eef8;
 }
+.pp-dc-photo img { width: 100%; height: 100%; object-fit: cover; }
+.pp-dc-photo-ph { font-size: 40px; opacity: .8; }
+.pp-dc-photo-ava img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 4px 12px rgba(10,15,30,.12); }
 
 /* body */
-.vp-dc-body{flex:1;min-width:0;padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;}
-.vp-dc-title{font-size:15px;font-weight:800;color:#0a0f1e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px;}
-.vp-dc-meta{display:flex;flex-wrap:wrap;gap:8px 14px;}
-.vp-dc-m{font-size:12px;color:#64748b;display:flex;align-items:center;gap:4px;}
-.vp-dc-m b{color:#334155;font-weight:700;}
+.pp-dc-body { flex: 1; min-width: 0; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.pp-dc-title { font-size: 15px; font-weight: 900; color: #0a0f1e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp-dc-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.pp-dc-m { font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 4px; }
+.pp-dc-m strong { color: #334155; font-weight: 700; }
+.pp-dc-price { font-size: 16px; font-weight: 900; color: #0a0f1e; letter-spacing: -.02em; }
 
 /* right */
-.vp-dc-right{
-  flex-shrink:0;display:flex;flex-direction:column;
-  align-items:flex-end;justify-content:space-between;
-  padding:14px 16px;gap:10px;min-width:172px;
+.pp-dc-right {
+  flex-shrink: 0; display: flex; flex-direction: column;
+  align-items: flex-end; justify-content: space-between;
+  padding: 16px 18px; gap: 10px; min-width: 178px;
 }
-.vp-badge{
-  display:inline-flex;align-items:center;gap:5px;
-  border-radius:999px;font-size:11px;font-weight:800;
-  padding:5px 12px;white-space:nowrap;
+.pp-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  border-radius: 999px; font-size: 11px; font-weight: 800;
+  padding: 5px 12px; white-space: nowrap;
 }
-.vp-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.vp-dc-btn{
-  display:inline-flex;align-items:center;gap:5px;
-  border-radius:10px;font-size:12px;font-weight:800;
-  padding:9px 15px;white-space:nowrap;
-  transition:all .18s;
+.pp-badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.pp-dc-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  border-radius: 11px; font-size: 12px; font-weight: 800;
+  padding: 9px 16px; white-space: nowrap; transition: all .18s;
+  text-decoration: none;
 }
-.vp-dc-btn.dark{background:#0a0f1e;color:#fff;}
-.vp-dc-btn.dark:hover{background:#1e293b;}
-.vp-dc-btn.orange{background:linear-gradient(135deg,#ff5a1f,#e8410a);color:#fff;box-shadow:0 4px 14px rgba(232,65,10,.32);}
-.vp-dc-btn.orange:hover{box-shadow:0 7px 20px rgba(232,65,10,.44);}
+.pp-dc-btn.or { background: linear-gradient(135deg,#ff5a1f,#e8410a); color:#fff; box-shadow:0 4px 14px rgba(232,65,10,.3); }
+.pp-dc-btn.or:hover { box-shadow:0 7px 22px rgba(232,65,10,.46); }
+.pp-dc-btn.bl { background: #eff6ff; color: #1d4ed8; }
+.pp-dc-btn.bl:hover { background: #dbeafe; }
+.pp-dc-btn.gr { background: #f0fdf4; color: #15803d; }
+.pp-dc-btn.gr:hover { background: #dcfce7; }
+.pp-dc-btn.dk { background: #f1f5f9; color: #475569; }
+.pp-dc-btn.dk:hover { background: #e2e8f0; }
 
 /* review */
-.vp-rv-wrap{border-top:1px solid #f0f4fa;padding:10px 14px;}
-.vp-rv-btn{width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;font-size:13px;font-weight:700;color:#334155;cursor:pointer;font-family:inherit;transition:all .18s;}
-.vp-rv-btn:hover{border-color:#ff5a1f;color:#e8410a;background:#fff7ed;}
-.vp-rv-ok{padding:10px;font-size:13px;font-weight:700;color:#16a34a;text-align:center;}
+.pp-rv { border-top: 1.5px solid #edf2fa; padding: 10px 16px; }
+.pp-rv-btn { width:100%; padding:10px; border:1.5px solid #e2e8f0; border-radius:10px; background:#f8fafc; font-size:13px; font-weight:700; color:#334155; cursor:pointer; font-family:inherit; transition:all .18s; }
+.pp-rv-btn:hover { border-color:#ff5a1f; color:#e8410a; background:#fff7ed; }
+.pp-rv-ok { padding:10px; font-size:13px; font-weight:700; color:#16a34a; }
 
-/* ══ RIGHT COLUMN ══ */
-.vp-right{display:grid;gap:14px;align-content:start;}
+/* ═══════════ RIGHT COLUMN ═══════════ */
+.pp-right { display: grid; gap: 14px; align-content: start; }
 
 /* nav */
-.vp-nav{background:#fff;border:1px solid #e3eaf7;border-radius:20px;box-shadow:0 2px 10px rgba(10,15,30,.04);padding:10px;}
-.vp-ni{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;font-size:14px;font-weight:700;color:#334155;text-decoration:none;background:none;border:none;cursor:pointer;font-family:inherit;width:100%;transition:all .15s;}
-.vp-ni:hover{background:#f1f5f9;color:#0a0f1e;}
-.vp-ni-ic{width:32px;height:32px;border-radius:9px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
-
-/* tip */
-.vp-tip{
-  background:#06080f;border-radius:20px;padding:22px;color:#fff;
-  box-shadow:0 4px 24px rgba(10,15,30,.18);overflow:hidden;position:relative;
+.pp-nav { background: #fff; border: 1.5px solid #dde5f6; border-radius: 20px; padding: 10px; box-shadow: 0 2px 12px rgba(10,15,30,.05); }
+.pp-ni {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 12px; border-radius: 12px;
+  font-size: 14px; font-weight: 700; color: #334155;
+  text-decoration: none; background: none; border: none;
+  cursor: pointer; font-family: inherit; width: 100%; transition: all .15s;
 }
-.vp-tip::before{content:'';position:absolute;width:220px;height:220px;right:-50px;bottom:-70px;border-radius:50%;background:radial-gradient(circle,rgba(255,90,31,.35),transparent 70%);}
-.vp-tip-tag{font-size:10px;font-weight:800;letter-spacing:.1em;color:#ff8c5a;text-transform:uppercase;margin-bottom:8px;}
-.vp-tip-text{font-size:13px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:16px;position:relative;}
-.vp-tip-btn{display:inline-flex;align-items:center;gap:6px;position:relative;background:linear-gradient(135deg,#ff5a1f,#e8410a);color:#fff;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:800;text-decoration:none;box-shadow:0 6px 18px rgba(232,65,10,.4);transition:all .18s;}
-.vp-tip-btn:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(232,65,10,.52);}
+.pp-ni:hover { background: #f1f5f9; color: #0a0f1e; }
+.pp-ni-ic {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: #f1f5f9; display: flex; align-items: center;
+  justify-content: center; font-size: 16px; flex-shrink: 0;
+}
+
+/* profile card in right col */
+.pp-pcard {
+  background: linear-gradient(145deg,#06080f,#141d34);
+  border-radius: 20px; padding: 22px; color: #fff;
+  box-shadow: 0 4px 24px rgba(10,15,30,.18);
+  overflow: hidden; position: relative;
+}
+.pp-pcard::before {
+  content:''; position:absolute;
+  width:240px; height:240px; right:-50px; top:-80px; border-radius:50%;
+  background: conic-gradient(from 0deg,rgba(255,90,31,.25),rgba(147,51,234,.18),rgba(255,90,31,.25));
+  filter: blur(40px); animation:pp-spin 20s linear infinite;
+}
+.pp-pcard-tag { font-size:10px; font-weight:800; letter-spacing:.1em; color:#ff8c5a; text-transform:uppercase; margin-bottom:8px; position:relative; }
+.pp-pcard-q { font-size:15px; color:rgba(255,255,255,.78); line-height:1.6; margin-bottom:18px; position:relative; }
+.pp-pcard-btn {
+  display: inline-flex; align-items: center; gap: 6px; position: relative;
+  background: linear-gradient(135deg,#ff5a1f,#e8410a);
+  color: #fff; border-radius: 11px; padding: 11px 18px;
+  font-size: 13px; font-weight: 800; text-decoration: none;
+  box-shadow: 0 6px 20px rgba(232,65,10,.42); transition: all .18s;
+}
+.pp-pcard-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(232,65,10,.54); }
 
 /* settings */
-.vp-set{background:#fff;border:1px solid #e3eaf7;border-radius:20px;box-shadow:0 2px 10px rgba(10,15,30,.04);padding:14px;}
-.vp-set-title{font-size:13px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding:0 4px;}
-.vp-seti{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid #f1f5f9;background:#fafcff;text-decoration:none;color:inherit;transition:all .18s;margin-bottom:6px;position:relative;}
-.vp-seti:last-child{margin-bottom:0;}
-.vp-seti:hover:not(.vp-dis){border-color:#dde5f4;background:#fff;box-shadow:0 4px 14px rgba(10,15,30,.05);}
-.vp-dis{opacity:.45;cursor:default;}
-.vp-sei-ic{width:36px;height:36px;border-radius:10px;background:#f1f5f9;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.vp-sei-t{font-size:13px;font-weight:800;color:#0a0f1e;}
-.vp-sei-d{font-size:11px;color:#64748b;margin-top:2px;}
-.vp-soon{position:absolute;top:7px;right:8px;font-size:9px;font-weight:800;background:#eff6ff;color:#2563eb;border-radius:999px;padding:2px 7px;}
+.pp-set { background: #fff; border: 1.5px solid #dde5f6; border-radius: 20px; padding: 16px; box-shadow: 0 2px 12px rgba(10,15,30,.05); }
+.pp-set-hd { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 12px; }
+.pp-si {
+  display: flex; align-items: center; gap: 12px; padding: 11px 12px;
+  border-radius: 12px; border: 1.5px solid #f1f5f9; background: #fafcff;
+  text-decoration: none; color: inherit; transition: all .18s; margin-bottom: 8px; position: relative;
+}
+.pp-si:last-child { margin-bottom: 0; }
+.pp-si:hover:not(.pp-dis) { border-color: #dde5f4; background: #fff; box-shadow: 0 4px 14px rgba(10,15,30,.06); }
+.pp-dis { opacity: .45; cursor: default; }
+.pp-si-ic { width: 36px; height: 36px; border-radius: 10px; background: #f1f5f9; font-size: 17px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pp-si-t { font-size: 13px; font-weight: 800; color: #0a0f1e; }
+.pp-si-d { font-size: 11px; color: #64748b; margin-top: 2px; }
+.pp-soon { position:absolute; top:7px; right:8px; font-size:9px; font-weight:800; background:#eff6ff; color:#2563eb; border-radius:999px; padding:2px 7px; }
 
-/* ══ RESPONSIVE ══ */
+/* ═══════════ RESPONSIVE ═══════════ */
 @media(max-width:980px){
-  .vp-layout{grid-template-columns:1fr;}
-  .vp-stats{grid-template-columns:repeat(2,1fr);}
-  .vp-right{grid-template-columns:1fr 1fr;}
+  .pp-layout { grid-template-columns: 1fr; }
+  .pp-right { grid-template-columns: 1fr 1fr; }
+  .pp-hero-stats { gap: 0; }
+  .pp-acts { grid-template-columns: 1fr 1fr; }
+  .pp-act.accent { grid-column: span 2; }
 }
 @media(max-width:640px){
-  .vp-acts{grid-template-columns:1fr;}
-  .vp-stats{grid-template-columns:repeat(2,1fr);}
-  .vp-dc-img{width:80px;}
-  .vp-dc-right{min-width:130px;}
-  .vp-right{grid-template-columns:1fr;}
-  .vp-hero{padding:36px 0 88px;}
+  .pp-acts { grid-template-columns: 1fr; }
+  .pp-act.accent { grid-column: span 1; }
+  .pp-right { grid-template-columns: 1fr; }
+  .pp-dc-photo { width: 86px; }
+  .pp-dc-right { min-width: 136px; padding: 12px 14px; }
+  .pp-hero-name { font-size: 28px; }
+  .pp-ava { width: 80px; height: 80px; font-size: 32px; }
 }
 `;
 
@@ -317,8 +458,7 @@ export default function CustomerProfilePage() {
       img.onload = () => {
         const c = document.createElement('canvas');
         const M = 420; let w = img.width, h = img.height;
-        if (w > M) { h = h * M / w; w = M; }
-        else if (h > M) { w = w * M / h; h = M; }
+        if (w > M) { h = h * M / w; w = M; } else if (h > M) { w = w * M / h; h = M; }
         c.width = w; c.height = h;
         c.getContext('2d').drawImage(img, 0, 0, w, h);
         res(c.toDataURL('image/jpeg', 0.84));
@@ -345,13 +485,13 @@ export default function CustomerProfilePage() {
   };
 
   const initials = (userName || 'З').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
-  const fullName = [userName, profile?.lastName].filter(Boolean).join(' ') || 'Заказчик';
-  const since = fmt(profile?.registeredAt || profile?.createdAt);
+  const fullName  = [userName, profile?.lastName].filter(Boolean).join(' ') || 'Заказчик';
+  const since     = fmtSince(profile?.registeredAt || profile?.createdAt);
 
   const stats = useMemo(() => ({
-    total: deals.length,
-    active: deals.filter(d => ['IN_PROGRESS','NEW'].includes(d.status)).length,
-    done: deals.filter(d => d.status === 'COMPLETED').length,
+    total:     deals.length,
+    active:    deals.filter(d => ['IN_PROGRESS','NEW'].includes(d.status)).length,
+    done:      deals.filter(d => d.status === 'COMPLETED').length,
     cancelled: deals.filter(d => d.status === 'CANCELLED').length,
   }), [deals]);
 
@@ -366,234 +506,248 @@ export default function CustomerProfilePage() {
   if (userRole === 'WORKER') return null;
 
   return (
-    <div className="vp">
+    <div className="pp">
       <style>{css}</style>
 
-      {/* ═══ HERO ═══ */}
-      <div className="vp-hero">
-        <div className="vp-hero-glow" />
-        <div className="vp-hero-mesh" />
-        <div className="vp-hero-grid" />
-        <div className="vp-hero-inner">
+      {/* ══════ HERO ══════ */}
+      <div className="pp-hero">
+        <div className="pp-hero-ring" />
+        <div className="pp-hero-atm" />
+        <div className="pp-hero-grid" />
+        <div className="pp-hero-streak" />
+
+        {/* Profile row */}
+        <div className="pp-hero-inner">
           <input ref={fileRef} type="file" accept="image/*" style={{ display:'none' }} onChange={onAvatar} />
-          <div className="vp-ava" onClick={() => fileRef.current?.click()}>
+
+          <div className="pp-ava" onClick={() => fileRef.current?.click()}>
             {avatarUrl ? <img src={avatarUrl} alt="" /> : initials}
-            <div className="vp-ava-ov">{avatarLoading ? '⏳' : '📷'}</div>
+            <div className="pp-ava-ov">{avatarLoading ? '⏳' : '📷'}</div>
           </div>
-          <div className="vp-hero-txt">
-            <div className="vp-hero-name">{fullName}</div>
-            <div className="vp-hero-pills">
-              <span className="vp-pill vp-pill-o">👤 Заказчик</span>
-              <span className="vp-pill vp-pill-g">✓ Документы проверены</span>
-              <span className="vp-pill vp-pill-w">📍 Йошкар-Ола</span>
-              {since && <span className="vp-pill vp-pill-w">На сервисе с {since}</span>}
+
+          <div className="pp-hero-txt">
+            <div className="pp-hero-name">{fullName}</div>
+            <div className="pp-hero-role">Личный кабинет заказчика</div>
+            <div className="pp-hero-pills">
+              <span className="pp-pill pp-pill-o">👤 Заказчик</span>
+              <span className="pp-pill pp-pill-g">✓ Документы проверены</span>
+              <span className="pp-pill pp-pill-w">📍 Йошкар-Ола</span>
+              {since && <span className="pp-pill pp-pill-w">С {since}</span>}
             </div>
           </div>
-          <div className="vp-hero-btns">
-            <button className="vp-hbtn" onClick={() => fileRef.current?.click()}>
-              {avatarLoading ? '⏳' : avatarUrl ? '📷 Сменить фото' : '📷 Добавить фото'}
+
+          <div className="pp-hero-btns">
+            <button className="pp-hbtn" onClick={() => fileRef.current?.click()}>
+              {avatarLoading ? '⏳' : avatarUrl ? '📷 Сменить' : '📷 Добавить фото'}
             </button>
-            <button className="vp-hbtn" onClick={() => { logout(); navigate('/login'); }}>Выйти</button>
+            <button className="pp-hbtn pp-hbtn-logout" onClick={() => { logout(); navigate('/login'); }}>
+              Выйти
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* ═══ CONTENT ═══ */}
-      <div className="vp-wrap">
-
-        {/* Stats */}
-        <div className="vp-stats">
+        {/* Stats inside hero */}
+        <div className="pp-hero-stats">
           {[
-            { dc:'t', nc:'vp-no', ico:'📊', num: stats.total,     lbl:'Всего сделок' },
-            { dc:'a', nc:'vp-nb', ico:'🔥', num: stats.active,    lbl:'Активных' },
-            { dc:'d', nc:'vp-ng', ico:'✅', num: stats.done,      lbl:'Завершено' },
-            { dc:'c', nc:'vp-ns', ico:'❌', num: stats.cancelled, lbl:'Отменено' },
-          ].map(s => (
-            <div key={s.dc} className="vp-stat">
-              <div className={`vp-si ${s.dc}`}>{s.ico}</div>
-              <div>
-                <div className={`vp-stat-num ${s.nc}`}>{s.num}</div>
-                <div className="vp-stat-lbl">{s.lbl}</div>
-              </div>
+            { n: stats.total,     l: 'Всего сделок', c: 'o' },
+            { n: stats.active,    l: 'Активных',     c: 'b' },
+            { n: stats.done,      l: 'Завершено',    c: 'g' },
+            { n: stats.cancelled, l: 'Отменено',     c: 's' },
+          ].map((s, i) => (
+            <div key={i} className="pp-hstat">
+              <div className={`pp-hstat-num ${s.c}`}>{s.n}</div>
+              <div className="pp-hstat-lbl">{s.l}</div>
             </div>
           ))}
         </div>
+      </div>
 
-        <div className="vp-layout">
+      {/* curved separator */}
+      <div className="pp-hero-curve" />
+
+      {/* ══════ CONTENT ══════ */}
+      <div className="pp-wrap">
+        <div className="pp-layout">
 
           {/* ── LEFT ── */}
           <div>
             {/* Quick actions */}
-            <div className="vp-acts">
-              <Link to="/categories" className="vp-act ac">
-                <div className="vp-act-ic">🚀</div>
+            <div className="pp-acts">
+              <Link to="/categories" className="pp-act accent">
+                <div className="pp-act-top">
+                  <div className="pp-act-ico">🚀</div>
+                  <span className="pp-act-arr">↗</span>
+                </div>
                 <div>
-                  <div className="vp-act-title">Найти мастера</div>
-                  <div className="vp-act-sub">Каталог по категориям</div>
+                  <div className="pp-act-title">Найти мастера</div>
+                  <div className="pp-act-sub">Каталог специалистов по всем категориям</div>
                 </div>
               </Link>
-              <Link to="/deals" className="vp-act">
-                <div className="vp-act-ic">🤝</div>
+              <Link to="/deals" className="pp-act">
+                <div className="pp-act-top">
+                  <div className="pp-act-ico">🤝</div>
+                  <span className="pp-act-arr" style={{color:'#cbd5e1'}}>↗</span>
+                </div>
                 <div>
-                  <div className="vp-act-title">Мои сделки</div>
-                  <div className="vp-act-sub" style={{color:'#64748b'}}>
-                    Активных: <b style={{color:'#e8410a'}}>{stats.active}</b>
+                  <div className="pp-act-title">Мои сделки</div>
+                  <div className="pp-act-sub" style={{color:'#64748b'}}>
+                    Активных: <b style={{color:'#e8410a',fontWeight:900}}>{stats.active}</b>
                   </div>
                 </div>
               </Link>
-              <Link to="/chat" className="vp-act">
-                <div className="vp-act-ic">💬</div>
+              <Link to="/chat" className="pp-act">
+                <div className="pp-act-top">
+                  <div className="pp-act-ico">💬</div>
+                  <span className="pp-act-arr" style={{color:'#cbd5e1'}}>↗</span>
+                </div>
                 <div>
-                  <div className="vp-act-title">Сообщения</div>
-                  <div className="vp-act-sub" style={{color:'#64748b'}}>Чат с мастерами</div>
+                  <div className="pp-act-title">Сообщения</div>
+                  <div className="pp-act-sub" style={{color:'#64748b'}}>Чат с мастерами</div>
                 </div>
               </Link>
             </div>
 
             {/* Deals */}
-            <div className="vp-deals-card">
-              {/* Avito-style tabs */}
-              <div className="vp-tabs">
+            <div className="pp-deals">
+              <div className="pp-tabs">
                 {TABS.map(t => (
-                  <button key={t.key} className={`vp-tab${tab === t.key ? ' act' : ''}`} onClick={() => setTab(t.key)}>
+                  <button key={t.key} className={`pp-tab${tab === t.key ? ' on' : ''}`} onClick={() => setTab(t.key)}>
                     {t.label}
-                    {tabCounts[t.key] > 0 && <span className="vp-tab-n">{tabCounts[t.key]}</span>}
+                    {tabCounts[t.key] > 0 && <span className="pp-tab-n">{tabCounts[t.key]}</span>}
                   </button>
                 ))}
-                <Link to="/deals" className="vp-tab-all-link">Все сделки →</Link>
+                <Link to="/deals" className="pp-tab-link">Все →</Link>
               </div>
 
-              <div className="vp-dl-wrap">
+              <div className="pp-dl-body">
                 {loading ? (
-                  <div className="vp-empty"><div className="vp-empty-ico">⏳</div>Загружаем...</div>
+                  <div className="pp-empty">
+                    <div className="pp-empty-ico">⏳</div>
+                    <div className="pp-empty-text">Загружаем сделки...</div>
+                  </div>
                 ) : visible.length === 0 ? (
-                  <div className="vp-empty">
-                    <div className="vp-empty-ico">{deals.length === 0 ? '🔍' : '🗂'}</div>
-                    <div style={{fontSize:15,fontWeight:700,marginBottom:6}}>
-                      {deals.length === 0 ? 'Сделок пока нет' : 'В этой категории пусто'}
-                    </div>
+                  <div className="pp-empty">
+                    <div className="pp-empty-ico">{deals.length === 0 ? '🔍' : '🗂'}</div>
+                    <div className="pp-empty-text">{deals.length === 0 ? 'Сделок пока нет' : 'В этой категории пусто'}</div>
+                    <div className="pp-empty-sub">{deals.length === 0 ? 'Найдите первого мастера и начните работу' : 'Попробуйте другой фильтр'}</div>
                     {deals.length === 0 && (
-                      <Link to="/categories" style={{display:'inline-flex',alignItems:'center',gap:6,marginTop:14,background:'linear-gradient(135deg,#ff5a1f,#e8410a)',color:'#fff',textDecoration:'none',borderRadius:12,padding:'11px 20px',fontWeight:800,fontSize:14,boxShadow:'0 8px 22px rgba(232,65,10,.35)'}}>
+                      <Link to="/categories" style={{display:'inline-flex',alignItems:'center',gap:6,marginTop:18,background:'linear-gradient(135deg,#ff5a1f,#e8410a)',color:'#fff',textDecoration:'none',borderRadius:12,padding:'12px 22px',fontWeight:800,fontSize:14,boxShadow:'0 8px 24px rgba(232,65,10,.36)'}}>
                         🚀 Найти мастера
                       </Link>
                     )}
                   </div>
-                ) : visible.map(deal => {
-                  const s = deal.status || 'IN_PROGRESS';
-                  const si = ST[s] || ST.IN_PROGRESS;
+                ) : (
+                  visible.map(deal => {
+                    const s  = deal.status || 'IN_PROGRESS';
+                    const si = ST[s] || ST.IN_PROGRESS;
+                    const photoRaw = deal.photos?.[0] || null;
+                    const avatarRaw = deal.workerAvatar || null;
+                    const photoSrc = resolveUrl(photoRaw);
+                    const avatarSrc = resolveUrl(avatarRaw);
 
-                  // Photo: first listing/job photo, fallback worker avatar, fallback emoji
-                  const photoRaw = (deal.photos && deal.photos[0]) || deal.workerAvatar || null;
-                  const photoSrc = resolveUrl(photoRaw);
-                  const isAvatar = !deal.photos?.[0] && !!deal.workerAvatar;
+                    return (
+                      <div key={deal.id} style={{marginBottom:10,borderRadius:18,overflow:'hidden',border:'1.5px solid #e8eef8'}}>
+                        <Link to={`/deals?dealId=${deal.id}`} className="pp-dc">
+                          {/* left accent line */}
+                          <div className="pp-dc-line" style={{background: si.accent}} />
 
-                  return (
-                    <div key={deal.id} style={{borderRadius:16,overflow:'hidden',marginBottom:10,border:'1.5px solid #e8eef8'}}>
-                      {/* Main clickable row */}
-                      <Link to={`/deals?dealId=${deal.id}`} className="vp-dc">
-                        {/* Photo thumb */}
-                        <div className="vp-dc-img">
-                          {photoSrc ? (
-                            <img
-                              src={photoSrc}
-                              alt=""
-                              style={isAvatar ? {width:'60px',height:'60px',borderRadius:'50%',objectFit:'cover'} : {}}
-                            />
-                          ) : (
-                            <div className="vp-dc-img-ph">{dealEmoji(deal.title)}</div>
-                          )}
-                          {/* status stripe at bottom of thumb */}
-                          <div className="vp-dc-stripe" style={{background: si.dot}} />
-                        </div>
-
-                        {/* Body */}
-                        <div className="vp-dc-body">
-                          <div className="vp-dc-title">{deal.title || 'Сделка'}</div>
-                          <div className="vp-dc-meta">
-                            {deal.workerName && (
-                              <span className="vp-dc-m">👤 <b>{[deal.workerName, deal.workerLastName].filter(Boolean).join(' ')}</b></span>
-                            )}
-                            {deal.agreedPrice && (
-                              <span className="vp-dc-m">💰 <b>{Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</b></span>
-                            )}
-                            {deal.createdAt && (
-                              <span className="vp-dc-m">📅 {fmtCard(deal.createdAt)}</span>
-                            )}
-                            {deal.category && (
-                              <span className="vp-dc-m">📂 {deal.category}</span>
+                          {/* photo */}
+                          <div className="pp-dc-photo">
+                            {photoSrc ? (
+                              <img src={photoSrc} alt="" />
+                            ) : avatarSrc ? (
+                              <div className="pp-dc-photo-ava"><img src={avatarSrc} alt="" /></div>
+                            ) : (
+                              <div className="pp-dc-photo-ph">{dealEmoji(deal.title)}</div>
                             )}
                           </div>
-                        </div>
 
-                        {/* Right */}
-                        <div className="vp-dc-right">
-                          <span className="vp-badge" style={{background: si.bg, color: si.fg}}>
-                            <span className="vp-dot" style={{background: si.dot}} />
-                            {si.label}
-                          </span>
-                          <span className={`vp-dc-btn ${s === 'NEW' ? 'orange' : 'dark'}`}>
-                            {si.btn} →
-                          </span>
-                        </div>
-                      </Link>
+                          {/* body */}
+                          <div className="pp-dc-body">
+                            <div className="pp-dc-title">{deal.title || 'Сделка'}</div>
+                            <div className="pp-dc-meta">
+                              {deal.workerName && (
+                                <span className="pp-dc-m">👤 <strong>{[deal.workerName, deal.workerLastName].filter(Boolean).join(' ')}</strong></span>
+                              )}
+                              {deal.createdAt && (
+                                <span className="pp-dc-m">📅 {fmtCard(deal.createdAt)}</span>
+                              )}
+                              {deal.category && (
+                                <span className="pp-dc-m">📂 {deal.category}</span>
+                              )}
+                            </div>
+                            {deal.agreedPrice && (
+                              <div className="pp-dc-price">{Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</div>
+                            )}
+                          </div>
 
-                      {/* Review (outside the Link) */}
-                      {s === 'COMPLETED' && !deal.hasReview && (
-                        <div className="vp-rv-wrap">
-                          {reviewFor === deal.id
-                            ? <ReviewForm dealId={deal.id} onSuccess={() => { setReviewFor(null); reloadDeals(); }} />
-                            : <button className="vp-rv-btn" onClick={() => setReviewFor(deal.id)}>⭐ Оставить отзыв о мастере</button>
-                          }
-                        </div>
-                      )}
-                      {s === 'COMPLETED' && deal.hasReview && (
-                        <div className="vp-rv-wrap"><div className="vp-rv-ok">✓ Отзыв уже отправлен</div></div>
-                      )}
-                    </div>
-                  );
-                })}
+                          {/* right */}
+                          <div className="pp-dc-right">
+                            <span className="pp-badge" style={{background: si.bg, color: si.fg}}>
+                              <span className="pp-badge-dot" style={{background: si.accent}} />
+                              {si.label}
+                            </span>
+                            <span className={`pp-dc-btn ${si.btnStyle}`}>{si.btn} →</span>
+                          </div>
+                        </Link>
+
+                        {s === 'COMPLETED' && !deal.hasReview && (
+                          <div className="pp-rv">
+                            {reviewFor === deal.id
+                              ? <ReviewForm dealId={deal.id} onSuccess={() => { setReviewFor(null); reloadDeals(); }} />
+                              : <button className="pp-rv-btn" onClick={() => setReviewFor(deal.id)}>⭐ Оставить отзыв о мастере</button>
+                            }
+                          </div>
+                        )}
+                        {s === 'COMPLETED' && deal.hasReview && (
+                          <div className="pp-rv"><div className="pp-rv-ok">✓ Отзыв уже отправлен</div></div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
 
           {/* ── RIGHT ── */}
-          <div className="vp-right">
-            <div className="vp-nav">
+          <div className="pp-right">
+            <div className="pp-nav">
               <nav>
                 {[
                   { to:'/categories', ico:'🔍', lbl:'Найти мастера' },
                   { to:'/deals',      ico:'🤝', lbl:'Мои сделки' },
                   { to:'/chat',       ico:'💬', lbl:'Сообщения' },
                 ].map(n => (
-                  <Link key={n.to} to={n.to} className="vp-ni">
-                    <div className="vp-ni-ic">{n.ico}</div>{n.lbl}
+                  <Link key={n.to} to={n.to} className="pp-ni">
+                    <div className="pp-ni-ic">{n.ico}</div>{n.lbl}
                   </Link>
                 ))}
               </nav>
             </div>
 
-            <div className="vp-tip">
-              <div className="vp-tip-tag">Совет</div>
-              <div className="vp-tip-text">Оставляйте отзывы — мастерам это помогает расти, а вам легче выбирать в следующий раз.</div>
-              <Link to="/categories" className="vp-tip-btn">🚀 Найти мастера</Link>
+            <div className="pp-pcard">
+              <div className="pp-pcard-tag">Совет</div>
+              <div className="pp-pcard-q">Оставляйте отзывы — мастерам это помогает расти, а вам легче выбирать проверенных специалистов.</div>
+              <Link to="/categories" className="pp-pcard-btn">🚀 Найти мастера</Link>
             </div>
 
-            <div className="vp-set">
-              <div className="vp-set-title">Настройки</div>
+            <div className="pp-set">
+              <div className="pp-set-hd">Настройки</div>
               {[
                 { to:'/settings/personal',      ico:'👤', t:'Личные данные', d:'Имя и контакты' },
                 { to:'/settings/notifications', ico:'🔔', t:'Уведомления',   d:'Push и email' },
               ].map(item => (
-                <Link key={item.to} to={item.to} className="vp-seti">
-                  <div className="vp-sei-ic">{item.ico}</div>
-                  <div style={{flex:1}}><div className="vp-sei-t">{item.t}</div><div className="vp-sei-d">{item.d}</div></div>
+                <Link key={item.to} to={item.to} className="pp-si">
+                  <div className="pp-si-ic">{item.ico}</div>
+                  <div style={{flex:1}}><div className="pp-si-t">{item.t}</div><div className="pp-si-d">{item.d}</div></div>
                   <div style={{color:'#cbd5e1',fontSize:18}}>›</div>
                 </Link>
               ))}
-              <div className="vp-seti vp-dis">
-                <div className="vp-soon">СКОРО</div>
-                <div className="vp-sei-ic">🧩</div>
-                <div style={{flex:1}}><div className="vp-sei-t">Доп. опции</div><div className="vp-sei-d">Новые возможности</div></div>
+              <div className="pp-si pp-dis">
+                <div className="pp-soon">СКОРО</div>
+                <div className="pp-si-ic">🧩</div>
+                <div style={{flex:1}}><div className="pp-si-t">Доп. опции</div><div className="pp-si-d">Новые возможности</div></div>
               </div>
             </div>
           </div>
