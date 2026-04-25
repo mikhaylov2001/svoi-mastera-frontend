@@ -32,6 +32,15 @@ const css = `
   /* BREADCRUMB */
   .ld-bread { background: #fff; border-bottom: 1px solid #eaeaea; }
   .ld-bread-inner { max-width: 1180px; margin: 0 auto; padding: 11px 20px; display: flex; align-items: center; gap: 7px; font-size: 13px; color: #aaa; flex-wrap: wrap; }
+  .ld-back-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-right: 6px; padding: 7px 12px 7px 10px;
+    border: 1px solid #e5e5e5; border-radius: 10px;
+    background: #fafafa; color: #333; font-size: 13px; font-weight: 600;
+    font-family: inherit; cursor: pointer; flex-shrink: 0;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  .ld-back-btn:hover { background: #fff7ed; border-color: #fdba74; color: #c2410c; }
   .ld-bread a { color: #888; text-decoration: none; transition: color .15s; }
   .ld-bread a:hover { color: #e8410a; }
   .ld-bread-sep { color: #ddd; }
@@ -352,6 +361,15 @@ export default function ListingDetailPage() {
       {/* Breadcrumb */}
       <div className="ld-bread">
         <div className="ld-bread-inner">
+          <button
+            type="button"
+            className="ld-back-btn"
+            onClick={() => navigate(-1)}
+            aria-label="Назад"
+          >
+            ← Назад
+          </button>
+          <span className="ld-bread-sep" style={{ color: '#e5e5e5' }}>|</span>
           <Link to="/">Главная</Link>
           <span className="ld-bread-sep">›</span>
           <Link to="/find-master">Мастера</Link>
@@ -524,12 +542,6 @@ export default function ListingDetailPage() {
                     Перейти к сделкам →
                   </button>
                 )}
-              </div>
-            )}
-
-            {isOwnListing && (
-              <div style={{marginTop:12,padding:'10px 12px',background:'#f8f9fa',borderRadius:8,fontSize:13,color:'#666',textAlign:'center'}}>
-                Это ваше объявление
               </div>
             )}
           </div>

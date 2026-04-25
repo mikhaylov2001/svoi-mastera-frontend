@@ -21,14 +21,6 @@ function fmtCard(d) {
   return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
-const TABS = [
-  { key: 'ALL',         label: 'Все' },
-  { key: 'NEW',         label: 'Ждут подтверждения' },
-  { key: 'IN_PROGRESS', label: 'В работе' },
-  { key: 'COMPLETED',   label: 'Завершены' },
-  { key: 'CANCELLED',   label: 'Отменены' },
-];
-
 /** Подписи с точки зрения мастера */
 const ST = {
   NEW:         { label: 'Ждут вашего подтверждения', bg:'#fff7ed', fg:'#c2410c', accent:'#fb923c', btn:'Открыть', btnStyle:'or' },
@@ -63,7 +55,6 @@ export default function WorkerProfilePage() {
   const [reviews, setReviews] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('ALL');
   const [reviewFor, setReviewFor] = useState(null);
 
   const avatarUrl = resolveUrl(userAvatar);
@@ -155,13 +146,18 @@ export default function WorkerProfilePage() {
   );
   const activeListings = useMemo(() => listings.filter(l => l.active), [listings]);
 
-  const tabCounts = useMemo(() => {
-    const c = { ALL: deals.length, NEW: 0, IN_PROGRESS: 0, COMPLETED: 0, CANCELLED: 0 };
-    deals.forEach(d => { if (c[d.status] !== undefined) c[d.status]++; });
-    return c;
-  }, [deals]);
-
-  const visible = tab === 'ALL' ? deals : deals.filter(d => d.status === tab);
+  /** Одна лента: активные объявления + все сделки, по дате (новые сверху) */
+  const mergedFeed = useMemo(() => {
+    const rows = [];
+    activeListings.forEach(l => {
+      rows.push({ kind: 'listing', sort: new Date(l.createdAt || 0).getTime(), listing: l });
+    });
+    deals.forEach(d => {
+      rows.push({ kind: 'deal', sort: new Date(d.createdAt || 0).getTime(), deal: d });
+    });
+    rows.sort((a, b) => b.sort - a.sort);
+    return rows;
+  }, [activeListings, deals]);
 
   if (userRole === 'CUSTOMER') return null;
 
@@ -252,84 +248,47 @@ export default function WorkerProfilePage() {
               </Link>
             </div>
 
-            {activeListings.length > 0 && (
-              <div className="pp-deals" style={{ marginBottom: 16 }}>
-                <div className="pp-tabs" style={{ borderBottom: 'none' }}>
-                  <span className="pp-tab on" style={{ cursor: 'default' }}>
-                    Активные объявления
-                    <span className="pp-tab-n">{activeListings.length}</span>
-                  </span>
-                  <Link to="/my-listings" className="pp-tab-link">Управление →</Link>
-                </div>
-                <div className="pp-dl-body">
-                  {activeListings.slice(0, 4).map(l => {
-                    const photoRaw = l.photos?.[0] || null;
-                    const photoSrc = resolveUrl(photoRaw);
-                    return (
-                      <Link
-                        key={l.id}
-                        to={`/listings/${l.id}`}
-                        className="pp-dc"
-                        style={{ marginBottom: 10, border: '1.5px solid #e8eef8' }}
-                      >
-                        <div className="pp-dc-line" style={{ background: '#a78bfa' }} />
-                        <div className="pp-dc-photo" style={{ width: 100 }}>
-                          {photoSrc ? <img src={photoSrc} alt="" /> : <div className="pp-dc-photo-ph">📢</div>}
-                        </div>
-                        <div className="pp-dc-body">
-                          <div className="pp-dc-title">{l.title}</div>
-                          <div className="pp-dc-meta">
-                            {l.category && <span className="pp-dc-m">📂 <strong>{l.category}</strong></span>}
-                            {l.createdAt && <span className="pp-dc-m">📅 {fmtCard(l.createdAt)}</span>}
-                          </div>
-                          {l.price != null && (
-                            <div className="pp-dc-price">
-                              {Number(l.price).toLocaleString('ru-RU')} ₽
-                              {l.priceUnit ? ` ${l.priceUnit}` : ''}
-                            </div>
-                          )}
-                        </div>
-                        <div className="pp-dc-right">
-                          <span className="pp-badge" style={{ background: '#f0fdf4', color: '#15803d' }}>
-                            <span className="pp-badge-dot" style={{ background: '#22c55e' }} />
-                            В каталоге
-                          </span>
-                          <span className="pp-dc-btn bl">Как у заказчиков →</span>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             <div className="pp-deals">
-              <div className="pp-tabs">
-                {TABS.map(t => (
-                  <button key={t.key} type="button" className={`pp-tab${tab === t.key ? ' on' : ''}`} onClick={() => setTab(t.key)}>
-                    {t.label}
-                    {tabCounts[t.key] > 0 && <span className="pp-tab-n">{tabCounts[t.key]}</span>}
-                  </button>
-                ))}
-                <Link to="/deals" className="pp-tab-link">Все →</Link>
+              <div className="pp-feed-hd">
+                <div>
+                  <div className="pp-feed-title">Сделки и объявления</div>
+                  <div className="pp-feed-sub">
+                    Одна лента: новые сверху. Карточки с фиолетовой полосой — ваше объявление в каталоге; остальное — заказы от заказчиков.
+                  </div>
+                </div>
+                <div className="pp-feed-actions">
+                  <Link to="/deals" className="pp-feed-link">Все сделки →</Link>
+                  <Link to="/my-listings" className="pp-feed-link">Мои объявления →</Link>
+                </div>
               </div>
 
               <div className="pp-dl-body">
                 {loading ? (
                   <div className="pp-empty">
                     <div className="pp-empty-ico">⏳</div>
-                    <div className="pp-empty-text">Загружаем сделки...</div>
+                    <div className="pp-empty-text">Загружаем ленту…</div>
                   </div>
-                ) : visible.length === 0 ? (
+                ) : mergedFeed.length === 0 ? (
                   <div className="pp-empty">
-                    <div className="pp-empty-ico">{deals.length === 0 ? '🔍' : '🗂'}</div>
-                    <div className="pp-empty-text">{deals.length === 0 ? 'Сделок пока нет' : 'В этой категории пусто'}</div>
-                    <div className="pp-empty-sub">{deals.length === 0 ? 'Откликнитесь на заявку или объявление' : 'Попробуйте другой фильтр'}</div>
-                    {deals.length === 0 && (
+                    <div className="pp-empty-ico">🔍</div>
+                    <div className="pp-empty-text">Пока пусто</div>
+                    <div className="pp-empty-sub">Разместите объявление или откликнитесь на заявку — всё появится здесь</div>
+                    <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 18 }}>
+                      <Link
+                        to="/my-listings"
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 6,
+                          background: '#fff', color: '#7c3aed', textDecoration: 'none',
+                          borderRadius: 12, padding: '12px 20px', fontWeight: 800, fontSize: 14,
+                          border: '2px solid rgba(124,58,237,.35)',
+                        }}
+                      >
+                        📢 Объявление
+                      </Link>
                       <Link
                         to="/find-work"
                         style={{
-                          display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 18,
+                          display: 'inline-flex', alignItems: 'center', gap: 6,
                           background: 'linear-gradient(135deg,#ff5a1f,#e8410a)', color: '#fff', textDecoration: 'none',
                           borderRadius: 12, padding: '12px 22px', fontWeight: 800, fontSize: 14,
                           boxShadow: '0 8px 24px rgba(232,65,10,.36)',
@@ -337,10 +296,49 @@ export default function WorkerProfilePage() {
                       >
                         🔍 Найти работу
                       </Link>
-                    )}
+                    </div>
                   </div>
                 ) : (
-                  visible.map(deal => {
+                  mergedFeed.map(row => {
+                    if (row.kind === 'listing') {
+                      const l = row.listing;
+                      const photoSrc = resolveUrl(l.photos?.[0] || null);
+                      return (
+                        <Link
+                          key={`listing-${l.id}`}
+                          to={`/listings/${l.id}`}
+                          className="pp-dc"
+                          style={{ marginBottom: 10, border: '1.5px solid #e8eef8' }}
+                        >
+                          <div className="pp-dc-line" style={{ background: '#7c3aed' }} />
+                          <div className="pp-dc-photo" style={{ width: 112 }}>
+                            {photoSrc ? <img src={photoSrc} alt="" /> : <div className="pp-dc-photo-ph">📢</div>}
+                          </div>
+                          <div className="pp-dc-body">
+                            <div className="pp-dc-title" style={{ fontSize: 16 }}>{l.title}</div>
+                            <div className="pp-dc-meta">
+                              <span className="pp-dc-m" style={{ color: '#5b21b6', fontWeight: 700 }}>📢 Объявление в каталоге</span>
+                              {l.category && <span className="pp-dc-m">📂 <strong>{l.category}</strong></span>}
+                              {l.createdAt && <span className="pp-dc-m">📅 {fmtCard(l.createdAt)}</span>}
+                            </div>
+                            {l.price != null && (
+                              <div className="pp-dc-price" style={{ fontSize: 18 }}>
+                                {Number(l.price).toLocaleString('ru-RU')} ₽
+                                {l.priceUnit ? ` ${l.priceUnit}` : ''}
+                              </div>
+                            )}
+                          </div>
+                          <div className="pp-dc-right" style={{ justifyContent: 'center' }}>
+                            <span className="pp-badge" style={{ background: '#f5f3ff', color: '#5b21b6', fontSize: 12 }}>
+                              <span className="pp-badge-dot" style={{ background: '#7c3aed' }} />
+                              Активно
+                            </span>
+                          </div>
+                        </Link>
+                      );
+                    }
+
+                    const deal = row.deal;
                     const s = deal.status || 'IN_PROGRESS';
                     const si = ST[s] || ST.IN_PROGRESS;
                     const photoRaw = deal.photos?.[0] || null;

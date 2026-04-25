@@ -169,6 +169,28 @@
   color: #e8410a; text-decoration: none; white-space: nowrap;
 }
 
+/* единая лента (профиль мастера): заголовок */
+.pp-feed-hd {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 18px 18px 14px;
+  background: linear-gradient(180deg, #fff8f5 0%, #fff 45%);
+  border-bottom: 2px solid #ffe4d4;
+  flex-wrap: wrap;
+}
+.pp-feed-title {
+  font-size: 20px; font-weight: 900; letter-spacing: -.04em; color: #0a0f1e; line-height: 1.15;
+}
+.pp-feed-sub {
+  font-size: 13px; font-weight: 600; color: #64748b; margin-top: 6px; max-width: 520px; line-height: 1.45;
+}
+.pp-feed-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
+.pp-feed-link {
+  font-size: 13px; font-weight: 800; color: #e8410a; text-decoration: none;
+  padding: 8px 14px; border-radius: 10px; background: #fff; border: 1.5px solid rgba(232,65,10,.35);
+  white-space: nowrap; transition: background .15s, border-color .15s;
+}
+.pp-feed-link:hover { background: #fff7ed; border-color: #e8410a; }
+
 .pp-dl-body { padding: 14px 16px 16px; }
 .pp-empty { padding: 60px 20px; text-align: center; color: #94a3b8; }
 .pp-empty-ico { font-size: 56px; margin-bottom: 12px; }
