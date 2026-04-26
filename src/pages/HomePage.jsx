@@ -464,7 +464,7 @@ function WorkerHome({ userId, userName }) {
               <p>Когда заказчики опубликуют задачи, они появятся здесь и в «Найти работу»</p>
             </div>
           ) : (
-            <div className="av-feed-list">
+            <div className="av-cards-grid">
               {sortedOpenRequests.map(req => {
                 const img0 = req.photos?.[0];
                 const src = workerListingPhotoUrl(img0);
@@ -476,50 +476,26 @@ function WorkerHome({ userId, userName }) {
                   <Link
                     key={req.id}
                     to={`/find-work?request=${encodeURIComponent(req.id)}`}
-                    className="av-feed-row"
+                    className="av-card"
                   >
-                    <div className="av-feed-thumb">
-                      {src ? <img src={src} alt="" /> : '📋'}
+                    <div className="av-card-img">
+                      {src ? <img src={src} alt="" /> : '👤'}
+                      <span className="av-card-cat">{cname}</span>
                     </div>
-                    <div className="av-feed-main">
-                      <div className="av-feed-title">{req.title}</div>
-                      <div className="av-feed-meta">
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                          <span
-                            style={{
-                              width: 22,
-                              height: 22,
-                              borderRadius: '50%',
-                              overflow: 'hidden',
-                              background: 'linear-gradient(135deg,#e8410a,#ff7043)',
-                              color: '#fff',
-                              fontSize: 10,
-                              fontWeight: 800,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                            }}
-                          >
-                            {req.customerAvatar ? (
-                              <img src={workerListingPhotoUrl(req.customerAvatar)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                            ) : (
-                              (custName || 'З')[0]
-                            )}
-                          </span>
-                          <span>{custName}</span>
-                        </span>
-                        <span>📍 {loc}</span>
-                        {req.createdAt && (
-                          <span style={{ color: '#9ca3af' }}>
-                            {new Date(req.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
-                          </span>
-                        )}
+                    <div className="av-card-body">
+                      <div className="av-card-price">{budget}</div>
+                      <div className="av-card-title">{req.title}</div>
+                      <div className="av-card-footer">
+                        <div className="av-card-ava">
+                          {req.customerAvatar ? (
+                            <img src={workerListingPhotoUrl(req.customerAvatar)} alt="" />
+                          ) : (
+                            (custName || 'З')[0]
+                          )}
+                        </div>
+                        <span className="av-card-wname">{custName}</span>
+                        <span className="av-card-city">📍 {loc}</span>
                       </div>
-                    </div>
-                    <div className="av-feed-side">
-                      <div className="av-feed-price">{budget}</div>
-                      <div className="av-feed-cat">{cname}</div>
                     </div>
                   </Link>
                 );
