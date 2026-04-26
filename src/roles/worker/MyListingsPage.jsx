@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ListingInfoPanels from '../../components/ListingInfoPanels';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -302,28 +303,17 @@ export default function MyListingsPage() {
               )}
             </div>
 
-            {/* Описание */}
-            {detail.description && (
-              <div className="ml-detail-desc-block">
-                <div className="ml-section-label">Описание</div>
-                <p style={{fontSize:14,color:'#374151',lineHeight:1.7,margin:0}}>{detail.description}</p>
-              </div>
-            )}
-
-            {/* Детали */}
-            <div className="ml-detail-info" style={{marginTop:16}}>
-              <div className="ml-section-label">Подробности</div>
-              {[
-                detail.category   && ['Категория', detail.category],
-                detail.price      && ['Стоимость', `${Number(detail.price).toLocaleString('ru-RU')} ₽ ${detail.priceUnit||''}`],
-                detail.createdAt  && ['Опубликовано', new Date(detail.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})],
-              ].filter(Boolean).map(([label,value]) => (
-                <div key={label} className="ml-detail-row">
-                  <span style={{color:'#9ca3af',fontWeight:500}}>{label}</span>
-                  <span style={{color:'#111827',fontWeight:600}}>{value}</span>
-                </div>
-              ))}
-            </div>
+            <ListingInfoPanels
+              description={detail.description}
+              category={detail.category}
+              address={detail.address || 'Йошкар-Ола · выезд по договорённости'}
+              budgetLabel={
+                detail.price != null && Number(detail.price) > 0
+                  ? `${Number(detail.price).toLocaleString('ru-RU')} ₽${detail.priceUnit ? ` ${detail.priceUnit}` : ''}`
+                  : (detail.priceUnit || 'Договорная')
+              }
+              publishedAt={detail.createdAt}
+            />
           </div>
 
           {/* Правая колонка */}

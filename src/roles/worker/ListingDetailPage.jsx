@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { acceptListingDeal } from '../../api';
+import ListingInfoPanels from '../../components/ListingInfoPanels';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -231,7 +232,6 @@ export default function ListingDetailPage() {
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
   const [lightbox, setLightbox] = useState(false);
-  const [showFull, setShowFull] = useState(false);
   const [accepting, setAccepting] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [actionError, setActionError] = useState('');
@@ -319,8 +319,6 @@ export default function ListingDetailPage() {
 
   const workerName = [listing.workerName, listing.workerLastName].filter(Boolean).join(' ') || 'Мастер';
   const initials = (listing.workerName || 'М')[0].toUpperCase();
-  const desc = listing.description || '';
-  const descShort = desc.length > 400 ? desc.slice(0, 400) + '…' : desc;
   const rating = stats?.averageRating || listing.workerRating || 0;
   const reviews = stats?.reviewCount || 0;
   const completed = stats?.completedWorksCount || 0;
@@ -441,35 +439,17 @@ export default function ListingDetailPage() {
             </div>
           </div>
 
-          {/* Info grid */}
-          <div className="ld-info-block">
-            <div className="ld-info-grid">
-              <div className="ld-info-row">
-                <span className="ld-info-key">Формат</span>
-                <span className="ld-info-val">{listing.priceUnit || 'За услугу'}</span>
-              </div>
-              <div className="ld-info-row">
-                <span className="ld-info-key">Отклик</span>
-                <span className="ld-info-val">Обычно до 30 минут</span>
-              </div>
-              <div className="ld-info-row">
-                <span className="ld-info-key">Способ связи</span>
-                <span className="ld-info-val">Через внутренний чат</span>
-              </div>
-              <div className="ld-info-row">
-                <span className="ld-info-key">Сделка</span>
-                <span className="ld-info-val">Безопасно в сервисе</span>
-              </div>
-              <div className="ld-info-row">
-                <span className="ld-info-key">Город</span>
-                <span className="ld-info-val">Йошкар-Ола</span>
-              </div>
-              <div className="ld-info-row">
-                <span className="ld-info-key">Категория</span>
-                <span className="ld-info-val">{listing.category || '—'}</span>
-              </div>
-            </div>
-          </div>
+          <ListingInfoPanels
+            description={listing.description}
+            category={listing.category}
+            address={listing.address || 'Йошкар-Ола · выезд по договорённости'}
+            budgetLabel={
+              listing.price != null && Number(listing.price) > 0
+                ? `${Number(listing.price).toLocaleString('ru-RU')} ₽${listing.priceUnit ? ` ${listing.priceUnit}` : ''}`
+                : (listing.priceUnit || 'Договорная')
+            }
+            publishedAt={listing.createdAt}
+          />
 
           {/* Badges */}
           <div className="ld-badges-block">
@@ -477,26 +457,6 @@ export default function ListingDetailPage() {
             <span className="ld-badge ld-badge-orange">⚡ Быстрый отклик</span>
             <span className="ld-badge ld-badge-blue">🛡️ Гарантия</span>
             {completed > 0 && <span className="ld-badge ld-badge-green">🏆 {completed} заказов</span>}
-          </div>
-
-          {/* Description */}
-          <div className="ld-desc-block">
-            <p className="ld-desc-head">Описание</p>
-            {desc
-              ? <>
-                  <p className="ld-desc-text">{showFull ? desc : descShort}</p>
-                  {desc.length > 400 && (
-                    <button className="ld-desc-toggle" onClick={() => setShowFull(f => !f)}>
-                      {showFull ? 'Свернуть ↑' : 'Читать полностью ↓'}
-                    </button>
-                  )}
-                </>
-              : <p className="ld-empty-desc">Описание не добавлено</p>
-            }
-            <div className="ld-meta-line" style={{marginTop:14}}>
-              <span>📍 Йошкар-Ола</span>
-              {listing.category && <span>🏷️ {listing.category}</span>}
-            </div>
           </div>
         </div>
 

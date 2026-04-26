@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getUserProfile } from '../api';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
+import { HOME_MARKET_CSS } from './homeMarketCss';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 const ALL_CATS = Object.values(CATEGORIES_BY_SECTION).flat();
@@ -209,198 +211,9 @@ function CustomerHome({ userId, userName }) {
       .then(d => setListings(Array.isArray(d) ? d.filter(l => l.active) : [])).catch(() => {});
   }, []);
 
-  const avitoCss = `
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
-    .av-page { font-family: Manrope, Arial, sans-serif; background: #f4f4f4; min-height: 100vh; }
-
-    /* ── ПОИСК ── */
-    .av-search-bar { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 12px 0; }
-    .av-search-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; gap: 10px; align-items: center; }
-    .av-search-box { flex: 1; display: flex; align-items: center; gap: 10px; background: #f4f4f4; border: 2px solid transparent; border-radius: 8px; padding: 0 14px; transition: all .15s; }
-    .av-search-box:focus-within { background: #fff; border-color: #e8410a; box-shadow: 0 0 0 3px rgba(232,65,10,.08); }
-    .av-search-box input { flex: 1; border: none; background: none; font-size: 15px; padding: 12px 0; outline: none; font-family: Manrope, Arial, sans-serif; color: #1a1a1a; }
-    .av-search-box input::placeholder { color: #aaa; }
-    .av-search-btn { background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 800; padding: 12px 28px; cursor: pointer; font-family: Manrope, Arial, sans-serif; flex-shrink: 0; transition: background .15s; }
-    .av-search-btn:hover { background: #d03a09; }
-    .av-location { display: flex; align-items: center; gap: 5px; font-size: 14px; color: #333; font-weight: 600; white-space: nowrap; cursor: pointer; }
-
-    /* ── BODY ── */
-    .av-body { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; display: grid; grid-template-columns: 1fr 296px; gap: 20px; align-items: flex-start; }
-
-    /* ── КАТЕГОРИИ ── */
-    .av-cats-block { background: #fff; border-radius: 16px; overflow: hidden; margin-bottom: 16px; border: 1px solid #ebebeb; box-shadow: 0 4px 20px rgba(0,0,0,.04); }
-    .av-cats-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 0; }
-    .av-cats-hdr-title { font-size: 18px; font-weight: 800; color: #1a1a1a; }
-    .av-cats-hdr-link { font-size: 13px; color: #e8410a; text-decoration: none; font-weight: 600; }
-    .av-cats-hdr-link:hover { text-decoration: underline; }
-    .av-cats-scroll { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; padding: 8px 6px 6px; }
-    .av-cat-item { display: flex; flex-direction: column; align-items: center; gap: 0; text-decoration: none; color: #1a1a1a; padding: 6px 4px; border-radius: 10px; transition: background .15s; cursor: pointer; }
-    .av-cat-item:hover { background: #fff3f0; }
-    .av-cat-photo { width: 100%; aspect-ratio: 3/2; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 6px; }
-    .av-cat-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
-    .av-cat-item:hover .av-cat-photo img { transform: scale(1.06); }
-    .av-cat-photo-ph { width: 100%; height: 100%; background: linear-gradient(135deg, #2a1a00, #e8410a); display: flex; align-items: center; justify-content: center; font-size: 28px; }
-    .av-cat-name { font-size: 11px; font-weight: 700; text-align: center; line-height: 1.2; color: #1a1a1a; }
-
-    /* ── ОБЪЯВЛЕНИЯ ── */
-    .av-recs-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-    .av-recs-title { font-size: 18px; font-weight: 800; color: #1a1a1a; margin: 0; }
-    .av-recs-link { font-size: 13px; color: #e8410a; text-decoration: none; font-weight: 600; }
-    .av-recs-link:hover { text-decoration: underline; }
-    .av-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .av-card { background: #fff; border-radius: 10px; overflow: hidden; text-decoration: none; color: #1a1a1a; display: flex; flex-direction: column; transition: box-shadow .18s, transform .18s; border: 1px solid #e8e8e8; }
-    .av-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.1); transform: translateY(-2px); }
-    .av-card-img { aspect-ratio: 4/3; background: #f0f0f0; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #ccc; }
-    .av-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
-    .av-card:hover .av-card-img img { transform: scale(1.04); }
-    .av-card-cat { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,.52); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
-    .av-card-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 3px; flex: 1; }
-    .av-card-price { font-size: 17px; font-weight: 900; color: #1a1a1a; letter-spacing: -.2px; }
-    .av-card-price-unit { font-size: 11px; color: #aaa; font-weight: 500; margin-left: 3px; }
-    .av-card-title { font-size: 13px; color: #555; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .av-card-footer { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding-top: 8px; border-top: 1px solid #f0f0f0; }
-    .av-card-ava { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg,#e8410a,#ff7043); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 800; overflow: hidden; flex-shrink: 0; }
-    .av-card-ava img { width: 100%; height: 100%; object-fit: cover; }
-    .av-card-wname { font-size: 12px; color: #888; font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; }
-    .av-card-city { font-size: 11px; color: #bbb; white-space: nowrap; }
-    .av-more-btn { width: 100%; margin-top: 14px; padding: 13px; background: #fff; border: 2px solid #e8e8e8; border-radius: 8px; font-size: 14px; font-weight: 700; color: #333; cursor: pointer; font-family: Manrope, Arial, sans-serif; transition: all .15s; }
-    .av-more-btn:hover { border-color: #e8410a; color: #e8410a; }
-    .av-empty { background: #fff; border-radius: 10px; border: 2px dashed #e8e8e8; padding: 48px 24px; text-align: center; color: #aaa; }
-    .av-empty-ico { font-size: 40px; margin-bottom: 10px; }
-    .av-empty h3 { font-size: 15px; font-weight: 700; color: #555; margin: 0 0 6px; }
-    .av-empty p { font-size: 13px; margin: 0; }
-
-    /* ── ПРАВАЯ КОЛОНКА ── */
-    .av-side { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 68px; }
-    .av-widget { background: #fff; border-radius: 12px; padding: 16px; border: 1px solid #e8e8e8; }
-    .av-widget-title { font-size: 12px; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: .07em; margin: 0 0 12px; }
-    .av-nav-list { display: flex; flex-direction: column; gap: 4px; }
-    .av-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; color: #1a1a1a; transition: background .15s; }
-    .av-nav-item:hover { background: #f4f4f4; }
-    .av-nav-item-orange { background: #e8410a; color: #fff; }
-    .av-nav-item-orange:hover { background: #d03a09; }
-    .av-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .av-stat-box { background: #f8f8f8; border-radius: 8px; padding: 12px 10px; text-align: center; }
-    .av-stat-num { font-size: 20px; font-weight: 900; color: #e8410a; display: block; line-height: 1; }
-    .av-stat-lbl { font-size: 10px; color: #aaa; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; display: block; }
-    .av-promo {
-      background: #fff;
-      border-radius: 16px;
-      padding: 20px 20px 18px;
-      color: #1a1a1a;
-      border: 1px solid #ebebeb;
-      box-shadow: 0 4px 20px rgba(0,0,0,.04);
-    }
-    .av-promo h3 { font-size: 16px; font-weight: 800; margin: 0 0 8px; line-height: 1.35; color: #111; letter-spacing: -0.02em; }
-    .av-promo p { font-size: 13px; color: #666; margin: 0 0 16px; line-height: 1.5; }
-    .av-promo-btn {
-      width: 100%;
-      background: linear-gradient(135deg, #e03a08 0%, #e8410a 45%, #ff6b35 100%);
-      border: none;
-      border-radius: 10px;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 800;
-      padding: 12px 14px;
-      cursor: pointer;
-      font-family: Manrope, Arial, sans-serif;
-      box-shadow: 0 4px 14px rgba(232,65,10,.35);
-      transition: transform .15s, box-shadow .15s, filter .15s;
-    }
-    .av-promo-btn:hover { filter: brightness(1.06); box-shadow: 0 6px 20px rgba(232,65,10,.42); transform: translateY(-1px); }
-    .av-promo-btn:active { transform: translateY(0); }
-
-    /* ═══ HERO ═══ */
-    .av-hero-wrap {
-      background:
-        radial-gradient(ellipse 70% 60% at 50% 0%, rgba(232,65,10,.22) 0%, transparent 65%),
-        linear-gradient(180deg, #0f0e0d 0%, #0c0b0a 100%);
-      position: relative;
-      overflow: hidden;
-    }
-    .av-hero-grid {
-      position: absolute; inset: 0; pointer-events: none;
-      background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
-      background-size: 32px 32px;
-      mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
-      -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
-    }
-    .av-hero-glow-top { position: absolute; top: -180px; left: 50%; transform: translateX(-50%); width: 1000px; height: 560px; background: radial-gradient(ellipse, rgba(232,65,10,.16) 0%, transparent 65%); pointer-events: none; }
-
-    /* центрированный контент */
-    .av-hero-inner { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 52px 24px 0; text-align: center; }
-    .av-hero-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.11); border-radius: 999px; padding: 5px 14px; margin-bottom: 20px; }
-    .av-hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #e8410a; animation: av-pulse-dot 2s infinite; flex-shrink: 0; }
-    .av-hero-badge-text { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.55); letter-spacing: .05em; }
-    .av-hero-h1 {
-      font-family: Manrope, Arial, sans-serif;
-      font-size: clamp(28px, 4.2vw, 50px);
-      font-weight: 900;
-      color: #fff;
-      line-height: 1.06;
-      margin: 0 0 14px;
-      letter-spacing: -1.5px;
-    }
-    .av-hero-h1 .h1-line2 { color: #e8410a; }
-    .av-hero-sub {
-      font-size: 15px;
-      color: rgba(255,255,255,.4);
-      font-weight: 400;
-      margin: 0 auto 28px;
-      line-height: 1.6;
-      max-width: 420px;
-    }
-    .av-hero-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 52px; }
-    .av-hero-btn-primary {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: #e8410a; color: #fff; border: none;
-      border-radius: 12px; font-size: 15px; font-weight: 700;
-      padding: 15px 32px; cursor: pointer; font-family: Manrope, Arial, sans-serif;
-      box-shadow: 0 0 0 0 rgba(232,65,10,0), 0 6px 24px rgba(232,65,10,.36);
-      transition: transform .18s, box-shadow .18s, filter .18s;
-      letter-spacing: -.01em;
-    }
-    .av-hero-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 0 4px rgba(232,65,10,.18), 0 10px 28px rgba(232,65,10,.38); filter: brightness(1.06); }
-    .av-hero-btn-primary:active { transform: translateY(0); }
-    .av-hero-btn-ghost {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(255,255,255,.06); color: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.14);
-      border-radius: 12px; font-size: 15px; font-weight: 600;
-      padding: 15px 28px; cursor: pointer; font-family: Manrope, Arial, sans-serif;
-      transition: background .18s, border-color .18s, color .18s;
-      text-decoration: none; letter-spacing: -.01em;
-    }
-    .av-hero-btn-ghost:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.24); color: #fff; }
-
-    /* trust bar */
-    .av-hero-trust {
-      position: relative; z-index: 1;
-      border-top: 1px solid rgba(255,255,255,.08);
-      display: flex; justify-content: center;
-    }
-    .av-hero-trust-inner {
-      max-width: 1200px; width: 100%; margin: 0 auto;
-      padding: 0 24px;
-      display: grid; grid-template-columns: repeat(4, 1fr);
-    }
-    .av-trust-item {
-      padding: 22px 16px;
-      text-align: center;
-      border-right: 1px solid rgba(255,255,255,.07);
-    }
-    .av-trust-item:last-child { border-right: none; }
-    .av-trust-val { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; display: block; }
-    .av-trust-lbl { font-size: 11px; color: rgba(255,255,255,.38); font-weight: 600; margin-top: 6px; display: block; text-transform: uppercase; letter-spacing: .07em; }
-
-    @keyframes av-pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.5)} }
-
-    @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } .av-hero-trust-inner { grid-template-columns: repeat(2,1fr); } .av-trust-item:nth-child(2) { border-right: none; } .av-trust-item:nth-child(1),.av-trust-item:nth-child(2) { border-bottom: 1px solid rgba(255,255,255,.07); } }
-    @media(max-width:640px) { .av-cats-scroll { grid-template-columns: repeat(3,1fr); } .av-cards-grid { grid-template-columns: repeat(2,1fr); } .av-hero-h1 { font-size: 38px; letter-spacing: -1.5px; } .av-hero-inner { padding: 56px 20px 0; } .av-hero-actions { margin-bottom: 48px; } }
-  `;
-
   return (
     <div className="av-page">
-      <style>{avitoCss}</style>
+      <style>{HOME_MARKET_CSS}</style>
 
       {/* ── HERO ── */}
       <div className="av-hero-wrap">
@@ -527,144 +340,212 @@ function CustomerHome({ userId, userName }) {
   );
 }
 
+const BACKEND_ORIGIN = 'https://svoi-mastera-backend.onrender.com';
+
+function workerListingPhotoUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  return BACKEND_ORIGIN + url;
+}
+
 function WorkerHome({ userId, userName }) {
+  const navigate = useNavigate();
   const [deals, setDeals] = useState([]);
   const [listings, setListings] = useState([]);
+  const [shown, setShown] = useState(8);
+  const [city, setCity] = useState('Йошкар-Ола');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!userId) return;
+    setLoading(true);
     Promise.all([
-      fetch(`${API}/deals`,{headers:{'X-User-Id':userId}}).then(r=>r.ok?r.json():[]),
-      fetch(`${API}/workers/${userId}/listings`).then(r=>r.ok?r.json():[]),
-    ]).then(([d,l])=>{ setDeals(Array.isArray(d)?d:[]); setListings(Array.isArray(l)?l:[]); }).finally(()=>setLoading(false));
-  },[userId]);
+      fetch(`${API}/deals`, { headers: { 'X-User-Id': userId } }).then(r => (r.ok ? r.json() : [])),
+      fetch(`${API}/workers/${userId}/listings`).then(r => (r.ok ? r.json() : [])),
+      getUserProfile(userId).catch(() => null),
+    ])
+      .then(([d, l, prof]) => {
+        setDeals(Array.isArray(d) ? d : []);
+        setListings(Array.isArray(l) ? l : []);
+        const c = (prof && prof.city && String(prof.city).trim()) || '';
+        if (c) setCity(c);
+      })
+      .finally(() => setLoading(false));
+  }, [userId]);
 
-  const active = deals.filter(d=>d.status==='IN_PROGRESS');
-  const done   = deals.filter(d=>d.status==='COMPLETED');
-  const liveListing = listings.filter(l=>l.active);
+  const uid = String(userId || '');
+  const myDeals = deals.filter(x => String(x.workerId || '') === uid);
+  const activeDeals = myDeals.filter(d => d.status === 'IN_PROGRESS');
+  const newDeals = myDeals.filter(d => d.status === 'NEW');
+  const liveListing = listings.filter(l => l.active);
 
-  const ST = { IN_PROGRESS:{bg:'#fff3f0',color:'#e8410a',label:'В работе'}, COMPLETED:{bg:'#f0fdf4',color:'#22c55e',label:'Завершена'}, NEW:{bg:'#eff6ff',color:'#3b82f6',label:'Новая'} };
+  const firstName = (userName || 'Мастер').trim().split(/\s+/)[0] || 'Мастер';
 
   return (
-    <div className="hp">
-      <style>{css}</style>
-      <div className="hp-worker-hero">
-        <div className="hp-worker-hero-inner">
-          <div>
-            <h1 className="hp-worker-hi">👋 Привет, <em>{userName||'Мастер'}</em>!</h1>
-            <p className="hp-worker-sub">Панель управления · Йошкар-Ола</p>
+    <div className="av-page">
+      <style>{HOME_MARKET_CSS}</style>
+
+      <div className="av-hero-wrap">
+        <div className="av-hero-grid" />
+        <div className="av-hero-glow-top" />
+
+        <div className="av-hero-inner">
+          <div className="av-hero-badge">
+            <span className="av-hero-badge-dot" />
+            <span className="av-hero-badge-text">{city} · Личный кабинет мастера</span>
           </div>
-          <div className="hp-worker-hero-btns">
-            <Link to="/find-work"    className="hp-worker-btn-fill">📋 Найти работу</Link>
-            <Link to="/my-listings"  className="hp-worker-btn-line">+ Объявление</Link>
+          <h1 className="av-hero-h1">
+            <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
+              Заказы и клиенты в&nbsp;<span className="h1-line2">{city}</span>
+            </span>
+            <span style={{ display: 'block' }}>рядом с вами</span>
+          </h1>
+          <p className="av-hero-sub">
+            Привет, {firstName}! Найдите заявку заказчика или обновите объявления — всё в одном стиле, как у заказчиков на главной.
+          </p>
+          <div className="av-hero-actions">
+            <Link to="/find-work" className="av-hero-btn-primary" style={{ textDecoration: 'none' }}>
+              Найти работу →
+            </Link>
+            <Link to="/my-listings" className="av-hero-btn-ghost">
+              + Моё объявление
+            </Link>
+          </div>
+        </div>
+
+        <div className="av-hero-trust">
+          <div className="av-hero-trust-inner">
+            {[
+              [String(activeDeals.length), 'В работе'],
+              [String(newDeals.length), 'Ждут подтверждения'],
+              [String(liveListing.length), 'Активных объявл.'],
+              [String(myDeals.filter(d => d.status === 'COMPLETED').length), 'Завершено'],
+            ].map(([v, l]) => (
+              <div key={l} className="av-trust-item">
+                <span className="av-trust-val">{loading ? '…' : v}</span>
+                <span className="av-trust-lbl">{l}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="hp-worker-body">
+      <div className="av-body">
         <div>
-          {/* KPI */}
-          <div className="hp-kpi-row">
-            {[
-              {ico:'⚙️',bg:'#fff3f0',num:active.length,   lbl:'В работе'},
-              {ico:'✅',bg:'#f0fdf4',num:done.length,     lbl:'Выполнено'},
-              {ico:'📢',bg:'#eff6ff',num:liveListing.length,lbl:'Объявлений'},
-            ].map(k=>(
-              <div key={k.lbl} className="hp-kpi">
-                <div className="hp-kpi-ico" style={{background:k.bg}}>{k.ico}</div>
-                <div><div className="hp-kpi-num">{k.num}</div><div className="hp-kpi-lbl">{k.lbl}</div></div>
-              </div>
-            ))}
-          </div>
-
-          {/* Действия */}
-          <div className="hp-section-hdr" style={{marginBottom:12}}><h2 className="hp-section-title">Быстрые действия</h2></div>
-          <div className="hp-actions-grid">
-            {[
-              {to:'/find-work',    ico:'🔍',bg:'#fff3f0',title:'Найти работу',   sub:'Новые заявки'},
-              {to:'/deals',        ico:'📋',bg:'#f0fdf4',title:'Мои сделки',     sub:`Активных: ${active.length}`},
-              {to:'/my-listings',  ico:'📢',bg:'#eff6ff',title:'Объявления',     sub:`Активных: ${liveListing.length}`},
-              {to:'/chat',         ico:'💬',bg:'#fdf4ff',title:'Сообщения',      sub:'Переписка'},
-              {to:'/worker-profile',ico:'👤',bg:'#fff9f0',title:'Профиль',       sub:'Настройки'},
-              {to:'/deals',        ico:'⭐',bg:'#fff3f0',title:'Отзывы',         sub:'Репутация'},
-            ].map(a=>(
-              <Link key={a.to+a.title} to={a.to} className="hp-action">
-                <div className="hp-action-ico" style={{background:a.bg}}>{a.ico}</div>
-                <div className="hp-action-title">{a.title}</div>
-                <div className="hp-action-sub">{a.sub}</div>
+          <div className="av-cats-block">
+            <div className="av-cats-hdr">
+              <span className="av-cats-hdr-title">Категории заявок</span>
+              <Link to="/find-work" className="av-cats-hdr-link">
+                Все заявки →
               </Link>
-            ))}
-          </div>
-
-          {/* Сделки */}
-          <div className="hp-section-hdr"><h2 className="hp-section-title">Активные сделки</h2><Link to="/deals" className="hp-section-link">Все →</Link></div>
-          {loading ? <div className="hp-deal-list">{[1,2].map(i=><div key={i} style={{background:'#fff',borderRadius:12,border:'1px solid #ebebeb',height:68}}/>)}</div>
-          : active.length===0 ? (
-            <div className="hp-empty">
-              <div className="hp-empty-ico">📋</div>
-              <h3>Нет активных сделок</h3>
-              <p>Откликайтесь на заявки чтобы получить заказы</p>
-              <Link to="/find-work" className="hp-empty-link">Найти работу</Link>
             </div>
-          ) : (
-            <div className="hp-deal-list">
-              {active.slice(0,5).map(d=>{
-                const st=ST[d.status]||ST.NEW;
-                return (
-                  <Link key={d.id} to="/deals" className="hp-deal">
-                    <div className="hp-deal-ico">⚙️</div>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div className="hp-deal-title">{d.title||'Сделка'}</div>
-                      <div className="hp-deal-meta">👤 {d.customerName||'Заказчик'}{d.agreedPrice?` · ${Number(d.agreedPrice).toLocaleString('ru-RU')} ₽`:''}</div>
-                    </div>
-                    <span className="hp-deal-badge" style={{background:st.bg,color:st.color}}>{st.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Объявления */}
-          <div className="hp-section-hdr"><h2 className="hp-section-title">Мои объявления</h2><Link to="/my-listings" className="hp-section-link">Все →</Link></div>
-          {liveListing.length===0 ? (
-            <div className="hp-empty">
-              <div className="hp-empty-ico">📢</div>
-              <h3>Нет объявлений</h3>
-              <p>Опубликуйте услуги чтобы заказчики нашли вас</p>
-              <Link to="/my-listings" className="hp-empty-link">+ Разместить</Link>
-            </div>
-          ) : (
-            <div className="hp-listings-grid">
-              {liveListing.slice(0,4).map(l=>(
-                <Link key={l.id} to="/my-listings" className="hp-card">
-                  <div className="hp-card-img">{l.photos?.length?<img src={l.photos[0]} alt=""/>:'🔧'}{l.category&&<span className="hp-card-tag">{l.category}</span>}</div>
-                  <div className="hp-card-body">
-                    <div className="hp-card-price">{Number(l.price).toLocaleString('ru-RU')} ₽<span className="hp-card-unit">{l.priceUnit}</span></div>
-                    <div className="hp-card-title">{l.title}</div>
+            <div className="av-cats-scroll">
+              {ALL_CATS.map(cat => (
+                <Link key={cat.slug} to="/find-work" className="av-cat-item">
+                  <div className="av-cat-photo">
+                    {CAT_PHOTOS[cat.slug] ? (
+                      <img src={CAT_PHOTOS[cat.slug]} alt={cat.name} />
+                    ) : (
+                      <div className="av-cat-photo-ph">{cat.emoji || '🛠️'}</div>
+                    )}
                   </div>
+                  <div className="av-cat-name">{cat.name}</div>
                 </Link>
               ))}
             </div>
+          </div>
+
+          <div className="av-recs-hdr">
+            <h2 className="av-recs-title">Мои объявления в каталоге</h2>
+            <Link to="/my-listings" className="av-recs-link">
+              Управление →
+            </Link>
+          </div>
+
+          {liveListing.length === 0 ? (
+            <div className="av-empty">
+              <div className="av-empty-ico">📢</div>
+              <h3>Пока нет активных объявлений</h3>
+              <p>Добавьте услугу — заказчики увидят её на главной и в поиске</p>
+            </div>
+          ) : (
+            <>
+              <div className="av-cards-grid">
+                {liveListing.slice(0, shown).map(l => {
+                  const img0 = l.photos?.[0];
+                  const src = workerListingPhotoUrl(img0);
+                  return (
+                    <Link key={l.id} to={`/listings/${l.id}`} className="av-card">
+                      <div className="av-card-img">
+                        {src ? <img src={src} alt="" /> : '🔧'}
+                        {l.category && <span className="av-card-cat">{l.category}</span>}
+                      </div>
+                      <div className="av-card-body">
+                        <div className="av-card-price">
+                          {l.price != null && Number(l.price) > 0
+                            ? Number(l.price).toLocaleString('ru-RU')
+                            : '—'}{' '}
+                          ₽
+                          <span className="av-card-price-unit">{l.priceUnit || ''}</span>
+                        </div>
+                        <div className="av-card-title">{l.title}</div>
+                        <div className="av-card-footer">
+                          <div className="av-card-ava">{(userName || 'М')[0]}</div>
+                          <span className="av-card-wname">Вы · мастер</span>
+                          <span className="av-card-city">📍 {city}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+              {shown < liveListing.length && (
+                <button type="button" className="av-more-btn" onClick={() => setShown(s => s + 8)}>
+                  Показать ещё · осталось {liveListing.length - shown}
+                </button>
+              )}
+            </>
           )}
         </div>
 
-        {/* Правая колонка */}
-        <div className="hp-worker-side" style={{position:'sticky',top:68,display:'flex',flexDirection:'column',gap:16}}>
-          <div className="hp-widget">
-            <div className="hp-widget-title">Навигация</div>
-            <div className="hp-quick-list">
-              <Link to="/find-work"    className="hp-quick-item hp-qi-orange">🔍 Найти работу</Link>
-              <Link to="/my-listings"  className="hp-quick-item hp-qi-outline">📢 Объявления</Link>
-              <Link to="/deals"        className="hp-quick-item hp-qi-gray">📋 Сделки</Link>
-              <Link to="/chat"         className="hp-quick-item hp-qi-gray">💬 Сообщения</Link>
-              <Link to="/worker-profile" className="hp-quick-item hp-qi-gray">👤 Профиль</Link>
+        <div className="av-side">
+          <div className="av-widget">
+            <div className="av-widget-title">Навигация</div>
+            <div className="av-nav-list">
+              <Link to="/find-work" className="av-nav-item av-nav-item-orange">
+                🔍 Найти работу
+              </Link>
+              <Link to="/my-listings" className="av-nav-item">
+                📢 Мои объявления
+              </Link>
+              <Link to="/deals" className="av-nav-item">
+                📋 Мои сделки
+              </Link>
+              <Link to="/chat" className="av-nav-item">
+                💬 Сообщения
+              </Link>
+              <Link to="/worker-profile" className="av-nav-item">
+                👤 Профиль мастера
+              </Link>
+            </div>
+            <div className="av-stats-grid" style={{ marginTop: 14 }}>
+              <div className="av-stat-box">
+                <span className="av-stat-num">{loading ? '…' : activeDeals.length}</span>
+                <span className="av-stat-lbl">В работе</span>
+              </div>
+              <div className="av-stat-box">
+                <span className="av-stat-num">{loading ? '…' : liveListing.length}</span>
+                <span className="av-stat-lbl">Объявлений</span>
+              </div>
             </div>
           </div>
-          <div className="hp-promo-widget">
-            <h3>Новые заявки ждут!</h3>
-            <p>Откликайтесь первым — получайте больше заказов от клиентов</p>
-            <button className="hp-promo-btn" onClick={()=>window.location.href='/find-work'}>Смотреть заявки →</button>
+
+          <div className="av-promo">
+            <h3>Новые заявки ждут</h3>
+            <p>Откликнитесь первым в разделе «Найти работу» — так вы чаще получаете заказ.</p>
+            <button type="button" className="av-promo-btn" onClick={() => navigate('/find-work')}>
+              Смотреть заявки →
+            </button>
           </div>
         </div>
       </div>
