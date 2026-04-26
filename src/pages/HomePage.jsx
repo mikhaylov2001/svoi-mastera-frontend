@@ -360,7 +360,6 @@ function WorkerHome({ userId, userName }) {
   const navigate = useNavigate();
   const [openRequests, setOpenRequests] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [shown, setShown] = useState(15);
   const [city, setCity] = useState('Йошкар-Ола');
   const [loading, setLoading] = useState(true);
 
@@ -424,8 +423,8 @@ function WorkerHome({ userId, userName }) {
         </div>
       </div>
 
-      <div className="av-body av-body-worker-feed">
-        <div className="av-worker-main">
+      <div className="av-body">
+        <div>
           <div className="av-cats-block">
             <div className="av-cats-hdr">
               <span className="av-cats-hdr-title">Категории заявок</span>
@@ -465,77 +464,72 @@ function WorkerHome({ userId, userName }) {
               <p>Когда заказчики опубликуют задачи, они появятся здесь и в «Найти работу»</p>
             </div>
           ) : (
-            <>
-              <div className="av-feed-list">
-                {sortedOpenRequests.slice(0, shown).map(req => {
-                  const img0 = req.photos?.[0];
-                  const src = workerListingPhotoUrl(img0);
-                  const budget = formatJobRequestBudgetLabel(req);
-                  const custName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
-                  const loc = req.addressText || req.city || city;
-                  const cname = catName(req.categoryId);
-                  return (
-                    <Link
-                      key={req.id}
-                      to={`/find-work?request=${encodeURIComponent(req.id)}`}
-                      className="av-feed-row"
-                    >
-                      <div className="av-feed-thumb">
-                        {src ? <img src={src} alt="" /> : '📋'}
-                      </div>
-                      <div className="av-feed-main">
-                        <div className="av-feed-title">{req.title}</div>
-                        <div className="av-feed-meta">
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                            <span
-                              style={{
-                                width: 22,
-                                height: 22,
-                                borderRadius: '50%',
-                                overflow: 'hidden',
-                                background: 'linear-gradient(135deg,#e8410a,#ff7043)',
-                                color: '#fff',
-                                fontSize: 10,
-                                fontWeight: 800,
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0,
-                              }}
-                            >
-                              {req.customerAvatar ? (
-                                <img src={workerListingPhotoUrl(req.customerAvatar)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                              ) : (
-                                (custName || 'З')[0]
-                              )}
-                            </span>
-                            <span>{custName}</span>
+            <div className="av-feed-list">
+              {sortedOpenRequests.map(req => {
+                const img0 = req.photos?.[0];
+                const src = workerListingPhotoUrl(img0);
+                const budget = formatJobRequestBudgetLabel(req);
+                const custName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
+                const loc = req.addressText || req.city || city;
+                const cname = catName(req.categoryId);
+                return (
+                  <Link
+                    key={req.id}
+                    to={`/find-work?request=${encodeURIComponent(req.id)}`}
+                    className="av-feed-row"
+                  >
+                    <div className="av-feed-thumb">
+                      {src ? <img src={src} alt="" /> : '📋'}
+                    </div>
+                    <div className="av-feed-main">
+                      <div className="av-feed-title">{req.title}</div>
+                      <div className="av-feed-meta">
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          <span
+                            style={{
+                              width: 22,
+                              height: 22,
+                              borderRadius: '50%',
+                              overflow: 'hidden',
+                              background: 'linear-gradient(135deg,#e8410a,#ff7043)',
+                              color: '#fff',
+                              fontSize: 10,
+                              fontWeight: 800,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {req.customerAvatar ? (
+                              <img src={workerListingPhotoUrl(req.customerAvatar)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                            ) : (
+                              (custName || 'З')[0]
+                            )}
                           </span>
-                          <span>📍 {loc}</span>
-                          {req.createdAt && (
-                            <span style={{ color: '#9ca3af' }}>
-                              {new Date(req.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
-                            </span>
-                          )}
-                        </div>
+                          <span>{custName}</span>
+                        </span>
+                        <span>📍 {loc}</span>
+                        {req.createdAt && (
+                          <span style={{ color: '#9ca3af' }}>
+                            {new Date(req.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                          </span>
+                        )}
                       </div>
-                      <div className="av-feed-side">
-                        <div className="av-feed-price">{budget}</div>
-                        <div className="av-feed-cat">{cname}</div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-              {shown < sortedOpenRequests.length && (
-                <button type="button" className="av-more-btn" onClick={() => setShown(s => s + 15)}>
-                  Показать ещё · осталось {sortedOpenRequests.length - shown}
-                </button>
-              )}
-            </>
+                    </div>
+                    <div className="av-feed-side">
+                      <div className="av-feed-price">{budget}</div>
+                      <div className="av-feed-cat">{cname}</div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           )}
+        </div>
 
-          <div className="av-promo av-promo-below">
+        <div className="av-side">
+          <div className="av-promo">
             <h3>Новые заявки ждут</h3>
             <p>Откликнитесь первым в разделе «Найти работу» — так вы чаще получаете заказ.</p>
             <button type="button" className="av-promo-btn" onClick={() => navigate('/find-work')}>
