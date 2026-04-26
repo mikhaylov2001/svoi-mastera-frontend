@@ -1046,8 +1046,8 @@ export default function FindMasterPage() {
                 ))}
               </div>
             )}
+            </div>
           </div>
-        </div>
 
         {/* Сетка категорий */}
         <div className="fmp-cats-wrap">
@@ -1105,7 +1105,7 @@ export default function FindMasterPage() {
               })}
             </div>
           )}
-        </div>
+          </div>
       </div>
     );
   }
@@ -1141,7 +1141,7 @@ export default function FindMasterPage() {
         if (!st || (st.averageRating || 0) < ratingMin) return false;
       }
       if (searchTerm.trim()) {
-        const q = searchTerm.trim().toLowerCase();
+      const q = searchTerm.trim().toLowerCase();
         if (
           !(s.title || '').toLowerCase().includes(q) &&
           !(s.description || '').toLowerCase().includes(q) &&
@@ -1233,17 +1233,17 @@ export default function FindMasterPage() {
             <div className="fmp-filter-title">Цена, ₽</div>
             <div className="fmp-filter-body">
               <div className="fmp-price-row">
-                <div>
+            <div>
                   <div className="fmp-price-label">От</div>
                   <input className="fmp-price-inp" type="number" min="0" placeholder="0" value={priceMin} onChange={e => setPriceMin(e.target.value)}/>
                 </div>
                 <div>
                   <div className="fmp-price-label">До</div>
                   <input className="fmp-price-inp" type="number" min="0" placeholder="∞" value={priceMax} onChange={e => setPriceMax(e.target.value)}/>
-                </div>
-              </div>
             </div>
           </div>
+        </div>
+      </div>
 
           {/* Рейтинг */}
           <div className="fmp-filter-card">
@@ -1259,7 +1259,7 @@ export default function FindMasterPage() {
                   {label}
                 </button>
               ))}
-            </div>
+          </div>
           </div>
 
           {/* Параметры */}
@@ -1269,8 +1269,8 @@ export default function FindMasterPage() {
               <CheckItem checked={showActive}    onChange={() => setShowActive(v => !v)}>Только активные</CheckItem>
               <CheckItem checked={onlyVerified}  onChange={() => setOnlyVerified(v => !v)}>Проверенные мастера</CheckItem>
               <CheckItem checked={onlyWithPhoto} onChange={() => setOnlyWithPhoto(v => !v)}>С фотографиями</CheckItem>
-            </div>
-          </div>
+        </div>
+      </div>
 
           {hasFilters && (
             <button className="fmp-reset-btn" onClick={resetFilters}>✕ Сбросить фильтры</button>
@@ -1301,7 +1301,7 @@ export default function FindMasterPage() {
           </div>
 
           {/* Карточки */}
-          {loading ? (
+        {loading ? (
             <div className="fmp-list">
               {[1,2,3,4].map(i => (
                 <div key={i} style={{ background: '#fff', borderRadius: 16, border: '1.5px solid #e8e8e8', overflow: 'hidden' }}>
@@ -1311,13 +1311,13 @@ export default function FindMasterPage() {
                     <div className="sk" style={{ height: 16, width: '80%' }}/>
                     <div className="sk" style={{ height: 11, width: '90%' }}/>
                     <div className="sk" style={{ height: 20, width: '35%', marginTop: 4 }}/>
-                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
+          </div>
           ) : visible.length === 0 ? (
             <div className="fmp-list">
-              <div className="fmp-empty">
+          <div className="fmp-empty">
                 <div className="fmp-empty-ico">🔍</div>
                 <h3>Объявлений не найдено</h3>
                 <p>{hasFilters ? 'Измените параметры или сбросьте фильтры.' : 'В этой категории пока нет объявлений.'}</p>
@@ -1326,9 +1326,9 @@ export default function FindMasterPage() {
                   : <Link to="/find-master" className="fmp-empty-btn">← Все категории</Link>
                 }
               </div>
-            </div>
-          ) : (
-            <div className="fmp-list">
+          </div>
+        ) : (
+          <div className="fmp-list">
               {visible.map(s => {
                 const stats  = workerStats[s.workerId];
                 const wid    = s.workerId;
@@ -1336,7 +1336,7 @@ export default function FindMasterPage() {
                 const hasPhoto = photos.length > 0;
                 const ava    = stats?.workerAvatar || s.workerAvatar || null;
 
-                return (
+              return (
                   <div key={s.id} className="fmp-card">
 
                     {/* Фото → объявление */}
@@ -1354,7 +1354,7 @@ export default function FindMasterPage() {
                           <span className="fmp-card-photo-ph-txt">Нет фото</span>
                         </div>
                       )}
-                    </div>
+                  </div>
 
                     {/* Миниатюры доп. фото */}
                     {photos.length > 1 && (
@@ -1379,12 +1379,12 @@ export default function FindMasterPage() {
                           : <div className="fmp-card-ava-ph" style={{ background: `linear-gradient(135deg, #e8410a, #ff7043)` }}>
                               {(s.workerName || 'М')[0].toUpperCase()}
                             </div>
-                        }
-                        <div>
+                      }
+                      <div>
                           <div className="fmp-card-worker-name">{s.workerName}</div>
                           <div className="fmp-card-worker-sub">Йошкар-Ола · Профиль →</div>
-                        </div>
                       </div>
+                    </div>
 
                       {/* Название → объявление */}
                       <div className="fmp-card-title" onClick={() => navigate(`/listings/${s.id}`)}>
@@ -1397,9 +1397,9 @@ export default function FindMasterPage() {
                         <span className="fmp-badge fmp-badge-v">✓ Проверен</span>
                         <span className="fmp-badge fmp-badge-f">⚡ Отклик</span>
                         <span className="fmp-badge fmp-badge-g">🛡 Гарантия</span>
-                      </div>
+                    </div>
 
-                      {stats && (
+                    {stats && (
                         <div className="fmp-card-stats">
                           <span className="fmp-stars">
                             {'★'.repeat(Math.min(5, Math.round(stats.averageRating || 0)))}
@@ -1408,8 +1408,8 @@ export default function FindMasterPage() {
                           <span className="fmp-rating-val">{(stats.averageRating || 0).toFixed(1)}</span>
                           <span>({stats.reviewsCount || 0} {(stats.reviewsCount || 0) === 1 ? 'отзыв' : (stats.reviewsCount || 0) < 5 ? 'отзыва' : 'отзывов'})</span>
                           {stats.completedWorksCount > 0 && <span>· 📦 {stats.completedWorksCount} заказов</span>}
-                        </div>
-                      )}
+                      </div>
+                    )}
 
                       {pendingDeals[String(s.id)] ? (
                         /* ── Pending: цена + баннер стекуются вертикально ── */
@@ -1418,9 +1418,9 @@ export default function FindMasterPage() {
                             <div className="fmp-card-price-block">
                               <div className="fmp-card-price">
                                 {s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
-                              </div>
+                    </div>
                               {s.priceUnit && <span className="fmp-card-price-unit">{s.priceUnit}</span>}
-                            </div>
+                  </div>
                             <button
                               type="button"
                               className="fmp-pending-link"
@@ -1481,12 +1481,12 @@ export default function FindMasterPage() {
                           </div>
                         </div>
                       )}
-                    </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                </div>
+              );
+            })}
+          </div>
+        )}
         </div>
       </div>
     </div>
