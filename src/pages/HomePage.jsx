@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getUserProfile } from '../api';
+import { getUserProfile, getOpenJobRequestsForWorker } from '../api';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
 
@@ -348,11 +348,33 @@ function workerListingPhotoUrl(url) {
   return BACKEND_ORIGIN + url;
 }
 
+/** Город после предлога «в» (предложный падеж) */
+function cityInLocative(nominative) {
+  const c = (nominative || '').trim();
+  if (c === 'Йошкар-Ола') return 'Йошкар-Оле';
+  return c || 'Йошкар-Оле';
+}
+
+function groupOpenRequestsByCustomer(requests) {
+  const arr = Array.isArray(requests) ? requests : [];
+  const map = new Map();
+  for (const r of arr) {
+    const key = r.customerId != null ? `c-${r.customerId}` : `r-${r.id}`;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(r);
+  }
+  return [...map.values()]
+    .map(list => {
+      const sorted = [...list].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+      return { requests: sorted, primary: sorted[0] };
+    })
+    .sort((a, b) => new Date(b.primary.createdAt || 0) - new Date(a.primary.createdAt || 0));
+}
+
 function WorkerHome({ userId, userName }) {
   const navigate = useNavigate();
-  const [deals, setDeals] = useState([]);
-  const [listings, setListings] = useState([]);
-  const [shown, setShown] = useState(8);
+  const [openRequests, setOpenRequests] = useState([]);
+  const [shown, setShown] = useState(12);
   const [city, setCity] = useState('Йошкар-Ола');
   const [loading, setLoading] = useState(true);
 
@@ -360,26 +382,24 @@ function WorkerHome({ userId, userName }) {
     if (!userId) return;
     setLoading(true);
     Promise.all([
-      fetch(`${API}/deals`, { headers: { 'X-User-Id': userId } }).then(r => (r.ok ? r.json() : [])),
-      fetch(`${API}/workers/${userId}/listings`).then(r => (r.ok ? r.json() : [])),
+      getOpenJobRequestsForWorker(userId).catch(() => []),
       getUserProfile(userId).catch(() => null),
     ])
-      .then(([d, l, prof]) => {
-        setDeals(Array.isArray(d) ? d : []);
-        setListings(Array.isArray(l) ? l : []);
+      .then(([reqs, prof]) => {
+        setOpenRequests(Array.isArray(reqs) ? reqs : []);
         const c = (prof && prof.city && String(prof.city).trim()) || '';
         if (c) setCity(c);
       })
       .finally(() => setLoading(false));
   }, [userId]);
 
-  const uid = String(userId || '');
-  const myDeals = deals.filter(x => String(x.workerId || '') === uid);
-  const activeDeals = myDeals.filter(d => d.status === 'IN_PROGRESS');
-  const newDeals = myDeals.filter(d => d.status === 'NEW');
-  const liveListing = listings.filter(l => l.active);
+  const customerGroups = useMemo(
+    () => groupOpenRequestsByCustomer(openRequests),
+    [openRequests],
+  );
 
   const firstName = (userName || 'Мастер').trim().split(/\s+/)[0] || 'Мастер';
+  const cityPrep = cityInLocative(city);
 
   return (
     <div className="av-page">
@@ -396,12 +416,12 @@ function WorkerHome({ userId, userName }) {
           </div>
           <h1 className="av-hero-h1">
             <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
-              Заказы и клиенты в&nbsp;<span className="h1-line2">{city}</span>
+              Заказы и клиенты в&nbsp;<span className="h1-line2">{cityPrep}</span>
             </span>
             <span style={{ display: 'block' }}>рядом с вами</span>
           </h1>
           <p className="av-hero-sub">
-            Привет, {firstName}! Найдите заявку заказчика или обновите объявления — всё в одном стиле, как у заказчиков на главной.
+            Привет, {firstName}! Здесь заявки заказчиков с открытыми задачами — откликайтесь в разделе «Найти работу».
           </p>
           <div className="av-hero-actions">
             <Link to="/find-work" className="av-hero-btn-primary" style={{ textDecoration: 'none' }}>
@@ -410,22 +430,6 @@ function WorkerHome({ userId, userName }) {
             <Link to="/my-listings" className="av-hero-btn-ghost">
               + Моё объявление
             </Link>
-          </div>
-        </div>
-
-        <div className="av-hero-trust">
-          <div className="av-hero-trust-inner">
-            {[
-              [String(activeDeals.length), 'В работе'],
-              [String(newDeals.length), 'Ждут подтверждения'],
-              [String(liveListing.length), 'Активных объявл.'],
-              [String(myDeals.filter(d => d.status === 'COMPLETED').length), 'Завершено'],
-            ].map(([v, l]) => (
-              <div key={l} className="av-trust-item">
-                <span className="av-trust-val">{loading ? '…' : v}</span>
-                <span className="av-trust-lbl">{l}</span>
-              </div>
-            ))}
           </div>
         </div>
       </div>
@@ -456,52 +460,75 @@ function WorkerHome({ userId, userName }) {
           </div>
 
           <div className="av-recs-hdr">
-            <h2 className="av-recs-title">Мои объявления в каталоге</h2>
-            <Link to="/my-listings" className="av-recs-link">
-              Управление →
+            <h2 className="av-recs-title">Заказчики с открытыми заявками</h2>
+            <Link to="/find-work" className="av-recs-link">
+              Все заявки →
             </Link>
           </div>
 
-          {liveListing.length === 0 ? (
+          {loading ? (
             <div className="av-empty">
-              <div className="av-empty-ico">📢</div>
-              <h3>Пока нет активных объявлений</h3>
-              <p>Добавьте услугу — заказчики увидят её на главной и в поиске</p>
+              <div className="av-empty-ico">⏳</div>
+              <h3>Загружаем заявки…</h3>
+            </div>
+          ) : customerGroups.length === 0 ? (
+            <div className="av-empty">
+              <div className="av-empty-ico">📋</div>
+              <h3>Пока нет открытых заявок</h3>
+              <p>Когда заказчики опубликуют задачи, они появятся здесь и в «Найти работу»</p>
             </div>
           ) : (
             <>
               <div className="av-cards-grid">
-                {liveListing.slice(0, shown).map(l => {
-                  const img0 = l.photos?.[0];
+                {customerGroups.slice(0, shown).map(({ requests: group, primary: req }) => {
+                  const n = group.length;
+                  const img0 = req.photos?.[0];
                   const src = workerListingPhotoUrl(img0);
+                  const budget = req.budgetTo
+                    ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
+                    : req.budgetFrom
+                      ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
+                      : 'Договорная';
+                  const custName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
+                  const catLabel = req.categoryName || 'Заявка';
+                  const loc = req.addressText || req.city || city;
                   return (
-                    <Link key={l.id} to={`/listings/${l.id}`} className="av-card">
+                    <Link key={req.customerId != null ? `c-${req.customerId}` : `r-${req.id}`} to="/find-work" className="av-card">
                       <div className="av-card-img">
-                        {src ? <img src={src} alt="" /> : '🔧'}
-                        {l.category && <span className="av-card-cat">{l.category}</span>}
+                        {src ? <img src={src} alt="" /> : '👤'}
+                        <span className="av-card-cat">
+                          {n > 1 ? `${n} заявки` : catLabel}
+                        </span>
                       </div>
                       <div className="av-card-body">
-                        <div className="av-card-price">
-                          {l.price != null && Number(l.price) > 0
-                            ? Number(l.price).toLocaleString('ru-RU')
-                            : '—'}{' '}
-                          ₽
-                          <span className="av-card-price-unit">{l.priceUnit || ''}</span>
+                        <div className="av-card-price">{budget}</div>
+                        <div className="av-card-title">
+                          {req.title}
+                          {n > 1 && (
+                            <span style={{ display: 'block', fontSize: 11, color: '#94a3b8', fontWeight: 600, marginTop: 4 }}>
+                              + ещё {n - 1} от этого заказчика
+                            </span>
+                          )}
                         </div>
-                        <div className="av-card-title">{l.title}</div>
                         <div className="av-card-footer">
-                          <div className="av-card-ava">{(userName || 'М')[0]}</div>
-                          <span className="av-card-wname">Вы · мастер</span>
-                          <span className="av-card-city">📍 {city}</span>
+                          <div className="av-card-ava">
+                            {req.customerAvatar ? (
+                              <img src={workerListingPhotoUrl(req.customerAvatar)} alt="" />
+                            ) : (
+                              (custName || 'З')[0]
+                            )}
+                          </div>
+                          <span className="av-card-wname">{custName}</span>
+                          <span className="av-card-city">📍 {loc}</span>
                         </div>
                       </div>
                     </Link>
                   );
                 })}
               </div>
-              {shown < liveListing.length && (
-                <button type="button" className="av-more-btn" onClick={() => setShown(s => s + 8)}>
-                  Показать ещё · осталось {liveListing.length - shown}
+              {shown < customerGroups.length && (
+                <button type="button" className="av-more-btn" onClick={() => setShown(s => s + 12)}>
+                  Показать ещё · осталось {customerGroups.length - shown}
                 </button>
               )}
             </>
@@ -509,37 +536,6 @@ function WorkerHome({ userId, userName }) {
         </div>
 
         <div className="av-side">
-          <div className="av-widget">
-            <div className="av-widget-title">Навигация</div>
-            <div className="av-nav-list">
-              <Link to="/find-work" className="av-nav-item av-nav-item-orange">
-                🔍 Найти работу
-              </Link>
-              <Link to="/my-listings" className="av-nav-item">
-                📢 Мои объявления
-              </Link>
-              <Link to="/deals" className="av-nav-item">
-                📋 Мои сделки
-              </Link>
-              <Link to="/chat" className="av-nav-item">
-                💬 Сообщения
-              </Link>
-              <Link to="/worker-profile" className="av-nav-item">
-                👤 Профиль мастера
-              </Link>
-            </div>
-            <div className="av-stats-grid" style={{ marginTop: 14 }}>
-              <div className="av-stat-box">
-                <span className="av-stat-num">{loading ? '…' : activeDeals.length}</span>
-                <span className="av-stat-lbl">В работе</span>
-              </div>
-              <div className="av-stat-box">
-                <span className="av-stat-num">{loading ? '…' : liveListing.length}</span>
-                <span className="av-stat-lbl">Объявлений</span>
-              </div>
-            </div>
-          </div>
-
           <div className="av-promo">
             <h3>Новые заявки ждут</h3>
             <p>Откликнитесь первым в разделе «Найти работу» — так вы чаще получаете заказ.</p>
