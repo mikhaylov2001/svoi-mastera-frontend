@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   getMyDeals, completeDeal, cancelPendingDeal, cancelActiveDeal,
   getMyJobRequests, getOffersForRequest, acceptOffer, getCategories,
   createReview,
+  updateJobRequest,
 } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import { formatJobRequestBudgetLabel } from '../../utils/jobRequestBudget';
 import './DealsPage.css';
 
 const DEAL_STATUSES = {
@@ -39,6 +41,7 @@ function timeAgo(d) {
 export default function DealsPage() {
   const { userId } = useAuth();
   const navigate   = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [deals,      setDeals]      = useState([]);
   const [requests,   setRequests]   = useState([]);
@@ -79,6 +82,12 @@ export default function DealsPage() {
   const [lightbox, setLightbox] = useState(null);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0); // { photos: [], index: 0 }
 
+  const [reqEditForm, setReqEditForm] = useState({
+    title: '', description: '', categoryId: '', addressText: '', fixedPrice: '',
+  });
+  const [reqSaving, setReqSaving] = useState(false);
+  const [reqEditErr, setReqEditErr] = useState('');
+
   // Клавиатурная навигация lightbox
   React.useEffect(() => {
     if (!lightbox) return;
@@ -112,6 +121,51 @@ export default function DealsPage() {
   }, [userId]);
 
   useEffect(() => { load(); }, [load]);
+
+  const requestIdFromUrl = searchParams.get('request');
+
+  useEffect(() => {
+    if (!requestIdFromUrl || loading || !requests.length) return;
+    const req = requests.find(r => String(r.id) === String(requestIdFromUrl));
+    if (!req) {
+      setSearchParams(p => {
+        const n = new URLSearchParams(p);
+        n.delete('request');
+        return n;
+      }, { replace: true });
+      return;
+    }
+    setReqDetail(req);
+    setOffersLoading(true);
+    getOffersForRequest(req.id).then(o => setOffers(o || [])).catch(() => setOffers([])).finally(() => setOffersLoading(false));
+    setActivePhotoIndex(0);
+    setSearchParams(p => {
+      const n = new URLSearchParams(p);
+      n.delete('request');
+      return n;
+    }, { replace: true });
+  }, [requestIdFromUrl, loading, requests, setSearchParams]);
+
+  useEffect(() => {
+    if (!reqDetail) return;
+    let fixedPrice = '';
+    if (reqDetail.budgetTo != null && reqDetail.budgetFrom != null
+      && Number(reqDetail.budgetTo) === Number(reqDetail.budgetFrom)) {
+      fixedPrice = String(Number(reqDetail.budgetTo));
+    } else if (reqDetail.budgetTo != null) {
+      fixedPrice = String(Number(reqDetail.budgetTo));
+    } else if (reqDetail.budgetFrom != null) {
+      fixedPrice = String(Number(reqDetail.budgetFrom));
+    }
+    setReqEditForm({
+      title: reqDetail.title || '',
+      description: (reqDetail.description && reqDetail.description !== 'Без описания') ? reqDetail.description : '',
+      categoryId: reqDetail.categoryId || '',
+      addressText: reqDetail.addressText || '',
+      fixedPrice,
+    });
+    setReqEditErr('');
+  }, [reqDetail?.id]);
 
   useEffect(() => {
     if (dealDetail?.id) {
@@ -190,6 +244,42 @@ export default function DealsPage() {
     } catch (err) {
       console.error(err);
       setReviewStatus('error');
+    }
+  };
+
+  const handleSaveRequestEdit = async () => {
+    if (!reqDetail || reqDetail.status !== 'OPEN') return;
+    if (!reqEditForm.title.trim()) { setReqEditErr('Укажите название'); return; }
+    if (!reqEditForm.categoryId) { setReqEditErr('Выберите категорию'); return; }
+    setReqEditErr('');
+    setReqSaving(true);
+    try {
+      const raw = reqEditForm.fixedPrice?.trim().replace(/\s/g, '').replace(',', '.');
+      const n = raw ? Number(raw) : NaN;
+      let budgetFrom = null;
+      let budgetTo = null;
+      if (raw !== '' && !Number.isNaN(n) && n > 0) {
+        budgetFrom = n;
+        budgetTo = n;
+      }
+      const body = {
+        categoryId: reqEditForm.categoryId,
+        title: reqEditForm.title.trim(),
+        description: reqEditForm.description.trim() || 'Без описания',
+        city: reqDetail.city || null,
+        addressText: reqEditForm.addressText.trim() || null,
+        scheduledAt: null,
+        budgetFrom,
+        budgetTo,
+        photos: reqDetail.photos?.length ? reqDetail.photos : null,
+      };
+      const updated = await updateJobRequest(userId, reqDetail.id, body);
+      setReqDetail(updated);
+      await load();
+    } catch (e) {
+      setReqEditErr(e?.message || 'Не удалось сохранить');
+    } finally {
+      setReqSaving(false);
     }
   };
 
@@ -709,7 +799,7 @@ export default function DealsPage() {
                 <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:4, flexWrap:'wrap' }}>
                   <span className="dp-badge" style={{ color: st.color, background: st.bg }}>{st.emoji} {st.label}</span>
                   {catName && <span style={{ fontSize:13, color:'#9ca3af' }}>🏷 {catName}</span>}
-                  {reqDetail.budgetTo && <span style={{ fontSize:14, color:'#111827', fontWeight:800 }}>💰 до {Number(reqDetail.budgetTo).toLocaleString('ru-RU')} ₽</span>}
+                  <span style={{ fontSize:14, color:'#111827', fontWeight:800 }}>💰 {formatJobRequestBudgetLabel(reqDetail)}</span>
                 </div>
               </div>
             </div>
@@ -791,12 +881,10 @@ export default function DealsPage() {
                       <div style={{ fontSize:14, fontWeight:600, color:'#111827' }}>🏷 {catName}</div>
                     </div>
                   )}
-                  {reqDetail.budgetTo && (
-                    <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
-                      <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Бюджет</div>
-                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>💰 до {Number(reqDetail.budgetTo).toLocaleString('ru-RU')} ₽</div>
-                    </div>
-                  )}
+                  <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Бюджет</div>
+                    <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>💰 {formatJobRequestBudgetLabel(reqDetail)}</div>
+                  </div>
                   {reqDetail.addressText && (
                     <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
                       <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Адрес</div>
@@ -809,6 +897,77 @@ export default function DealsPage() {
                   </div>
                 </div>
               </div>
+
+              {reqDetail.status === 'OPEN' && (
+                <div className="dp-card">
+                  <div className="dp-card-label">Редактировать заявку</div>
+                  <p style={{ fontSize:13, color:'#6b7280', margin:'0 0 14px', lineHeight:1.5 }}>
+                    Задайте цену, чтобы мастера сразу видели сумму. Поле цены можно оставить пустым — тогда отобразится «Цена не указана», и условия можно согласовать в чате.
+                  </p>
+                  {reqEditErr ? <p style={{ color:'#dc2626', fontSize:13, margin:'0 0 10px' }}>{reqEditErr}</p> : null}
+                  <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:600, color:'#374151', marginBottom:6 }}>Название</div>
+                      <input
+                        value={reqEditForm.title}
+                        onChange={e => setReqEditForm(f => ({ ...f, title: e.target.value }))}
+                        style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:14, boxSizing:'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:600, color:'#374151', marginBottom:6 }}>Категория</div>
+                      <select
+                        value={reqEditForm.categoryId}
+                        onChange={e => setReqEditForm(f => ({ ...f, categoryId: e.target.value }))}
+                        style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:14, boxSizing:'border-box', background:'#fff' }}
+                      >
+                        <option value="">Выберите категорию</option>
+                        {categories.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:600, color:'#374151', marginBottom:6 }}>Адрес</div>
+                      <input
+                        value={reqEditForm.addressText}
+                        onChange={e => setReqEditForm(f => ({ ...f, addressText: e.target.value }))}
+                        placeholder="Город, улица, подъезд…"
+                        style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:14, boxSizing:'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:600, color:'#374151', marginBottom:6 }}>Цена, ₽</div>
+                      <input
+                        type="number"
+                        min={1}
+                        step={1}
+                        value={reqEditForm.fixedPrice}
+                        onChange={e => setReqEditForm(f => ({ ...f, fixedPrice: e.target.value }))}
+                        placeholder="Например 5000"
+                        style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:14, boxSizing:'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:600, color:'#374151', marginBottom:6 }}>Описание</div>
+                      <textarea
+                        value={reqEditForm.description}
+                        onChange={e => setReqEditForm(f => ({ ...f, description: e.target.value }))}
+                        rows={4}
+                        style={{ width:'100%', padding:'10px 12px', borderRadius:8, border:'1.5px solid #e5e7eb', fontSize:14, boxSizing:'border-box', resize:'vertical', fontFamily:'inherit' }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="dp-confirm-btn"
+                      disabled={reqSaving}
+                      onClick={handleSaveRequestEdit}
+                    >
+                      {reqSaving ? 'Сохраняем…' : '💾 Сохранить изменения'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Правая колонка — отклики */}
@@ -990,7 +1149,7 @@ export default function DealsPage() {
                         <h3 className="dpage-card-avito-title">{req.title}</h3>
                         <span className="dp-badge" style={{ color:st.color, background:st.bg, flexShrink:0 }}>{st.emoji} {st.label}</span>
                       </div>
-                      {req.budgetTo && <div className="dpage-card-avito-price">до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽</div>}
+                      <div className="dpage-card-avito-price">{formatJobRequestBudgetLabel(req)}</div>
                       {req.description && req.description !== 'Без описания' && <p className="dpage-card-avito-desc">{req.description}</p>}
                       <div className="dpage-card-avito-meta">
                         {req.categoryId && <span>🏷 {getCatName(req.categoryId)}</span>}

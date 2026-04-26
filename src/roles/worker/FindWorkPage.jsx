@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories } from '../../api';
+import { formatJobRequestBudgetLabel } from '../../utils/jobRequestBudget';
 import './FindWorkPage.css';
 
 const CATEGORY_STYLES = {
@@ -144,6 +146,7 @@ function CustomerCard({ req }) {
 export default function FindWorkPage() {
   const { userId } = useAuth();
   const { showToast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [requests, setRequests]                 = useState([]);
   const [categories, setCategories]             = useState([]);
@@ -169,6 +172,33 @@ export default function FindWorkPage() {
   }, [lightbox]);
 
   useEffect(() => { loadData(); }, [userId]);
+
+  const requestIdFromUrl = searchParams.get('request');
+
+  useEffect(() => {
+    if (!requestIdFromUrl || loading) return;
+    const req = requests.find(r => String(r.id) === String(requestIdFromUrl));
+    if (!req) {
+      if (requests.length > 0) {
+        showToast('Заявка закрыта или недоступна', 'info');
+        setSearchParams(p => {
+          const next = new URLSearchParams(p);
+          next.delete('request');
+          return next;
+        }, { replace: true });
+      }
+      return;
+    }
+    const cat = categories.find(c => c.id === req.categoryId);
+    if (cat) setSelectedCategory(cat);
+    setSelectedRequest(req);
+    setActivePhotoIdx(0);
+    setSearchParams(p => {
+      const next = new URLSearchParams(p);
+      next.delete('request');
+      return next;
+    }, { replace: true });
+  }, [requestIdFromUrl, loading, requests, categories, setSearchParams, showToast]);
 
   const loadData = async () => {
     setLoading(true);
@@ -225,11 +255,7 @@ export default function FindWorkPage() {
     const req = selectedRequest;
     const hasPhoto = req.photos && req.photos.length > 0;
     const catStyle = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '📋', color: '#f3f4f6' };
-    const budget = req.budgetTo
-      ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
-      : req.budgetFrom
-      ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
-      : 'Договорная';
+    const budget = formatJobRequestBudgetLabel(req);
 
     return (
       <>
@@ -311,7 +337,7 @@ export default function FindWorkPage() {
                   {[
                     selectedCategory && ['Категория', selectedCategory.name],
                     req.addressText  && ['Адрес',     req.addressText],
-                    req.budgetTo     && ['Бюджет',    `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`],
+                    ['Бюджет', budget],
                     req.createdAt    && ['Опубликована', new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })],
                   ].filter(Boolean).map(([label, value]) => (
                     <div key={label} style={{ display:'flex', justifyContent:'space-between', padding:'12px 0', borderBottom:'1px solid #f3f4f6', fontSize:14 }}>
@@ -486,11 +512,7 @@ export default function FindWorkPage() {
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:12 }}>
               {catRequests.map((req, idx) => {
                 const hasPhoto = req.photos && req.photos.length > 0;
-                const budget = req.budgetTo
-                  ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
-                  : req.budgetFrom
-                  ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
-                  : 'Договорная';
+                const budget = formatJobRequestBudgetLabel(req);
                 return (
                   <div
                     key={req.id}

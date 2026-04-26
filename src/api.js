@@ -83,6 +83,19 @@ export async function getOpenJobRequestsForWorker(workerId) {
   return apiCall('/worker/job-requests', { headers: { 'X-User-Id': workerId } });
 }
 
+export async function getJobRequestById(userId, requestId) {
+  return apiCall(`/job-requests/${requestId}`, { headers: { 'X-User-Id': userId } });
+}
+
+/** Редактирование своей открытой заявки (только заказчик, статус OPEN на бэкенде) */
+export async function updateJobRequest(userId, requestId, body) {
+  return apiCall(`/job-requests/${requestId}`, {
+    method: 'PUT',
+    headers: { 'X-User-Id': userId },
+    body: JSON.stringify(body),
+  });
+}
+
 // ── OFFERS ──
 export async function getOffersForRequest(requestId) {
   return apiCall(`/job-requests/${requestId}/offers`);

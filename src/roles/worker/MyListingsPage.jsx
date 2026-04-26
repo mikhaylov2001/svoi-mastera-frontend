@@ -492,7 +492,13 @@ export default function MyListingsPage() {
                 {/* Контент */}
                 <div className="ml-row-body">
                   <div className="ml-row-title">{l.title}</div>
-                  <div className="ml-row-price">{Number(l.price).toLocaleString('ru-RU')} ₽<span className="ml-row-unit">{l.priceUnit}</span></div>
+                  <div className="ml-row-price">
+                    {l.priceUnit === 'договорная' || !l.price || Number(l.price) <= 0 ? (
+                      <span style={{ fontSize:15, fontWeight:700, color:'#64748b' }}>Цена в объявлении — по договорённости</span>
+                    ) : (
+                      <>{Number(l.price).toLocaleString('ru-RU')} ₽<span className="ml-row-unit">{l.priceUnit}</span></>
+                    )}
+                  </div>
                   {l.category&&<span className="ml-row-cat">{l.category}</span>}
                   {l.description&&<div className="ml-row-desc">{l.description}</div>}
                   <div className="ml-row-date">📅 {l.createdAt?new Date(l.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}):'—'}</div>

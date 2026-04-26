@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getOpenJobRequestsForWorker } from '../api';
+import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
 
@@ -460,7 +461,7 @@ function WorkerHome({ userId, userName }) {
           </div>
 
           <div className="av-recs-hdr">
-            <h2 className="av-recs-title">Заказчики с открытыми заявками</h2>
+            <h2 className="av-recs-title">Актуальные заявки</h2>
             <Link to="/find-work" className="av-recs-link">
               Все заявки →
             </Link>
@@ -484,16 +485,16 @@ function WorkerHome({ userId, userName }) {
                   const n = group.length;
                   const img0 = req.photos?.[0];
                   const src = workerListingPhotoUrl(img0);
-                  const budget = req.budgetTo
-                    ? `до ${Number(req.budgetTo).toLocaleString('ru-RU')} ₽`
-                    : req.budgetFrom
-                      ? `от ${Number(req.budgetFrom).toLocaleString('ru-RU')} ₽`
-                      : 'Договорная';
+                  const budget = formatJobRequestBudgetLabel(req);
                   const custName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
                   const catLabel = req.categoryName || 'Заявка';
                   const loc = req.addressText || req.city || city;
                   return (
-                    <Link key={req.customerId != null ? `c-${req.customerId}` : `r-${req.id}`} to="/find-work" className="av-card">
+                    <Link
+                      key={req.customerId != null ? `c-${req.customerId}` : `r-${req.id}`}
+                      to={`/find-work?request=${encodeURIComponent(req.id)}`}
+                      className="av-card"
+                    >
                       <div className="av-card-img">
                         {src ? <img src={src} alt="" /> : '👤'}
                         <span className="av-card-cat">
