@@ -24,6 +24,19 @@ function pluralRequests(n) {
   return `${n} заявок`;
 }
 
+/** Одна сумма для кнопки «готов за …» (после выравнивания from/to в заявке). */
+function jobRequestListPrice(req) {
+  if (!req) return null;
+  const to = req.budgetTo != null && req.budgetTo !== '' ? Number(req.budgetTo) : null;
+  const from = req.budgetFrom != null && req.budgetFrom !== '' ? Number(req.budgetFrom) : null;
+  const okTo = to != null && !Number.isNaN(to);
+  const okFrom = from != null && !Number.isNaN(from);
+  if (okTo && okFrom && to === from) return to;
+  if (okTo) return to;
+  if (okFrom) return from;
+  return null;
+}
+
 // ═══ Модалка вынесена за пределы основного компонента ═══
 // Это критично — иначе при каждом вводе компонент пересоздаётся
 function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submitting }) {
@@ -53,9 +66,9 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
                 min="1"
                 autoFocus
               />
-              {request.budgetTo && (
+              {(request.budgetTo != null || request.budgetFrom != null) && (
                 <span className="fw-modal-hint">
-                  Бюджет заказчика: до {Number(request.budgetTo).toLocaleString('ru-RU')} ₽
+                  Цена в заявке заказчика: {formatJobRequestBudgetLabel(request)}
                 </span>
               )}
             </div>
@@ -256,6 +269,7 @@ export default function FindWorkPage() {
     const hasPhoto = req.photos && req.photos.length > 0;
     const catStyle = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '📋', color: '#f3f4f6' };
     const budget = formatJobRequestBudgetLabel(req);
+    const listPrice = jobRequestListPrice(req);
 
     return (
       <>
@@ -337,7 +351,7 @@ export default function FindWorkPage() {
                   {[
                     selectedCategory && ['Категория', selectedCategory.name],
                     req.addressText  && ['Адрес',     req.addressText],
-                    ['Бюджет', budget],
+                    ['Цена в заявке', budget],
                     req.createdAt    && ['Опубликована', new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })],
                   ].filter(Boolean).map(([label, value]) => (
                     <div key={label} style={{ display:'flex', justifyContent:'space-between', padding:'12px 0', borderBottom:'1px solid #f3f4f6', fontSize:14 }}>
@@ -355,32 +369,33 @@ export default function FindWorkPage() {
               {/* Цена и кнопки */}
               <div style={{ background:'#fff', borderRadius:12, padding:'20px' }}>
                 <div style={{ marginBottom:14 }}>
-                  <div style={{ fontSize:12, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Бюджет заказчика</div>
+                  <div style={{ fontSize:12, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Цена в заявке заказчика</div>
                   <div style={{ fontSize:28, fontWeight:900, color:'#111827' }}>{budget}</div>
-                  {req.budgetTo && (
-                    <div style={{ fontSize:12, color:'#6b7280', marginTop:4 }}>Сумма открыта мастерам · Вы можете принять её или предложить свою</div>
+                  {listPrice != null && (
+                    <div style={{ fontSize:12, color:'#6b7280', marginTop:4 }}>
+                      Так заказчик указал сумму в заявке. Вы можете откликнуться с этой же ценой или предложить свою — дальше вы договоритесь вместе.
+                    </div>
                   )}
                 </div>
 
-                {/* Кнопка "Готов за эту сумму" — только если есть budgetTo */}
-                {req.budgetTo && (
+                {listPrice != null && (
                   <button
-                    onClick={() => handleOpenOfferModal(req, req.budgetTo)}
+                    onClick={() => handleOpenOfferModal(req, listPrice)}
                     style={{ width:'100%', padding:'14px', background:'#16a34a', border:'none', borderRadius:8, color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:8, transition:'background .15s', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}
                     onMouseEnter={e => e.currentTarget.style.background='#15803d'}
                     onMouseLeave={e => e.currentTarget.style.background='#16a34a'}
                   >
-                    ✅ Готов за {Number(req.budgetTo).toLocaleString('ru-RU')} ₽
+                    ✅ Готов за {Number(listPrice).toLocaleString('ru-RU')} ₽
                   </button>
                 )}
 
                 <button
                   onClick={() => handleOpenOfferModal(req)}
-                  style={{ width:'100%', padding:'13px', background: req.budgetTo ? '#fff' : '#e8410a', border: req.budgetTo ? '1.5px solid #e5e7eb' : 'none', borderRadius:8, color: req.budgetTo ? '#374151' : '#fff', fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:10, transition:'all .15s' }}
-                  onMouseEnter={e => { if (req.budgetTo) { e.currentTarget.style.borderColor='#374151'; } else { e.currentTarget.style.background='#c73208'; }}}
-                  onMouseLeave={e => { if (req.budgetTo) { e.currentTarget.style.borderColor='#e5e7eb'; } else { e.currentTarget.style.background='#e8410a'; }}}
+                  style={{ width:'100%', padding:'13px', background: listPrice != null ? '#fff' : '#e8410a', border: listPrice != null ? '1.5px solid #e5e7eb' : 'none', borderRadius:8, color: listPrice != null ? '#374151' : '#fff', fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:10, transition:'all .15s' }}
+                  onMouseEnter={e => { if (listPrice != null) { e.currentTarget.style.borderColor='#374151'; } else { e.currentTarget.style.background='#c73208'; }}}
+                  onMouseLeave={e => { if (listPrice != null) { e.currentTarget.style.borderColor='#e5e7eb'; } else { e.currentTarget.style.background='#e8410a'; }}}
                 >
-                  📩 {req.budgetTo ? 'Предложить свою цену' : 'Откликнуться'}
+                  📩 {listPrice != null ? 'Предложить свою цену' : 'Откликнуться'}
                 </button>
 
                 {req.customerId && (

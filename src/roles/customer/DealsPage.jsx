@@ -882,7 +882,7 @@ export default function DealsPage() {
                     </div>
                   )}
                   <div style={{ background:'#f9fafb', borderRadius:10, padding:'12px 14px', border:'1px solid #e5e7eb' }}>
-                    <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Бюджет</div>
+                    <div style={{ fontSize:11, fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'.6px', marginBottom:4 }}>Цена в заявке</div>
                     <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>💰 {formatJobRequestBudgetLabel(reqDetail)}</div>
                   </div>
                   {reqDetail.addressText && (
@@ -902,7 +902,7 @@ export default function DealsPage() {
                 <div className="dp-card">
                   <div className="dp-card-label">Редактировать заявку</div>
                   <p style={{ fontSize:13, color:'#6b7280', margin:'0 0 14px', lineHeight:1.5 }}>
-                    Задайте цену, чтобы мастера сразу видели сумму. Поле цены можно оставить пустым — тогда отобразится «Цена не указана», и условия можно согласовать в чате.
+                    Укажите сумму — она сохранится в заявке как ваша заявленная цена. Пустое поле значит «Не указана»; позже вы с мастером всё равно можете договориться о другой сумме до сделки.
                   </p>
                   {reqEditErr ? <p style={{ color:'#dc2626', fontSize:13, margin:'0 0 10px' }}>{reqEditErr}</p> : null}
                   <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
@@ -937,7 +937,7 @@ export default function DealsPage() {
                       />
                     </div>
                     <div>
-                      <div style={{ fontSize:12, fontWeight:600, color:'#374151', marginBottom:6 }}>Цена, ₽</div>
+                      <div style={{ fontSize:12, fontWeight:600, color:'#374151', marginBottom:6 }}>Цена в заявке, ₽</div>
                       <input
                         type="number"
                         min={1}

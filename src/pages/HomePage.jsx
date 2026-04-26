@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getUserProfile, getOpenJobRequestsForWorker } from '../api';
+import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
 import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
@@ -356,26 +356,11 @@ function cityInLocative(nominative) {
   return c || 'Йошкар-Оле';
 }
 
-function groupOpenRequestsByCustomer(requests) {
-  const arr = Array.isArray(requests) ? requests : [];
-  const map = new Map();
-  for (const r of arr) {
-    const key = r.customerId != null ? `c-${r.customerId}` : `r-${r.id}`;
-    if (!map.has(key)) map.set(key, []);
-    map.get(key).push(r);
-  }
-  return [...map.values()]
-    .map(list => {
-      const sorted = [...list].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-      return { requests: sorted, primary: sorted[0] };
-    })
-    .sort((a, b) => new Date(b.primary.createdAt || 0) - new Date(a.primary.createdAt || 0));
-}
-
 function WorkerHome({ userId, userName }) {
   const navigate = useNavigate();
   const [openRequests, setOpenRequests] = useState([]);
-  const [shown, setShown] = useState(12);
+  const [categories, setCategories] = useState([]);
+  const [shown, setShown] = useState(15);
   const [city, setCity] = useState('Йошкар-Ола');
   const [loading, setLoading] = useState(true);
 
@@ -385,19 +370,23 @@ function WorkerHome({ userId, userName }) {
     Promise.all([
       getOpenJobRequestsForWorker(userId).catch(() => []),
       getUserProfile(userId).catch(() => null),
+      getCategories().catch(() => []),
     ])
-      .then(([reqs, prof]) => {
+      .then(([reqs, prof, cats]) => {
         setOpenRequests(Array.isArray(reqs) ? reqs : []);
+        setCategories(Array.isArray(cats) ? cats : []);
         const c = (prof && prof.city && String(prof.city).trim()) || '';
         if (c) setCity(c);
       })
       .finally(() => setLoading(false));
   }, [userId]);
 
-  const customerGroups = useMemo(
-    () => groupOpenRequestsByCustomer(openRequests),
+  const sortedOpenRequests = useMemo(
+    () => [...openRequests].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
     [openRequests],
   );
+
+  const catName = (categoryId) => categories.find(c => String(c.id) === String(categoryId))?.name || 'Заявка';
 
   const firstName = (userName || 'Мастер').trim().split(/\s+/)[0] || 'Мастер';
   const cityPrep = cityInLocative(city);
@@ -435,8 +424,8 @@ function WorkerHome({ userId, userName }) {
         </div>
       </div>
 
-      <div className="av-body">
-        <div>
+      <div className="av-body av-body-worker-feed">
+        <div className="av-worker-main">
           <div className="av-cats-block">
             <div className="av-cats-hdr">
               <span className="av-cats-hdr-title">Категории заявок</span>
@@ -460,11 +449,8 @@ function WorkerHome({ userId, userName }) {
             </div>
           </div>
 
-          <div className="av-recs-hdr">
+          <div className="av-recs-hdr av-recs-hdr--solo">
             <h2 className="av-recs-title">Актуальные заявки</h2>
-            <Link to="/find-work" className="av-recs-link">
-              Все заявки →
-            </Link>
           </div>
 
           {loading ? (
@@ -472,7 +458,7 @@ function WorkerHome({ userId, userName }) {
               <div className="av-empty-ico">⏳</div>
               <h3>Загружаем заявки…</h3>
             </div>
-          ) : customerGroups.length === 0 ? (
+          ) : sortedOpenRequests.length === 0 ? (
             <div className="av-empty">
               <div className="av-empty-ico">📋</div>
               <h3>Пока нет открытых заявок</h3>
@@ -480,64 +466,76 @@ function WorkerHome({ userId, userName }) {
             </div>
           ) : (
             <>
-              <div className="av-cards-grid">
-                {customerGroups.slice(0, shown).map(({ requests: group, primary: req }) => {
-                  const n = group.length;
+              <div className="av-feed-list">
+                {sortedOpenRequests.slice(0, shown).map(req => {
                   const img0 = req.photos?.[0];
                   const src = workerListingPhotoUrl(img0);
                   const budget = formatJobRequestBudgetLabel(req);
                   const custName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
-                  const catLabel = req.categoryName || 'Заявка';
                   const loc = req.addressText || req.city || city;
+                  const cname = catName(req.categoryId);
                   return (
                     <Link
-                      key={req.customerId != null ? `c-${req.customerId}` : `r-${req.id}`}
+                      key={req.id}
                       to={`/find-work?request=${encodeURIComponent(req.id)}`}
-                      className="av-card"
+                      className="av-feed-row"
                     >
-                      <div className="av-card-img">
-                        {src ? <img src={src} alt="" /> : '👤'}
-                        <span className="av-card-cat">
-                          {n > 1 ? `${n} заявки` : catLabel}
-                        </span>
+                      <div className="av-feed-thumb">
+                        {src ? <img src={src} alt="" /> : '📋'}
                       </div>
-                      <div className="av-card-body">
-                        <div className="av-card-price">{budget}</div>
-                        <div className="av-card-title">
-                          {req.title}
-                          {n > 1 && (
-                            <span style={{ display: 'block', fontSize: 11, color: '#94a3b8', fontWeight: 600, marginTop: 4 }}>
-                              + ещё {n - 1} от этого заказчика
+                      <div className="av-feed-main">
+                        <div className="av-feed-title">{req.title}</div>
+                        <div className="av-feed-meta">
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <span
+                              style={{
+                                width: 22,
+                                height: 22,
+                                borderRadius: '50%',
+                                overflow: 'hidden',
+                                background: 'linear-gradient(135deg,#e8410a,#ff7043)',
+                                color: '#fff',
+                                fontSize: 10,
+                                fontWeight: 800,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                              }}
+                            >
+                              {req.customerAvatar ? (
+                                <img src={workerListingPhotoUrl(req.customerAvatar)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                              ) : (
+                                (custName || 'З')[0]
+                              )}
+                            </span>
+                            <span>{custName}</span>
+                          </span>
+                          <span>📍 {loc}</span>
+                          {req.createdAt && (
+                            <span style={{ color: '#9ca3af' }}>
+                              {new Date(req.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
                             </span>
                           )}
                         </div>
-                        <div className="av-card-footer">
-                          <div className="av-card-ava">
-                            {req.customerAvatar ? (
-                              <img src={workerListingPhotoUrl(req.customerAvatar)} alt="" />
-                            ) : (
-                              (custName || 'З')[0]
-                            )}
-                          </div>
-                          <span className="av-card-wname">{custName}</span>
-                          <span className="av-card-city">📍 {loc}</span>
-                        </div>
+                      </div>
+                      <div className="av-feed-side">
+                        <div className="av-feed-price">{budget}</div>
+                        <div className="av-feed-cat">{cname}</div>
                       </div>
                     </Link>
                   );
                 })}
               </div>
-              {shown < customerGroups.length && (
-                <button type="button" className="av-more-btn" onClick={() => setShown(s => s + 12)}>
-                  Показать ещё · осталось {customerGroups.length - shown}
+              {shown < sortedOpenRequests.length && (
+                <button type="button" className="av-more-btn" onClick={() => setShown(s => s + 15)}>
+                  Показать ещё · осталось {sortedOpenRequests.length - shown}
                 </button>
               )}
             </>
           )}
-        </div>
 
-        <div className="av-side">
-          <div className="av-promo">
+          <div className="av-promo av-promo-below">
             <h3>Новые заявки ждут</h3>
             <p>Откликнитесь первым в разделе «Найти работу» — так вы чаще получаете заказ.</p>
             <button type="button" className="av-promo-btn" onClick={() => navigate('/find-work')}>

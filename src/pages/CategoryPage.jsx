@@ -283,7 +283,7 @@ export default function CategoryPage() {
     if (!userId) { navigate('/login'); return; }
     if (!form.title.trim()) { setError('Укажите название задачи'); return; }
     if (!form.description.trim()) { setError('Добавьте подробное описание'); return; }
-    if (!form.budget) { setError('Укажите предварительную цену'); return; }
+    if (!form.budget) { setError('Укажите окончательную цену за работу'); return; }
     if (Number(form.budget) <= 0) { setError('Цена должна быть больше нуля'); return; }
 
     let categoryId = apiCategoryId;
@@ -559,13 +559,13 @@ export default function CategoryPage() {
               </div>
             </div>
 
-            {/* ── 4. БЮДЖЕТ ── */}
+            {/* ── 4. ЦЕНА В ЗАЯВКЕ ── */}
             <div className="cp-card">
-              <div className="cp-card-title">Предварительная цена</div>
+              <div className="cp-card-title">Окончательная цена в заявке</div>
               <div className="cp-price-block">
                 <div className="cp-price-row" style={{ marginBottom: 12 }}>
                   <div className="cp-field" style={{ margin: 0 }}>
-                    <label>Ваш бюджет, ₽ *</label>
+                    <label>Сколько готовы заплатить за работу, ₽ *</label>
                     <input
                       name="budget"
                       type="number"
@@ -580,22 +580,22 @@ export default function CategoryPage() {
                     {form.budget && Number(form.budget) > 0 ? (
                       <div style={{ padding: '12px 14px', background: '#f0fdf4', border: '1.5px solid #bbf7d0', borderRadius: 8 }}>
                         <div style={{ fontSize: 13, color: '#166534', fontWeight: 600 }}>
-                          ✅ Мастера увидят: <strong>{Number(form.budget).toLocaleString('ru-RU')} ₽</strong>
+                          ✅ В заявке будет указано: <strong>{Number(form.budget).toLocaleString('ru-RU')} ₽</strong>
                         </div>
                         <div style={{ fontSize: 12, color: '#16a34a', marginTop: 3 }}>
-                          Они смогут принять эту сумму или предложить свою
+                          Это ваша заявленная цена. После отклика вы с мастером можете договориться о другой сумме до начала сделки.
                         </div>
                       </div>
                     ) : (
                       <div style={{ padding: '12px 14px', background: '#fafafa', border: '1.5px solid #e8e8e8', borderRadius: 8 }}>
-                        <div style={{ fontSize: 13, color: '#aaa' }}>Укажите сумму — мастера её увидят</div>
+                        <div style={{ fontSize: 13, color: '#aaa' }}>Укажите сумму — она попадёт в заявку как ваша цена</div>
                       </div>
                     )}
                   </div>
                 </div>
                 <div style={{ fontSize: 13, color: '#888', lineHeight: 1.6, background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8, padding: '12px 14px' }}>
-                  <strong style={{ color: '#555' }}>Как работает цена:</strong> Ваш бюджет показывается мастерам.
-                  Мастер может нажать <em>«Готов за эту сумму»</em> или предложит другую цену — вы сравните и выберете.
+                  <strong style={{ color: '#555' }}>Как это устроено:</strong> в заявке фиксируется сумма, которую вы указываете сейчас.
+                  Мастер может откликнуться с этой же суммой или предложить свою — вы выбираете отклик и дальше уже в переписке или в сделке согласуете окончательные условия.
                 </div>
               </div>
             </div>
@@ -624,8 +624,8 @@ export default function CategoryPage() {
             <div className="cp-sb-title">⚡ Как это работает</div>
             <div className="cp-steps">
               {[
-                ['Опубликуйте задачу', 'Опишите что нужно сделать и укажите бюджет'],
-                ['Получайте отклики', 'Мастера увидят вашу цену и пришлют предложения'],
+                ['Опубликуйте задачу', 'Опишите работу и укажите цену — она сразу попадёт в заявку'],
+                ['Получайте отклики', 'Мастера видят вашу сумму в заявке и присылают предложения'],
                 ['Выберите мастера', 'Сравните цены, отзывы и рейтинги'],
                 ['Подтвердите работу', 'Оплата проходит только после выполнения'],
               ].map(([title, desc], i) => (

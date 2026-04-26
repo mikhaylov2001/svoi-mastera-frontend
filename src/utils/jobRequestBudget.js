@@ -1,8 +1,8 @@
 /**
- * Подпись бюджета для карточек заявки (без слова «Договорная»).
+ * Сумма в заявке для карточек (одна окончательная цифра в заявке; диапазон — редкий случай).
  */
 export function formatJobRequestBudgetLabel(req) {
-  if (!req) return 'Цена не указана';
+  if (!req) return 'Не указана';
   const to = req.budgetTo != null && req.budgetTo !== '' ? Number(req.budgetTo) : null;
   const from = req.budgetFrom != null && req.budgetFrom !== '' ? Number(req.budgetFrom) : null;
   const okTo = to != null && !Number.isNaN(to);
@@ -10,7 +10,10 @@ export function formatJobRequestBudgetLabel(req) {
   if (okTo && okFrom && to === from) {
     return `${to.toLocaleString('ru-RU')} ₽`;
   }
-  if (okTo) return `до ${to.toLocaleString('ru-RU')} ₽`;
+  if (okTo && okFrom && to !== from) {
+    return `${from.toLocaleString('ru-RU')} — ${to.toLocaleString('ru-RU')} ₽`;
+  }
+  if (okTo) return `${to.toLocaleString('ru-RU')} ₽`;
   if (okFrom) return `от ${from.toLocaleString('ru-RU')} ₽`;
-  return 'Цена не указана';
+  return 'Не указана';
 }
