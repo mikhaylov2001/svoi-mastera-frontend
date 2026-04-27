@@ -639,7 +639,7 @@ const fw2css = `
     flex-shrink: 0;
   }
   .fw2-card-customer-name { font-size: 12px; font-weight: 700; color: #333; line-height: 1.2; }
-  .fw2-card-customer-sub  { font-size: 11px; color: #999; margin-top: 1px; font-weight: 400; }
+  .fw2-card-customer-sub  { font-size: 11px; color: #22c55e; margin-top: 1px; font-weight: 600; line-height: 1.35; }
   .fw2-card-title {
     font-size: 15px;
     font-weight: 800;
@@ -724,15 +724,18 @@ const fw2css = `
   }
   .fw2-card-actions {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex: 1;
+    min-width: 0;
     gap: 6px;
     align-items: stretch;
-    min-width: 130px;
-    flex-shrink: 0;
+    flex-shrink: 1;
   }
   .fw2-btn-respond {
-    width: 100%;
-    padding: 9px 12px;
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    padding: 9px 8px;
     background: #e8410a;
     border: none;
     border-radius: 8px;
@@ -746,8 +749,10 @@ const fw2css = `
   }
   .fw2-btn-respond:hover { background: #c73208; }
   .fw2-btn-msg {
-    width: 100%;
-    padding: 8px 12px;
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    padding: 8px 8px;
     background: #fff;
     border: 1.5px solid #e8e8e8;
     border-radius: 8px;
@@ -758,7 +763,8 @@ const fw2css = `
     font-family: inherit;
     transition: border-color .15s, color .15s;
   }
-  .fw2-btn-msg:hover { border-color: #e8410a; color: #e8410a; }
+  .fw2-btn-msg:hover:not(:disabled) { border-color: #e8410a; color: #e8410a; }
+  .fw2-btn-msg:disabled { opacity: .45; cursor: not-allowed; }
 
   /* ═══ ПУСТОЕ СОСТОЯНИЕ ═══ */
   .fw2-empty {
@@ -1391,7 +1397,7 @@ export default function FindWorkPage() {
                 {filtered.map(req => {
                   const photos = req.photos || [];
                   const hasPhoto = photos.length > 0;
-                  const listPrice = jobRequestListPrice(req);
+                  const budgetLabel = formatJobRequestBudgetLabel(req);
                   const custName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
 
                   const customerHref = req.customerId
@@ -1407,7 +1413,9 @@ export default function FindWorkPage() {
                     }
                     return 'Йошкар-Ола';
                   })();
-                  const profileSub = `${cityLine} · Профиль →`;
+                  const activeCustomerSub = req.addressText && String(req.addressText).trim()
+                    ? `● Активный заказчик · ${String(req.addressText).trim()}`
+                    : `● Активный заказчик · ${cityLine}`;
 
                   return (
                     <div key={req.id} className="fw2-card">
@@ -1479,8 +1487,9 @@ export default function FindWorkPage() {
                             )}
                             <div style={{ flex:1, minWidth:0 }}>
                               <div className="fw2-card-customer-name">{custName}</div>
-                              <div className="fw2-card-customer-sub">{profileSub}</div>
+                              <div className="fw2-card-customer-sub">{activeCustomerSub}</div>
                             </div>
+                            <span style={{ color:'#d1d5db', fontSize:18, flexShrink:0, lineHeight:1 }}>›</span>
                           </Link>
                         ) : (
                           <div
@@ -1505,7 +1514,7 @@ export default function FindWorkPage() {
                             )}
                             <div>
                               <div className="fw2-card-customer-name">{custName}</div>
-                              <div className="fw2-card-customer-sub">{profileSub}</div>
+                              <div className="fw2-card-customer-sub">{activeCustomerSub}</div>
                             </div>
                           </div>
                         )}
@@ -1547,11 +1556,9 @@ export default function FindWorkPage() {
 
                         <div className="fw2-card-footer">
                           <div className="fw2-card-price-block">
-                            {listPrice != null ? (
+                            {budgetLabel !== 'Не указана' ? (
                               <>
-                                <div className="fw2-card-price">
-                                  от {Number(listPrice).toLocaleString('ru-RU')} ₽
-                                </div>
+                                <div className="fw2-card-price">{budgetLabel}</div>
                                 <span className="fw2-card-price-unit">в заявке</span>
                               </>
                             ) : (
@@ -1569,18 +1576,18 @@ export default function FindWorkPage() {
                             >
                               ✓ Откликнуться
                             </button>
-                            {req.customerId ? (
-                              <button
-                                type="button"
-                                className="fw2-btn-msg"
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  navigate(`/chat/${req.customerId}?jobRequestId=${req.id}`);
-                                }}
-                              >
-                                💬 Написать
-                              </button>
-                            ) : null}
+                            <button
+                              type="button"
+                              className="fw2-btn-msg"
+                              disabled={!req.customerId}
+                              title={!req.customerId ? 'Чат будет доступен после появления профиля заказчика' : undefined}
+                              onClick={e => {
+                                e.stopPropagation();
+                                if (req.customerId) navigate(`/chat/${req.customerId}?jobRequestId=${req.id}`);
+                              }}
+                            >
+                              💬 Написать
+                            </button>
                           </div>
                         </div>
                       </div>

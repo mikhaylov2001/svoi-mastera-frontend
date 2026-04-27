@@ -1421,7 +1421,7 @@ export default function FindMasterPage() {
                           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                             <div className="fmp-card-price-block">
                               <div className="fmp-card-price">
-                                {s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
+                                {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
                     </div>
                               {s.priceUnit && <span className="fmp-card-price-unit">{s.priceUnit}</span>}
                   </div>
@@ -1458,7 +1458,7 @@ export default function FindMasterPage() {
                         <div className="fmp-card-footer">
                           <div className="fmp-card-price-block">
                             <div className="fmp-card-price">
-                              {s.priceFrom ? `от ${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
+                              {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
                             </div>
                             {s.priceUnit && <span className="fmp-card-price-unit">{s.priceUnit}</span>}
                           </div>

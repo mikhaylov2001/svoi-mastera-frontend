@@ -14,6 +14,6 @@ export function formatJobRequestBudgetLabel(req) {
     return `${from.toLocaleString('ru-RU')} — ${to.toLocaleString('ru-RU')} ₽`;
   }
   if (okTo) return `${to.toLocaleString('ru-RU')} ₽`;
-  if (okFrom) return `от ${from.toLocaleString('ru-RU')} ₽`;
+  if (okFrom) return `${from.toLocaleString('ru-RU')} ₽`;
   return 'Не указана';
 }
