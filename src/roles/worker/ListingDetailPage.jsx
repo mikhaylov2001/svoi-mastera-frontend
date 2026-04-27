@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { acceptListingDeal } from '../../api';
+import { acceptListingDeal, recordListingView } from '../../api';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
+
+/** Одна отправка просмотра на id за сессию (React StrictMode и повторные fetch) */
+const listingViewPostedIds = new Set();
 
 const CAT_PHOTOS = {
   'remont-kvartir':       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=80',
@@ -244,6 +247,14 @@ export default function ListingDetailPage() {
         if (!data) return;
         setListing(data);
         setActivePhoto(0);
+        if (
+          data.id &&
+          String(data.workerId || '') !== String(userId || '') &&
+          !listingViewPostedIds.has(data.id)
+        ) {
+          listingViewPostedIds.add(data.id);
+          recordListingView(data.id).catch(() => {});
+        }
         if (data.workerId) {
           fetch(`${API}/workers/${data.workerId}/stats`)
             .then(r => r.ok ? r.json() : null)
@@ -259,7 +270,7 @@ export default function ListingDetailPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, userId]);
 
   const photos = listing?.photos?.length ? listing.photos : [];
   const catSlug = CAT_SLUGS[listing?.category] || '';

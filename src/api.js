@@ -341,6 +341,11 @@ export async function deleteListing(userId, listingId) {
   });
 }
 
+/** Учёт просмотра публичной страницы объявления (вызывать не от владельца) */
+export async function recordListingView(listingId) {
+  return apiCall(`/listings/${listingId}/view`, { method: 'POST', body: '{}' });
+}
+
 // ── NOTIFICATIONS ──
 export async function getNotifications(userId) {
   return apiCall('/notifications', { headers: { 'X-User-Id': userId } });
