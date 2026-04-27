@@ -653,13 +653,6 @@ const css = `
     transition: opacity .15s;
   }
   .fmp-card-worker:hover { opacity: .85; }
-  .fmp-card-worker-sub--active {
-    font-size: 11px;
-    color: #22c55e;
-    font-weight: 600;
-    margin-top: 1px;
-    line-height: 1.35;
-  }
   .fmp-card-worker-chev {
     color: #d1d5db;
     font-size: 18px;
@@ -681,6 +674,10 @@ const css = `
   }
   .fmp-card-worker-name { font-size: 12px; font-weight: 700; color: #333; line-height: 1.2; }
   .fmp-card-worker-sub  { font-size: 11px; color: #999; margin-top: 1px; line-height: 1.35; }
+  .fmp-card-worker-sub.fmp-card-worker-sub--active {
+    color: #16a34a;
+    font-weight: 600;
+  }
 
   /* Название → объявление */
   .fmp-card-title {
