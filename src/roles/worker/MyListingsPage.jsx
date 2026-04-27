@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
@@ -27,11 +27,17 @@ const CAT_TIPS = {
   'Парикмахер':        ['Опишите специализацию: стрижки, окраска, укладки', 'Добавьте фото портфолио — это главный аргумент', 'Укажите выезд на дом или свой адрес'],
 };
 
-// slug → category name mapping (из CATEGORIES_BY_SECTION)
-const SLUG_TO_CAT = {};
-Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
-  cats.forEach(c => { SLUG_TO_CAT[c.slug] = c.name; })
-);
+/** Фон по названию категории (как на страницах разделов) */
+const CATEGORY_PHOTO_BY_NAME = {};
+Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
+  cats.forEach(c => { CATEGORY_PHOTO_BY_NAME[c.name] = c.photo; });
+});
+function photoForCategoryName(name) {
+  if (!name || !String(name).trim()) return HERO_PHOTO;
+  const n = String(name).trim();
+  if (CATEGORY_PHOTO_BY_NAME[n]) return CATEGORY_PHOTO_BY_NAME[n];
+  return HERO_PHOTO;
+}
 
 function compressImage(file) {
   return new Promise((resolve) => {
@@ -62,46 +68,93 @@ const css = `
   /* ── GENERAL ── */
   .ml-page { background: #f2f2f2; min-height: 100vh; font-family: Inter, Arial, sans-serif; color: #1a1a1a; }
 
+  /* ── СПИСОК: фон по категории + слой контента ── */
+  .ml-list-shell { position: relative; min-height: 100vh; overflow-x: hidden; }
+  .ml-list-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    transition: opacity .45s ease;
+  }
+  .ml-list-bg img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: brightness(.42) saturate(1.08);
+  }
+  .ml-list-bg-scrim {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,.94) 0%, rgba(255,255,255,.88) 18%, rgba(242,242,242,.92) 45%, #f0f0f0 100%);
+  }
+  .ml-list-front { position: relative; z-index: 1; }
+
   /* ── LIST HEADER ── */
+  .ml-list-shell .ml-hdr {
+    background: rgba(255,255,255,.78);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(232,232,232,.9);
+  }
   .ml-hdr { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 18px 0; }
-  .ml-hdr-inner { max-width: 1000px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; }
-  .ml-h1 { font-size: 24px; font-weight: 900; margin: 0; }
-  .ml-new-btn { background: #e8410a; border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700; padding: 11px 22px; cursor: pointer; font-family: inherit; transition: background .15s; }
-  .ml-new-btn:hover { background: #c73208; }
+  .ml-hdr-inner { max-width: 1000px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .ml-h1 { font-size: 26px; font-weight: 900; margin: 0; letter-spacing: -.02em; }
+  .ml-h-sub { font-size: 13px; color: #6b7280; margin: 4px 0 0; font-weight: 500; max-width: 420px; line-height: 1.45; }
+  .ml-new-btn { background: #e8410a; border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700; padding: 11px 22px; cursor: pointer; font-family: inherit; transition: background .15s, box-shadow .15s; box-shadow: 0 4px 14px rgba(232,65,10,.25); }
+  .ml-new-btn:hover { background: #c73208; box-shadow: 0 6px 20px rgba(232,65,10,.32); }
   .ml-wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px 60px; }
 
-  /* ── TABS ── */
-  .ml-tabs { display: flex; border-bottom: 2px solid #e8e8e8; background: #fff; }
-  .ml-tab { background: none; border: none; border-bottom: 3px solid transparent; padding: 14px 22px; font-size: 14px; font-weight: 600; color: #8f8f8f; cursor: pointer; margin-bottom: -2px; font-family: inherit; }
-  .ml-tab.on { color: #e8410a; border-bottom-color: #e8410a; }
-  .ml-tab-n { font-size: 12px; background: #f0f0f0; border-radius: 10px; padding: 1px 7px; margin-left: 5px; color: #666; }
-  .ml-tab.on .ml-tab-n { background: #fde8e0; color: #e8410a; }
+  /* ── Фильтр по категории (фон) ── */
+  .ml-cat-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+  .ml-cat-chips-label { font-size: 12px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .06em; margin-right: 4px; }
+  .ml-chip {
+    border: 1.5px solid #e5e7eb; background: #fff; color: #374151;
+    font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 999px;
+    cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .ml-chip:hover { border-color: #e8410a; color: #e8410a; }
+  .ml-chip.on { border-color: #e8410a; background: #fff4ef; color: #c73208; }
 
-  /* ── LIST ── */
-  .ml-list { background: #fff; border: 1.5px solid #e8e8e8; border-top: none; border-radius: 0 0 12px 12px; overflow: hidden; }
-  .ml-row { display: flex; border-bottom: 1px solid #f0f0f0; transition: background .15s; cursor: pointer; }
-  .ml-row:last-child { border-bottom: none; }
-  .ml-row:hover { background: #fafafa; }
-  .ml-row-img { width: 120px; height: 96px; flex-shrink: 0; background: #f5f5f5; overflow: hidden; position: relative; }
-  .ml-row-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .ml-row-img-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #d1d5db; }
-  .ml-row-img-cnt { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,.5); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 5px; border-radius: 3px; }
-  .ml-row-body { flex: 1; padding: 14px 16px; min-width: 0; }
-  .ml-row-title { font-size: 15px; font-weight: 700; color: #1a1a1a; margin: 0 0 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  .ml-row-price { font-size: 18px; font-weight: 800; margin-bottom: 4px; color: #1a1a1a; }
+  /* ── TABS ── */
+  .ml-tabs { display: flex; gap: 6px; padding: 4px; background: rgba(255,255,255,.85); border: 1px solid #e8e8e8; border-radius: 12px; margin-bottom: 14px; width: fit-content; }
+  .ml-tab { background: none; border: none; border-radius: 10px; padding: 10px 18px; font-size: 14px; font-weight: 600; color: #6b7280; cursor: pointer; font-family: inherit; transition: all .15s; }
+  .ml-tab.on { color: #fff; background: #e8410a; box-shadow: 0 2px 8px rgba(232,65,10,.25); }
+  .ml-tab-n { font-size: 11px; background: rgba(0,0,0,.06); border-radius: 8px; padding: 1px 6px; margin-left: 5px; color: #6b7280; }
+  .ml-tab.on .ml-tab-n { background: rgba(255,255,255,.22); color: #fff; }
+
+  /* ── LIST (карточки) ── */
+  .ml-list { display: flex; flex-direction: column; gap: 12px; background: transparent; border: none; }
+  .ml-row {
+    display: flex; align-items: stretch;
+    background: #fff; border: 1.5px solid #e8e8e8; border-radius: 16px;
+    overflow: hidden; cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,.04);
+    transition: box-shadow .2s, transform .2s, border-color .2s;
+  }
+  .ml-row:hover {
+    box-shadow: 0 10px 32px rgba(0,0,0,.1);
+    transform: translateY(-2px);
+    border-color: #e8410a;
+  }
+  .ml-row-img { width: 132px; min-height: 108px; flex-shrink: 0; background: #f5f5f5; overflow: hidden; position: relative; }
+  .ml-row-img img { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 108px; }
+  .ml-row-img-ph { width: 100%; height: 100%; min-height: 108px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #d1d5db; }
+  .ml-row-img-cnt { position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,.55); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 6px; }
+  .ml-row-body { flex: 1; padding: 16px 18px; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  .ml-row-title { font-size: 16px; font-weight: 800; color: #111827; margin: 0 0 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .ml-row-price { font-size: 19px; font-weight: 800; margin-bottom: 6px; color: #1a1a1a; }
   .ml-row-unit { font-size: 12px; color: #8f8f8f; font-weight: 500; margin-left: 4px; }
-  .ml-row-cat { display: inline-block; font-size: 11px; color: #fff; background: #e8410a; border-radius: 4px; padding: 2px 8px; margin-bottom: 5px; font-weight: 600; }
-  .ml-row-desc { font-size: 13px; color: #6b6b6b; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; margin-bottom: 4px; }
+  .ml-row-cat { display: inline-block; font-size: 11px; color: #fff; background: #e8410a; border-radius: 6px; padding: 3px 10px; margin-bottom: 6px; font-weight: 700; }
+  .ml-row-desc { font-size: 13px; color: #6b7280; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 6px; line-height: 1.45; }
   .ml-row-date { font-size: 12px; color: #9ca3af; }
-  .ml-row-stats { width: 170px; flex-shrink: 0; padding: 14px 12px; display: flex; flex-direction: column; gap: 5px; border-left: 1px solid #f0f0f0; }
-  .ml-row-stat { font-size: 12px; color: #8f8f8f; display: flex; align-items: center; gap: 5px; }
-  .ml-row-actions { width: 155px; flex-shrink: 0; padding: 14px 12px; display: flex; flex-direction: column; gap: 8px; border-left: 1px solid #f0f0f0; justify-content: center; }
-  .ml-btn-edit { background: #fff; border: 1.5px solid #d6d6d6; border-radius: 8px; padding: 8px 0; font-size: 13px; font-weight: 600; color: #333; cursor: pointer; width: 100%; font-family: inherit; transition: all .15s; }
+  .ml-row-stats { width: 170px; flex-shrink: 0; padding: 16px 14px; display: flex; flex-direction: column; gap: 6px; justify-content: center; border-left: 1px solid #f0f0f0; background: #fafafa; }
+  .ml-row-stat { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 5px; }
+  .ml-row-actions { width: 160px; flex-shrink: 0; padding: 16px 14px; display: flex; flex-direction: column; gap: 10px; justify-content: center; border-left: 1px solid #f0f0f0; }
+  .ml-btn-edit { background: #fff; border: 1.5px solid #d6d6d6; border-radius: 10px; padding: 9px 0; font-size: 13px; font-weight: 600; color: #333; cursor: pointer; width: 100%; font-family: inherit; transition: all .15s; }
   .ml-btn-edit:hover { border-color: #e8410a; color: #e8410a; }
   .ml-btn-arch { background: none; border: none; font-size: 12px; color: #8f8f8f; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-align: center; font-family: inherit; }
   .ml-btn-arch:hover { color: #e8410a; }
   .ml-btn-restore { background: none; border: none; font-size: 12px; color: #e8410a; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-align: center; font-family: inherit; }
-  .ml-empty { text-align: center; padding: 80px 24px; background: #fff; border: 1.5px solid #e8e8e8; border-top: none; border-radius: 0 0 12px 12px; color: #8f8f8f; }
+  .ml-empty {
+    text-align: center; padding: 72px 24px;
+    background: rgba(255,255,255,.95); border: 1.5px solid #e8e8e8; border-radius: 16px;
+    color: #8f8f8f; box-shadow: 0 4px 20px rgba(0,0,0,.05);
+  }
 
   /* ── DETAIL ── */
   .ml-detail { background: #f2f2f2; min-height: 100vh; }
@@ -419,6 +472,9 @@ export default function MyListingsPage() {
   const [photoIdx, setPhotoIdx] = useState(0);
   const [view,     setView]     = useState(null); // null | 'create' | {edit: listing}
   const [pickedSection, setPickedSection] = useState(null); // slug of chosen section
+  const [hoverSectionSlug, setHoverSectionSlug] = useState(null); // превью фона шага «разделы»
+  const [listBgCategory, setListBgCategory] = useState(null); // фильтр фона на «Мои объявления»
+  const [listBgHoverCat, setListBgHoverCat] = useState(null); // превью при наведении на строку
   const [form,     setForm]     = useState(EMPTY_FORM);
   const [saving,   setSaving]   = useState(false);
   const [formErr,  setFormErr]  = useState('');
@@ -461,10 +517,26 @@ export default function MyListingsPage() {
   const archive = listings.filter(l => !l.active);
   const shown   = tab === 'active' ? active : archive;
 
+  const listCategoryChips = useMemo(
+    () => [...new Set(shown.map(l => l.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru')),
+    [shown]
+  );
+
+  const listBgPhotoUrl = useMemo(() => {
+    const cat = listBgHoverCat || listBgCategory || shown[0]?.category;
+    return photoForCategoryName(cat);
+  }, [listBgHoverCat, listBgCategory, shown]);
+
+  useEffect(() => {
+    setListBgCategory(null);
+    setListBgHoverCat(null);
+  }, [tab]);
+
   const openCreate = () => {
     setForm(EMPTY_FORM);
     setFormErr('');
     setPickedSection(null);
+    setHoverSectionSlug(null);
     setView('create');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -566,13 +638,26 @@ export default function MyListingsPage() {
     const photos   = form.photos || [];
     const descLen  = form.description.length;
 
+    let createHeroSrc = HERO_PHOTO;
+    if (isEdit && form.category) createHeroSrc = photoForCategoryName(form.category);
+    else if (!isEdit) {
+      if (isSectionStep) {
+        const hs = hoverSectionSlug && SECTIONS.find(s => s.slug === hoverSectionSlug);
+        createHeroSrc = hs?.photo || HERO_PHOTO;
+      } else if (isCatStep) {
+        createHeroSrc = SECTIONS.find(s => s.slug === pickedSection)?.photo || HERO_PHOTO;
+      } else if (form.category) {
+        createHeroSrc = photoForCategoryName(form.category);
+      }
+    }
+
     return (
       <div className="ml-page">
         <style>{css}</style>
 
         {/* Hero */}
         <div className="mlf-hero">
-          <img src={HERO_PHOTO} alt="" className="mlf-hero-img" />
+          <img src={createHeroSrc} alt="" className="mlf-hero-img" />
           <div className="mlf-hero-overlay" />
           <div className="mlf-hero-body">
             <button className="mlf-hero-back" onClick={() => {
@@ -615,13 +700,17 @@ export default function MyListingsPage() {
               (() => {
                 const layout = ['mlf-sec-featured','mlf-sec-5','mlf-sec-5','mlf-sec-6','mlf-sec-6'];
                 return (
-                  <div className="mlf-sec-grid">
+                  <div
+                    className="mlf-sec-grid"
+                    onMouseLeave={() => setHoverSectionSlug(null)}
+                  >
                     {SECTIONS.map((sec, i) => (
                       <button
                         key={sec.slug}
                         type="button"
                         className={`mlf-sec-card ${layout[i] || 'mlf-sec-6'}`}
-                        onClick={() => { setPickedSection(sec.slug); window.scrollTo({top:0,behavior:'smooth'}); }}
+                        onMouseEnter={() => setHoverSectionSlug(sec.slug)}
+                        onClick={() => { setPickedSection(sec.slug); setHoverSectionSlug(null); window.scrollTo({top:0,behavior:'smooth'}); }}
                       >
                         <img src={sec.photo} alt={sec.name} className="mlf-sec-photo" />
                         <div className="mlf-sec-overlay" />
@@ -1055,54 +1144,91 @@ export default function MyListingsPage() {
 
   // ══ СПИСОК ══
   return (
-    <div className="ml-page">
+    <div className="ml-page ml-list-shell">
       <style>{css}</style>
-
-      <div className="ml-hdr">
-        <div className="ml-hdr-inner">
-          <h1 className="ml-h1">Мои объявления</h1>
-          <button className="ml-new-btn" onClick={openCreate}>+ Разместить объявление</button>
-        </div>
+      <div className="ml-list-bg" aria-hidden>
+        <img src={listBgPhotoUrl} alt="" />
+        <div className="ml-list-bg-scrim" />
       </div>
 
-      <div className="ml-wrap" style={{paddingTop: 0}}>
-        <div className="ml-tabs">
-          <button className={`ml-tab${tab==='active'?' on':''}`} onClick={() => setTab('active')}>
-            Активные <span className="ml-tab-n">{active.length}</span>
-          </button>
-          <button className={`ml-tab${tab==='archive'?' on':''}`} onClick={() => setTab('archive')}>
-            Архив <span className="ml-tab-n">{archive.length}</span>
-          </button>
+      <div className="ml-list-front">
+        <div className="ml-hdr">
+          <div className="ml-hdr-inner">
+            <div>
+              <h1 className="ml-h1">Мои объявления</h1>
+              <p className="ml-h-sub">Фон с реальным фото меняется по категории: выберите чип или наведите на карточку объявления</p>
+            </div>
+            <button className="ml-new-btn" type="button" onClick={openCreate}>+ Разместить объявление</button>
+          </div>
         </div>
 
-        {loading ? (
-          <div className="ml-list">
-            {[1,2,3].map(i => (
-              <div key={i} className="ml-row" style={{cursor:'default', pointerEvents:'none'}}>
-                <div className="ml-row-img"><div className="ml-sk" style={{width:'100%',height:'100%',borderRadius:0}}/></div>
-                <div className="ml-row-body" style={{display:'flex',flexDirection:'column',gap:8,justifyContent:'center'}}>
-                  <div className="ml-sk" style={{height:15,width:'55%'}}/>
-                  <div className="ml-sk" style={{height:22,width:'30%'}}/>
-                  <div className="ml-sk" style={{height:12,width:'40%'}}/>
+        <div className="ml-wrap" style={{ paddingTop: 0 }}>
+          {!loading && shown.length > 0 && listCategoryChips.length > 0 && (
+            <div className="ml-cat-chips">
+              <span className="ml-cat-chips-label">Категория</span>
+              <button
+                type="button"
+                className={`ml-chip${listBgCategory == null ? ' on' : ''}`}
+                onClick={() => { setListBgCategory(null); setListBgHoverCat(null); }}
+              >
+                Все
+              </button>
+              {listCategoryChips.map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  className={`ml-chip${listBgCategory === c ? ' on' : ''}`}
+                  onClick={() => { setListBgCategory(c); setListBgHoverCat(null); }}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="ml-tabs">
+            <button type="button" className={`ml-tab${tab==='active'?' on':''}`} onClick={() => setTab('active')}>
+              Активные <span className="ml-tab-n">{active.length}</span>
+            </button>
+            <button type="button" className={`ml-tab${tab==='archive'?' on':''}`} onClick={() => setTab('archive')}>
+              Архив <span className="ml-tab-n">{archive.length}</span>
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="ml-list">
+              {[1,2,3].map(i => (
+                <div key={i} className="ml-row" style={{ cursor: 'default', pointerEvents: 'none' }}>
+                  <div className="ml-row-img"><div className="ml-sk" style={{ width: '100%', height: '100%', borderRadius: 0 }} /></div>
+                  <div className="ml-row-body" style={{ display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
+                    <div className="ml-sk" style={{ height: 15, width: '55%' }} />
+                    <div className="ml-sk" style={{ height: 22, width: '30%' }} />
+                    <div className="ml-sk" style={{ height: 12, width: '40%' }} />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : shown.length === 0 ? (
-          <div className="ml-empty">
-            <div style={{fontSize:52, marginBottom:16}}>{tab==='active'?'📋':'📦'}</div>
-            <h3 style={{fontSize:17,fontWeight:700,color:'#1a1a1a',margin:'0 0 8px'}}>
-              {tab==='active' ? 'Нет активных объявлений' : 'Архив пуст'}
-            </h3>
-            <p style={{fontSize:14,margin:'0 0 20px'}}>
-              {tab==='active' ? 'Разместите объявление, чтобы заказчики могли вас найти' : 'Снятые объявления появятся здесь'}
-            </p>
-            {tab === 'active' && <button className="ml-new-btn" onClick={openCreate}>+ Разместить объявление</button>}
-          </div>
-        ) : (
-          <div className="ml-list">
-            {shown.map(l => (
-              <div key={l.id} className="ml-row" onClick={() => { setDetail(l); setPhotoIdx(0); }}>
+              ))}
+            </div>
+          ) : shown.length === 0 ? (
+            <div className="ml-empty">
+              <div style={{ fontSize: 52, marginBottom: 16 }}>{tab === 'active' ? '📋' : '📦'}</div>
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: '#1a1a1a', margin: '0 0 8px' }}>
+                {tab === 'active' ? 'Нет активных объявлений' : 'Архив пуст'}
+              </h3>
+              <p style={{ fontSize: 14, margin: '0 0 20px' }}>
+                {tab === 'active' ? 'Разместите объявление, чтобы заказчики могли вас найти' : 'Снятые объявления появятся здесь'}
+              </p>
+              {tab === 'active' && <button type="button" className="ml-new-btn" onClick={openCreate}>+ Разместить объявление</button>}
+            </div>
+          ) : (
+            <div className="ml-list">
+              {shown.map(l => (
+              <div
+                key={l.id}
+                className="ml-row"
+                onClick={() => { setDetail(l); setPhotoIdx(0); }}
+                onMouseEnter={() => { if (l.category) setListBgHoverCat(l.category); }}
+                onMouseLeave={() => setListBgHoverCat(null)}
+              >
                 <div className="ml-row-img">
                   {l.photos?.length
                     ? <><img src={l.photos[0]} alt=""/>{l.photos.length > 1 && <span className="ml-row-img-cnt">📷{l.photos.length}</span>}</>
@@ -1130,15 +1256,16 @@ export default function MyListingsPage() {
                   </div>
                 </div>
                 <div className="ml-row-actions" onClick={e => e.stopPropagation()}>
-                  <button className="ml-btn-edit" onClick={e => openEdit(l, e)}>Редактировать</button>
-                  <button className={l.active ? 'ml-btn-arch' : 'ml-btn-restore'} onClick={e => handleToggle(l, e)}>
+                  <button type="button" className="ml-btn-edit" onClick={e => openEdit(l, e)}>Редактировать</button>
+                  <button type="button" className={l.active ? 'ml-btn-arch' : 'ml-btn-restore'} onClick={e => handleToggle(l, e)}>
                     {l.active ? 'Снять с публикации' : 'Восстановить'}
                   </button>
                 </div>
               </div>
             ))}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
