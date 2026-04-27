@@ -71,26 +71,27 @@ const css = `
   /* ── СПИСОК: hero-баннер + чистый фон ── */
   .ml-list-shell { background: #f2f2f2; min-height: 100vh; }
   .ml-list-hero {
-    position: relative; height: 160px; overflow: hidden;
+    position: relative; height: 290px; overflow: hidden;
   }
+  @media (max-width: 768px) { .ml-list-hero { height: 240px; } }
   .ml-list-hero-img {
     position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover; object-position: center 40%;
-    filter: brightness(.55) saturate(1.1);
+    filter: brightness(.62) saturate(1.15);
   }
   .ml-list-hero-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(170deg, rgba(0,0,0,.08) 0%, rgba(0,0,0,.62) 100%);
+    background: linear-gradient(170deg, rgba(0,0,0,.06) 0%, rgba(0,0,0,.55) 100%);
   }
   .ml-list-hero-body {
     position: relative; z-index: 1; height: 100%;
     max-width: 1000px; margin: 0 auto; padding: 0 20px;
     display: flex; align-items: flex-end; justify-content: space-between;
-    padding-bottom: 22px; gap: 16px; flex-wrap: wrap;
+    padding-bottom: 32px; gap: 16px; flex-wrap: wrap;
   }
-  .ml-h1 { font-size: 28px; font-weight: 900; margin: 0; color: #fff; letter-spacing: -.02em; }
-  .ml-h-sub { font-size: 13px; color: rgba(255,255,255,.75); margin: 4px 0 0; font-weight: 500; }
-  .ml-new-btn { background: #e8410a; border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700; padding: 11px 22px; cursor: pointer; font-family: inherit; transition: background .15s, box-shadow .15s; box-shadow: 0 4px 14px rgba(232,65,10,.3); white-space: nowrap; }
+  .ml-h1 { font-size: clamp(24px, 4vw, 34px); font-weight: 900; margin: 0; color: #fff; letter-spacing: -.4px; line-height: 1.15; }
+  .ml-h-sub { font-size: 14px; color: rgba(255,255,255,.75); margin: 6px 0 0; font-weight: 500; }
+  .ml-new-btn { background: #e8410a; border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700; padding: 12px 24px; cursor: pointer; font-family: inherit; transition: background .15s, box-shadow .15s; box-shadow: 0 4px 14px rgba(232,65,10,.3); white-space: nowrap; }
   .ml-new-btn:hover { background: #c73208; box-shadow: 0 6px 20px rgba(232,65,10,.38); }
   .ml-wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px 60px; }
 
