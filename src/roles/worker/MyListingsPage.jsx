@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
 import { SECTIONS } from '../../pages/SectionsPage';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
-import { uploadFile, API_BASE } from '../../api';
+import { API_BASE } from '../../api';
 
 const API = API_BASE;
 
@@ -56,15 +56,6 @@ function pluralNewDeals(n) {
   if (b > 1 && b < 5) return 'новые заявки';
   if (b === 1) return 'новая заявка';
   return 'новых заявок';
-}
-
-/** data:image/... → File для multipart /files/upload */
-async function dataUrlToJpegFile(dataUrl, index) {
-  const res = await fetch(dataUrl);
-  const blob = await res.blob();
-  const mime = blob.type && blob.type.startsWith('image/') ? blob.type : 'image/jpeg';
-  const ext = mime.includes('png') ? 'png' : 'jpg';
-  return new File([blob], `listing-${index}-${Date.now()}.${ext}`, { type: mime });
 }
 
 function compressImage(file) {
@@ -627,40 +618,18 @@ export default function MyListingsPage() {
     setFormErr('');
     try {
       const isEdit = view !== 'create';
-      /** Не шлём base64 в JSON — только URL после multipart upload (иначе 500 на бэке / лимиты). */
-      const photoUrls = [];
-      const items = form.photos || [];
-      for (let i = 0; i < items.length; i++) {
-        const ph = items[i];
-        const d = ph?.data;
-        if (!d || typeof d !== 'string') continue;
-        if (d.startsWith('http://') || d.startsWith('https://')) {
-          photoUrls.push(d);
-          continue;
-        }
-        if (d.startsWith('/')) {
-          const origin = API.replace(/\/api\/v1\/?$/, '');
-          photoUrls.push(`${origin}${d}`);
-          continue;
-        }
-        if (d.startsWith('data:')) {
-          const file = await dataUrlToJpegFile(d, i);
-          const up = await uploadFile(userId, file);
-          if (up?.url) photoUrls.push(up.url);
-        }
-      }
       const payload = {
-        title: form.title.trim(),
+        title:       form.title.trim(),
         description: (form.description || '').trim(),
-        price: Number(form.price),
-        priceUnit: form.priceUnit,
-        category: form.category,
-        photos: photoUrls,
+        price:       Number(form.price),
+        priceUnit:   form.priceUnit,
+        category:    form.category,
+        photos:      (form.photos || []).map(p => p.data).filter(Boolean),
       };
       const r = await fetch(isEdit ? `${API}/listings/${view.edit.id}` : `${API}/listings`, {
-        method: isEdit ? 'PUT' : 'POST',
+        method:  isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
-        body: JSON.stringify(payload),
+        body:    JSON.stringify(payload),
       });
       const raw = await r.text();
       if (r.ok) {
@@ -670,20 +639,16 @@ export default function MyListingsPage() {
         let msg = 'Не удалось сохранить. Попробуйте ещё раз.';
         try {
           const j = JSON.parse(raw);
-          if (j.message && String(j.message).trim() && !/^internal server error$/i.test(String(j.message).trim())) {
-            msg = String(j.message);
-          } else if (j.error && String(j.error).trim()) {
-            msg = String(j.error);
-          } else if (j.detail) msg = String(j.detail);
+          const candidate = j.message || j.error || j.detail || '';
+          if (candidate && !/^internal server error$/i.test(candidate)) msg = String(candidate);
         } catch {
-          if (raw && raw.length < 400 && !raw.trim().startsWith('<')) msg = raw.trim();
+          if (raw && raw.length < 500 && !raw.trim().startsWith('<')) msg = raw.trim();
         }
         if (r.status === 413) msg = 'Данные слишком большие. Уменьшите фото или уберите часть снимков.';
-        if (r.status === 400 && payload.photos.length === 0) msg = msg || 'Проверьте обязательные поля.';
         setFormErr(msg);
       }
     } catch (e) {
-      setFormErr(e?.message || 'Ошибка сети или загрузки фото. Проверьте соединение.');
+      setFormErr(e?.message || 'Ошибка сети. Проверьте соединение.');
     }
     setSaving(false);
   };
