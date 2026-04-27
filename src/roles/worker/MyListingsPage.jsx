@@ -167,14 +167,15 @@ const css = `
   .ml-tag { display: inline-block; background: #fde8e0; color: #e8410a; border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 12px; }
 
   /* ══ ФОРМА СТРАНИЦА ══ */
-  .mlf-hero { position: relative; height: 180px; overflow: hidden; }
-  .mlf-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.5) saturate(1.1); }
-  .mlf-hero-overlay { position: absolute; inset: 0; background: linear-gradient(175deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.65) 100%); }
-  .mlf-hero-body { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 24px 24px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
-  .mlf-hero-back { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: rgba(255,255,255,.75); background: none; border: none; font-family: inherit; cursor: pointer; padding: 0; margin-bottom: 10px; transition: color .15s; }
+  .mlf-hero { position: relative; height: 290px; overflow: hidden; }
+  @media (max-width: 768px) { .mlf-hero { height: 240px; } }
+  .mlf-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.62) saturate(1.15); }
+  .mlf-hero-overlay { position: absolute; inset: 0; background: linear-gradient(170deg, rgba(0,0,0,.06) 0%, rgba(0,0,0,.55) 100%); }
+  .mlf-hero-body { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 24px 32px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
+  .mlf-hero-back { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: rgba(255,255,255,.8); background: none; border: none; font-family: inherit; cursor: pointer; padding: 0; margin-bottom: 10px; transition: color .15s; }
   .mlf-hero-back:hover { color: #fff; }
-  .mlf-hero-title { font-size: 24px; font-weight: 900; color: #fff; margin: 0 0 4px; }
-  .mlf-hero-sub { font-size: 14px; color: rgba(255,255,255,.7); margin: 0; }
+  .mlf-hero-title { font-size: clamp(22px, 4vw, 34px); font-weight: 900; color: #fff; margin: 0 0 6px; letter-spacing: -.4px; line-height: 1.15; }
+  .mlf-hero-sub { font-size: 14px; color: rgba(255,255,255,.75); margin: 0; }
 
   .mlf-wrap { max-width: 1080px; margin: 0 auto; padding: 20px 24px 60px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: flex-start; }
 
