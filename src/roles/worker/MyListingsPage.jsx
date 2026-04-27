@@ -1176,9 +1176,9 @@ export default function MyListingsPage() {
             </div>
             <div className="ml-detail-actions-card">
               <div className="ml-section-label" style={{marginBottom:4}}>Управление</div>
-              <button className="ml-btn-primary" onClick={() => openEdit(detail)}>✏️ Редактировать</button>
+              <button className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
               <button className="ml-btn-outline" onClick={e => handleToggle(detail, e)}>
-                {detail.active ? '📦 Снять с публикации' : '🔄 Восстановить'}
+                {detail.active ? 'Снять с публикации' : 'Восстановить'}
               </button>
             </div>
             <div style={{background:'#fff', borderRadius:12, padding:'16px 20px'}}>
