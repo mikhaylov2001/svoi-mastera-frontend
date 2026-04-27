@@ -149,12 +149,13 @@ const css = `
   .ml-row-stat { font-size: 12px; color: #6b7280; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; line-height: 1.35; }
   .ml-row-stat-num { font-weight: 800; color: #111827; font-variant-numeric: tabular-nums; font-size: 15px; }
   .ml-row-stat-hint { font-size: 10px; color: #9ca3af; width: 100%; margin-top: -2px; padding-left: 22px; line-height: 1.3; }
-  .ml-row-actions { width: 208px; flex-shrink: 0; padding: 14px 12px; display: flex; flex-direction: column; gap: 8px; justify-content: center; border-left: 1px solid #f0f0f0; }
-  .ml-btn-row { display: flex; gap: 6px; }
-  .ml-btn-sm { flex: 1; min-width: 0; background: #fff; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 8px 6px; font-size: 11px; font-weight: 700; color: #374151; cursor: pointer; font-family: inherit; transition: all .15s; text-align: center; line-height: 1.2; }
-  .ml-btn-sm:hover { border-color: #e8410a; color: #e8410a; background: #fff7ed; }
-  .ml-btn-sm.ml-btn-sm-primary { border-color: #fdba74; color: #c2410c; background: #fffbeb; }
-  .ml-btn-sm.ml-btn-sm-primary:hover { border-color: #e8410a; color: #fff; background: #e8410a; }
+  .ml-row-actions { width: 168px; flex-shrink: 0; padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; justify-content: center; border-left: 1px solid #f0f0f0; }
+  .ml-link-preview {
+    font-size: 12px; font-weight: 600; color: #e8410a; text-align: center;
+    text-decoration: none; padding: 4px 0; font-family: inherit;
+    border-bottom: 1px solid transparent; transition: opacity .15s;
+  }
+  .ml-link-preview:hover { opacity: .85; border-bottom-color: rgba(232,65,10,.35); }
   .ml-btn-edit { background: #fff; border: 1.5px solid #d6d6d6; border-radius: 10px; padding: 10px 0; font-size: 13px; font-weight: 600; color: #333; cursor: pointer; width: 100%; font-family: inherit; transition: all .15s; }
   .ml-btn-edit:hover { border-color: #e8410a; color: #e8410a; }
   .ml-btn-arch { background: none; border: none; font-size: 12px; color: #8f8f8f; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-align: center; font-family: inherit; }
@@ -496,33 +497,8 @@ export default function MyListingsPage() {
   const [formErr,  setFormErr]  = useState('');
   const [lightbox, setLightbox] = useState(null); // { photos, index }
   const [isDragging, setIsDragging] = useState(false);
-  const [copyFlashId, setCopyFlashId] = useState(null);
   const photoRef = useRef();
   const titleRef = useRef();
-
-  const copyListingPublicLink = useCallback((listingId, e) => {
-    e?.stopPropagation();
-    const url = `${window.location.origin}/listings/${listingId}`;
-    const done = () => {
-      setCopyFlashId(listingId);
-      window.setTimeout(() => setCopyFlashId((cur) => (cur === listingId ? null : cur)), 2200);
-    };
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(url).then(done).catch(() => {
-        try {
-          const ta = document.createElement('textarea');
-          ta.value = url;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand('copy');
-          document.body.removeChild(ta);
-          done();
-        } catch { /* ignore */ }
-      });
-    } else {
-      done();
-    }
-  }, []);
 
   const load = async () => {
     setLoading(true);
@@ -1262,28 +1238,19 @@ export default function MyListingsPage() {
                   </div>
                 </div>
                 <div className="ml-row-actions" onClick={e => e.stopPropagation()}>
-                  <div className="ml-btn-row">
-                    <a
-                      className="ml-btn-sm ml-btn-sm-primary"
-                      href={`/listings/${l.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      Как видят заказчики
-                    </a>
-                    <button type="button" className="ml-btn-sm" onClick={e => copyListingPublicLink(l.id, e)}>
-                      {copyFlashId === l.id ? '✓ Готово' : 'Копировать ссылку'}
-                    </button>
-                  </div>
                   <button type="button" className="ml-btn-edit" onClick={e => openEdit(l, e)}>Редактировать</button>
-                  <div className="ml-btn-row">
-                    <button type="button" className="ml-btn-sm" onClick={() => navigate('/deals')}>Сделки</button>
-                    <button type="button" className="ml-btn-sm" onClick={() => navigate('/chat')}>Чаты</button>
-                  </div>
                   <button type="button" className={l.active ? 'ml-btn-arch' : 'ml-btn-restore'} onClick={e => handleToggle(l, e)}>
                     {l.active ? 'Снять с публикации' : 'Восстановить'}
                   </button>
+                  <a
+                    className="ml-link-preview"
+                    href={`/listings/${l.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    Как видят заказчики ↗
+                  </a>
                 </div>
               </div>
             ))}
