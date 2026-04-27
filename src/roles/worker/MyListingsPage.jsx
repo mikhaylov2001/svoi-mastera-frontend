@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
@@ -16,7 +16,8 @@ const PRICE_UNITS = ['за работу','за час','за день','дого
 const EMPTY_FORM  = { title:'', description:'', price:'', priceUnit:'за работу', category:'', photos:[] };
 const MAX_DESC    = 2000;
 
-const HERO_PHOTO  = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80';
+/** Нейтральный фон по умолчанию (не привязан к категории / разделу) */
+const DEFAULT_NEUTRAL_BG = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80';
 
 const CAT_TIPS = {
   'Ремонт квартир':    ['Укажите виды работ: штукатурка, обои, полы…', 'Добавьте фото — заказчик поймёт масштаб', 'Напишите опыт и регион работы'],
@@ -33,10 +34,10 @@ Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
   cats.forEach(c => { CATEGORY_PHOTO_BY_NAME[c.name] = c.photo; });
 });
 function photoForCategoryName(name) {
-  if (!name || !String(name).trim()) return HERO_PHOTO;
+  if (!name || !String(name).trim()) return DEFAULT_NEUTRAL_BG;
   const n = String(name).trim();
   if (CATEGORY_PHOTO_BY_NAME[n]) return CATEGORY_PHOTO_BY_NAME[n];
-  return HERO_PHOTO;
+  return DEFAULT_NEUTRAL_BG;
 }
 
 function compressImage(file) {
@@ -76,11 +77,11 @@ const css = `
   }
   .ml-list-bg img {
     width: 100%; height: 100%; object-fit: cover;
-    filter: brightness(.42) saturate(1.08);
+    filter: brightness(.52) saturate(1.05);
   }
   .ml-list-bg-scrim {
     position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,.94) 0%, rgba(255,255,255,.88) 18%, rgba(242,242,242,.92) 45%, #f0f0f0 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,.96) 0%, rgba(255,255,255,.9) 22%, rgba(245,245,245,.94) 55%, #f0f0f0 100%);
   }
   .ml-list-front { position: relative; z-index: 1; }
 
@@ -98,17 +99,6 @@ const css = `
   .ml-new-btn { background: #e8410a; border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700; padding: 11px 22px; cursor: pointer; font-family: inherit; transition: background .15s, box-shadow .15s; box-shadow: 0 4px 14px rgba(232,65,10,.25); }
   .ml-new-btn:hover { background: #c73208; box-shadow: 0 6px 20px rgba(232,65,10,.32); }
   .ml-wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px 60px; }
-
-  /* ── Фильтр по категории (фон) ── */
-  .ml-cat-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
-  .ml-cat-chips-label { font-size: 12px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .06em; margin-right: 4px; }
-  .ml-chip {
-    border: 1.5px solid #e5e7eb; background: #fff; color: #374151;
-    font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 999px;
-    cursor: pointer; font-family: inherit; transition: all .15s;
-  }
-  .ml-chip:hover { border-color: #e8410a; color: #e8410a; }
-  .ml-chip.on { border-color: #e8410a; background: #fff4ef; color: #c73208; }
 
   /* ── TABS ── */
   .ml-tabs { display: flex; gap: 6px; padding: 4px; background: rgba(255,255,255,.85); border: 1px solid #e8e8e8; border-radius: 12px; margin-bottom: 14px; width: fit-content; }
@@ -281,15 +271,21 @@ const css = `
     padding: 3px 10px; font-size: 11px; font-weight: 600; color: #fff;
   }
 
-  /* ── ВЫБОР КАТЕГОРИИ (шаг 2) ── */
-  .mlf-cat-hero { position: relative; height: 160px; overflow: hidden; border-radius: 14px; margin-bottom: 12px; }
-  .mlf-cat-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.58) saturate(1.1); }
-  .mlf-cat-hero-overlay { position: absolute; inset: 0; background: linear-gradient(175deg, rgba(0,0,0,.08) 0%, rgba(0,0,0,.72) 100%); }
-  .mlf-cat-hero-body { position: relative; z-index: 1; padding: 14px 18px 18px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
-  .mlf-cat-hero-back { background: none; border: none; color: rgba(255,255,255,.75); font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; margin-bottom: 8px; font-family: inherit; }
-  .mlf-cat-hero-back:hover { color: #fff; }
-  .mlf-cat-hero-name { font-size: 26px; font-weight: 900; color: #fff; margin: 0 0 2px; }
-  .mlf-cat-hero-sub { font-size: 12px; color: rgba(255,255,255,.75); margin: 0; }
+  /* ── Шаг 2: заголовок без второго фото-баннера (фото только в карточках) ── */
+  .mlf-cat-head-simple {
+    background: #fff;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 14px;
+    padding: 16px 18px 18px;
+    margin-bottom: 12px;
+  }
+  .mlf-cat-head-back {
+    background: none; border: none; color: #e8410a; font-size: 13px; font-weight: 700;
+    cursor: pointer; padding: 0; margin-bottom: 10px; font-family: inherit;
+  }
+  .mlf-cat-head-back:hover { opacity: .8; }
+  .mlf-cat-head-name { font-size: 22px; font-weight: 900; color: #111827; margin: 0 0 4px; line-height: 1.2; }
+  .mlf-cat-head-sub { font-size: 13px; color: #6b7280; margin: 0; line-height: 1.45; }
 
   .mlf-cat-grid {
     display: grid;
@@ -473,8 +469,7 @@ export default function MyListingsPage() {
   const [view,     setView]     = useState(null); // null | 'create' | {edit: listing}
   const [pickedSection, setPickedSection] = useState(null); // slug of chosen section
   const [hoverSectionSlug, setHoverSectionSlug] = useState(null); // превью фона шага «разделы»
-  const [listBgCategory, setListBgCategory] = useState(null); // фильтр фона на «Мои объявления»
-  const [listBgHoverCat, setListBgHoverCat] = useState(null); // превью при наведении на строку
+  const [listBgHoverCat, setListBgHoverCat] = useState(null); // превью фона при наведении на строку
   const [form,     setForm]     = useState(EMPTY_FORM);
   const [saving,   setSaving]   = useState(false);
   const [formErr,  setFormErr]  = useState('');
@@ -517,18 +512,9 @@ export default function MyListingsPage() {
   const archive = listings.filter(l => !l.active);
   const shown   = tab === 'active' ? active : archive;
 
-  const listCategoryChips = useMemo(
-    () => [...new Set(shown.map(l => l.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru')),
-    [shown]
-  );
-
-  const listBgPhotoUrl = useMemo(() => {
-    const cat = listBgHoverCat || listBgCategory || shown[0]?.category;
-    return photoForCategoryName(cat);
-  }, [listBgHoverCat, listBgCategory, shown]);
+  const listBgPhotoUrl = listBgHoverCat ? photoForCategoryName(listBgHoverCat) : DEFAULT_NEUTRAL_BG;
 
   useEffect(() => {
-    setListBgCategory(null);
     setListBgHoverCat(null);
   }, [tab]);
 
@@ -638,14 +624,14 @@ export default function MyListingsPage() {
     const photos   = form.photos || [];
     const descLen  = form.description.length;
 
-    let createHeroSrc = HERO_PHOTO;
+    let createHeroSrc = DEFAULT_NEUTRAL_BG;
     if (isEdit && form.category) createHeroSrc = photoForCategoryName(form.category);
     else if (!isEdit) {
       if (isSectionStep) {
         const hs = hoverSectionSlug && SECTIONS.find(s => s.slug === hoverSectionSlug);
-        createHeroSrc = hs?.photo || HERO_PHOTO;
+        createHeroSrc = hs?.photo || DEFAULT_NEUTRAL_BG;
       } else if (isCatStep) {
-        createHeroSrc = SECTIONS.find(s => s.slug === pickedSection)?.photo || HERO_PHOTO;
+        createHeroSrc = DEFAULT_NEUTRAL_BG;
       } else if (form.category) {
         createHeroSrc = photoForCategoryName(form.category);
       }
@@ -735,14 +721,10 @@ export default function MyListingsPage() {
                 const cats = CATEGORIES_BY_SECTION[pickedSection] || [];
                 return (
                   <>
-                    <div className="mlf-cat-hero">
-                      <img src={sec.photo} alt={sec.name} className="mlf-cat-hero-img" />
-                      <div className="mlf-cat-hero-overlay" />
-                      <div className="mlf-cat-hero-body">
-                        <button type="button" className="mlf-cat-hero-back" onClick={() => setPickedSection(null)}>← Все разделы</button>
-                        <div className="mlf-cat-hero-name">{sec.name}</div>
-                        <div className="mlf-cat-hero-sub">Выберите категорию — форма откроется сразу</div>
-                      </div>
+                    <div className="mlf-cat-head-simple">
+                      <button type="button" className="mlf-cat-head-back" onClick={() => setPickedSection(null)}>← Все разделы</button>
+                      <h2 className="mlf-cat-head-name">{sec.name}</h2>
+                      <p className="mlf-cat-head-sub">Выберите категорию — форма откроется сразу</p>
                     </div>
                     <div className="mlf-cat-grid">
                       {cats.map(cat => (
@@ -1156,36 +1138,13 @@ export default function MyListingsPage() {
           <div className="ml-hdr-inner">
             <div>
               <h1 className="ml-h1">Мои объявления</h1>
-              <p className="ml-h-sub">Фон с реальным фото меняется по категории: выберите чип или наведите на карточку объявления</p>
+              <p className="ml-h-sub">Нейтральный фон по умолчанию; при наведении на объявление — фото категории</p>
             </div>
             <button className="ml-new-btn" type="button" onClick={openCreate}>+ Разместить объявление</button>
           </div>
         </div>
 
         <div className="ml-wrap" style={{ paddingTop: 0 }}>
-          {!loading && shown.length > 0 && listCategoryChips.length > 0 && (
-            <div className="ml-cat-chips">
-              <span className="ml-cat-chips-label">Категория</span>
-              <button
-                type="button"
-                className={`ml-chip${listBgCategory == null ? ' on' : ''}`}
-                onClick={() => { setListBgCategory(null); setListBgHoverCat(null); }}
-              >
-                Все
-              </button>
-              {listCategoryChips.map(c => (
-                <button
-                  key={c}
-                  type="button"
-                  className={`ml-chip${listBgCategory === c ? ' on' : ''}`}
-                  onClick={() => { setListBgCategory(c); setListBgHoverCat(null); }}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          )}
-
           <div className="ml-tabs">
             <button type="button" className={`ml-tab${tab==='active'?' on':''}`} onClick={() => setTab('active')}>
               Активные <span className="ml-tab-n">{active.length}</span>
