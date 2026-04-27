@@ -25,6 +25,21 @@ const CAT_TIPS = {
   'Парикмахер':        ['Опишите специализацию: стрижки, окраска, укладки', 'Добавьте фото портфолио — это главный аргумент', 'Укажите выезд на дом или свой адрес'],
 };
 
+const CATEGORY_UI = {
+  'Ремонт квартир':        { icon: '🏠', tone: '#eef2ff' },
+  'Сантехника':            { icon: '🔧', tone: '#e0f2fe' },
+  'Электрика':             { icon: '⚡', tone: '#fef9c3' },
+  'Компьютерная помощь':   { icon: '💻', tone: '#dcfce7' },
+  'Уборка':                { icon: '🧼', tone: '#cffafe' },
+  'Парикмахер':            { icon: '💇', tone: '#fce7f3' },
+  'Маникюр и педикюр':     { icon: '💅', tone: '#f5d0fe' },
+  'Красота и здоровье':    { icon: '✨', tone: '#fae8ff' },
+  'Репетиторство':         { icon: '📚', tone: '#dbeafe' },
+  'Грузоперевозки':        { icon: '🚚', tone: '#fee2e2' },
+  'Сварочные работы':      { icon: '🛠️', tone: '#fef3c7' },
+  'Другое':                { icon: '🧩', tone: '#f3f4f6' },
+};
+
 function compressImage(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -132,6 +147,137 @@ const css = `
 
   .mlf-wrap { max-width: 1080px; margin: 0 auto; padding: 20px 24px 60px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: flex-start; }
 
+  .mlf-stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .mlf-step-pill {
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1.5px solid #e5e7eb;
+    background: #fff;
+    color: #6b7280;
+  }
+  .mlf-step-pill.on {
+    border-color: #e8410a;
+    color: #e8410a;
+    background: #fff4ef;
+  }
+  .mlf-step-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #d1d5db;
+  }
+
+  .mlf-cat-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1.5px solid #e8e8e8;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .mlf-cat-card-head {
+    padding: 18px 20px 0;
+    margin-bottom: 14px;
+  }
+  .mlf-cat-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 4px;
+  }
+  .mlf-cat-sub {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+  }
+  .mlf-cat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 0 20px 20px;
+  }
+  .mlf-cat-btn {
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    background: #fff;
+    color: #111827;
+    text-align: left;
+    padding: 12px 14px;
+    cursor: pointer;
+    font-family: Inter, Arial, sans-serif;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .mlf-cat-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 26px rgba(0,0,0,.08);
+    border-color: #e8410a;
+  }
+  .mlf-cat-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .mlf-cat-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .mlf-cat-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1.2;
+  }
+  .mlf-cat-arrow {
+    color: #9ca3af;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .mlf-selected-cat {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px solid #fed7c2;
+    background: #fff7f3;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .mlf-selected-cat b {
+    color: #9a3412;
+    font-size: 13px;
+  }
+  .mlf-change-cat {
+    border: none;
+    background: none;
+    color: #e8410a;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+  }
+  .mlf-change-cat:hover { opacity: .8; }
+
   /* cards */
   .mlf-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; margin-bottom: 12px; overflow: hidden; }
   .mlf-card-title { font-size: 16px; font-weight: 700; color: #111; padding: 18px 20px 0; margin-bottom: 16px; }
@@ -227,6 +373,7 @@ const css = `
     .ml-row-stats, .ml-row-actions { display: none; }
     .mlf-photo-grid { grid-template-columns: repeat(3, 1fr); }
     .mlf-photo-cell.main-photo { grid-column: span 1; grid-row: span 1; }
+    .mlf-cat-grid { grid-template-columns: 1fr; }
   }
   @media(max-width: 500px) {
     .mlf-row2 { grid-template-columns: 1fr; }
@@ -250,6 +397,7 @@ export default function MyListingsPage() {
   const [lightbox, setLightbox] = useState(null); // { photos, index }
   const [isDragging, setIsDragging] = useState(false);
   const photoRef = useRef();
+  const titleRef = useRef();
 
   const load = async () => {
     setLoading(true);
@@ -311,6 +459,14 @@ export default function MyListingsPage() {
   const removePhoto = (id, e) => {
     e?.stopPropagation();
     setForm(p => ({ ...p, photos: p.photos.filter(ph => ph.id !== id) }));
+  };
+
+  const handlePickCategory = (categoryName) => {
+    setFormErr('');
+    setForm(p => ({ ...p, category: categoryName }));
+    setTimeout(() => {
+      titleRef.current?.focus();
+    }, 120);
   };
 
   const handleSave = async () => {
@@ -376,6 +532,7 @@ export default function MyListingsPage() {
   // ══ ФОРМА СОЗДАНИЯ / РЕДАКТИРОВАНИЯ ══
   if (view !== null) {
     const isEdit   = view !== 'create';
+    const isCategoryStep = !isEdit && !form.category;
     const photos   = form.photos || [];
     const descLen  = form.description.length;
 
@@ -389,183 +546,231 @@ export default function MyListingsPage() {
           <div className="mlf-hero-overlay" />
           <div className="mlf-hero-body">
             <button className="mlf-hero-back" onClick={() => setView(null)}>← Мои объявления</button>
-            <h1 className="mlf-hero-title">{isEdit ? 'Редактировать объявление' : 'Новое объявление'}</h1>
-            <p className="mlf-hero-sub">{isEdit ? 'Обновите данные и сохраните' : 'Опишите услугу — заказчики найдут вас сами'}</p>
+            <h1 className="mlf-hero-title">
+              {isEdit ? 'Редактировать объявление' : isCategoryStep ? 'Выберите категорию' : 'Новое объявление'}
+            </h1>
+            <p className="mlf-hero-sub">
+              {isEdit
+                ? 'Обновите данные и сохраните'
+                : isCategoryStep
+                  ? 'Шаг 1 из 2 — после выбора сразу откроется форма размещения'
+                  : 'Шаг 2 из 2 — заполните объявление и опубликуйте'}
+            </p>
           </div>
         </div>
 
         <div className="mlf-wrap">
           <div>
             {formErr && <div className="mlf-error">⚠️ {formErr}</div>}
-
-            {/* ── 1. ФОТОГРАФИИ ── */}
-            <div className="mlf-card">
-              <div className="mlf-card-title">
-                Фотографии <span style={{fontSize:13,color:'#aaa',fontWeight:400}}>(необязательно, до 5 шт.)</span>
+            {!isEdit && (
+              <div className="mlf-stepper">
+                <span className={`mlf-step-pill${isCategoryStep ? ' on' : ''}`}>1. Категория</span>
+                <span className="mlf-step-dot" />
+                <span className={`mlf-step-pill${!isCategoryStep ? ' on' : ''}`}>2. Данные объявления</span>
               </div>
-              <div className="mlf-photos">
-                <div
-                  className="mlf-photo-grid"
-                  onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={e => { e.preventDefault(); setIsDragging(false); handlePhotoUpload(e.dataTransfer.files); }}
-                >
-                  {Array.from({ length: 5 }).map((_, i) => {
-                    const ph = photos[i];
-                    if (ph) {
-                      return (
-                        <div
-                          key={ph.id}
-                          className={`mlf-photo-cell filled${i === 0 ? ' main-photo' : ''}`}
-                          onClick={() => setLightbox({ photos: photos.map(p => p.data), index: i })}
-                        >
-                          <img src={ph.data} alt="" className="mlf-photo-img" />
-                          {i === 0 && <span className="mlf-photo-main-badge">Главное</span>}
-                          <div className="mlf-photo-zoom"><span className="mlf-photo-zoom-text">Просмотр</span></div>
-                          <button type="button" className="mlf-photo-del" onClick={e => removePhoto(ph.id, e)}>×</button>
-                        </div>
-                      );
-                    }
+            )}
+
+            {isCategoryStep ? (
+              <div className="mlf-cat-card">
+                <div className="mlf-cat-card-head">
+                  <h3 className="mlf-cat-title">Все категории</h3>
+                  <p className="mlf-cat-sub">Нажмите на категорию и сразу перейдёте к заполнению объявления</p>
+                </div>
+                <div className="mlf-cat-grid">
+                  {CATEGORIES.map((c) => {
+                    const meta = CATEGORY_UI[c] || { icon: '🛠️', tone: '#f3f4f6' };
                     return (
-                      <div
-                        key={i}
-                        className="mlf-photo-cell"
-                        style={isDragging ? { borderColor: '#e8410a', background: '#fff5f2' } : {}}
-                        onClick={() => photoRef.current?.click()}
-                      >
-                        <span className="mlf-photo-add-icon">{i === 0 ? '📷' : '+'}</span>
-                        <span className="mlf-photo-num">{i === 0 ? 'Добавить фото' : `Фото ${i + 1}`}</span>
-                      </div>
+                      <button key={c} type="button" className="mlf-cat-btn" onClick={() => handlePickCategory(c)}>
+                        <span className="mlf-cat-main">
+                          <span className="mlf-cat-icon" style={{ background: meta.tone }}>{meta.icon}</span>
+                          <span className="mlf-cat-name">{c}</span>
+                        </span>
+                        <span className="mlf-cat-arrow">›</span>
+                      </button>
                     );
                   })}
                 </div>
-                <input
-                  ref={photoRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  style={{ display: 'none' }}
-                  onChange={e => { handlePhotoUpload(e.target.files); e.target.value = ''; }}
-                />
-                <p className="mlf-photo-hint">
-                  {photos.length > 0
-                    ? `${photos.length}/5 фото · Нажмите на фото для просмотра`
-                    : 'Перетащите файлы сюда или кликните по ячейке · до 10 МБ'}
-                </p>
               </div>
-            </div>
-
-            {/* ── 2. ОПИСАНИЕ УСЛУГИ ── */}
-            <div className="mlf-card">
-              <div className="mlf-card-title">Описание услуги</div>
-              <div className="mlf-fields">
-                <div className="mlf-field">
-                  <label>Название объявления *</label>
-                  <input
-                    placeholder="Например: Установка розеток и выключателей"
-                    value={form.title}
-                    onChange={e => { setFormErr(''); setForm(p => ({...p, title: e.target.value})); }}
-                    maxLength={120}
-                  />
-                  <span className="mlf-field-hint">Коротко и конкретно — что вы делаете</span>
-                </div>
-
-                <div className="mlf-field">
-                  <label>Категория *</label>
-                  <select
-                    value={form.category}
-                    onChange={e => { setFormErr(''); setForm(p => ({...p, category: e.target.value})); }}
-                  >
-                    <option value="">Выберите категорию</option>
-                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-
-                <div className="mlf-field">
-                  <div className="mlf-field-top">
-                    <label>Подробное описание</label>
-                    <span className={`mlf-char${descLen > MAX_DESC * 0.9 ? descLen >= MAX_DESC ? ' over' : ' warn' : ''}`}>
-                      {descLen}/{MAX_DESC}
-                    </span>
+            ) : (
+              <>
+                {/* ── 1. ФОТОГРАФИИ ── */}
+                <div className="mlf-card">
+                  <div className="mlf-card-title">
+                    Фотографии <span style={{fontSize:13,color:'#aaa',fontWeight:400}}>(необязательно, до 5 шт.)</span>
                   </div>
-                  <textarea
-                    placeholder="Расскажите подробнее: опыт, гарантии, что входит в стоимость, выезд на дом и т.д."
-                    value={form.description}
-                    onChange={e => setForm(p => ({...p, description: e.target.value}))}
-                    maxLength={MAX_DESC}
-                    rows={5}
-                  />
-                  {tips.length > 0 && (
-                    <div className="mlf-tips" style={{marginTop: 8}}>
-                      {tips.map((t, i) => <span key={i} className="mlf-tip">{t}</span>)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* ── 3. ЦЕНА ── */}
-            <div className="mlf-card">
-              <div className="mlf-card-title">Цена на услугу</div>
-              <div className="mlf-price-block">
-                <div className="mlf-price-row">
-                  <div className="mlf-field" style={{margin: 0}}>
-                    <label>Стоимость, ₽ *</label>
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder="1 500"
-                      value={form.price}
-                      onChange={e => { setFormErr(''); setForm(p => ({...p, price: e.target.value})); }}
-                    />
-                  </div>
-                  <div className="mlf-field" style={{margin: 0}}>
-                    <label>Единица</label>
-                    <select
-                      value={form.priceUnit}
-                      onChange={e => setForm(p => ({...p, priceUnit: e.target.value}))}
+                  <div className="mlf-photos">
+                    <div
+                      className="mlf-photo-grid"
+                      onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                      onDragLeave={() => setIsDragging(false)}
+                      onDrop={e => { e.preventDefault(); setIsDragging(false); handlePhotoUpload(e.dataTransfer.files); }}
                     >
-                      {PRICE_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
-                    </select>
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const ph = photos[i];
+                        if (ph) {
+                          return (
+                            <div
+                              key={ph.id}
+                              className={`mlf-photo-cell filled${i === 0 ? ' main-photo' : ''}`}
+                              onClick={() => setLightbox({ photos: photos.map(p => p.data), index: i })}
+                            >
+                              <img src={ph.data} alt="" className="mlf-photo-img" />
+                              {i === 0 && <span className="mlf-photo-main-badge">Главное</span>}
+                              <div className="mlf-photo-zoom"><span className="mlf-photo-zoom-text">Просмотр</span></div>
+                              <button type="button" className="mlf-photo-del" onClick={e => removePhoto(ph.id, e)}>×</button>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div
+                            key={i}
+                            className="mlf-photo-cell"
+                            style={isDragging ? { borderColor: '#e8410a', background: '#fff5f2' } : {}}
+                            onClick={() => photoRef.current?.click()}
+                          >
+                            <span className="mlf-photo-add-icon">{i === 0 ? '📷' : '+'}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <input
+                      ref={photoRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      style={{ display: 'none' }}
+                      onChange={e => { handlePhotoUpload(e.target.files); e.target.value = ''; }}
+                    />
+                    <p className="mlf-photo-hint">
+                      {photos.length > 0
+                        ? `${photos.length}/5 фото · Нажмите на фото для просмотра`
+                        : 'Перетащите файлы сюда или кликните по ячейке · до 10 МБ'}
+                    </p>
                   </div>
                 </div>
-                {form.price && Number(form.price) > 0 ? (
-                  <div style={{padding:'12px 14px', background:'#f0fdf4', border:'1.5px solid #bbf7d0', borderRadius:8}}>
-                    <div style={{fontSize:13, color:'#166534', fontWeight:600}}>
-                      ✅ В объявлении будет: <strong>{Number(form.price).toLocaleString('ru-RU')} ₽ {form.priceUnit}</strong>
-                    </div>
-                    <div style={{fontSize:12, color:'#16a34a', marginTop:3}}>
-                      Заказчики видят эту цену при поиске. Вы всегда можете её изменить.
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{padding:'12px 14px', background:'#fafafa', border:'1.5px solid #e8e8e8', borderRadius:8, fontSize:13, color:'#aaa'}}>
-                    Укажите стоимость — она попадёт в объявление как ваша цена
-                  </div>
-                )}
-              </div>
-            </div>
 
-            {/* ── КНОПКА ── */}
-            <div className="mlf-card">
-              <div className="mlf-submit-card">
-                <button
-                  type="button"
-                  className="mlf-btn-submit"
-                  disabled={saving || !form.title.trim() || !form.category || !form.price}
-                  onClick={handleSave}
-                >
-                  {saving
-                    ? '⏳ Сохраняем…'
-                    : isEdit
-                      ? '💾 Сохранить изменения'
-                      : '📢 Опубликовать объявление'}
-                </button>
-                <p style={{fontSize:12, color:'#bbb', textAlign:'center', marginTop:10, marginBottom:0}}>
-                  {isEdit ? 'Изменения сразу увидят заказчики' : 'Размещение бесплатно · Заказчики увидят сразу после публикации'}
-                </p>
-              </div>
-            </div>
+                {/* ── 2. ОПИСАНИЕ УСЛУГИ ── */}
+                <div className="mlf-card">
+                  <div className="mlf-card-title">Описание услуги</div>
+                  <div className="mlf-fields">
+                    <div className="mlf-field">
+                      <label>Название объявления *</label>
+                      <input
+                        ref={titleRef}
+                        value={form.title}
+                        onChange={e => { setFormErr(''); setForm(p => ({...p, title: e.target.value})); }}
+                        maxLength={120}
+                      />
+                      <span className="mlf-field-hint">Коротко и конкретно — что вы делаете</span>
+                    </div>
+
+                    <div className="mlf-field">
+                      <label>Категория *</label>
+                      <div className="mlf-selected-cat">
+                        <b>{form.category}</b>
+                        {!isEdit && (
+                          <button type="button" className="mlf-change-cat" onClick={() => setForm(p => ({...p, category: ''}))}>
+                            Сменить
+                          </button>
+                        )}
+                      </div>
+                      {isEdit && (
+                        <select
+                          value={form.category}
+                          style={{ marginTop: 8 }}
+                          onChange={e => { setFormErr(''); setForm(p => ({...p, category: e.target.value})); }}
+                        >
+                          <option value="">Выберите категорию</option>
+                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      )}
+                    </div>
+
+                    <div className="mlf-field">
+                      <div className="mlf-field-top">
+                        <label>Подробное описание</label>
+                        <span className={`mlf-char${descLen > MAX_DESC * 0.9 ? descLen >= MAX_DESC ? ' over' : ' warn' : ''}`}>
+                          {descLen}/{MAX_DESC}
+                        </span>
+                      </div>
+                      <textarea
+                        value={form.description}
+                        onChange={e => setForm(p => ({...p, description: e.target.value}))}
+                        maxLength={MAX_DESC}
+                        rows={5}
+                      />
+                      {tips.length > 0 && (
+                        <div className="mlf-tips" style={{marginTop: 8}}>
+                          {tips.map((t, i) => <span key={i} className="mlf-tip">{t}</span>)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── 3. ЦЕНА ── */}
+                <div className="mlf-card">
+                  <div className="mlf-card-title">Цена на услугу</div>
+                  <div className="mlf-price-block">
+                    <div className="mlf-price-row">
+                      <div className="mlf-field" style={{margin: 0}}>
+                        <label>Стоимость, ₽ *</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={form.price}
+                          onChange={e => { setFormErr(''); setForm(p => ({...p, price: e.target.value})); }}
+                        />
+                      </div>
+                      <div className="mlf-field" style={{margin: 0}}>
+                        <label>Единица</label>
+                        <select
+                          value={form.priceUnit}
+                          onChange={e => setForm(p => ({...p, priceUnit: e.target.value}))}
+                        >
+                          {PRICE_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    {form.price && Number(form.price) > 0 ? (
+                      <div style={{padding:'12px 14px', background:'#f0fdf4', border:'1.5px solid #bbf7d0', borderRadius:8}}>
+                        <div style={{fontSize:13, color:'#166534', fontWeight:600}}>
+                          ✅ В объявлении будет: <strong>{Number(form.price).toLocaleString('ru-RU')} ₽ {form.priceUnit}</strong>
+                        </div>
+                        <div style={{fontSize:12, color:'#16a34a', marginTop:3}}>
+                          Заказчики видят эту цену при поиске. Вы всегда можете её изменить.
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{padding:'12px 14px', background:'#fafafa', border:'1.5px solid #e8e8e8', borderRadius:8, fontSize:13, color:'#aaa'}}>
+                        Укажите стоимость — она попадёт в объявление как ваша цена
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* ── КНОПКА ── */}
+                <div className="mlf-card">
+                  <div className="mlf-submit-card">
+                    <button
+                      type="button"
+                      className="mlf-btn-submit"
+                      disabled={saving || !form.title.trim() || !form.category || !form.price}
+                      onClick={handleSave}
+                    >
+                      {saving
+                        ? '⏳ Сохраняем…'
+                        : isEdit
+                          ? '💾 Сохранить изменения'
+                          : '📢 Опубликовать объявление'}
+                    </button>
+                    <p style={{fontSize:12, color:'#bbb', textAlign:'center', marginTop:10, marginBottom:0}}>
+                      {isEdit ? 'Изменения сразу увидят заказчики' : 'Размещение бесплатно · Заказчики увидят сразу после публикации'}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* ══ САЙДБАР ══ */}
