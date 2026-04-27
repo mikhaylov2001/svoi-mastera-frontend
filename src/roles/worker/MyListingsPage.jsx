@@ -140,19 +140,24 @@ const css = `
   .ml-row-img img { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 108px; }
   .ml-row-img-ph { width: 100%; height: 100%; min-height: 108px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #d1d5db; }
   .ml-row-img-cnt { position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,.55); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 6px; }
-  .ml-row-body { flex: 1; padding: 16px 18px; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  .ml-row-body { flex: 1; padding: 14px 18px 10px; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
   .ml-row-title { font-size: 16px; font-weight: 800; color: #111827; margin: 0 0 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .ml-row-price { font-size: 19px; font-weight: 800; margin-bottom: 6px; color: #1a1a1a; }
   .ml-row-unit { font-size: 12px; color: #8f8f8f; font-weight: 500; margin-left: 4px; }
   .ml-row-cat { display: inline-block; font-size: 11px; color: #fff; background: #e8410a; border-radius: 6px; padding: 3px 10px; margin-bottom: 6px; font-weight: 700; }
-  .ml-row-desc { font-size: 13px; color: #6b7280; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 6px; line-height: 1.45; }
-  .ml-row-date { font-size: 12px; color: #9ca3af; }
-  .ml-row-stats { width: 200px; flex-shrink: 0; padding: 16px 14px; display: flex; flex-direction: column; gap: 8px; justify-content: center; border-left: 1px solid #f0f0f0; background: linear-gradient(180deg, #fafafa 0%, #f5f5f5 100%); }
-  .ml-row-stat { font-size: 12px; color: #6b7280; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; line-height: 1.35; }
-  .ml-row-stat-num { font-weight: 800; color: #111827; font-variant-numeric: tabular-nums; font-size: 15px; }
-  .ml-row-stat-hint { font-size: 10px; color: #9ca3af; width: 100%; margin-top: -2px; padding-left: 22px; line-height: 1.3; }
+  .ml-row-desc { font-size: 13px; color: #6b7280; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; margin-bottom: 6px; line-height: 1.45; }
+  .ml-row-date { font-size: 12px; color: #9ca3af; margin-bottom: 10px; }
+  .ml-row-stats {
+    display: flex; flex-direction: row; gap: 18px; flex-wrap: wrap;
+    padding: 8px 12px; margin: 0 -18px -10px; border-top: 1px solid #f3f4f6;
+    background: #f9f9f9; border-radius: 0 0 0 12px;
+  }
+  .ml-row-stat { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 5px; }
+  .ml-row-stat-num { font-weight: 800; color: #111827; font-variant-numeric: tabular-nums; font-size: 14px; }
+  .ml-row-stat-status-active { font-size: 12px; font-weight: 700; color: #16a34a; }
+  .ml-row-stat-status-arch { font-size: 12px; font-weight: 700; color: #ef4444; }
   .ml-row-actions {
-    width: 186px; flex-shrink: 0; padding: 14px 13px;
+    width: 176px; flex-shrink: 0; padding: 14px 13px;
     display: flex; flex-direction: column; gap: 7px; justify-content: center;
     border-left: 1px solid #f0f0f0; background: #fafafa;
   }
@@ -160,37 +165,34 @@ const css = `
     width: 100%; background: #e8410a; border: none; border-radius: 10px;
     padding: 10px 0; font-size: 13px; font-weight: 700; color: #fff;
     cursor: pointer; font-family: inherit; transition: background .15s;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
   }
   .ml-btn-edit:hover { background: #c73208; }
-  .ml-actions-divider { height: 1px; background: #ebebeb; margin: 2px 0; }
-  .ml-link-preview {
-    font-size: 13px; font-weight: 600; color: #e8410a; text-align: center;
-    text-decoration: none; padding: 7px 0;
-    display: flex; align-items: center; justify-content: center; gap: 5px;
-    border-radius: 10px; transition: background .15s;
-  }
-  .ml-link-preview:hover { background: #fff4ef; }
   .ml-btn-copy {
     width: 100%; background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px;
-    padding: 8px 0; font-size: 12px; font-weight: 600; color: #475569;
+    padding: 9px 0; font-size: 12px; font-weight: 600; color: #475569;
     cursor: pointer; font-family: inherit; transition: all .15s;
-    display: flex; align-items: center; justify-content: center; gap: 5px;
   }
   .ml-btn-copy:hover { border-color: #e8410a; color: #e8410a; background: #fff7ed; }
   .ml-btn-copy.copied { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
+  .ml-link-preview {
+    font-size: 13px; font-weight: 600; color: #e8410a; text-align: center;
+    text-decoration: none; padding: 7px 0;
+    display: block; border-radius: 10px; transition: background .15s;
+  }
+  .ml-link-preview:hover { background: #fff4ef; }
+  .ml-actions-divider { height: 1px; background: #ebebeb; margin: 2px 0; }
   .ml-btn-arch {
     background: none; border: none; font-size: 12px; color: #9ca3af;
     cursor: pointer; font-family: inherit; padding: 4px 0; text-align: center;
-    transition: color .15s;
+    transition: color .15s; width: 100%;
   }
   .ml-btn-arch:hover { color: #e8410a; }
   .ml-btn-restore {
-    background: none; border: none; font-size: 12px; color: #e8410a;
+    background: none; border: none; font-size: 12px; color: #16a34a;
     cursor: pointer; font-family: inherit; padding: 4px 0; text-align: center;
-    font-weight: 700; transition: color .15s;
+    font-weight: 700; transition: color .15s; width: 100%;
   }
-  .ml-btn-restore:hover { color: #c73208; }
+  .ml-btn-restore:hover { color: #166534; }
   .ml-empty {
     text-align: center; padding: 72px 24px;
     background: rgba(255,255,255,.95); border: 1.5px solid #e8e8e8; border-radius: 16px;
@@ -498,7 +500,7 @@ const css = `
     .mlf-cat-grid { grid-template-columns: repeat(2, 1fr); }
   }
   @media(max-width: 720px) {
-    .ml-row-stats, .ml-row-actions { display: none; }
+    .ml-row-actions { display: none; }
     .mlf-photo-grid { grid-template-columns: repeat(3, 1fr); }
     .mlf-photo-cell.main-photo { grid-column: span 1; grid-row: span 1; }
   }
@@ -1305,28 +1307,29 @@ export default function MyListingsPage() {
                   </div>
                   {l.category && <span className="ml-row-cat">{l.category}</span>}
                   {l.description && <div className="ml-row-desc">{l.description}</div>}
-                  <div className="ml-row-date">📅 {l.createdAt ? new Date(l.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) : '—'}</div>
-                </div>
-                <div className="ml-row-stats">
-                  <div className="ml-row-stat">
-                    <span aria-hidden>👁</span>
-                    <span className="ml-row-stat-num">{l.viewCount ?? 0}</span>
-                    <span>{pluralViews(l.viewCount ?? 0)}</span>
-                  </div>
-                  <span className="ml-row-stat-hint">Когда заказчик открывает страницу объявления</span>
-                  <div className="ml-row-stat">
-                    <span aria-hidden>📋</span>
-                    <span className="ml-row-stat-num">{l.pendingDealsCount ?? 0}</span>
-                    <span>{pluralNewDeals(l.pendingDealsCount ?? 0)}</span>
-                  </div>
-                  <span className="ml-row-stat-hint">Со статусом «новая» по этому объявлению</span>
-                  <div className="ml-row-stat" style={{ color: l.active ? '#22c55e' : '#ef4444', fontWeight: 700 }}>
-                    ● {l.active ? 'Активно' : 'В архиве'}
+                  <div className="ml-row-date">{l.createdAt ? new Date(l.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) : '—'}</div>
+                  <div className="ml-row-stats">
+                    <div className="ml-row-stat">
+                      <span className="ml-row-stat-num">{l.viewCount ?? 0}</span>
+                      <span>{pluralViews(l.viewCount ?? 0)}</span>
+                    </div>
+                    <div className="ml-row-stat">
+                      <span className="ml-row-stat-num">{l.pendingDealsCount ?? 0}</span>
+                      <span>{pluralNewDeals(l.pendingDealsCount ?? 0)}</span>
+                    </div>
+                    <div className={l.active ? 'ml-row-stat-status-active' : 'ml-row-stat-status-arch'}>
+                      {l.active ? 'Активно' : 'В архиве'}
+                    </div>
                   </div>
                 </div>
                 <div className="ml-row-actions" onClick={e => e.stopPropagation()}>
-                  <button type="button" className="ml-btn-edit" onClick={e => openEdit(l, e)}>
-                    ✏️ Редактировать
+                  <button type="button" className="ml-btn-edit" onClick={e => openEdit(l, e)}>Редактировать</button>
+                  <button
+                    type="button"
+                    className={`ml-btn-copy${copyFlashId === l.id ? ' copied' : ''}`}
+                    onClick={e => copyListingPublicLink(l.id, e)}
+                  >
+                    {copyFlashId === l.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
                   </button>
                   <a
                     className="ml-link-preview"
@@ -1335,18 +1338,11 @@ export default function MyListingsPage() {
                     rel="noopener noreferrer"
                     onClick={e => e.stopPropagation()}
                   >
-                    👁 Как видят заказчики ↗
+                    Как видят заказчики ↗
                   </a>
-                  <button
-                    type="button"
-                    className={`ml-btn-copy${copyFlashId === l.id ? ' copied' : ''}`}
-                    onClick={e => copyListingPublicLink(l.id, e)}
-                  >
-                    {copyFlashId === l.id ? '✓ Ссылка скопирована' : '🔗 Копировать ссылку'}
-                  </button>
                   <div className="ml-actions-divider" />
                   <button type="button" className={l.active ? 'ml-btn-arch' : 'ml-btn-restore'} onClick={e => handleToggle(l, e)}>
-                    {l.active ? 'Снять с публикации' : '↩ Восстановить'}
+                    {l.active ? 'Снять с публикации' : 'Восстановить'}
                   </button>
                 </div>
               </div>
