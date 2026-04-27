@@ -193,7 +193,7 @@ export default function MyOrdersPage() {
     );
   }
 
-  const copyRequestLink = (reqId, e) => {
+  function copyRequestLink(reqId, e) {
     e?.stopPropagation?.();
     const url = `${window.location.origin}/my-requests?request=${reqId}`;
     const done = () => {
@@ -205,9 +205,9 @@ export default function MyOrdersPage() {
     } else {
       done();
     }
-  };
+  }
 
-  const getSectionSlugByCategoryId = (categoryId) => {
+  function getSectionSlugByCategoryId(categoryId) {
     const cat = categories.find(c => String(c.id) === String(categoryId));
     if (!cat) return null;
     const n = String(cat.name || '').trim().toLowerCase();
@@ -215,16 +215,16 @@ export default function MyOrdersPage() {
       if ((list || []).some(x => String(x.name || '').trim().toLowerCase() === n)) return slug;
     }
     return null;
-  };
+  }
 
-  const chooseCategoryByName = (name) => {
+  function chooseCategoryByName(name) {
     const c = categories.find(x => String(x.name || '').trim().toLowerCase() === String(name).trim().toLowerCase());
     if (!c) return;
     setFormErr('');
     setForm(prev => ({ ...prev, categoryId: c.id }));
-  };
+  }
 
-  const openCreate = () => {
+  function openCreate() {
     setForm({
       title: '',
       description: '',
@@ -238,9 +238,9 @@ export default function MyOrdersPage() {
     setPickedSection(null);
     setView('create');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }
 
-  const openEdit = (req) => {
+  function openEdit(req) {
     setForm({
       title: req.title || '',
       description: req.description && req.description !== 'Без описания' ? req.description : '',
@@ -254,9 +254,9 @@ export default function MyOrdersPage() {
     setPickedSection(getSectionSlugByCategoryId(req.categoryId));
     setView({ edit: req });
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }
 
-  const onAddPhotos = async (files) => {
+  async function onAddPhotos(files) {
     const arr = Array.from(files || []);
     if (!arr.length) return;
     if ((form.photos?.length || 0) + arr.length > 5) { setFormErr('Максимум 5 фото'); return; }
@@ -266,11 +266,11 @@ export default function MyOrdersPage() {
       reader.readAsDataURL(file);
     })));
     setForm(prev => ({ ...prev, photos: [...(prev.photos || []), ...uploaded] }));
-  };
+  }
 
-  const removePhoto = (id) => setForm(prev => ({ ...prev, photos: prev.photos.filter(ph => ph.id !== id) }));
+  function removePhoto(id) { setForm(prev => ({ ...prev, photos: prev.photos.filter(ph => ph.id !== id) })); }
 
-  const saveRequest = async () => {
+  async function saveRequest() {
     if (!form.categoryId) { setFormErr('Выберите категорию'); return; }
     if (!form.title.trim()) { setFormErr('Укажите название заявки'); return; }
     if (!form.budget || Number(form.budget) <= 0) { setFormErr('Укажите бюджет больше нуля'); return; }
@@ -306,7 +306,7 @@ export default function MyOrdersPage() {
       setFormErr(e?.message || 'Не удалось сохранить');
     }
     setSaving(false);
-  };
+  }
 
   return (
     <div className="my-req-page">
