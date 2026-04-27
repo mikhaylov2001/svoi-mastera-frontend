@@ -16,8 +16,11 @@ const PRICE_UNITS = ['за работу','за час','за день','дого
 const EMPTY_FORM  = { title:'', description:'', price:'', priceUnit:'за работу', category:'', photos:[] };
 const MAX_DESC    = 2000;
 
-/** Нейтральный фон по умолчанию (не привязан к категории / разделу) */
-const DEFAULT_NEUTRAL_BG = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80';
+const PUBLIC = process.env.PUBLIC_URL || '';
+/** Светлый фон «Мои объявления» и запасной фон мастера (без категории / шаг 2) */
+const DEFAULT_MY_LISTINGS_BG = `${PUBLIC}/ml-defaults/my-listings-bg.png`;
+/** Hero шага 1 «Выберите раздел» до наведения на карточку раздела */
+const DEFAULT_WIZARD_SECTION_HERO = `${PUBLIC}/ml-defaults/wizard-section-hero.png`;
 
 const CAT_TIPS = {
   'Ремонт квартир':    ['Укажите виды работ: штукатурка, обои, полы…', 'Добавьте фото — заказчик поймёт масштаб', 'Напишите опыт и регион работы'],
@@ -34,10 +37,10 @@ Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
   cats.forEach(c => { CATEGORY_PHOTO_BY_NAME[c.name] = c.photo; });
 });
 function photoForCategoryName(name) {
-  if (!name || !String(name).trim()) return DEFAULT_NEUTRAL_BG;
+  if (!name || !String(name).trim()) return DEFAULT_MY_LISTINGS_BG;
   const n = String(name).trim();
   if (CATEGORY_PHOTO_BY_NAME[n]) return CATEGORY_PHOTO_BY_NAME[n];
-  return DEFAULT_NEUTRAL_BG;
+  return DEFAULT_MY_LISTINGS_BG;
 }
 
 function compressImage(file) {
@@ -512,7 +515,7 @@ export default function MyListingsPage() {
   const archive = listings.filter(l => !l.active);
   const shown   = tab === 'active' ? active : archive;
 
-  const listBgPhotoUrl = listBgHoverCat ? photoForCategoryName(listBgHoverCat) : DEFAULT_NEUTRAL_BG;
+  const listBgPhotoUrl = listBgHoverCat ? photoForCategoryName(listBgHoverCat) : DEFAULT_MY_LISTINGS_BG;
 
   useEffect(() => {
     setListBgHoverCat(null);
@@ -624,14 +627,14 @@ export default function MyListingsPage() {
     const photos   = form.photos || [];
     const descLen  = form.description.length;
 
-    let createHeroSrc = DEFAULT_NEUTRAL_BG;
+    let createHeroSrc = DEFAULT_MY_LISTINGS_BG;
     if (isEdit && form.category) createHeroSrc = photoForCategoryName(form.category);
     else if (!isEdit) {
       if (isSectionStep) {
         const hs = hoverSectionSlug && SECTIONS.find(s => s.slug === hoverSectionSlug);
-        createHeroSrc = hs?.photo || DEFAULT_NEUTRAL_BG;
+        createHeroSrc = hs?.photo || DEFAULT_WIZARD_SECTION_HERO;
       } else if (isCatStep) {
-        createHeroSrc = DEFAULT_NEUTRAL_BG;
+        createHeroSrc = DEFAULT_MY_LISTINGS_BG;
       } else if (form.category) {
         createHeroSrc = photoForCategoryName(form.category);
       }
