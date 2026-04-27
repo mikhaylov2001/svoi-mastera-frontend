@@ -715,13 +715,12 @@ const css = `
 
   .fmp-card-footer {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
     margin-top: auto;
     padding-top: 10px;
     border-top: 1px solid #f5f5f5;
-    flex-wrap: nowrap;
   }
   .fmp-card-footer-pending {
     display: flex;
@@ -731,15 +730,22 @@ const css = `
     padding-top: 10px;
     border-top: 1px solid #f5f5f5;
   }
-  .fmp-card-price-block { flex-shrink: 0; }
+  .fmp-card-price-block { width: 100%; flex-shrink: 0; }
   .fmp-card-price { font-size: 16px; font-weight: 900; color: #1a1a1a; letter-spacing: -.3px; line-height: 1; white-space: nowrap; }
   .fmp-card-price-unit { font-size: 11px; color: #999; font-weight: 400; display: block; margin-top: 2px; white-space: nowrap; }
   .fmp-card-actions {
-    display: flex; flex-direction: column; gap: 6px; align-items: stretch;
-    min-width: 130px; flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 6px;
+    align-items: stretch;
+    min-width: 0;
   }
   /* Главная: сразу оформить сделку по объявлению */
   .fmp-btn-accept {
+    flex: 1;
+    min-width: 0;
     background: #e8410a;
     border: none;
     border-radius: 8px;
@@ -747,7 +753,7 @@ const css = `
     font-size: 12px;
     font-weight: 800;
     font-family: Inter, sans-serif;
-    padding: 9px 12px;
+    padding: 9px 10px;
     cursor: pointer;
     transition: background .15s, box-shadow .15s, transform .12s;
     white-space: nowrap;
@@ -767,6 +773,8 @@ const css = `
   }
   /* Вторичная: чат */
   .fmp-btn-msg {
+    flex: 1;
+    min-width: 0;
     background: #fff;
     border: 1.5px solid #e8e8e8;
     border-radius: 8px;
@@ -774,7 +782,7 @@ const css = `
     font-size: 12px;
     font-weight: 600;
     font-family: Inter, sans-serif;
-    padding: 8px 12px;
+    padding: 8px 10px;
     cursor: pointer;
     transition: all .15s;
     white-space: nowrap;
@@ -785,13 +793,14 @@ const css = `
     background: #fff9f7;
   }
   .fmp-card-action-err {
+    flex: 1 1 100%;
     font-size: 10px;
     font-weight: 600;
     color: #dc2626;
     line-height: 1.35;
-    text-align: right;
-    max-width: 160px;
-    align-self: flex-end;
+    text-align: left;
+    max-width: none;
+    align-self: stretch;
   }
   /* Баннер «ожидает мастера» */
   .fmp-pending-banner {
@@ -1416,15 +1425,15 @@ export default function FindMasterPage() {
                     )}
 
                       {pendingDeals[String(s.id)] ? (
-                        /* ── Pending: цена + баннер стекуются вертикально ── */
+                        /* ── Pending: цена сверху, ссылка и баннер ниже ── */
                         <div className="fmp-card-footer-pending">
-                          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                            <div className="fmp-card-price-block">
-                              <div className="fmp-card-price">
-                                {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
-                    </div>
-                              {s.priceUnit && <span className="fmp-card-price-unit">{s.priceUnit}</span>}
-                  </div>
+                          <div className="fmp-card-price-block">
+                            <div className="fmp-card-price">
+                              {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
+                            </div>
+                            {s.priceUnit && <span className="fmp-card-price-unit">{s.priceUnit}</span>}
+                          </div>
+                          <div style={{ display:'flex', justifyContent:'flex-end' }}>
                             <button
                               type="button"
                               className="fmp-pending-link"

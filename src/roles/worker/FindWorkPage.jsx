@@ -687,15 +687,14 @@ const fw2css = `
   .fw2-rating-val { font-weight: 800; color: #1a1a1a; font-size: 12px; }
   .fw2-card-footer {
     display: flex;
+    flex-direction: column;
     align-items: stretch;
-    justify-content: space-between;
-    gap: 8px;
+    gap: 10px;
     margin-top: auto;
     padding-top: 10px;
     border-top: 1px solid #f5f5f5;
-    flex-wrap: nowrap;
   }
-  .fw2-card-price-block { flex-shrink: 0; }
+  .fw2-card-price-block { width: 100%; flex-shrink: 0; }
   .fw2-card-price {
     font-size: 16px;
     font-weight: 900;
@@ -725,11 +724,10 @@ const fw2css = `
   .fw2-card-actions {
     display: flex;
     flex-direction: row;
-    flex: 1;
+    width: 100%;
     min-width: 0;
     gap: 6px;
     align-items: stretch;
-    flex-shrink: 1;
   }
   .fw2-btn-respond {
     flex: 1;
