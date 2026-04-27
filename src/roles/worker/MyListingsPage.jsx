@@ -68,35 +68,30 @@ const css = `
   /* ── GENERAL ── */
   .ml-page { background: #f2f2f2; min-height: 100vh; font-family: Inter, Arial, sans-serif; color: #1a1a1a; }
 
-  /* ── СПИСОК: фон по категории + слой контента ── */
-  .ml-list-shell { position: relative; min-height: 100vh; overflow-x: hidden; }
-  .ml-list-bg {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    transition: opacity .45s ease;
+  /* ── СПИСОК: hero-баннер + чистый фон ── */
+  .ml-list-shell { background: #f2f2f2; min-height: 100vh; }
+  .ml-list-hero {
+    position: relative; height: 160px; overflow: hidden;
   }
-  .ml-list-bg img {
-    width: 100%; height: 100%; object-fit: cover;
-    filter: brightness(.75) saturate(1.0);
+  .ml-list-hero-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 40%;
+    filter: brightness(.55) saturate(1.1);
   }
-  .ml-list-bg-scrim {
+  .ml-list-hero-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,.72) 0%, rgba(255,255,255,.62) 18%, rgba(245,245,245,.70) 55%, #f0f0f0 100%);
+    background: linear-gradient(170deg, rgba(0,0,0,.08) 0%, rgba(0,0,0,.62) 100%);
   }
-  .ml-list-front { position: relative; z-index: 1; }
-
-  /* ── LIST HEADER ── */
-  .ml-list-shell .ml-hdr {
-    background: rgba(255,255,255,.78);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(232,232,232,.9);
+  .ml-list-hero-body {
+    position: relative; z-index: 1; height: 100%;
+    max-width: 1000px; margin: 0 auto; padding: 0 20px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding-bottom: 22px; gap: 16px; flex-wrap: wrap;
   }
-  .ml-hdr { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 18px 0; }
-  .ml-hdr-inner { max-width: 1000px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-  .ml-h1 { font-size: 26px; font-weight: 900; margin: 0; letter-spacing: -.02em; }
-  .ml-h-sub { font-size: 13px; color: #6b7280; margin: 4px 0 0; font-weight: 500; max-width: 420px; line-height: 1.45; }
-  .ml-new-btn { background: #e8410a; border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700; padding: 11px 22px; cursor: pointer; font-family: inherit; transition: background .15s, box-shadow .15s; box-shadow: 0 4px 14px rgba(232,65,10,.25); }
-  .ml-new-btn:hover { background: #c73208; box-shadow: 0 6px 20px rgba(232,65,10,.32); }
+  .ml-h1 { font-size: 28px; font-weight: 900; margin: 0; color: #fff; letter-spacing: -.02em; }
+  .ml-h-sub { font-size: 13px; color: rgba(255,255,255,.75); margin: 4px 0 0; font-weight: 500; }
+  .ml-new-btn { background: #e8410a; border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700; padding: 11px 22px; cursor: pointer; font-family: inherit; transition: background .15s, box-shadow .15s; box-shadow: 0 4px 14px rgba(232,65,10,.3); white-space: nowrap; }
+  .ml-new-btn:hover { background: #c73208; box-shadow: 0 6px 20px rgba(232,65,10,.38); }
   .ml-wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px 60px; }
 
   /* ── TABS ── */
@@ -1122,23 +1117,21 @@ export default function MyListingsPage() {
   return (
     <div className="ml-page ml-list-shell">
       <style>{css}</style>
-      <div className="ml-list-bg" aria-hidden>
-        <img src={listBgPhotoUrl} alt="" />
-        <div className="ml-list-bg-scrim" />
+
+      {/* Hero-баннер */}
+      <div className="ml-list-hero">
+        <img src={listBgPhotoUrl} alt="" className="ml-list-hero-img" />
+        <div className="ml-list-hero-overlay" />
+        <div className="ml-list-hero-body">
+          <div>
+            <h1 className="ml-h1">Мои объявления</h1>
+            <p className="ml-h-sub">Управляйте своими услугами и откликами</p>
+          </div>
+          <button className="ml-new-btn" type="button" onClick={openCreate}>+ Разместить объявление</button>
+        </div>
       </div>
 
-      <div className="ml-list-front">
-        <div className="ml-hdr">
-          <div className="ml-hdr-inner">
-            <div>
-              <h1 className="ml-h1">Мои объявления</h1>
-              <p className="ml-h-sub">Нейтральный фон по умолчанию; при наведении на объявление — фото категории</p>
-            </div>
-            <button className="ml-new-btn" type="button" onClick={openCreate}>+ Разместить объявление</button>
-          </div>
-        </div>
-
-        <div className="ml-wrap" style={{ paddingTop: 0 }}>
+      <div className="ml-wrap" style={{ paddingTop: 20 }}>
           <div className="ml-tabs">
             <button type="button" className={`ml-tab${tab==='active'?' on':''}`} onClick={() => setTab('active')}>
               Активные <span className="ml-tab-n">{active.length}</span>
@@ -1219,7 +1212,6 @@ export default function MyListingsPage() {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }
