@@ -149,7 +149,12 @@ const css = `
   .ml-row-stat { font-size: 12px; color: #6b7280; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; line-height: 1.35; }
   .ml-row-stat-num { font-weight: 800; color: #111827; font-variant-numeric: tabular-nums; font-size: 15px; }
   .ml-row-stat-hint { font-size: 10px; color: #9ca3af; width: 100%; margin-top: -2px; padding-left: 22px; line-height: 1.3; }
-  .ml-row-actions { width: 168px; flex-shrink: 0; padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; justify-content: center; border-left: 1px solid #f0f0f0; }
+  .ml-row-actions { width: 178px; flex-shrink: 0; padding: 14px 12px; display: flex; flex-direction: column; gap: 8px; justify-content: center; border-left: 1px solid #f0f0f0; }
+  .ml-btn-copy {
+    width: 100%; background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 8px 6px;
+    font-size: 12px; font-weight: 600; color: #475569; cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .ml-btn-copy:hover { border-color: #e8410a; color: #e8410a; background: #fff7ed; }
   .ml-link-preview {
     font-size: 12px; font-weight: 600; color: #e8410a; text-align: center;
     text-decoration: none; padding: 4px 0; font-family: inherit;
@@ -419,6 +424,11 @@ const css = `
   .mlf-btn-submit { width: 100%; padding: 15px; background: #e8410a; border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; transition: background .15s; }
   .mlf-btn-submit:hover { background: #c73208; }
   .mlf-btn-submit:disabled { background: #fca98e; cursor: not-allowed; }
+  .mlf-btn-copy-outline {
+    width: 100%; margin-top: 10px; padding: 11px; background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px;
+    color: #334155; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all .15s;
+  }
+  .mlf-btn-copy-outline:hover { border-color: #e8410a; color: #c2410c; background: #fff7ed; }
 
   /* error */
   .mlf-error { background: #fff5f5; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #dc2626; margin-bottom: 12px; }
@@ -497,8 +507,33 @@ export default function MyListingsPage() {
   const [formErr,  setFormErr]  = useState('');
   const [lightbox, setLightbox] = useState(null); // { photos, index }
   const [isDragging, setIsDragging] = useState(false);
+  const [copyFlashId, setCopyFlashId] = useState(null);
   const photoRef = useRef();
   const titleRef = useRef();
+
+  const copyListingPublicLink = useCallback((listingId, e) => {
+    e?.stopPropagation?.();
+    const url = `${window.location.origin}/listings/${listingId}`;
+    const done = () => {
+      setCopyFlashId(listingId);
+      window.setTimeout(() => setCopyFlashId((cur) => (cur === listingId ? null : cur)), 2200);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(done).catch(() => {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          done();
+        } catch { /* ignore */ }
+      });
+    } else {
+      done();
+    }
+  }, []);
 
   const load = async () => {
     setLoading(true);
@@ -581,23 +616,35 @@ export default function MyListingsPage() {
     setFormErr('');
     try {
       const isEdit = view !== 'create';
+      const payload = {
+        title: form.title.trim(),
+        description: (form.description || '').trim(),
+        price: Number(form.price),
+        priceUnit: form.priceUnit,
+        category: form.category,
+        photos: (form.photos && form.photos.length > 0) ? form.photos.map(p => p.data) : [],
+      };
       const r = await fetch(isEdit ? `${API}/listings/${view.edit.id}` : `${API}/listings`, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
-        body: JSON.stringify({
-          title:       form.title.trim(),
-          description: form.description.trim() || null,
-          price:       Number(form.price),
-          priceUnit:   form.priceUnit,
-          category:    form.category,
-          photos:      form.photos?.length ? form.photos.map(p => p.data) : null,
-        }),
+        body: JSON.stringify(payload),
       });
+      const raw = await r.text();
       if (r.ok) {
         setView(null);
         await load();
       } else {
-        setFormErr('Не удалось сохранить. Попробуйте ещё раз.');
+        let msg = 'Не удалось сохранить. Попробуйте ещё раз.';
+        try {
+          const j = JSON.parse(raw);
+          if (j.message) msg = String(j.message);
+          else if (j.error) msg = String(j.error);
+        } catch {
+          if (raw && raw.length < 400 && !raw.trim().startsWith('<')) msg = raw.trim();
+        }
+        if (r.status === 413) msg = 'Данные слишком большие (часто из‑за фото). Добавьте меньше или более сжатые снимки.';
+        if (r.status === 400 && payload.photos.length === 0) msg = msg || 'Проверьте обязательные поля.';
+        setFormErr(msg);
       }
     } catch {
       setFormErr('Ошибка сети. Проверьте соединение.');
@@ -933,7 +980,7 @@ export default function MyListingsPage() {
                     <button
                       type="button"
                       className="mlf-btn-submit"
-                      disabled={saving || !form.title.trim() || !form.category || !form.price}
+                      disabled={saving || !form.title.trim() || !form.category || !form.price || Number(form.price) <= 0}
                       onClick={handleSave}
                     >
                       {saving
@@ -945,6 +992,15 @@ export default function MyListingsPage() {
                     <p style={{fontSize:12, color:'#bbb', textAlign:'center', marginTop:10, marginBottom:0}}>
                       {isEdit ? 'Изменения сразу увидят заказчики' : 'Размещение бесплатно · Заказчики увидят сразу после публикации'}
                     </p>
+                    {isEdit && view?.edit?.id && (
+                      <button
+                        type="button"
+                        className="mlf-btn-copy-outline"
+                        onClick={(e) => copyListingPublicLink(view.edit.id, e)}
+                      >
+                        {copyFlashId === view.edit.id ? '✓ Ссылка скопирована' : '🔗 Копировать ссылку на объявление'}
+                      </button>
+                    )}
                   </div>
                 </div>
               </>
@@ -1251,6 +1307,9 @@ export default function MyListingsPage() {
                   >
                     Как видят заказчики ↗
                   </a>
+                  <button type="button" className="ml-btn-copy" onClick={e => copyListingPublicLink(l.id, e)}>
+                    {copyFlashId === l.id ? '✓ Ссылка скопирована' : 'Копировать ссылку'}
+                  </button>
                 </div>
               </div>
             ))}
