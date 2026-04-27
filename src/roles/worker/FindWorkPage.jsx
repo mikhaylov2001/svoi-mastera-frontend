@@ -1357,7 +1357,12 @@ export default function FindWorkPage() {
                   { val: 'priceAsc',  label: 'Цена ↑' },
                   { val: 'priceDesc', label: 'Цена ↓' },
                 ].map(o => (
-                  <button key={o.val} className={`fw2-sort-opt${sortBy === o.val ? ' active' : ''}`} onClick={() => setSortBy(o.val)}>
+                  <button
+                    key={o.val}
+                    type="button"
+                    className={`fw2-sort-opt${sortBy === o.val ? ' active' : ''}`}
+                    onClick={() => setSortBy(o.val)}
+                  >
                     {o.label}
                   </button>
                 ))}

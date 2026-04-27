@@ -478,20 +478,16 @@ const css = `
   .fmp-main { min-width: 0; }
 
   .fmp-sort-bar {
-    background: #fff;
-    border: 1.5px solid #e8e8e8;
-    border-radius: 12px;
-    padding: 11px 16px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 14px;
+    gap: 10px;
     flex-wrap: wrap;
+    margin-bottom: 14px;
   }
-  .fmp-sort-label { font-size: 13px; color: #888; white-space: nowrap; }
+  .fmp-sort-label { font-size: 13px; color: #888; font-weight: 600; white-space: nowrap; }
   .fmp-sort-opts { display: flex; gap: 6px; flex-wrap: wrap; }
   .fmp-sort-opt {
-    padding: 6px 14px;
+    padding: 7px 14px;
     border-radius: 20px;
     border: 1.5px solid #e8e8e8;
     font-size: 13px;
@@ -503,9 +499,9 @@ const css = `
     transition: all .15s;
     white-space: nowrap;
   }
+  .fmp-sort-opt:hover { border-color: #e8410a; color: #e8410a; }
   .fmp-sort-opt.active { border-color: #e8410a; background: #e8410a; color: #fff; }
-  .fmp-sort-opt:hover:not(.active) { border-color: #aaa; }
-  .fmp-result-count { margin-left: auto; font-size: 13px; color: #888; white-space: nowrap; }
+  .fmp-result-count { margin-left: auto; font-size: 13px; color: #aaa; font-weight: 500; white-space: nowrap; }
 
   /* ══ КАРТОЧКИ ОБЪЯВЛЕНИЙ ══ */
   .fmp-list {
@@ -1296,11 +1292,15 @@ export default function FindMasterPage() {
             <div className="fmp-sort-opts">
               {[
                 { val: 'recency',   label: 'Новые' },
-                { val: 'rating',    label: '⭐ Рейтинг' },
                 { val: 'priceAsc',  label: 'Цена ↑' },
                 { val: 'priceDesc', label: 'Цена ↓' },
               ].map(o => (
-                <button key={o.val} className={`fmp-sort-opt${sortBy === o.val ? ' active' : ''}`} onClick={() => setSortBy(o.val)}>
+                <button
+                  key={o.val}
+                  type="button"
+                  className={`fmp-sort-opt${sortBy === o.val ? ' active' : ''}`}
+                  onClick={() => setSortBy(o.val)}
+                >
                   {o.label}
                 </button>
               ))}
