@@ -637,19 +637,35 @@ const css = `
     gap: 8px;
   }
 
-  /* Мастер-чип → профиль */
+  /* Мастер → профиль (как блок заказчика у мастера) */
   .fmp-card-worker {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 7px;
-    cursor: pointer;
-    width: fit-content;
+    width: 100%;
     max-width: 100%;
-    transition: opacity .15s;
+    cursor: pointer;
     text-decoration: none;
     color: inherit;
+    border-radius: 8px;
+    padding: 2px;
+    margin: -2px -2px 0;
+    transition: opacity .15s;
   }
-  .fmp-card-worker:hover { opacity: .7; }
+  .fmp-card-worker:hover { opacity: .85; }
+  .fmp-card-worker-sub--active {
+    font-size: 11px;
+    color: #22c55e;
+    font-weight: 600;
+    margin-top: 1px;
+    line-height: 1.35;
+  }
+  .fmp-card-worker-chev {
+    color: #d1d5db;
+    font-size: 18px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
   .fmp-card-ava {
     width: 26px; height: 26px;
     border-radius: 50%;
@@ -664,7 +680,7 @@ const css = `
     color: #fff; font-weight: 800; font-size: 11px; flex-shrink: 0;
   }
   .fmp-card-worker-name { font-size: 12px; font-weight: 700; color: #333; line-height: 1.2; }
-  .fmp-card-worker-sub  { font-size: 11px; color: #999; margin-top: 1px; }
+  .fmp-card-worker-sub  { font-size: 11px; color: #999; margin-top: 1px; line-height: 1.35; }
 
   /* Название → объявление */
   .fmp-card-title {
@@ -1345,6 +1361,16 @@ export default function FindMasterPage() {
                 const photos = s.photos || [];
                 const hasPhoto = photos.length > 0;
                 const ava    = stats?.workerAvatar || s.workerAvatar || null;
+                const locLine = (() => {
+                  const addr = s.address && String(s.address).trim();
+                  if (addr) return addr.length > 120 ? `${addr.slice(0, 120)}…` : addr;
+                  const c = s.city && String(s.city).trim();
+                  if (c) return c;
+                  return 'Йошкар-Ола';
+                })();
+                const masterActiveSub = s.active !== false
+                  ? `● Активный мастер · ${locLine}`
+                  : `Мастер · ${locLine}`;
 
               return (
                   <div key={s.id} className="fmp-card">
@@ -1386,18 +1412,21 @@ export default function FindMasterPage() {
                     <div className="fmp-card-body">
 
                       {/* Мастер → профиль */}
-                      <div className="fmp-card-worker" onClick={() => navigate(`/workers/${wid}`)}>
+                      <Link to={`/workers/${wid}`} className="fmp-card-worker">
                         {ava && ava.length > 10
                           ? <img src={ava} alt="" className="fmp-card-ava"/>
                           : <div className="fmp-card-ava-ph" style={{ background: `linear-gradient(135deg, #e8410a, #ff7043)` }}>
                               {(s.workerName || 'М')[0].toUpperCase()}
                             </div>
-                      }
-                      <div>
+                        }
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <div className="fmp-card-worker-name">{s.workerName}</div>
-                          <div className="fmp-card-worker-sub">Йошкар-Ола · Профиль →</div>
-                      </div>
-                    </div>
+                          <div className={s.active !== false ? 'fmp-card-worker-sub fmp-card-worker-sub--active' : 'fmp-card-worker-sub'}>
+                            {masterActiveSub}
+                          </div>
+                        </div>
+                        <span className="fmp-card-worker-chev">›</span>
+                      </Link>
 
                       {/* Название → объявление */}
                       <div className="fmp-card-title" onClick={() => navigate(`/listings/${s.id}`)}>
