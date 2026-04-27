@@ -1,10 +1,690 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories } from '../../api';
 import { formatJobRequestBudgetLabel } from '../../utils/jobRequestBudget';
+import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
+
+const CAT_ALL = {};
+Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
+  cats.forEach(cat => { CAT_ALL[cat.slug] = cat; })
+);
+
+const HERO_PHOTO = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80';
+
+const fw2css = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; }
+
+  .fw2-page {
+    background: #f2f2f2;
+    min-height: 100vh;
+    font-family: Inter, Arial, sans-serif;
+    color: #1a1a1a;
+  }
+
+  /* ═══ HERO ═══ */
+  .fw2-hero {
+    position: relative;
+    height: 290px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+  }
+  .fw2-hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(.45) saturate(1.15);
+  }
+  .fw2-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(170deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.65) 100%);
+  }
+  .fw2-hero-body {
+    position: relative;
+    z-index: 1;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px 36px;
+    width: 100%;
+  }
+  .fw2-hero h1 {
+    font-size: clamp(24px, 4vw, 38px);
+    font-weight: 900;
+    color: #fff;
+    margin: 0 0 6px;
+    letter-spacing: -.4px;
+    line-height: 1.15;
+  }
+  .fw2-hero-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,.7);
+    margin: 0 0 18px;
+  }
+  .fw2-hero-stats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .fw2-hero-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    backdrop-filter: blur(6px);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: rgba(255,255,255,.9);
+  }
+  .fw2-hero-stat-val {
+    font-weight: 900;
+    font-size: 15px;
+    color: #fff;
+  }
+
+  /* ═══ КАТЕГОРИИ СЕТКА ═══ */
+  .fw2-cats-wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+  .fw2-cats-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #888;
+    margin-bottom: 16px;
+  }
+  .fw2-cats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .fw2-cat-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    border: 1.5px solid #e8e8e8;
+    transition: box-shadow .22s, transform .22s, border-color .22s;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    font-family: Inter, Arial, sans-serif;
+  }
+  .fw2-cat-card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,.13);
+    transform: translateY(-4px);
+    border-color: #e8410a;
+  }
+  .fw2-cat-img-wrap {
+    position: relative;
+    height: 150px;
+    overflow: hidden;
+    background: #f0f0f0;
+    flex-shrink: 0;
+  }
+  .fw2-cat-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .5s cubic-bezier(.25,.46,.45,.94);
+  }
+  .fw2-cat-card:hover .fw2-cat-img-wrap img { transform: scale(1.08); }
+  .fw2-cat-img-ph {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 52px;
+  }
+  .fw2-cat-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,.52);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+  .fw2-cat-body {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .fw2-cat-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: #111;
+    margin-bottom: 5px;
+    line-height: 1.25;
+  }
+  .fw2-cat-desc {
+    font-size: 13px;
+    color: #777;
+    line-height: 1.55;
+    flex: 1;
+    margin-bottom: 14px;
+  }
+  .fw2-cat-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+  }
+  .fw2-cat-count { font-size: 12px; color: #e8410a; font-weight: 700; }
+  .fw2-cat-count-none { font-size: 12px; color: #aaa; }
+  .fw2-cat-go {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #999;
+    flex-shrink: 0;
+    transition: background .2s, color .2s;
+  }
+  .fw2-cat-card:hover .fw2-cat-go { background: #e8410a; color: #fff; }
+
+  /* ═══ TOPBAR ПОИСКА ═══ */
+  .fw2-topbar {
+    background: #fff;
+    border-bottom: 1px solid #e8e8e8;
+    padding: 14px 0;
+  }
+  .fw2-topbar-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .fw2-search-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 2px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 0 14px;
+    transition: border-color .15s;
+    background: #fff;
+  }
+  .fw2-search-wrap:focus-within { border-color: #e8410a; }
+  .fw2-search-wrap input {
+    flex: 1;
+    border: none;
+    background: none;
+    font-size: 14px;
+    padding: 11px 0;
+    outline: none;
+    font-family: Inter, sans-serif;
+    color: #1a1a1a;
+  }
+  .fw2-search-wrap input::placeholder { color: #bbb; }
+  .fw2-topbar-btn {
+    background: #e8410a;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: Inter, sans-serif;
+    padding: 11px 22px;
+    cursor: pointer;
+    transition: background .15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .fw2-topbar-btn:hover { background: #c73208; }
+
+  /* Хлебные крошки */
+  .fw2-breadcrumb {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #999;
+  }
+  .fw2-breadcrumb button {
+    color: #999;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    transition: color .15s;
+  }
+  .fw2-breadcrumb button:hover { color: #e8410a; }
+  .fw2-breadcrumb-sep { color: #ccc; }
+  .fw2-breadcrumb-cur { color: #1a1a1a; font-weight: 600; }
+
+  /* ═══ LAYOUT КАТЕГОРИИ ═══ */
+  .fw2-cat-page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .fw2-sidebar {
+    position: sticky;
+    top: 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .fw2-sb-cat {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1.5px solid #e8e8e8;
+  }
+  .fw2-sb-cat-photo {
+    position: relative;
+    height: 120px;
+    overflow: hidden;
+    background: #1a1a2e;
+  }
+  .fw2-sb-cat-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: brightness(.6);
+  }
+  .fw2-sb-cat-photo-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    padding: 12px;
+    background: linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 60%);
+  }
+  .fw2-sb-cat-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.25;
+  }
+  .fw2-sb-cat-body { padding: 12px 14px; }
+  .fw2-sb-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #666;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color .15s;
+  }
+  .fw2-sb-back:hover { color: #e8410a; }
+  .fw2-filter-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1.5px solid #e8e8e8;
+    overflow: hidden;
+  }
+  .fw2-filter-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #888;
+    padding: 13px 16px 10px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .fw2-filter-body { padding: 12px 16px 14px; }
+  .fw2-price-row { display: flex; gap: 10px; align-items: flex-end; }
+  .fw2-price-row > div { flex: 1; }
+  .fw2-price-label { font-size: 11px; color: #aaa; margin-bottom: 4px; font-weight: 600; }
+  .fw2-price-inp {
+    width: 100%;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 14px;
+    font-family: Inter, sans-serif;
+    outline: none;
+    transition: border-color .15s;
+    color: #1a1a1a;
+    background: #fafafa;
+  }
+  .fw2-price-inp:focus { border-color: #e8410a; background: #fff; }
+  .fw2-check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    cursor: pointer;
+    user-select: none;
+    font-size: 14px;
+    color: #333;
+    transition: color .15s;
+  }
+  .fw2-check-item:hover { color: #111; }
+  .fw2-check-box {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid #d1d5db;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all .15s;
+  }
+  .fw2-check-box.on { background: #e8410a; border-color: #e8410a; }
+  .fw2-check-tick { font-size: 11px; color: #fff; font-weight: 700; }
+  .fw2-reset-btn {
+    width: 100%;
+    padding: 11px;
+    background: #fff;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #e8410a;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .fw2-reset-btn:hover { background: #fff5f3; border-color: #e8410a; }
+
+  /* ═══ ОСНОВНАЯ ЗОНА ═══ */
+  .fw2-main { min-width: 0; }
+  .fw2-sort-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .fw2-sort-label { font-size: 13px; color: #888; font-weight: 600; white-space: nowrap; }
+  .fw2-sort-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .fw2-sort-opt {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #e8e8e8;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .fw2-sort-opt:hover { border-color: #e8410a; color: #e8410a; }
+  .fw2-sort-opt.active { background: #e8410a; border-color: #e8410a; color: #fff; }
+  .fw2-result-count { margin-left: auto; font-size: 13px; color: #aaa; font-weight: 500; }
+
+  /* ═══ КАРТОЧКИ ЗАЯВОК ═══ */
+  .fw2-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .fw2-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1.5px solid #e8e8e8;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow .2s, transform .2s, border-color .2s;
+    cursor: pointer;
+  }
+  .fw2-card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,.1);
+    transform: translateY(-3px);
+    border-color: #e8410a;
+  }
+  .fw2-card-photo {
+    position: relative;
+    padding-top: 62%;
+    overflow: hidden;
+    background: #f0f0f0;
+    flex-shrink: 0;
+  }
+  .fw2-card-photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .5s cubic-bezier(.25,.46,.45,.94);
+  }
+  .fw2-card:hover .fw2-card-photo img { transform: scale(1.05); }
+  .fw2-card-photo-ph {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #f5f5f5;
+  }
+  .fw2-card-photo-ph-ico { font-size: 44px; }
+  .fw2-card-photo-ph-txt { font-size: 11px; color: #bbb; font-weight: 600; }
+  .fw2-card-photo-cnt {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(4px);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+  .fw2-thumbs {
+    display: flex;
+    gap: 4px;
+    padding: 6px 10px;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+    overflow: hidden;
+  }
+  .fw2-thumb {
+    width: 48px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 5px;
+    cursor: pointer;
+    opacity: .75;
+    transition: opacity .15s;
+    flex-shrink: 0;
+  }
+  .fw2-thumb:hover { opacity: 1; }
+  .fw2-thumb-more {
+    width: 48px;
+    height: 36px;
+    border-radius: 5px;
+    background: rgba(0,0,0,.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #555;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .fw2-card-body {
+    padding: 12px 14px 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .fw2-card-customer {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 10px;
+  }
+  .fw2-card-ava {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid #f0f0f0;
+  }
+  .fw2-card-ava-ph {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 14px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .fw2-card-customer-name { font-size: 13px; font-weight: 700; color: #111; line-height: 1.2; }
+  .fw2-card-customer-sub  { font-size: 11px; color: #22c55e; font-weight: 600; }
+  .fw2-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 6px;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .fw2-card-desc {
+    font-size: 12px;
+    color: #888;
+    line-height: 1.5;
+    flex: 1;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .fw2-card-price {
+    font-size: 20px;
+    font-weight: 900;
+    color: #111;
+    margin-bottom: 12px;
+  }
+  .fw2-card-btns { display: flex; flex-direction: column; gap: 6px; }
+  .fw2-btn-accept {
+    width: 100%;
+    padding: 10px;
+    background: #16a34a;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s;
+  }
+  .fw2-btn-accept:hover { background: #15803d; }
+  .fw2-btn-offer {
+    width: 100%;
+    padding: 10px;
+    background: #fff;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    color: #555;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .fw2-btn-offer:hover { border-color: #999; color: #111; }
+  .fw2-btn-offer-primary {
+    width: 100%;
+    padding: 10px;
+    background: #e8410a;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s;
+  }
+  .fw2-btn-offer-primary:hover { background: #c73208; }
+
+  /* ═══ ПУСТОЕ СОСТОЯНИЕ ═══ */
+  .fw2-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 72px 24px;
+    background: #fff;
+    border-radius: 16px;
+    border: 1.5px solid #e8e8e8;
+  }
+  .fw2-empty-ico { font-size: 52px; margin-bottom: 14px; }
+  .fw2-empty h3 { font-size: 17px; font-weight: 800; color: #1a1a1a; margin: 0 0 8px; }
+  .fw2-empty p  { font-size: 14px; color: #888; line-height: 1.6; max-width: 340px; margin: 0 auto; }
+
+  /* ═══ СКЕЛЕТОН ═══ */
+  @keyframes fw2skel { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .fw2-sk {
+    background: linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: fw2skel 1.4s infinite;
+    border-radius: 6px;
+  }
+
+  /* ═══ АДАПТИВ ═══ */
+  @media(max-width: 900px) {
+    .fw2-cat-page { grid-template-columns: 1fr; }
+    .fw2-sidebar { position: static; }
+    .fw2-list { grid-template-columns: 1fr 1fr; }
+  }
+  @media(max-width: 620px) {
+    .fw2-list { grid-template-columns: 1fr; }
+    .fw2-cats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .fw2-hero { height: 240px; }
+  }
+`;
 
 const CATEGORY_STYLES = {
   'remont-kvartir':       { emoji: '🏠', color: '#fff3e0' },
@@ -24,7 +704,6 @@ function pluralRequests(n) {
   return `${n} заявок`;
 }
 
-/** Одна сумма для кнопки «готов за …» (после выравнивания from/to в заявке). */
 function jobRequestListPrice(req) {
   if (!req) return null;
   const to = req.budgetTo != null && req.budgetTo !== '' ? Number(req.budgetTo) : null;
@@ -37,23 +716,17 @@ function jobRequestListPrice(req) {
   return null;
 }
 
-// ═══ Модалка вынесена за пределы основного компонента ═══
-// Это критично — иначе при каждом вводе компонент пересоздаётся
 function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submitting }) {
   if (!request) return null;
-
   return (
     <div className="fw-modal-overlay" onClick={onClose}>
       <div className="fw-modal" onClick={e => e.stopPropagation()}>
-
         <div className="fw-modal-header">
           <h3 className="fw-modal-title">📩 Отклик на заявку</h3>
           <p className="fw-modal-subtitle">{request.title}</p>
         </div>
-
         <form onSubmit={onSubmit}>
           <div className="fw-modal-body">
-
             <div className="fw-modal-field">
               <label className="fw-modal-label">Ваша цена, ₽ *</label>
               <input
@@ -72,7 +745,6 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
                 </span>
               )}
             </div>
-
             <div className="fw-modal-field">
               <label className="fw-modal-label">Срок выполнения (дней)</label>
               <input
@@ -84,7 +756,6 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
                 min="1"
               />
             </div>
-
             <div className="fw-modal-field">
               <label className="fw-modal-label">Комментарий</label>
               <textarea
@@ -94,64 +765,15 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
                 onChange={e => setOfferForm(prev => ({ ...prev, comment: e.target.value }))}
               />
             </div>
-
           </div>
-
           <div className="fw-modal-footer">
-            <button type="button" className="fw-modal-cancel" onClick={onClose}>
-              Отмена
-            </button>
-            <button
-              type="submit"
-              className="fw-modal-submit"
-              disabled={submitting || !offerForm.price}
-            >
+            <button type="button" className="fw-modal-cancel" onClick={onClose}>Отмена</button>
+            <button type="submit" className="fw-modal-submit" disabled={submitting || !offerForm.price}>
               {submitting ? 'Отправка...' : '📩 Отправить отклик'}
             </button>
           </div>
         </form>
-
       </div>
-    </div>
-  );
-}
-
-// ═══ Карточка заказчика ═══
-function CustomerCard({ req }) {
-  if (!req.customerName && !req.customerId) return null;
-  const initial = (req.customerName || 'А')[0].toUpperCase();
-
-  return (
-    <div style={{ marginBottom:16 }}>
-      <div className="dp-side-title" style={{ marginBottom:10 }}>Заказчик</div>
-
-      {/* Карточка — кликабельна, ведёт на профиль */}
-      <a
-        href={req.customerId ? `/customers/${req.customerId}?name=${encodeURIComponent(req.customerName || '')}` : undefined}
-        style={{ display:'flex', alignItems:'center', gap:12, padding:'14px', background:'#f9fafb', borderRadius:14, border:'1.5px solid #e5e7eb', textDecoration:'none', transition:'all .15s', marginBottom:8 }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor='#6366f1'; e.currentTarget.style.background='rgba(99,102,241,.04)'; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor='#e5e7eb'; e.currentTarget.style.background='#f9fafb'; }}
-      >
-        <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:18, flexShrink:0 }}>
-          {initial}
-        </div>
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{req.customerName || 'Заказчик'}</div>
-          <div style={{ fontSize:12, color:'#22c55e', fontWeight:600 }}>● Активный заказчик</div>
-        </div>
-        {req.customerId && <div style={{ fontSize:18, color:'#9ca3af' }}>›</div>}
-      </a>
-
-      {/* Кнопка написать */}
-      {req.customerId && (
-        <a href={`/chat/${req.customerId}?jobRequestId=${req.id}`}
-          style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, padding:'11px', borderRadius:10, background:'rgba(14,165,233,.06)', border:'1.5px solid rgba(14,165,233,.2)', color:'#0ea5e9', fontWeight:700, fontSize:13, textDecoration:'none', transition:'all .15s' }}
-          onMouseEnter={e => { e.currentTarget.style.background='rgba(14,165,233,.14)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background='rgba(14,165,233,.06)'; }}
-        >
-          💬 Написать заказчику
-        </a>
-      )}
     </div>
   );
 }
@@ -161,18 +783,25 @@ export default function FindWorkPage() {
   const { showToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [requests, setRequests]                 = useState([]);
-  const [categories, setCategories]             = useState([]);
-  const [loading, setLoading]                   = useState(true);
+  const [requests,         setRequests]         = useState([]);
+  const [categories,       setCategories]       = useState([]);
+  const [loading,          setLoading]          = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedRequest,  setSelectedRequest]  = useState(null);
   const [activePhotoIdx,   setActivePhotoIdx]   = useState(0);
-  const [showOfferModal, setShowOfferModal]     = useState(null);
-  const [offerForm, setOfferForm]               = useState({ price: '', comment: '', estimatedDays: '' });
-  const [submitting, setSubmitting]             = useState(false);
-  const [lightbox,   setLightbox]               = useState(null); // { photos, index }
+  const [showOfferModal,   setShowOfferModal]   = useState(null);
+  const [offerForm,        setOfferForm]        = useState({ price: '', comment: '', estimatedDays: '' });
+  const [submitting,       setSubmitting]       = useState(false);
+  const [lightbox,         setLightbox]         = useState(null);
 
-  // Клавиатурная навигация lightbox
+  // Фильтры/поиск для экрана 2
+  const [searchInput,   setSearchInput]   = useState('');
+  const [searchTerm,    setSearchTerm]    = useState('');
+  const [priceMin,      setPriceMin]      = useState('');
+  const [priceMax,      setPriceMax]      = useState('');
+  const [onlyWithPhoto, setOnlyWithPhoto] = useState(false);
+  const [sortBy,        setSortBy]        = useState('recency');
+
   React.useEffect(() => {
     if (!lightbox) return;
     const handler = (e) => {
@@ -194,11 +823,7 @@ export default function FindWorkPage() {
     if (!req) {
       if (requests.length > 0) {
         showToast('Заявка закрыта или недоступна', 'info');
-        setSearchParams(p => {
-          const next = new URLSearchParams(p);
-          next.delete('request');
-          return next;
-        }, { replace: true });
+        setSearchParams(p => { const next = new URLSearchParams(p); next.delete('request'); return next; }, { replace: true });
       }
       return;
     }
@@ -206,11 +831,7 @@ export default function FindWorkPage() {
     if (cat) setSelectedCategory(cat);
     setSelectedRequest(req);
     setActivePhotoIdx(0);
-    setSearchParams(p => {
-      const next = new URLSearchParams(p);
-      next.delete('request');
-      return next;
-    }, { replace: true });
+    setSearchParams(p => { const next = new URLSearchParams(p); next.delete('request'); return next; }, { replace: true });
   }, [requestIdFromUrl, loading, requests, categories, setSearchParams, showToast]);
 
   const loadData = async () => {
@@ -234,7 +855,11 @@ export default function FindWorkPage() {
 
   const handleOpenOfferModal = (request, prefillPrice) => {
     setShowOfferModal(request);
-    setOfferForm({ price: prefillPrice ? String(prefillPrice) : '', comment: prefillPrice ? `Готов выполнить за ${Number(prefillPrice).toLocaleString('ru-RU')} ₽ — как указано в заявке` : '', estimatedDays: '' });
+    setOfferForm({
+      price: prefillPrice ? String(prefillPrice) : '',
+      comment: prefillPrice ? `Готов выполнить за ${Number(prefillPrice).toLocaleString('ru-RU')} ₽ — как указано в заявке` : '',
+      estimatedDays: '',
+    });
   };
 
   const handleCloseOfferModal = () => {
@@ -263,7 +888,13 @@ export default function FindWorkPage() {
     }
   };
 
-  // ═══ ЭКРАН 3: детальная заявка (стиль Авито) ═══
+  const resetCategoryFilters = useCallback(() => {
+    setSearchInput(''); setSearchTerm('');
+    setPriceMin(''); setPriceMax('');
+    setOnlyWithPhoto(false); setSortBy('recency');
+  }, []);
+
+  // ═══ ЭКРАН 3: детальная заявка ═══
   if (selectedRequest) {
     const req = selectedRequest;
     const hasPhoto = req.photos && req.photos.length > 0;
@@ -274,8 +905,6 @@ export default function FindWorkPage() {
     return (
       <>
       <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
-
-        {/* Хлебная крошка */}
         <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', padding:'10px 0' }}>
           <div className="container">
             <button className="cats-back-link" onClick={() => { setSelectedRequest(null); setActivePhotoIdx(0); }}>
@@ -285,8 +914,6 @@ export default function FindWorkPage() {
         </div>
 
         <div className="container" style={{ paddingTop:20, paddingBottom:60 }}>
-
-          {/* Заголовок */}
           <div style={{ marginBottom:16 }}>
             <h1 style={{ fontSize:24, fontWeight:800, color:'#111827', margin:'0 0 6px' }}>{req.title}</h1>
             <div style={{ display:'flex', gap:12, alignItems:'center', flexWrap:'wrap', fontSize:13, color:'#9ca3af' }}>
@@ -296,12 +923,8 @@ export default function FindWorkPage() {
             </div>
           </div>
 
-          {/* Основная сетка */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 320px', gap:20, alignItems:'flex-start' }}>
-
-            {/* Левая колонка */}
             <div>
-              {/* Фото */}
               <div style={{ background:'#fff', borderRadius:12, overflow:'hidden', marginBottom:16 }}>
                 {hasPhoto ? (
                   <>
@@ -336,7 +959,6 @@ export default function FindWorkPage() {
                 )}
               </div>
 
-              {/* Описание */}
               {req.description && req.description !== 'Без описания' && (
                 <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
                   <h2 style={{ fontSize:18, fontWeight:800, color:'#111827', margin:'0 0 12px' }}>Описание</h2>
@@ -344,7 +966,6 @@ export default function FindWorkPage() {
                 </div>
               )}
 
-              {/* Подробности */}
               <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
                 <h2 style={{ fontSize:18, fontWeight:800, color:'#111827', margin:'0 0 16px' }}>Подробности</h2>
                 <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
@@ -363,10 +984,7 @@ export default function FindWorkPage() {
               </div>
             </div>
 
-            {/* Правая колонка — sticky */}
             <div style={{ position:'sticky', top:72, display:'flex', flexDirection:'column', gap:12 }}>
-
-              {/* Цена и кнопки */}
               <div style={{ background:'#fff', borderRadius:12, padding:'20px' }}>
                 <div style={{ marginBottom:14 }}>
                   <div style={{ fontSize:12, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Цена в заявке заказчика</div>
@@ -377,7 +995,6 @@ export default function FindWorkPage() {
                     </div>
                   )}
                 </div>
-
                 {listPrice != null && (
                   <button
                     onClick={() => handleOpenOfferModal(req, listPrice)}
@@ -388,7 +1005,6 @@ export default function FindWorkPage() {
                     ✅ Готов за {Number(listPrice).toLocaleString('ru-RU')} ₽
                   </button>
                 )}
-
                 <button
                   onClick={() => handleOpenOfferModal(req)}
                   style={{ width:'100%', padding:'13px', background: listPrice != null ? '#fff' : '#e8410a', border: listPrice != null ? '1.5px solid #e5e7eb' : 'none', borderRadius:8, color: listPrice != null ? '#374151' : '#fff', fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:10, transition:'all .15s' }}
@@ -397,7 +1013,6 @@ export default function FindWorkPage() {
                 >
                   📩 {listPrice != null ? 'Предложить свою цену' : 'Откликнуться'}
                 </button>
-
                 {req.customerId && (
                   <a href={`/chat/${req.customerId}?jobRequestId=${req.id}`}
                     style={{ display:'block', width:'100%', padding:'13px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:8, color:'#374151', fontSize:15, fontWeight:600, textAlign:'center', textDecoration:'none', transition:'all .15s', boxSizing:'border-box' }}
@@ -409,7 +1024,6 @@ export default function FindWorkPage() {
                 )}
               </div>
 
-              {/* Карточка заказчика */}
               {(req.customerName || req.customerId) && (
                 <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
                   <div style={{ fontSize:13, color:'#9ca3af', fontWeight:600, marginBottom:12, textTransform:'uppercase', letterSpacing:'.5px' }}>Заказчик</div>
@@ -433,7 +1047,6 @@ export default function FindWorkPage() {
                 </div>
               )}
 
-              {/* Инфо */}
               <div style={{ background:'#fff', borderRadius:12, padding:'14px 20px' }}>
                 <div style={{ fontSize:12, color:'#9ca3af', lineHeight:1.6 }}>
                   ✅ Безопасная сделка — оплата только после выполнения работы
@@ -444,165 +1057,6 @@ export default function FindWorkPage() {
         </div>
       </div>
 
-      {/* LIGHTBOX */}
-      {lightbox && (
-        <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
-          onClick={() => setLightbox(null)}
-        >
-          <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
-            <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block', pointerEvents:'none' }} />
-            <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
-              {lightbox.index + 1} / {lightbox.photos.length}
-            </div>
-            <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer' }}>×</button>
-            {lightbox.photos.length > 1 && (
-              <>
-                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index > 0 ? l.index - 1 : l.photos.length - 1})); }}
-                  style={{ position:'absolute', left:-52, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:26, cursor:'pointer' }}>‹</button>
-                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index < l.photos.length - 1 ? l.index + 1 : 0})); }}
-                  style={{ position:'absolute', right:-52, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:26, cursor:'pointer' }}>›</button>
-              </>
-            )}
-          </div>
-          {lightbox.photos.length > 1 && (
-            <div style={{ display:'flex', gap:8, marginTop:14 }} onClick={e => e.stopPropagation()}>
-              {lightbox.photos.map((p, i) => (
-                <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))}
-                  style={{ width:52, height:40, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}>
-                  <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      <OfferModal
-        request={showOfferModal}
-        offerForm={offerForm}
-        setOfferForm={setOfferForm}
-        onClose={handleCloseOfferModal}
-        onSubmit={handleSubmitOffer}
-        submitting={submitting}
-      />
-      </>
-    );
-  }
-
-  // ═══ ЭКРАН 2: заявки внутри категории ═══
-  if (selectedCategory) {
-    const style = CATEGORY_STYLES[selectedCategory.slug] || { emoji: '📋', color: '#f3f4f6' };
-    const catRequests = getRequestsForCategory(selectedCategory);
-
-    return (
-      <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
-        {/* Хлебная крошка */}
-        <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', padding:'10px 0' }}>
-          <div className="container">
-            <button className="cats-back-link" onClick={() => setSelectedCategory(null)}>
-              ← Все категории
-            </button>
-          </div>
-        </div>
-
-        {/* Заголовок */}
-        <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', padding:'16px 0' }}>
-          <div className="container">
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12 }}>
-              <div>
-                <h1 style={{ fontSize:22, fontWeight:800, color:'#111827', margin:'0 0 4px' }}>{selectedCategory.name}</h1>
-                <p style={{ fontSize:13, color:'#9ca3af', margin:0 }}>{pluralRequests(catRequests.length)} от заказчиков</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="container" style={{ padding:'20px 0 56px' }}>
-          {catRequests.length === 0 ? (
-            <div className="fw-empty">
-              <span>📋</span>
-              <p>Заявок в этой категории пока нет</p>
-            </div>
-          ) : (
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:12 }}>
-              {catRequests.map((req, idx) => {
-                const hasPhoto = req.photos && req.photos.length > 0;
-                const budget = formatJobRequestBudgetLabel(req);
-                return (
-                  <div
-                    key={req.id}
-                    className="fade-up"
-                    style={{ animationDelay:`${idx*0.04}s`, background:'#fff', borderRadius:8, overflow:'hidden', cursor:'pointer', transition:'box-shadow .2s' }}
-                    onClick={() => { setSelectedRequest(req); setActivePhotoIdx(0); }}
-                    onMouseEnter={e => e.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'}
-                    onMouseLeave={e => e.currentTarget.style.boxShadow='none'}
-                  >
-                    {/* Фото */}
-                    <div style={{ position:'relative', aspectRatio:'4/3', overflow:'hidden', background:'#f5f5f5' }}>
-                      {hasPhoto ? (
-                        <img src={req.photos[0]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
-                      ) : (
-                        <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:40, color:'#d1d5db' }}>
-                          {CATEGORY_STYLES[selectedCategory?.slug]?.emoji || '📋'}
-                        </div>
-                      )}
-                      {/* Счётчик фото */}
-                      {req.photos && req.photos.length > 1 && (
-                        <div style={{ position:'absolute', bottom:6, right:6, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:11, fontWeight:600, padding:'2px 7px', borderRadius:4, backdropFilter:'blur(4px)' }}>
-                          1/{req.photos.length}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Контент */}
-                    <div style={{ padding:'10px 12px 12px' }}>
-                      <div style={{ fontSize:16, fontWeight:800, color:'#111827', marginBottom:4 }}>
-                        {budget}
-                      </div>
-                      <div style={{ fontSize:13, color:'#374151', fontWeight:500, marginBottom:6, lineHeight:1.35,
-                        overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
-                        {req.title}
-                      </div>
-                      <div style={{ fontSize:12, color:'#9ca3af', marginBottom:10, lineHeight:1.4 }}>
-                        {req.addressText || req.city || 'Йошкар-Ола'}
-                        {req.createdAt && <span style={{ display:'block' }}>{new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'short' })}</span>}
-                      </div>
-                      {req.budgetTo && (
-                        <button
-                          onClick={e => { e.stopPropagation(); handleOpenOfferModal(req, req.budgetTo); }}
-                          style={{ width:'100%', padding:'9px', background:'#16a34a', border:'none', borderRadius:6, color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', transition:'background .15s', marginBottom:6 }}
-                          onMouseEnter={e => e.currentTarget.style.background='#15803d'}
-                          onMouseLeave={e => e.currentTarget.style.background='#16a34a'}
-                        >
-                          ✅ Готов за {Number(req.budgetTo).toLocaleString('ru-RU')} ₽
-                        </button>
-                      )}
-                      <button
-                        onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
-                        style={{ width:'100%', padding:'9px', background: req.budgetTo ? '#fff' : '#e8410a', border: req.budgetTo ? '1.5px solid #e0e0e0' : 'none', borderRadius:6, color: req.budgetTo ? '#555' : '#fff', fontSize:13, fontWeight:600, cursor:'pointer', transition:'all .15s' }}
-                        onMouseEnter={e => { if (req.budgetTo) { e.currentTarget.style.borderColor='#999'; } else { e.currentTarget.style.background='#c73208'; } }}
-                        onMouseLeave={e => { if (req.budgetTo) { e.currentTarget.style.borderColor='#e0e0e0'; } else { e.currentTarget.style.background='#e8410a'; } }}
-                      >
-                        📩 {req.budgetTo ? 'Предложить цену' : 'Откликнуться'}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <OfferModal
-          request={showOfferModal}
-          offerForm={offerForm}
-          setOfferForm={setOfferForm}
-          onClose={handleCloseOfferModal}
-          onSubmit={handleSubmitOffer}
-          submitting={submitting}
-        />
-
-      {/* LIGHTBOX */}
       {lightbox && (
         <div
           style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
@@ -634,58 +1088,388 @@ export default function FindWorkPage() {
           )}
         </div>
       )}
+
+      <OfferModal
+        request={showOfferModal}
+        offerForm={offerForm}
+        setOfferForm={setOfferForm}
+        onClose={handleCloseOfferModal}
+        onSubmit={handleSubmitOffer}
+        submitting={submitting}
+      />
+      </>
+    );
+  }
+
+  // ═══ ЭКРАН 2: заявки внутри категории ═══
+  if (selectedCategory) {
+    const catMeta = CAT_ALL[selectedCategory.slug] || {};
+    const allCatRequests = getRequestsForCategory(selectedCategory);
+
+    const filtered = allCatRequests
+      .filter(req => {
+        if (onlyWithPhoto && !(req.photos?.length > 0)) return false;
+        if (priceMin) {
+          const p = jobRequestListPrice(req);
+          if (p == null || p < Number(priceMin)) return false;
+        }
+        if (priceMax) {
+          const p = jobRequestListPrice(req);
+          if (p == null || p > Number(priceMax)) return false;
+        }
+        if (searchTerm.trim()) {
+          const q = searchTerm.trim().toLowerCase();
+          if (
+            !(req.title || '').toLowerCase().includes(q) &&
+            !(req.description || '').toLowerCase().includes(q)
+          ) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'priceAsc') {
+          const pa = jobRequestListPrice(a) ?? Infinity;
+          const pb = jobRequestListPrice(b) ?? Infinity;
+          return pa - pb;
+        }
+        if (sortBy === 'priceDesc') {
+          const pa = jobRequestListPrice(a) ?? -Infinity;
+          const pb = jobRequestListPrice(b) ?? -Infinity;
+          return pb - pa;
+        }
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      });
+
+    const hasFilters = onlyWithPhoto || priceMin || priceMax || searchTerm;
+
+    return (
+      <div className="fw2-page">
+        <style>{fw2css}</style>
+
+        {/* Топ-бар поиска */}
+        <div className="fw2-topbar">
+          <div className="fw2-topbar-inner">
+            <div className="fw2-search-wrap">
+              <svg width="15" height="15" fill="none" stroke="#bbb" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') setSearchTerm(searchInput); }}
+                placeholder={`Поиск в «${selectedCategory.name}»`}
+              />
+              {searchInput && (
+                <button onClick={() => { setSearchInput(''); setSearchTerm(''); }}
+                  style={{ border:'none', background:'none', cursor:'pointer', color:'#bbb', fontSize:18, lineHeight:1, padding:0 }}>
+                  ×
+                </button>
+              )}
+            </div>
+            <button className="fw2-topbar-btn" onClick={() => setSearchTerm(searchInput)}>Найти</button>
+          </div>
+        </div>
+
+        {/* Хлебные крошки */}
+        <div className="fw2-breadcrumb">
+          <button onClick={() => { setSelectedCategory(null); resetCategoryFilters(); }}>Все категории</button>
+          <span className="fw2-breadcrumb-sep">›</span>
+          <span className="fw2-breadcrumb-cur">{selectedCategory.name}</span>
+          {!loading && (
+            <>
+              <span className="fw2-breadcrumb-sep">·</span>
+              <span>{pluralRequests(filtered.length)}</span>
+            </>
+          )}
+        </div>
+
+        {/* Layout */}
+        <div className="fw2-cat-page">
+
+          {/* Сайдбар */}
+          <aside className="fw2-sidebar">
+
+            {/* Карточка категории */}
+            <div className="fw2-sb-cat">
+              <div className="fw2-sb-cat-photo">
+                {catMeta.photo
+                  ? <img src={catMeta.photo} alt={selectedCategory.name} />
+                  : <div style={{ width:'100%', height:'100%', background:'#1a1a2e', display:'flex', alignItems:'center', justifyContent:'center', fontSize:40 }}>{catMeta.emoji || '🛠️'}</div>
+                }
+                <div className="fw2-sb-cat-photo-overlay">
+                  <span className="fw2-sb-cat-name">{selectedCategory.name}</span>
+                </div>
+              </div>
+              <div className="fw2-sb-cat-body">
+                <button className="fw2-sb-back" onClick={() => { setSelectedCategory(null); resetCategoryFilters(); }}>
+                  ← Все категории
+                </button>
+              </div>
+            </div>
+
+            {/* Цена */}
+            <div className="fw2-filter-card">
+              <div className="fw2-filter-title">Цена в заявке, ₽</div>
+              <div className="fw2-filter-body">
+                <div className="fw2-price-row">
+                  <div>
+                    <div className="fw2-price-label">От</div>
+                    <input className="fw2-price-inp" type="number" min="0" placeholder="0" value={priceMin} onChange={e => setPriceMin(e.target.value)} />
+                  </div>
+                  <div>
+                    <div className="fw2-price-label">До</div>
+                    <input className="fw2-price-inp" type="number" min="0" placeholder="∞" value={priceMax} onChange={e => setPriceMax(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Параметры */}
+            <div className="fw2-filter-card">
+              <div className="fw2-filter-title">Параметры</div>
+              <div className="fw2-filter-body">
+                <div className="fw2-check-item" onClick={() => setOnlyWithPhoto(v => !v)}>
+                  <div className={`fw2-check-box${onlyWithPhoto ? ' on' : ''}`}>
+                    {onlyWithPhoto && <span className="fw2-check-tick">✓</span>}
+                  </div>
+                  <span>С фотографиями</span>
+                </div>
+              </div>
+            </div>
+
+            {hasFilters && (
+              <button className="fw2-reset-btn" onClick={resetCategoryFilters}>✕ Сбросить фильтры</button>
+            )}
+          </aside>
+
+          {/* Основная зона */}
+          <div className="fw2-main">
+
+            {/* Сортировка */}
+            <div className="fw2-sort-bar">
+              <span className="fw2-sort-label">Сортировать:</span>
+              <div className="fw2-sort-opts">
+                {[
+                  { val: 'recency',   label: 'Новые' },
+                  { val: 'priceAsc',  label: 'Цена ↑' },
+                  { val: 'priceDesc', label: 'Цена ↓' },
+                ].map(o => (
+                  <button key={o.val} className={`fw2-sort-opt${sortBy === o.val ? ' active' : ''}`} onClick={() => setSortBy(o.val)}>
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+              <span className="fw2-result-count">
+                {loading ? '...' : pluralRequests(filtered.length)}
+              </span>
+            </div>
+
+            {/* Карточки */}
+            {loading ? (
+              <div className="fw2-list">
+                {[1,2,3,4].map(i => (
+                  <div key={i} style={{ background:'#fff', borderRadius:16, border:'1.5px solid #e8e8e8', overflow:'hidden' }}>
+                    <div className="fw2-sk" style={{ paddingTop:'62%', borderRadius:0 }}/>
+                    <div style={{ padding:'12px 14px', display:'flex', flexDirection:'column', gap:10 }}>
+                      <div className="fw2-sk" style={{ height:12, width:'45%' }}/>
+                      <div className="fw2-sk" style={{ height:16, width:'80%' }}/>
+                      <div className="fw2-sk" style={{ height:11, width:'90%' }}/>
+                      <div className="fw2-sk" style={{ height:20, width:'35%', marginTop:4 }}/>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="fw2-list">
+                <div className="fw2-empty">
+                  <div className="fw2-empty-ico">🔍</div>
+                  <h3>Заявок не найдено</h3>
+                  <p>{hasFilters ? 'Измените параметры или сбросьте фильтры.' : 'В этой категории пока нет активных заявок.'}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="fw2-list">
+                {filtered.map(req => {
+                  const photos = req.photos || [];
+                  const hasPhoto = photos.length > 0;
+                  const budget = formatJobRequestBudgetLabel(req);
+                  const listPrice = jobRequestListPrice(req);
+                  const custName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
+
+                  return (
+                    <div key={req.id} className="fw2-card" onClick={() => { setSelectedRequest(req); setActivePhotoIdx(0); }}>
+
+                      {/* Фото */}
+                      <div className="fw2-card-photo">
+                        {hasPhoto ? (
+                          <>
+                            <img src={photos[0]} alt={req.title} />
+                            {photos.length > 1 && (
+                              <span className="fw2-card-photo-cnt">📷 {photos.length}</span>
+                            )}
+                          </>
+                        ) : (
+                          <div className="fw2-card-photo-ph">
+                            <span className="fw2-card-photo-ph-ico">{catMeta.emoji || '📋'}</span>
+                            <span className="fw2-card-photo-ph-txt">Нет фото</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Миниатюры */}
+                      {photos.length > 1 && (
+                        <div className="fw2-thumbs">
+                          {photos.slice(1, 4).map((p, i) => (
+                            <img key={i} src={p} alt="" className="fw2-thumb" />
+                          ))}
+                          {photos.length > 4 && (
+                            <div className="fw2-thumb-more">+{photos.length - 4}</div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="fw2-card-body">
+                        {/* Заказчик */}
+                        <div className="fw2-card-customer">
+                          {req.customerAvatar ? (
+                            <img src={req.customerAvatar} alt="" className="fw2-card-ava" />
+                          ) : (
+                            <div className="fw2-card-ava-ph" style={{ background:'linear-gradient(135deg,#e8410a,#ff7043)' }}>
+                              {(custName || 'З')[0].toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <div className="fw2-card-customer-name">{custName}</div>
+                            <div className="fw2-card-customer-sub">● Активный заказчик</div>
+                          </div>
+                        </div>
+
+                        {/* Заголовок */}
+                        <div className="fw2-card-title">{req.title}</div>
+
+                        {/* Описание */}
+                        {req.description && req.description !== 'Без описания' && (
+                          <div className="fw2-card-desc">{req.description}</div>
+                        )}
+
+                        {/* Цена */}
+                        <div className="fw2-card-price">{budget}</div>
+
+                        {/* Кнопки */}
+                        <div className="fw2-card-btns" onClick={e => e.stopPropagation()}>
+                          {listPrice != null ? (
+                            <>
+                              <button className="fw2-btn-accept" onClick={() => handleOpenOfferModal(req, listPrice)}>
+                                ✅ Готов за {Number(listPrice).toLocaleString('ru-RU')} ₽
+                              </button>
+                              <button className="fw2-btn-offer" onClick={() => handleOpenOfferModal(req)}>
+                                📩 Предложить цену
+                              </button>
+                            </>
+                          ) : (
+                            <button className="fw2-btn-offer-primary" onClick={() => handleOpenOfferModal(req)}>
+                              📩 Откликнуться
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <OfferModal
+          request={showOfferModal}
+          offerForm={offerForm}
+          setOfferForm={setOfferForm}
+          onClose={handleCloseOfferModal}
+          onSubmit={handleSubmitOffer}
+          submitting={submitting}
+        />
       </div>
     );
   }
 
-  // ═══ ЭКРАН 1: сетка категорий ═══
+  // ═══ ЭКРАН 1: сетка категорий с hero ═══
+  const totalRequests = requests.length;
+
   return (
-    <div>
-      <div className="page-header-bar">
-        <div className="container">
-          <h1>Найти работу</h1>
-          <p>Выберите категорию — откликайтесь на заявки заказчиков</p>
+    <div className="fw2-page">
+      <style>{fw2css}</style>
+
+      {/* Hero */}
+      <div className="fw2-hero">
+        <img src={HERO_PHOTO} alt="" className="fw2-hero-bg" />
+        <div className="fw2-hero-overlay" />
+        <div className="fw2-hero-body">
+          <h1>Найти работу<br/>в Йошкар-Оле</h1>
+          <p className="fw2-hero-sub">Откликайтесь на заявки заказчиков — первый отклик получает заказ чаще</p>
+          {!loading && (
+            <div className="fw2-hero-stats">
+              {[
+                { val: categories.length, label: 'категорий' },
+                { val: totalRequests,     label: 'активных заявок' },
+              ].map(({ val, label }) => (
+                <div key={label} className="fw2-hero-stat">
+                  <span className="fw2-hero-stat-val">{val}</span>
+                  <span>{label}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="container">
+      {/* Сетка категорий */}
+      <div className="fw2-cats-wrap">
+        <div className="fw2-cats-label">Выберите категорию</div>
         {loading ? (
-          <div className="cats-grid">
+          <div className="fw2-cats-grid">
             {[1,2,3,4,5,6,7,8,9].map(i => (
-              <div key={i} className="cat-skeleton">
-                <div className="skeleton" style={{ width: 52, height: 52, borderRadius: 'var(--r-md)' }} />
-                <div style={{ flex: 1 }}>
-                  <div className="skeleton" style={{ width: '60%', height: 16, marginBottom: 8 }} />
-                  <div className="skeleton" style={{ width: '85%', height: 13 }} />
+              <div key={i} style={{ borderRadius:16, overflow:'hidden', background:'#fff', border:'1.5px solid #e8e8e8' }}>
+                <div className="fw2-sk" style={{ height:150, borderRadius:0 }}/>
+                <div style={{ padding:16, display:'flex', flexDirection:'column', gap:8 }}>
+                  <div className="fw2-sk" style={{ height:15, width:'70%' }}/>
+                  <div className="fw2-sk" style={{ height:12, width:'85%' }}/>
+                  <div className="fw2-sk" style={{ height:12, width:'55%' }}/>
                 </div>
               </div>
             ))}
           </div>
-        ) : categories.length === 0 ? (
-          <div className="fw-empty">
-            <span>📋</span>
-            <p>Категории не загружены</p>
-          </div>
         ) : (
-          <div className="cats-grid">
-            {categories.map((cat, idx) => {
-              const style = CATEGORY_STYLES[cat.slug] || { emoji: '📋', color: '#f3f4f6' };
+          <div className="fw2-cats-grid">
+            {categories.map(cat => {
+              const meta  = CAT_ALL[cat.slug] || {};
               const count = getRequestsForCategory(cat).length;
               return (
                 <button
                   key={cat.id}
-                  className="cat-card fade-up"
-                  onClick={() => setSelectedCategory(cat)}
-                  style={{ animationDelay: `${idx * 0.05}s` }}
+                  className="fw2-cat-card"
+                  onClick={() => { setSelectedCategory(cat); resetCategoryFilters(); }}
                 >
-                  <div className="cat-card-icon" style={{ background: style.color }}>
-                    {style.emoji}
+                  <div className="fw2-cat-img-wrap">
+                    {meta.photo
+                      ? <img src={meta.photo} alt={cat.name} loading="lazy" />
+                      : <div className="fw2-cat-img-ph">{meta.emoji || '🛠️'}</div>
+                    }
+                    <span className="fw2-cat-badge">
+                      {count > 0 ? pluralRequests(count) : 'Нет заявок'}
+                    </span>
                   </div>
-                  <div className="cat-card-body">
-                    <h2>{cat.name}</h2>
-                    <p>{count > 0 ? pluralRequests(count) : 'Нет активных заявок'}</p>
+                  <div className="fw2-cat-body">
+                    <div className="fw2-cat-name">{cat.name}</div>
+                    <div className="fw2-cat-desc">{meta.desc || 'Профессиональные заказы'}</div>
+                    <div className="fw2-cat-footer">
+                      {count > 0
+                        ? <span className="fw2-cat-count">{pluralRequests(count)}</span>
+                        : <span className="fw2-cat-count-none">Нет активных заявок</span>
+                      }
+                      <div className="fw2-cat-go">›</div>
+                    </div>
                   </div>
-                  <div className="cat-card-arrow">›</div>
                 </button>
               );
             })}
