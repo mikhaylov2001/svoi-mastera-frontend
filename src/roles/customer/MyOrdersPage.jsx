@@ -924,7 +924,7 @@ export default function MyOrdersPage() {
                     {form.budget && Number(form.budget) > 0 ? (
                       <div style={{padding:'12px 14px', background:'#f0fdf4', border:'1.5px solid #bbf7d0', borderRadius:8}}>
                         <div style={{fontSize:13, color:'#166534', fontWeight:600}}>
-                          ✅ В заявке будет: <strong>до {Number(form.budget).toLocaleString('ru-RU')} ₽</strong>
+                          ✅ В заявке будет: <strong>{Number(form.budget).toLocaleString('ru-RU')} ₽</strong>
                         </div>
                         <div style={{fontSize:12, color:'#16a34a', marginTop:3}}>
                           Мастера видят этот бюджет при поиске. Вы всегда можете его изменить.
@@ -1080,7 +1080,7 @@ export default function MyOrdersPage() {
               description={detail.description && detail.description !== 'Без описания' ? detail.description : ''}
               category={catNameD}
               address={[detail.city, detail.addressText].filter(Boolean).join(', ') || 'Не указан'}
-              budgetLabel={budget && Number(budget) > 0 ? `до ${Number(budget).toLocaleString('ru-RU')} ₽` : 'Договорной'}
+              budgetLabel={budget && Number(budget) > 0 ? `${Number(budget).toLocaleString('ru-RU')} ₽` : 'Договорной'}
               publishedAt={detail.createdAt}
             />
           </div>
@@ -1088,7 +1088,7 @@ export default function MyOrdersPage() {
           <div className="ml-detail-right">
             <div className="ml-detail-price-card">
               <div className="ml-detail-price">
-                {budget && Number(budget) > 0 ? `до ${Number(budget).toLocaleString('ru-RU')} ₽` : 'Договорной'}
+                {budget && Number(budget) > 0 ? `${Number(budget).toLocaleString('ru-RU')} ₽` : 'Договорной'}
               </div>
               <div className="ml-detail-price-unit">{STATUS_LABELS[detail.status] || detail.status}</div>
               {catNameD && <div style={{marginTop:8}}><span className="ml-tag">{catNameD}</span></div>}
@@ -1213,7 +1213,7 @@ export default function MyOrdersPage() {
                       <div className="ml-row-title">{req.title}</div>
                       <div className="ml-row-price">
                         {budget && Number(budget) > 0
-                          ? <>до {Number(budget).toLocaleString('ru-RU')} ₽<span className="ml-row-unit">бюджет</span></>
+                          ? <>{Number(budget).toLocaleString('ru-RU')} ₽<span className="ml-row-unit">бюджет</span></>
                           : <span style={{fontSize:14, fontWeight:600, color:'#64748b'}}>Договорной</span>
                         }
                       </div>
