@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
+import { SECTIONS } from '../../pages/SectionsPage';
+import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -25,20 +27,11 @@ const CAT_TIPS = {
   'Парикмахер':        ['Опишите специализацию: стрижки, окраска, укладки', 'Добавьте фото портфолио — это главный аргумент', 'Укажите выезд на дом или свой адрес'],
 };
 
-const CATEGORY_UI = {
-  'Ремонт квартир':        { icon: '🏠', tone: '#eef2ff' },
-  'Сантехника':            { icon: '🔧', tone: '#e0f2fe' },
-  'Электрика':             { icon: '⚡', tone: '#fef9c3' },
-  'Компьютерная помощь':   { icon: '💻', tone: '#dcfce7' },
-  'Уборка':                { icon: '🧼', tone: '#cffafe' },
-  'Парикмахер':            { icon: '💇', tone: '#fce7f3' },
-  'Маникюр и педикюр':     { icon: '💅', tone: '#f5d0fe' },
-  'Красота и здоровье':    { icon: '✨', tone: '#fae8ff' },
-  'Репетиторство':         { icon: '📚', tone: '#dbeafe' },
-  'Грузоперевозки':        { icon: '🚚', tone: '#fee2e2' },
-  'Сварочные работы':      { icon: '🛠️', tone: '#fef3c7' },
-  'Другое':                { icon: '🧩', tone: '#f3f4f6' },
-};
+// slug → category name mapping (из CATEGORIES_BY_SECTION)
+const SLUG_TO_CAT = {};
+Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
+  cats.forEach(c => { SLUG_TO_CAT[c.slug] = c.name; })
+);
 
 function compressImage(file) {
   return new Promise((resolve) => {
@@ -174,82 +167,105 @@ const css = `
     background: #d1d5db;
   }
 
+  /* ── ВЫБОР РАЗДЕЛА (шаг 1) ── */
+  .mlf-sec-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: 200px;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .mlf-sec-featured { grid-column: span 7; grid-row: span 2; }
+  .mlf-sec-5 { grid-column: span 5; }
+  .mlf-sec-6 { grid-column: span 6; }
+
+  .mlf-sec-card {
+    position: relative; overflow: hidden; border-radius: 16px;
+    cursor: pointer; border: none; padding: 0; background: none;
+    text-align: left; display: block; width: 100%; height: 100%;
+    font-family: Inter, Arial, sans-serif;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .mlf-sec-card:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(0,0,0,.2); }
+  .mlf-sec-photo {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover;
+    filter: brightness(.58) saturate(1.1);
+    transition: transform .5s cubic-bezier(.25,.46,.45,.94);
+  }
+  .mlf-sec-card:hover .mlf-sec-photo { transform: scale(1.06); }
+  .mlf-sec-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(175deg, rgba(0,0,0,.06) 0%, rgba(0,0,0,.72) 100%);
+  }
+  .mlf-sec-count {
+    position: absolute; top: 14px; left: 14px;
+    background: rgba(255,255,255,.18); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.25); border-radius: 20px;
+    padding: 3px 10px; font-size: 11px; font-weight: 700; color: #fff;
+  }
+  .mlf-sec-arrow {
+    position: absolute; top: 14px; right: 14px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,.18); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; color: #fff;
+    transition: background .2s, transform .2s;
+  }
+  .mlf-sec-card:hover .mlf-sec-arrow { background: rgba(255,255,255,.35); transform: translate(2px,-2px); }
+  .mlf-sec-body {
+    position: absolute; inset: 0; padding: 16px 18px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .mlf-sec-name { font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 4px; line-height: 1.1; }
+  .mlf-sec-featured .mlf-sec-name { font-size: 32px; }
+  .mlf-sec-desc { font-size: 12px; color: rgba(255,255,255,.82); line-height: 1.5; margin-bottom: 10px; }
+  .mlf-sec-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .mlf-sec-tag {
+    background: rgba(255,255,255,.18); backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,.22); border-radius: 20px;
+    padding: 3px 10px; font-size: 11px; font-weight: 600; color: #fff;
+  }
+
+  /* ── ВЫБОР КАТЕГОРИИ (шаг 2) ── */
+  .mlf-cat-hero { position: relative; height: 160px; overflow: hidden; border-radius: 14px; margin-bottom: 12px; }
+  .mlf-cat-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.58) saturate(1.1); }
+  .mlf-cat-hero-overlay { position: absolute; inset: 0; background: linear-gradient(175deg, rgba(0,0,0,.08) 0%, rgba(0,0,0,.72) 100%); }
+  .mlf-cat-hero-body { position: relative; z-index: 1; padding: 14px 18px 18px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
+  .mlf-cat-hero-back { background: none; border: none; color: rgba(255,255,255,.75); font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; margin-bottom: 8px; font-family: inherit; }
+  .mlf-cat-hero-back:hover { color: #fff; }
+  .mlf-cat-hero-name { font-size: 26px; font-weight: 900; color: #fff; margin: 0 0 2px; }
+  .mlf-cat-hero-sub { font-size: 12px; color: rgba(255,255,255,.75); margin: 0; }
+
+  .mlf-cat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
   .mlf-cat-card {
     background: #fff;
     border-radius: 14px;
     border: 1.5px solid #e8e8e8;
-    margin-bottom: 12px;
     overflow: hidden;
-  }
-  .mlf-cat-card-head {
-    padding: 18px 20px 0;
-    margin-bottom: 14px;
-  }
-  .mlf-cat-title {
-    font-size: 18px;
-    font-weight: 800;
-    color: #111827;
-    margin: 0 0 4px;
-  }
-  .mlf-cat-sub {
-    font-size: 13px;
-    color: #6b7280;
-    margin: 0;
-  }
-  .mlf-cat-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    padding: 0 20px 20px;
-  }
-  .mlf-cat-btn {
-    border: 1.5px solid #e5e7eb;
-    border-radius: 12px;
-    background: #fff;
-    color: #111827;
-    text-align: left;
-    padding: 12px 14px;
     cursor: pointer;
+    border: none; padding: 0;
+    display: flex; flex-direction: column;
     font-family: Inter, Arial, sans-serif;
-    transition: transform .15s, box-shadow .15s, border-color .15s;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    transition: box-shadow .2s, transform .2s, border-color .2s;
   }
-  .mlf-cat-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 26px rgba(0,0,0,.08);
-    border-color: #e8410a;
-  }
-  .mlf-cat-main {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-  }
-  .mlf-cat-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 17px;
-    flex-shrink: 0;
-  }
-  .mlf-cat-name {
-    font-size: 14px;
-    font-weight: 700;
-    color: #1f2937;
-    line-height: 1.2;
-  }
-  .mlf-cat-arrow {
-    color: #9ca3af;
-    font-size: 18px;
-    line-height: 1;
-    flex-shrink: 0;
-  }
+  .mlf-cat-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.12); transform: translateY(-3px); }
+  .mlf-cat-img { position: relative; height: 130px; overflow: hidden; background: #f0f0f0; }
+  .mlf-cat-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s cubic-bezier(.25,.46,.45,.94); }
+  .mlf-cat-card:hover .mlf-cat-img img { transform: scale(1.08); }
+  .mlf-cat-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,.52); backdrop-filter: blur(6px); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .mlf-cat-body { padding: 13px 14px 14px; flex: 1; display: flex; flex-direction: column; }
+  .mlf-cat-name { font-size: 14px; font-weight: 800; color: #111; margin-bottom: 4px; line-height: 1.2; }
+  .mlf-cat-desc { font-size: 12px; color: #777; line-height: 1.5; flex: 1; margin-bottom: 10px; }
+  .mlf-cat-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid #f0f0f0; }
+  .mlf-cat-price { font-size: 12px; font-weight: 700; color: #e8410a; }
+  .mlf-cat-go { width: 28px; height: 28px; border-radius: 50%; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #999; transition: background .2s, color .2s; }
+  .mlf-cat-card:hover .mlf-cat-go { background: #e8410a; color: #fff; }
 
   .mlf-selected-cat {
     margin-top: 10px;
@@ -369,10 +385,21 @@ const css = `
     .ml-detail-wrap { grid-template-columns: 1fr; }
     .ml-detail-right { position: static; }
   }
+  @media(max-width: 860px) {
+    .mlf-sec-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: 180px; }
+    .mlf-sec-featured, .mlf-sec-5, .mlf-sec-6 { grid-column: span 2; }
+    .mlf-sec-featured { grid-row: span 1; }
+    .mlf-cat-grid { grid-template-columns: repeat(2, 1fr); }
+  }
   @media(max-width: 720px) {
     .ml-row-stats, .ml-row-actions { display: none; }
     .mlf-photo-grid { grid-template-columns: repeat(3, 1fr); }
     .mlf-photo-cell.main-photo { grid-column: span 1; grid-row: span 1; }
+  }
+  @media(max-width: 520px) {
+    .mlf-sec-grid { grid-template-columns: 1fr; grid-auto-rows: 160px; gap: 8px; }
+    .mlf-sec-featured, .mlf-sec-5, .mlf-sec-6 { grid-column: span 1; }
+    .mlf-sec-name { font-size: 22px !important; }
     .mlf-cat-grid { grid-template-columns: 1fr; }
   }
   @media(max-width: 500px) {
@@ -391,6 +418,7 @@ export default function MyListingsPage() {
   const [detail,   setDetail]   = useState(null);
   const [photoIdx, setPhotoIdx] = useState(0);
   const [view,     setView]     = useState(null); // null | 'create' | {edit: listing}
+  const [pickedSection, setPickedSection] = useState(null); // slug of chosen section
   const [form,     setForm]     = useState(EMPTY_FORM);
   const [saving,   setSaving]   = useState(false);
   const [formErr,  setFormErr]  = useState('');
@@ -436,6 +464,7 @@ export default function MyListingsPage() {
   const openCreate = () => {
     setForm(EMPTY_FORM);
     setFormErr('');
+    setPickedSection(null);
     setView('create');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -464,9 +493,8 @@ export default function MyListingsPage() {
   const handlePickCategory = (categoryName) => {
     setFormErr('');
     setForm(p => ({ ...p, category: categoryName }));
-    setTimeout(() => {
-      titleRef.current?.focus();
-    }, 120);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => { titleRef.current?.focus(); }, 150);
   };
 
   const handleSave = async () => {
@@ -531,8 +559,10 @@ export default function MyListingsPage() {
 
   // ══ ФОРМА СОЗДАНИЯ / РЕДАКТИРОВАНИЯ ══
   if (view !== null) {
-    const isEdit   = view !== 'create';
-    const isCategoryStep = !isEdit && !form.category;
+    const isEdit         = view !== 'create';
+    const isSectionStep  = !isEdit && !form.category && !pickedSection;
+    const isCatStep      = !isEdit && !form.category && !!pickedSection;
+    const isFormStep     = isEdit || !!form.category;
     const photos   = form.photos || [];
     const descLen  = form.description.length;
 
@@ -545,16 +575,24 @@ export default function MyListingsPage() {
           <img src={HERO_PHOTO} alt="" className="mlf-hero-img" />
           <div className="mlf-hero-overlay" />
           <div className="mlf-hero-body">
-            <button className="mlf-hero-back" onClick={() => setView(null)}>← Мои объявления</button>
+            <button className="mlf-hero-back" onClick={() => {
+              if (isCatStep) { setPickedSection(null); }
+              else if (isFormStep && !isEdit) { setForm(p => ({...p, category: ''})); setPickedSection(null); }
+              else { setView(null); }
+            }}>
+              {isCatStep ? `← Все разделы` : isFormStep && !isEdit ? '← Выбор категории' : '← Мои объявления'}
+            </button>
             <h1 className="mlf-hero-title">
-              {isEdit ? 'Редактировать объявление' : isCategoryStep ? 'Выберите категорию' : 'Новое объявление'}
+              {isEdit ? 'Редактировать объявление' : isSectionStep ? 'Выберите раздел' : isCatStep ? pickedSection && SECTIONS.find(s=>s.slug===pickedSection)?.name : 'Новое объявление'}
             </h1>
             <p className="mlf-hero-sub">
               {isEdit
                 ? 'Обновите данные и сохраните'
-                : isCategoryStep
-                  ? 'Шаг 1 из 2 — после выбора сразу откроется форма размещения'
-                  : 'Шаг 2 из 2 — заполните объявление и опубликуйте'}
+                : isSectionStep
+                  ? 'Шаг 1 — выберите раздел услуги'
+                  : isCatStep
+                    ? 'Шаг 2 — выберите категорию, откроется форма'
+                    : 'Шаг 3 — заполните объявление и опубликуйте'}
             </p>
           </div>
         </div>
@@ -564,33 +602,85 @@ export default function MyListingsPage() {
             {formErr && <div className="mlf-error">⚠️ {formErr}</div>}
             {!isEdit && (
               <div className="mlf-stepper">
-                <span className={`mlf-step-pill${isCategoryStep ? ' on' : ''}`}>1. Категория</span>
+                <span className={`mlf-step-pill${isSectionStep ? ' on' : ''}`}>1. Раздел</span>
                 <span className="mlf-step-dot" />
-                <span className={`mlf-step-pill${!isCategoryStep ? ' on' : ''}`}>2. Данные объявления</span>
+                <span className={`mlf-step-pill${isCatStep ? ' on' : ''}`}>2. Категория</span>
+                <span className="mlf-step-dot" />
+                <span className={`mlf-step-pill${isFormStep ? ' on' : ''}`}>3. Объявление</span>
               </div>
             )}
 
-            {isCategoryStep ? (
-              <div className="mlf-cat-card">
-                <div className="mlf-cat-card-head">
-                  <h3 className="mlf-cat-title">Все категории</h3>
-                  <p className="mlf-cat-sub">Нажмите на категорию и сразу перейдёте к заполнению объявления</p>
-                </div>
-                <div className="mlf-cat-grid">
-                  {CATEGORIES.map((c) => {
-                    const meta = CATEGORY_UI[c] || { icon: '🛠️', tone: '#f3f4f6' };
-                    return (
-                      <button key={c} type="button" className="mlf-cat-btn" onClick={() => handlePickCategory(c)}>
-                        <span className="mlf-cat-main">
-                          <span className="mlf-cat-icon" style={{ background: meta.tone }}>{meta.icon}</span>
-                          <span className="mlf-cat-name">{c}</span>
-                        </span>
-                        <span className="mlf-cat-arrow">›</span>
+            {isSectionStep ? (
+              /* ── ШАГ 1: РАЗДЕЛЫ С ФОТО ── */
+              (() => {
+                const layout = ['mlf-sec-featured','mlf-sec-5','mlf-sec-5','mlf-sec-6','mlf-sec-6'];
+                return (
+                  <div className="mlf-sec-grid">
+                    {SECTIONS.map((sec, i) => (
+                      <button
+                        key={sec.slug}
+                        type="button"
+                        className={`mlf-sec-card ${layout[i] || 'mlf-sec-6'}`}
+                        onClick={() => { setPickedSection(sec.slug); window.scrollTo({top:0,behavior:'smooth'}); }}
+                      >
+                        <img src={sec.photo} alt={sec.name} className="mlf-sec-photo" />
+                        <div className="mlf-sec-overlay" />
+                        <span className="mlf-sec-count">{sec.count} {sec.count === 1 ? 'категория' : 'категории'}</span>
+                        <span className="mlf-sec-arrow">›</span>
+                        <div className="mlf-sec-body">
+                          <div className="mlf-sec-name">{sec.name}</div>
+                          <div className="mlf-sec-desc">{sec.desc}</div>
+                          <div className="mlf-sec-tags">
+                            {sec.tags.map(t => <span key={t} className="mlf-sec-tag">{t}</span>)}
+                          </div>
+                        </div>
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
+                    ))}
+                  </div>
+                );
+              })()
+            ) : isCatStep ? (
+              /* ── ШАГ 2: КАТЕГОРИИ С ФОТО ── */
+              (() => {
+                const sec = SECTIONS.find(s => s.slug === pickedSection);
+                const cats = CATEGORIES_BY_SECTION[pickedSection] || [];
+                return (
+                  <>
+                    <div className="mlf-cat-hero">
+                      <img src={sec.photo} alt={sec.name} className="mlf-cat-hero-img" />
+                      <div className="mlf-cat-hero-overlay" />
+                      <div className="mlf-cat-hero-body">
+                        <button type="button" className="mlf-cat-hero-back" onClick={() => setPickedSection(null)}>← Все разделы</button>
+                        <div className="mlf-cat-hero-name">{sec.name}</div>
+                        <div className="mlf-cat-hero-sub">Выберите категорию — форма откроется сразу</div>
+                      </div>
+                    </div>
+                    <div className="mlf-cat-grid">
+                      {cats.map(cat => (
+                        <button
+                          key={cat.slug}
+                          type="button"
+                          className="mlf-cat-card"
+                          onClick={() => handlePickCategory(cat.name)}
+                        >
+                          <div className="mlf-cat-img">
+                            <img src={cat.photo} alt={cat.name} />
+                            <span className="mlf-cat-badge">{cat.masters}</span>
+                          </div>
+                          <div className="mlf-cat-body">
+                            <div className="mlf-cat-name">{cat.name}</div>
+                            <div className="mlf-cat-desc">{cat.desc}</div>
+                            <div className="mlf-cat-footer">
+                              <span className="mlf-cat-price">{cat.priceFrom}</span>
+                              <span className="mlf-cat-go">›</span>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()
             ) : (
               <>
                 {/* ── 1. ФОТОГРАФИИ ── */}
