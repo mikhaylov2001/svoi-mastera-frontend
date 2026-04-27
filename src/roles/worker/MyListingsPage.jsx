@@ -465,6 +465,7 @@ export default function MyListingsPage() {
   const [view,     setView]     = useState(null); // null | 'create' | {edit: listing}
   const [pickedSection, setPickedSection] = useState(null); // slug of chosen section
   const [hoverSectionSlug, setHoverSectionSlug] = useState(null); // превью фона шага «разделы»
+  const [hoverCategoryName, setHoverCategoryName] = useState(null); // превью фона шага «категории»
   const [form,     setForm]     = useState(EMPTY_FORM);
   const [saving,   setSaving]   = useState(false);
   const [formErr,  setFormErr]  = useState('');
@@ -512,6 +513,7 @@ export default function MyListingsPage() {
     setFormErr('');
     setPickedSection(null);
     setHoverSectionSlug(null);
+    setHoverCategoryName(null);
     setView('create');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -539,6 +541,7 @@ export default function MyListingsPage() {
 
   const handlePickCategory = (categoryName) => {
     setFormErr('');
+    setHoverCategoryName(null);
     setForm(p => ({ ...p, category: categoryName }));
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => { titleRef.current?.focus(); }, 150);
@@ -620,7 +623,10 @@ export default function MyListingsPage() {
         const hs = hoverSectionSlug && SECTIONS.find(s => s.slug === hoverSectionSlug);
         createHeroSrc = hs?.photo || DEFAULT_MY_LISTINGS_BG;
       } else if (isCatStep) {
-        createHeroSrc = DEFAULT_MY_LISTINGS_BG;
+        const secPhoto = SECTIONS.find(s => s.slug === pickedSection)?.photo;
+        createHeroSrc = hoverCategoryName
+          ? photoForCategoryName(hoverCategoryName)
+          : (secPhoto || DEFAULT_MY_LISTINGS_BG);
       } else if (form.category) {
         createHeroSrc = photoForCategoryName(form.category);
       }
@@ -636,8 +642,8 @@ export default function MyListingsPage() {
           <div className="mlf-hero-overlay" />
           <div className="mlf-hero-body">
             <button className="mlf-hero-back" onClick={() => {
-              if (isCatStep) { setPickedSection(null); }
-              else if (isFormStep && !isEdit) { setForm(p => ({...p, category: ''})); setPickedSection(null); }
+              if (isCatStep) { setHoverCategoryName(null); setPickedSection(null); }
+              else if (isFormStep && !isEdit) { setHoverCategoryName(null); setForm(p => ({...p, category: ''})); setPickedSection(null); }
               else { setView(null); }
             }}>
               {isCatStep ? `← Все разделы` : isFormStep && !isEdit ? '← Выбор категории' : '← Мои объявления'}
@@ -685,7 +691,7 @@ export default function MyListingsPage() {
                         type="button"
                         className={`mlf-sec-card ${layout[i] || 'mlf-sec-6'}`}
                         onMouseEnter={() => setHoverSectionSlug(sec.slug)}
-                        onClick={() => { setPickedSection(sec.slug); setHoverSectionSlug(null); window.scrollTo({top:0,behavior:'smooth'}); }}
+                        onClick={() => { setPickedSection(sec.slug); setHoverSectionSlug(null); setHoverCategoryName(null); window.scrollTo({top:0,behavior:'smooth'}); }}
                       >
                         <img src={sec.photo} alt={sec.name} className="mlf-sec-photo" />
                         <div className="mlf-sec-overlay" />
@@ -710,12 +716,13 @@ export default function MyListingsPage() {
                 const cats = CATEGORIES_BY_SECTION[pickedSection] || [];
                 return (
                   <>
-                    <div className="mlf-cat-grid">
+                    <div className="mlf-cat-grid" onMouseLeave={() => setHoverCategoryName(null)}>
                       {cats.map(cat => (
                         <button
                           key={cat.slug}
                           type="button"
                           className="mlf-cat-card"
+                          onMouseEnter={() => setHoverCategoryName(cat.name)}
                           onClick={() => handlePickCategory(cat.name)}
                         >
                           <div className="mlf-cat-img">
