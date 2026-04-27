@@ -465,7 +465,6 @@ export default function MyListingsPage() {
   const [view,     setView]     = useState(null); // null | 'create' | {edit: listing}
   const [pickedSection, setPickedSection] = useState(null); // slug of chosen section
   const [hoverSectionSlug, setHoverSectionSlug] = useState(null); // превью фона шага «разделы»
-  const [listBgHoverCat, setListBgHoverCat] = useState(null); // превью фона при наведении на строку
   const [form,     setForm]     = useState(EMPTY_FORM);
   const [saving,   setSaving]   = useState(false);
   const [formErr,  setFormErr]  = useState('');
@@ -507,12 +506,6 @@ export default function MyListingsPage() {
   const active  = listings.filter(l => l.active);
   const archive = listings.filter(l => !l.active);
   const shown   = tab === 'active' ? active : archive;
-
-  const listBgPhotoUrl = listBgHoverCat ? photoForCategoryName(listBgHoverCat) : DEFAULT_MY_LISTINGS_BG;
-
-  useEffect(() => {
-    setListBgHoverCat(null);
-  }, [tab]);
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
@@ -1122,7 +1115,7 @@ export default function MyListingsPage() {
 
       {/* Hero-баннер */}
       <div className="ml-list-hero">
-        <img src={listBgPhotoUrl} alt="" className="ml-list-hero-img" />
+        <img src={DEFAULT_MY_LISTINGS_BG} alt="" className="ml-list-hero-img" />
         <div className="ml-list-hero-overlay" />
         <div className="ml-list-hero-body">
           <div>
@@ -1174,8 +1167,6 @@ export default function MyListingsPage() {
                 key={l.id}
                 className="ml-row"
                 onClick={() => { setDetail(l); setPhotoIdx(0); }}
-                onMouseEnter={() => { if (l.category) setListBgHoverCat(l.category); }}
-                onMouseLeave={() => setListBgHoverCat(null)}
               >
                 <div className="ml-row-img">
                   {l.photos?.length
