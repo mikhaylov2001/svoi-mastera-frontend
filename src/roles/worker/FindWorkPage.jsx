@@ -289,7 +289,7 @@ const fw2css = `
   .fw2-cat-page {
     max-width: 1180px;
     margin: 0 auto;
-    padding: 0 24px 60px;
+    padding: 20px 24px 60px;
     display: grid;
     grid-template-columns: 260px 1fr;
     gap: 20px;
@@ -297,20 +297,20 @@ const fw2css = `
   }
   .fw2-sidebar {
     position: sticky;
-    top: 72px;
+    top: 76px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
   .fw2-sb-cat {
     background: #fff;
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
     border: 1.5px solid #e8e8e8;
   }
   .fw2-sb-cat-photo {
     position: relative;
-    height: 120px;
+    height: 110px;
     overflow: hidden;
     background: #1a1a2e;
   }
@@ -319,69 +319,66 @@ const fw2css = `
     height: 100%;
     object-fit: cover;
     display: block;
-    filter: brightness(.6);
+    filter: brightness(.6) saturate(1.1);
   }
   .fw2-sb-cat-photo-overlay {
     position: absolute;
     inset: 0;
+    background: linear-gradient(170deg, transparent 40%, rgba(0,0,0,.7) 100%);
     display: flex;
     align-items: flex-end;
-    padding: 12px;
-    background: linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 60%);
+    padding: 10px 12px;
   }
   .fw2-sb-cat-name {
-    font-size: 15px;
-    font-weight: 800;
+    font-size: 16px;
+    font-weight: 900;
     color: #fff;
-    line-height: 1.25;
+    line-height: 1.2;
   }
   .fw2-sb-cat-body { padding: 12px 14px; }
   .fw2-sb-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 13px;
-    color: #666;
     background: none;
     border: none;
-    padding: 0;
+    font-size: 12px;
+    color: #e8410a;
     cursor: pointer;
-    font-family: inherit;
-    transition: color .15s;
+    padding: 0;
+    font-family: Inter, sans-serif;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
-  .fw2-sb-back:hover { color: #e8410a; }
+  .fw2-sb-back:hover { opacity: .75; }
   .fw2-filter-card {
     background: #fff;
-    border-radius: 14px;
+    border-radius: 12px;
     border: 1.5px solid #e8e8e8;
     overflow: hidden;
   }
   .fw2-filter-title {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .07em;
-    color: #888;
-    padding: 13px 16px 10px;
+    color: #1a1a1a;
+    padding: 13px 14px 11px;
     border-bottom: 1px solid #f0f0f0;
   }
-  .fw2-filter-body { padding: 12px 16px 14px; }
-  .fw2-price-row { display: flex; gap: 10px; align-items: flex-end; }
-  .fw2-price-row > div { flex: 1; }
-  .fw2-price-label { font-size: 11px; color: #aaa; margin-bottom: 4px; font-weight: 600; }
+  .fw2-filter-body { padding: 12px 14px; }
+  .fw2-price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .fw2-price-label { font-size: 11px; color: #999; margin-bottom: 3px; }
   .fw2-price-inp {
     width: 100%;
     border: 1.5px solid #e8e8e8;
-    border-radius: 7px;
+    border-radius: 6px;
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 13px;
     font-family: Inter, sans-serif;
     outline: none;
     transition: border-color .15s;
     color: #1a1a1a;
-    background: #fafafa;
+    background: #fff;
   }
-  .fw2-price-inp:focus { border-color: #e8410a; background: #fff; }
+  .fw2-price-inp:focus { border-color: #e8410a; }
   .fw2-check-item {
     display: flex;
     align-items: center;
@@ -389,11 +386,11 @@ const fw2css = `
     padding: 7px 0;
     cursor: pointer;
     user-select: none;
-    font-size: 14px;
+    font-size: 13px;
     color: #333;
     transition: color .15s;
   }
-  .fw2-check-item:hover { color: #111; }
+  .fw2-check-item:hover { color: #e8410a; }
   .fw2-check-box {
     width: 18px;
     height: 18px;
@@ -410,18 +407,18 @@ const fw2css = `
   .fw2-check-tick { font-size: 11px; color: #fff; font-weight: 700; }
   .fw2-reset-btn {
     width: 100%;
-    padding: 11px;
-    background: #fff;
+    padding: 10px;
+    background: #f5f5f5;
     border: 1.5px solid #e8e8e8;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 13px;
-    font-weight: 700;
-    color: #e8410a;
+    font-weight: 600;
+    color: #555;
     cursor: pointer;
-    font-family: inherit;
+    font-family: Inter, sans-serif;
     transition: all .15s;
   }
-  .fw2-reset-btn:hover { background: #fff5f3; border-color: #e8410a; }
+  .fw2-reset-btn:hover { background: #fee8e0; border-color: #e8410a; color: #e8410a; }
 
   /* ═══ ОСНОВНАЯ ЗОНА ═══ */
   .fw2-main { min-width: 0; }
@@ -1312,7 +1309,7 @@ export default function FindWorkPage() {
 
             {/* Цена */}
             <div className="fw2-filter-card">
-              <div className="fw2-filter-title">Цена в заявке, ₽</div>
+              <div className="fw2-filter-title">Цена, ₽</div>
               <div className="fw2-filter-body">
                 <div className="fw2-price-row">
               <div>
