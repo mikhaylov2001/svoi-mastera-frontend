@@ -152,31 +152,45 @@ const css = `
   .ml-row-stat-num { font-weight: 800; color: #111827; font-variant-numeric: tabular-nums; font-size: 15px; }
   .ml-row-stat-hint { font-size: 10px; color: #9ca3af; width: 100%; margin-top: -2px; padding-left: 22px; line-height: 1.3; }
   .ml-row-actions {
-    width: 198px; flex-shrink: 0; padding: 12px; border-left: 1px solid #f0f0f0;
-    display: flex; flex-direction: column; gap: 8px; justify-content: center;
-    background: linear-gradient(180deg, #fcfcfc 0%, #f7f7f7 100%);
+    width: 186px; flex-shrink: 0; padding: 14px 13px;
+    display: flex; flex-direction: column; gap: 7px; justify-content: center;
+    border-left: 1px solid #f0f0f0; background: #fafafa;
   }
-  .ml-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-  .ml-action-btn {
-    display: inline-flex; align-items: center; justify-content: center;
-    min-height: 36px; width: 100%;
-    background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px;
-    padding: 7px 8px; font-size: 12px; font-weight: 700; line-height: 1.2;
-    color: #334155; cursor: pointer; font-family: inherit; text-decoration: none;
-    transition: all .15s;
+  .ml-btn-edit {
+    width: 100%; background: #e8410a; border: none; border-radius: 10px;
+    padding: 10px 0; font-size: 13px; font-weight: 700; color: #fff;
+    cursor: pointer; font-family: inherit; transition: background .15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
   }
-  .ml-action-btn:hover { border-color: #cbd5e1; background: #f8fafc; transform: translateY(-1px); }
-  .ml-action-btn.main { border-color: #e8410a; color: #e8410a; background: #fff7ed; }
-  .ml-action-btn.main:hover { background: #ffeede; border-color: #dd3b06; }
-  .ml-action-btn.muted { color: #475569; }
-  .ml-action-btn.ok { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
-  .ml-action-btn.warn {
-    color: #b91c1c; border-color: #fecaca; background: #fff1f2;
-    font-weight: 700; width: 100%;
+  .ml-btn-edit:hover { background: #c73208; }
+  .ml-actions-divider { height: 1px; background: #ebebeb; margin: 2px 0; }
+  .ml-link-preview {
+    font-size: 13px; font-weight: 600; color: #e8410a; text-align: center;
+    text-decoration: none; padding: 7px 0;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    border-radius: 10px; transition: background .15s;
   }
-  .ml-action-btn.warn.restore {
-    color: #166534; border-color: #bbf7d0; background: #f0fdf4;
+  .ml-link-preview:hover { background: #fff4ef; }
+  .ml-btn-copy {
+    width: 100%; background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px;
+    padding: 8px 0; font-size: 12px; font-weight: 600; color: #475569;
+    cursor: pointer; font-family: inherit; transition: all .15s;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
   }
+  .ml-btn-copy:hover { border-color: #e8410a; color: #e8410a; background: #fff7ed; }
+  .ml-btn-copy.copied { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
+  .ml-btn-arch {
+    background: none; border: none; font-size: 12px; color: #9ca3af;
+    cursor: pointer; font-family: inherit; padding: 4px 0; text-align: center;
+    transition: color .15s;
+  }
+  .ml-btn-arch:hover { color: #e8410a; }
+  .ml-btn-restore {
+    background: none; border: none; font-size: 12px; color: #e8410a;
+    cursor: pointer; font-family: inherit; padding: 4px 0; text-align: center;
+    font-weight: 700; transition: color .15s;
+  }
+  .ml-btn-restore:hover { color: #c73208; }
   .ml-empty {
     text-align: center; padding: 72px 24px;
     background: rgba(255,255,255,.95); border: 1.5px solid #e8e8e8; border-radius: 16px;
@@ -1311,24 +1325,29 @@ export default function MyListingsPage() {
                   </div>
                 </div>
                 <div className="ml-row-actions" onClick={e => e.stopPropagation()}>
-                  <div className="ml-actions-grid">
-                    <button type="button" className="ml-action-btn main" onClick={e => openEdit(l, e)}>Редактировать</button>
-                    <a
-                      className="ml-action-btn"
-                      href={`/listings/${l.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      Открыть ↗
-                    </a>
-                    <button type="button" className={`ml-action-btn muted${copyFlashId === l.id ? ' ok' : ''}`} onClick={e => copyListingPublicLink(l.id, e)}>
-                      {copyFlashId === l.id ? 'Скопировано' : 'Копировать'}
-                    </button>
-                    <button type="button" className={`ml-action-btn warn${l.active ? '' : ' restore'}`} onClick={e => handleToggle(l, e)}>
-                      {l.active ? 'Снять' : 'Вернуть'}
-                    </button>
-                  </div>
+                  <button type="button" className="ml-btn-edit" onClick={e => openEdit(l, e)}>
+                    ✏️ Редактировать
+                  </button>
+                  <a
+                    className="ml-link-preview"
+                    href={`/listings/${l.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    👁 Как видят заказчики ↗
+                  </a>
+                  <button
+                    type="button"
+                    className={`ml-btn-copy${copyFlashId === l.id ? ' copied' : ''}`}
+                    onClick={e => copyListingPublicLink(l.id, e)}
+                  >
+                    {copyFlashId === l.id ? '✓ Ссылка скопирована' : '🔗 Копировать ссылку'}
+                  </button>
+                  <div className="ml-actions-divider" />
+                  <button type="button" className={l.active ? 'ml-btn-arch' : 'ml-btn-restore'} onClick={e => handleToggle(l, e)}>
+                    {l.active ? 'Снять с публикации' : '↩ Восстановить'}
+                  </button>
                 </div>
               </div>
             ))}
