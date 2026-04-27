@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories } from '../../api';
@@ -493,6 +493,7 @@ const fw2css = `
   .fw2-card-photo-ph {
     position: absolute;
     inset: 0;
+    z-index: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -509,68 +510,100 @@ const fw2css = `
     background: rgba(0,0,0,.55);
     backdrop-filter: blur(4px);
     color: #fff;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 9px;
-    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
   }
+  .fw2-card-photo-active {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #e8410a;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    z-index: 2;
+  }
+  .fw2-card-photo-hover {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity .2s;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .fw2-card-photo:hover .fw2-card-photo-hover { opacity: 1; }
   .fw2-thumbs {
     display: flex;
     gap: 4px;
-    padding: 6px 10px;
+    padding: 6px 12px 0;
     background: #fafafa;
     border-bottom: 1px solid #f0f0f0;
     overflow: hidden;
     cursor: pointer;
   }
   .fw2-thumb {
-    width: 48px;
-    height: 36px;
+    width: 40px;
+    height: 28px;
     object-fit: cover;
-    border-radius: 5px;
+    border-radius: 4px;
+    border: 1.5px solid #f0f0f0;
     cursor: pointer;
     pointer-events: none;
-    opacity: .75;
-    transition: opacity .15s;
     flex-shrink: 0;
   }
-  .fw2-thumb:hover { opacity: 1; }
   .fw2-thumb-more {
-    width: 48px;
-    height: 36px;
-    border-radius: 5px;
-    background: rgba(0,0,0,.12);
+    width: 40px;
+    height: 28px;
+    border-radius: 4px;
+    background: #f0f0f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
-    color: #555;
+    color: #888;
     cursor: pointer;
     flex-shrink: 0;
   }
   .fw2-card-body {
-    padding: 12px 14px 14px;
+    padding: 12px 14px;
     flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 8px;
   }
   .fw2-card-customer {
     display: flex;
     align-items: center;
-    gap: 9px;
-    margin-bottom: 10px;
+    gap: 7px;
+    margin-bottom: 0;
   }
   a.fw2-card-customer {
     text-decoration: none;
     color: inherit;
     cursor: pointer;
-    border-radius: 10px;
-    margin: -4px -4px 6px;
-    padding: 4px;
-    transition: background .15s;
+    border-radius: 8px;
+    margin: -2px -2px 0;
+    padding: 2px;
+    transition: opacity .15s;
+    width: 100%;
+    max-width: 100%;
   }
-  a.fw2-card-customer:hover { background: rgba(232,65,10,.06); }
+  a.fw2-card-customer:hover { opacity: .85; }
   a.fw2-card-customer:focus-visible {
     outline: 2px solid #e8410a;
     outline-offset: 2px;
@@ -586,32 +619,31 @@ const fw2css = `
     border-radius: 6px;
   }
   .fw2-card-ava {
-    width: 34px;
-    height: 34px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     object-fit: cover;
     flex-shrink: 0;
-    border: 2px solid #f0f0f0;
+    border: 1.5px solid #f0f0f0;
   }
   .fw2-card-ava-ph {
-    width: 34px;
-    height: 34px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
-    font-size: 14px;
+    font-size: 11px;
     color: #fff;
     flex-shrink: 0;
   }
-  .fw2-card-customer-name { font-size: 13px; font-weight: 700; color: #111; line-height: 1.2; }
-  .fw2-card-customer-sub  { font-size: 11px; color: #22c55e; font-weight: 600; }
+  .fw2-card-customer-name { font-size: 12px; font-weight: 700; color: #333; line-height: 1.2; }
+  .fw2-card-customer-sub  { font-size: 11px; color: #999; margin-top: 1px; font-weight: 400; }
   .fw2-card-title {
     font-size: 15px;
-    font-weight: 700;
-    color: #111;
-    margin-bottom: 6px;
+    font-weight: 800;
+    color: #1a1a1a;
     line-height: 1.35;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -620,55 +652,113 @@ const fw2css = `
   }
   .fw2-card-desc {
     font-size: 12px;
-    color: #888;
-    line-height: 1.5;
+    color: #777;
+    line-height: 1.55;
     flex: 1;
-    margin-bottom: 10px;
+    min-height: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .fw2-card-footer {
+  .fw2-card-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+  .fw2-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .fw2-badge-v { background: #e6f4ea; color: #1a7340; }
+  .fw2-badge-f { background: #fff3e0; color: #b45309; }
+  .fw2-badge-g { background: #ede9fe; color: #5b21b6; }
+  .fw2-card-stats {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: auto;
-    padding-top: 12px;
-    border-top: 1px solid #f0f0f0;
+    gap: 6px;
+    font-size: 11px;
+    color: #888;
+    flex-wrap: wrap;
   }
+  .fw2-stars { color: #f59e0b; font-size: 11px; letter-spacing: .5px; }
+  .fw2-rating-val { font-weight: 800; color: #1a1a1a; font-size: 12px; }
+  .fw2-card-footer {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid #f5f5f5;
+    flex-wrap: nowrap;
+  }
+  .fw2-card-price-block { flex-shrink: 0; }
   .fw2-card-price {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 900;
-    color: #111;
-    line-height: 1.2;
+    color: #1a1a1a;
+    letter-spacing: -.3px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .fw2-card-price-unit {
+    font-size: 11px;
+    color: #999;
+    font-weight: 400;
+    display: block;
+    margin-top: 2px;
+    white-space: nowrap;
   }
   .fw2-card-price-none {
     font-size: 14px;
-    font-weight: 600;
-    color: #aaa;
+    font-weight: 700;
+    color: #999;
   }
   .fw2-card-info {
     font-size: 11px;
-    color: #aaa;
-    margin-top: 2px;
+    color: #888;
+    margin-top: 0;
+  }
+  .fw2-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+    min-width: 130px;
+    flex-shrink: 0;
   }
   .fw2-btn-respond {
-    flex-shrink: 0;
-    padding: 10px 16px;
+    width: 100%;
+    padding: 9px 12px;
     background: #e8410a;
     border: none;
     border-radius: 8px;
     color: #fff;
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 800;
     cursor: pointer;
     font-family: inherit;
     transition: background .15s;
     white-space: nowrap;
   }
   .fw2-btn-respond:hover { background: #c73208; }
+  .fw2-btn-msg {
+    width: 100%;
+    padding: 8px 12px;
+    background: #fff;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 8px;
+    color: #333;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color .15s, color .15s;
+  }
+  .fw2-btn-msg:hover { border-color: #e8410a; color: #e8410a; }
 
   /* ═══ ПУСТОЕ СОСТОЯНИЕ ═══ */
   .fw2-empty {
@@ -800,6 +890,7 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
 export default function FindWorkPage() {
   const { userId } = useAuth();
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [requests,         setRequests]         = useState([]);
@@ -1011,7 +1102,7 @@ export default function FindWorkPage() {
                   <div style={{ fontSize:28, fontWeight:900, color:'#111827' }}>{budget}</div>
                   <div style={{ fontSize:12, color:'#6b7280', marginTop:4 }}>
                     Заявленная цена заказчика. При отклике вы указываете свою цену и комментарий.
-                  </div>
+                </div>
                 </div>
                 <button
                   onClick={() => handleOpenOfferModal(req)}
@@ -1210,27 +1301,27 @@ export default function FindWorkPage() {
               </div>
               <div className="fw2-sb-cat-body">
                 <button className="fw2-sb-back" onClick={() => { setSelectedCategory(null); resetCategoryFilters(); }}>
-                  ← Все категории
-                </button>
-              </div>
-            </div>
+              ← Все категории
+            </button>
+          </div>
+        </div>
 
             {/* Цена */}
             <div className="fw2-filter-card">
               <div className="fw2-filter-title">Цена в заявке, ₽</div>
               <div className="fw2-filter-body">
                 <div className="fw2-price-row">
-                  <div>
+              <div>
                     <div className="fw2-price-label">От</div>
                     <input className="fw2-price-inp" type="number" min="0" placeholder="0" value={priceMin} onChange={e => setPriceMin(e.target.value)} />
                   </div>
                   <div>
                     <div className="fw2-price-label">До</div>
                     <input className="fw2-price-inp" type="number" min="0" placeholder="∞" value={priceMax} onChange={e => setPriceMax(e.target.value)} />
-                  </div>
-                </div>
               </div>
             </div>
+          </div>
+        </div>
 
             {/* Параметры */}
             <div className="fw2-filter-card">
@@ -1294,24 +1385,34 @@ export default function FindWorkPage() {
                   <h3>Заявок не найдено</h3>
                   <p>{hasFilters ? 'Измените параметры или сбросьте фильтры.' : 'В этой категории пока нет активных заявок.'}</p>
                 </div>
-              </div>
-            ) : (
+            </div>
+          ) : (
               <div className="fw2-list">
                 {filtered.map(req => {
                   const photos = req.photos || [];
                   const hasPhoto = photos.length > 0;
-                  const budget = formatJobRequestBudgetLabel(req);
                   const listPrice = jobRequestListPrice(req);
                   const custName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
 
                   const customerHref = req.customerId
                     ? `/customers/${req.customerId}?name=${encodeURIComponent(custName)}`
                     : null;
+                  const cityLine = (() => {
+                    const c = req.city && String(req.city).trim();
+                    if (c) return c;
+                    const addr = req.addressText && String(req.addressText).trim();
+                    if (addr) {
+                      const part = addr.split(',')[0].trim();
+                      if (part) return part.length > 36 ? `${part.slice(0, 36)}…` : part;
+                    }
+                    return 'Йошкар-Ола';
+                  })();
+                  const profileSub = `${cityLine} · Профиль →`;
 
                   return (
                     <div key={req.id} className="fw2-card">
 
-                      {/* Фото — открыть заявку */}
+                      {/* Фото — как у заказчика: АКТИВНО + «Смотреть» */}
                       <div
                         className="fw2-card-photo"
                         role="button"
@@ -1327,19 +1428,23 @@ export default function FindWorkPage() {
                         {hasPhoto ? (
                           <>
                             <img src={photos[0]} alt="" draggable={false} />
+                            <span className="fw2-card-photo-active">АКТИВНО</span>
                             {photos.length > 1 && (
                               <span className="fw2-card-photo-cnt">📷 {photos.length}</span>
                             )}
+                            <div className="fw2-card-photo-hover">Смотреть</div>
                           </>
                         ) : (
-                          <div className="fw2-card-photo-ph">
-                            <span className="fw2-card-photo-ph-ico">{catMeta.emoji || '📋'}</span>
-                            <span className="fw2-card-photo-ph-txt">Нет фото</span>
-                          </div>
+                          <>
+                            <div className="fw2-card-photo-ph">
+                              <span className="fw2-card-photo-ph-ico">{catMeta.emoji || '📋'}</span>
+                              <span className="fw2-card-photo-ph-txt">Нет фото</span>
+                            </div>
+                            <span className="fw2-card-photo-active">АКТИВНО</span>
+                          </>
                         )}
                       </div>
 
-                      {/* Миниатюры — открыть заявку */}
                       {photos.length > 1 && (
                         <div
                           className="fw2-thumbs"
@@ -1363,7 +1468,6 @@ export default function FindWorkPage() {
                       )}
 
                       <div className="fw2-card-body">
-                        {/* Заказчик — профиль (клик отдельно от заявки) */}
                         {customerHref ? (
                           <Link to={customerHref} className="fw2-card-customer">
                             {req.customerAvatar ? (
@@ -1375,12 +1479,8 @@ export default function FindWorkPage() {
                             )}
                             <div style={{ flex:1, minWidth:0 }}>
                               <div className="fw2-card-customer-name">{custName}</div>
-                              <div className="fw2-card-customer-sub">
-                                ● Активный заказчик
-                                {req.addressText ? ` · ${req.addressText}` : ''}
-                              </div>
+                              <div className="fw2-card-customer-sub">{profileSub}</div>
                             </div>
-                            <span style={{ color:'#ccc', fontSize:18, flexShrink:0 }}>›</span>
                           </Link>
                         ) : (
                           <div
@@ -1405,15 +1505,11 @@ export default function FindWorkPage() {
                             )}
                             <div>
                               <div className="fw2-card-customer-name">{custName}</div>
-                              <div className="fw2-card-customer-sub">
-                                ● Активный заказчик
-                                {req.addressText ? ` · ${req.addressText}` : ''}
-                              </div>
+                              <div className="fw2-card-customer-sub">{profileSub}</div>
                             </div>
                           </div>
                         )}
 
-                        {/* Заголовок, описание, дата — открыть заявку */}
                         <div
                           className="fw2-card-detail-zone"
                           role="button"
@@ -1437,28 +1533,62 @@ export default function FindWorkPage() {
                           )}
                         </div>
 
-                        {/* Цена + кнопка (горизонтально как у FindMasterPage) */}
+                        <div className="fw2-card-badges">
+                          <span className="fw2-badge fw2-badge-v">✓ Открыта</span>
+                          <span className="fw2-badge fw2-badge-f">⚡ Заявка</span>
+                          <span className="fw2-badge fw2-badge-g">🛡 Безопасная сделка</span>
+                        </div>
+
+                        <div className="fw2-card-stats">
+                          <span className="fw2-stars">{'☆'.repeat(5)}</span>
+                          <span className="fw2-rating-val">0.0</span>
+                          <span>(0 отзывов)</span>
+                        </div>
+
                         <div className="fw2-card-footer">
-                          <div>
-                            {listPrice != null
-                              ? <div className="fw2-card-price">{budget}</div>
-                              : <div className="fw2-card-price-none">Цена не указана</div>
-                            }
+                          <div className="fw2-card-price-block">
+                            {listPrice != null ? (
+                              <>
+                                <div className="fw2-card-price">
+                                  от {Number(listPrice).toLocaleString('ru-RU')} ₽
+                                </div>
+                                <span className="fw2-card-price-unit">в заявке</span>
+                              </>
+                            ) : (
+                              <>
+                                <div className="fw2-card-price-none">Цена не указана</div>
+                                <span className="fw2-card-price-unit">заказчик не указал сумму</span>
+                              </>
+                            )}
                           </div>
-                          <button
-                            type="button"
-                            className="fw2-btn-respond"
-                            onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
-                          >
-                            ✓ Откликнуться
-                          </button>
+                          <div className="fw2-card-actions">
+                            <button
+                              type="button"
+                              className="fw2-btn-respond"
+                              onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
+                            >
+                              ✓ Откликнуться
+                            </button>
+                            {req.customerId ? (
+                              <button
+                                type="button"
+                                className="fw2-btn-msg"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  navigate(`/chat/${req.customerId}?jobRequestId=${req.id}`);
+                                }}
+                              >
+                                💬 Написать
+                              </button>
+                            ) : null}
+                          </div>
                         </div>
                       </div>
                     </div>
                   );
-                })}
-              </div>
-            )}
+              })}
+            </div>
+          )}
           </div>
         </div>
 
@@ -1549,7 +1679,7 @@ export default function FindWorkPage() {
                         : <span className="fw2-cat-count-none">Нет активных заявок</span>
                       }
                       <div className="fw2-cat-go">›</div>
-                    </div>
+                  </div>
                   </div>
                 </button>
               );

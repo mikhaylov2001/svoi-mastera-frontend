@@ -289,7 +289,7 @@ export default function WorkerProfilePage() {
                   </button>
                 ))}
                 <Link to="/deals" className="pp-tab-link">Все →</Link>
-              </div>
+                </div>
 
               <div className="pp-dl-body">
                 {loading ? (
@@ -396,7 +396,7 @@ export default function WorkerProfilePage() {
                                 {custName && <span className="pp-dc-m">👤 <strong>{custName}</strong></span>}
                                 {deal.createdAt && <span className="pp-dc-m">📅 {fmtCard(deal.createdAt)}</span>}
                                 {deal.category && <span className="pp-dc-m">📂 {deal.category}</span>}
-                              </div>
+                          </div>
                               {deal.agreedPrice && (
                                 <div className="pp-dc-price">{Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</div>
                               )}
@@ -407,8 +407,8 @@ export default function WorkerProfilePage() {
                                 {si.label}
                               </span>
                               <span className={`pp-dc-btn ${si.btnStyle}`}>{si.btn} →</span>
-                            </div>
-                          </Link>
+                          </div>
+                        </Link>
                           {s === 'COMPLETED' && !deal.hasWorkerReview && (
                             <div className="pp-rv">
                               {reviewFor === deal.id ? (
@@ -502,7 +502,7 @@ export default function WorkerProfilePage() {
                                 ⭐ Оставить отзыв о заказчике
                               </button>
                             )}
-                          </div>
+                        </div>
                         )}
                         {s === 'COMPLETED' && deal.hasWorkerReview && (
                           <div className="pp-rv"><div className="pp-rv-ok">✓ Отзыв о заказчике отправлен</div></div>

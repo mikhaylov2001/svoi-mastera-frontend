@@ -589,6 +589,7 @@ const css = `
     position: absolute;
     top: 8px;
     left: 8px;
+    z-index: 2;
     background: #e8410a;
     color: #fff;
     font-size: 10px;
@@ -1344,15 +1345,18 @@ export default function FindMasterPage() {
                       {hasPhoto ? (
                         <>
                           <img src={photos[0]} alt={s.title}/>
-                          {s.active && <span className="fmp-card-photo-active">Активно</span>}
+                          {s.active !== false && <span className="fmp-card-photo-active">АКТИВНО</span>}
                           {photos.length > 1 && <span className="fmp-card-photo-cnt">📷 {photos.length}</span>}
                           <div className="fmp-card-photo-hover">Смотреть</div>
                         </>
                       ) : (
-                        <div className="fmp-card-photo-ph">
-                          <span className="fmp-card-photo-ph-ico">{catMeta.emoji || '🛠️'}</span>
-                          <span className="fmp-card-photo-ph-txt">Нет фото</span>
-                        </div>
+                        <>
+                          <div className="fmp-card-photo-ph">
+                            <span className="fmp-card-photo-ph-ico">{catMeta.emoji || '🛠️'}</span>
+                            <span className="fmp-card-photo-ph-txt">Нет фото</span>
+                          </div>
+                          {s.active !== false && <span className="fmp-card-photo-active">АКТИВНО</span>}
+                        </>
                       )}
                   </div>
 

@@ -74,7 +74,7 @@ export default function CustomerProfilePage() {
     setLoading(true);
     Promise.all([getMyDeals(userId), getUserProfile(userId)])
       .then(([d, p]) => {
-        setDeals(d || []);
+      setDeals(d || []);
         const prof = p || {};
         setProfile(prof);
         // Сразу обновляем контекст — имя/фамилия в шапке без ожидания «второго» источника
@@ -156,7 +156,7 @@ export default function CustomerProfilePage() {
           <div className="pp-ava" onClick={() => fileRef.current?.click()}>
             {avatarUrl ? <img src={avatarUrl} alt="" /> : initials}
             <div className="pp-ava-ov">{avatarLoading ? '⏳' : '📷'}</div>
-          </div>
+              </div>
 
           <div className="pp-hero-txt">
             <div className="pp-hero-name">{fullName}</div>
@@ -235,7 +235,7 @@ export default function CustomerProfilePage() {
                   </button>
                 ))}
                 <Link to="/deals" className="pp-tab-link">Все →</Link>
-              </div>
+                </div>
 
               <div className="pp-dl-body">
                 {loading ? (
@@ -263,7 +263,7 @@ export default function CustomerProfilePage() {
                     const photoSrc = resolveUrl(photoRaw);
                     const avatarSrc = resolveUrl(avatarRaw);
 
-                    return (
+                      return (
                       <div key={deal.id} style={{marginBottom:10,borderRadius:18,overflow:'hidden',border:'1.5px solid #e8eef8'}}>
                         <Link to={`/deals?dealId=${deal.id}`} className="pp-dc">
                           {/* left accent line */}
@@ -297,7 +297,7 @@ export default function CustomerProfilePage() {
                             {deal.agreedPrice && (
                               <div className="pp-dc-price">{Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</div>
                             )}
-                          </div>
+                              </div>
 
                           {/* right */}
                           <div className="pp-dc-right">
@@ -306,8 +306,8 @@ export default function CustomerProfilePage() {
                               {si.label}
                             </span>
                             <span className={`pp-dc-btn ${si.btnStyle}`}>{si.btn} →</span>
-                          </div>
-                        </Link>
+                            </div>
+                          </Link>
 
                         {s === 'COMPLETED' && !deal.hasReview && (
                           <div className="pp-rv">
@@ -319,14 +319,14 @@ export default function CustomerProfilePage() {
                         )}
                         {s === 'COMPLETED' && deal.hasReview && (
                           <div className="pp-rv"><div className="pp-rv-ok">✓ Отзыв уже отправлен</div></div>
-                        )}
-                      </div>
-                    );
+                          )}
+                        </div>
+                      );
                   })
                 )}
               </div>
             </div>
-          </div>
+                    </div>
 
           {/* ── RIGHT ── */}
           <div className="pp-right">
@@ -351,7 +351,7 @@ export default function CustomerProfilePage() {
               <div className="pp-pcard-tag">Совет</div>
               <div className="pp-pcard-q">Оставляйте отзывы — мастерам это помогает расти, а вам легче выбирать проверенных специалистов.</div>
               <Link to="/categories" className="pp-pcard-btn">Найти мастера →</Link>
-            </div>
+                    </div>
 
             {/* Settings — no icon boxes, just clean rows */}
             <div className="pp-set">
@@ -364,7 +364,7 @@ export default function CustomerProfilePage() {
                   <div className="pp-si-left">
                     <div className="pp-si-t">{item.t}</div>
                     <div className="pp-si-d">{item.d}</div>
-                  </div>
+                    </div>
                   <div className="pp-si-right">
                     <span className="pp-si-arr">›</span>
                   </div>
