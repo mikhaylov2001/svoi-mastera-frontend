@@ -12,7 +12,7 @@ Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
   cats.forEach(cat => { CAT_ALL[cat.slug] = cat; })
 );
 
-const FW_DEFAULT_BG = `${process.env.PUBLIC_URL || ''}/ml-defaults/my-listings-bg.png`;
+const FW_DEFAULT_BG = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80';
 
 const fw2css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
