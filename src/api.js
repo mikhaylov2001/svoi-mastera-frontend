@@ -1,3 +1,5 @@
+import { humanizeServerErrorMessage } from './utils/humanizeServerError';
+
 export const API_BASE = process.env.NODE_ENV === 'development'
   ? 'http://localhost:8080/api/v1'
   : 'https://svoi-mastera-backend.onrender.com/api/v1';
@@ -38,7 +40,11 @@ async function apiCall(endpoint, options = {}) {
     let data;
     try { data = text ? JSON.parse(text) : {}; } catch { data = { message: text }; }
     if (!response.ok) {
-      throw new Error(getFriendlyMessage(response.status, endpoint, data.message || data.error || ''));
+      const raw = String(data.message || data.error || data.detail || text || '').trim();
+      if (raw) {
+        throw new Error(humanizeServerErrorMessage(raw));
+      }
+      throw new Error(getFriendlyMessage(response.status, endpoint, ''));
     }
     return data;
   } catch (error) {
@@ -303,7 +309,10 @@ export async function uploadFile(userId, file) {
     const text = await response.text();
     let data;
     try { data = text ? JSON.parse(text) : {}; } catch { data = { message: text }; }
-    if (!response.ok) throw new Error(data.message || 'Ошибка загрузки файла');
+    if (!response.ok) {
+      const raw = String(data.message || data.error || text || '').trim();
+      throw new Error(raw ? humanizeServerErrorMessage(raw) : 'Ошибка загрузки файла');
+    }
     return data; // { url, filename, size, contentType }
   } catch (error) {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {

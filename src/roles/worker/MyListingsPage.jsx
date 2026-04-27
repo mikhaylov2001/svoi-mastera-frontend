@@ -5,6 +5,7 @@ import ListingInfoPanels from '../../components/ListingInfoPanels';
 import { SECTIONS } from '../../pages/SectionsPage';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import { API_BASE } from '../../api';
+import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 
 const API = API_BASE;
 
@@ -640,15 +641,21 @@ export default function MyListingsPage() {
         try {
           const j = JSON.parse(raw);
           const candidate = j.message || j.error || j.detail || '';
-          if (candidate && !/^internal server error$/i.test(candidate)) msg = String(candidate);
+          if (candidate && !/^internal server error$/i.test(String(candidate).trim())) {
+            msg = humanizeServerErrorMessage(String(candidate));
+          }
         } catch {
-          if (raw && raw.length < 500 && !raw.trim().startsWith('<')) msg = raw.trim();
+          if (raw && raw.length < 800 && !raw.trim().startsWith('<')) {
+            msg = humanizeServerErrorMessage(raw.trim());
+          }
         }
         if (r.status === 413) msg = 'Данные слишком большие. Уменьшите фото или уберите часть снимков.';
         setFormErr(msg);
       }
     } catch (e) {
-      setFormErr(e?.message || 'Ошибка сети. Проверьте соединение.');
+      const m = e?.message || '';
+      if (m === 'Failed to fetch') setFormErr('Нет соединения с сервером.');
+      else setFormErr(humanizeServerErrorMessage(m));
     }
     setSaving(false);
   };
