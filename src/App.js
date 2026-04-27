@@ -21,6 +21,7 @@ import DealsPage from './roles/customer/DealsPage';
 import WorkerDealsPage from './roles/worker/WorkerDealsPage';
 import FindWorkPage from './roles/worker/FindWorkPage';
 import FindMasterPage from './roles/customer/FindMasterPage';
+import MyOrdersPage from './roles/customer/MyOrdersPage';
 import ChatPage from './pages/ChatPage';
 import NotFoundPage from './pages/NotFoundPage';
 import NotificationsSettingsPage from './pages/NotificationsSettingsPage';
@@ -70,6 +71,7 @@ function AppContent() {
           <Route path="/find-work"       element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
           <Route path="/find-master"     element={<FindMasterPage />} />
           <Route path="/find-master/:categorySlug" element={<FindMasterPage />} />
+          <Route path="/my-requests"     element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
           <Route path="/workers/:workerId" element={<PublicWorkerProfilePage />} />
           <Route path="/customers/:customerId" element={<PublicCustomerProfilePage />} />
           <Route path="/manage-services" element={<ProtectedRoute workerOnly><ManageServicesPage /></ProtectedRoute>} />

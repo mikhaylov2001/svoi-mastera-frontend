@@ -240,10 +240,10 @@ function Header() {
               <>
                 {/* ══ НАВИГАЦИЯ ДЛЯ ЗАКАЗЧИКА ══ */}
                 <NavLink
-                  to="/categories"
+                  to="/my-requests"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
                 >
-                  Разместить заявку
+                  Мои заявки
                 </NavLink>
                 <NavLink
                   to="/find-master"
@@ -434,8 +434,8 @@ function Header() {
                 ) : userId ? (
                   <>
                     {/* ══ МОБИЛЬНОЕ МЕНЮ ЗАКАЗЧИКА ══ */}
-                    <NavLink to="/categories" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                      Разместить заявку
+                    <NavLink to="/my-requests" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Мои заявки
                     </NavLink>
                     <NavLink to="/find-master" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
                       Найти мастера

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getMyJobRequests, getOffersForRequest, acceptOffer, getCategories } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import './MyOrdersPage.css';
@@ -29,7 +29,8 @@ export default function MyOrdersPage() {
   const [requests, setRequests] = useState([]);
   const [categories, setCategories] = useState([]);
   const [status, setStatus] = useState('loading');
-  const [filter, setFilter] = useState('ALL');
+  const [tab, setTab] = useState('active'); // active | archive
+  const [copyFlashId, setCopyFlashId] = useState(null);
 
   // Expanded request (show offers)
   const [expandedId, setExpandedId] = useState(null);
@@ -77,7 +78,7 @@ export default function MyOrdersPage() {
     setExpandedId(reqId);
     setOffersLoading(true);
     try {
-      const data = await getOffersForRequest(userId, reqId);
+      const data = await getOffersForRequest(reqId);
       setOffers(data || []);
     } catch (err) {
       console.error('Load offers error:', err);
@@ -102,50 +103,59 @@ export default function MyOrdersPage() {
     setActionLoading(null);
   };
 
-  const counts = {
-    ALL: requests.length,
-    OPEN: requests.filter(r => r.status === 'OPEN').length,
-    IN_PROGRESS: requests.filter(r => r.status === 'IN_PROGRESS').length,
-    COMPLETED: requests.filter(r => r.status === 'COMPLETED').length,
+  const isActiveStatus = (s) => ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'].includes(s);
+  const active = requests.filter(r => isActiveStatus(r.status));
+  const archive = requests.filter(r => !isActiveStatus(r.status));
+  const filtered = tab === 'active' ? active : archive;
+
+  const copyRequestLink = (reqId, e) => {
+    e?.stopPropagation?.();
+    const url = `${window.location.origin}/my-requests?request=${reqId}`;
+    const done = () => {
+      setCopyFlashId(reqId);
+      window.setTimeout(() => setCopyFlashId((cur) => (cur === reqId ? null : cur)), 2200);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(done).catch(done);
+    } else {
+      done();
+    }
   };
 
-  const filtered = filter === 'ALL'
-    ? requests
-    : requests.filter(r => r.status === filter);
-
   return (
-    <div>
-      <div className="page-header-bar">
-        <div className="container">
-          <h1>Мои заказы</h1>
-          <p>Заявки, активные сделки и завершённые работы</p>
+    <div className="my-req-page">
+      <div className="my-req-hero">
+        <img
+          className="my-req-hero-img"
+          src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80"
+          alt=""
+        />
+        <div className="my-req-hero-overlay" />
+        <div className="my-req-hero-body container">
+          <div>
+            <h1>Мои заявки</h1>
+            <p>Управляйте заявками и откликами мастеров</p>
+          </div>
+          <button type="button" className="btn btn-primary" onClick={() => navigate('/sections')}>
+            + Разместить заявку
+          </button>
         </div>
       </div>
 
       <div className="container" style={{ padding: '28px 0 60px' }}>
-        <div className="orders-grid">
-          <div className="orders-main">
-            <div className="orders-filter-tabs">
-              {[
-                ['ALL', 'Все', counts.ALL],
-                ['OPEN', 'Открытые', counts.OPEN],
-                ['IN_PROGRESS', 'В работе', counts.IN_PROGRESS],
-                ['COMPLETED', 'Завершённые', counts.COMPLETED],
-              ].map(([key, label, count]) => (
-                <button
-                  key={key}
-                  className={`filter-tab ${filter === key ? 'active' : ''}`}
-                  onClick={() => setFilter(key)}
-                >
-                  {label} <span className="filter-tab-count">{count}</span>
-                </button>
-              ))}
-            </div>
+        <div className="orders-main">
+          <div className="orders-filter-tabs">
+            <button className={`filter-tab ${tab === 'active' ? 'active' : ''}`} onClick={() => setTab('active')}>
+              Активные <span className="filter-tab-count">{active.length}</span>
+            </button>
+            <button className={`filter-tab ${tab === 'archive' ? 'active' : ''}`} onClick={() => setTab('archive')}>
+              Архив <span className="filter-tab-count">{archive.length}</span>
+            </button>
+          </div>
 
-            <div className="orders-list-header">
-              <span className="orders-list-count">{filtered.length} заявок</span>
-              <Link to="/sections" className="btn btn-primary btn-sm orders-new-btn-mobile">+ Новая</Link>
-            </div>
+          <div className="orders-list-header">
+            <span className="orders-list-count">{filtered.length} заявок</span>
+          </div>
 
             {status === 'loading' && (
               <div className="orders-list">
@@ -168,10 +178,9 @@ export default function MyOrdersPage() {
 
             {status === 'success' && filtered.length === 0 && (
               <div className="card empty-state">
-                <span className="empty-state-icon">📋</span>
-                <h3>Заявок пока нет</h3>
-                <p>Создайте первую заявку — мастера откликнутся</p>
-                <Link to="/sections" className="btn btn-primary">Найти мастера</Link>
+                <h3>{tab === 'active' ? 'Нет активных заявок' : 'Архив пуст'}</h3>
+                <p>{tab === 'active' ? 'Разместите заявку, чтобы мастера откликнулись' : 'Завершенные и закрытые заявки будут здесь'}</p>
+                {tab === 'active' && <button className="btn btn-primary" onClick={() => navigate('/sections')}>Разместить заявку</button>}
               </div>
             )}
 
@@ -185,26 +194,43 @@ export default function MyOrdersPage() {
 
                   return (
                     <div className={`order-card fade-up ${isExpanded ? 'expanded' : ''}`} key={req.id} style={{ animationDelay: `${i * 0.04}s` }}>
-                      <div className="order-card-top">
+                      <div className="order-row-main">
                         <div className="order-card-info">
                           <h3 className="order-card-title">{req.title}</h3>
                           <div className="order-card-meta">
-                            {catName && <span>🏷️ {catName}</span>}
-                            {req.addressText && <span>📍 {req.addressText}</span>}
-                            {req.createdAt && <span>🕐 {new Date(req.createdAt).toLocaleDateString('ru-RU')}</span>}
+                            {catName && <span>{catName}</span>}
+                            {req.addressText && <span>{req.addressText}</span>}
+                            {req.createdAt && <span>{new Date(req.createdAt).toLocaleDateString('ru-RU')}</span>}
+                          </div>
+                          {req.description && req.description !== 'Без описания' && (
+                            <p className="order-card-desc">{req.description}</p>
+                          )}
+                          <div className="order-row-stats">
+                            <span><b>{offersLoading && expandedId === req.id ? '...' : (isExpanded ? offers.length : 0)}</b> откликов</span>
+                            <span><b>{stLabel}</b></span>
                           </div>
                         </div>
-                        <div className="order-card-right">
+                        <div className="order-card-right order-actions">
                           <span className={`badge ${stCls}`}>{stLabel}</span>
                           {req.budgetTo && (
                             <span className="order-card-price">до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽</span>
                           )}
+                          {req.status === 'OPEN' && (
+                            <button className="btn btn-primary btn-sm" onClick={() => navigate('/sections')}>
+                              Редактировать
+                            </button>
+                          )}
+                          <button className="btn btn-outline btn-sm" onClick={(e) => copyRequestLink(req.id, e)}>
+                            {copyFlashId === req.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
+                          </button>
+                          <button
+                            className="btn btn-outline btn-sm"
+                            onClick={() => toggleOffers(req.id)}
+                          >
+                            {isExpanded ? 'Скрыть отклики' : 'Смотреть отклики'}
+                          </button>
                         </div>
                       </div>
-
-                      {req.description && req.description !== 'Без описания' && (
-                        <p className="order-card-desc">{req.description}</p>
-                      )}
 
                       {/* ✨ НОВОЕ: Отображение фотографий */}
                       {req.photos && req.photos.length > 0 && (
@@ -223,17 +249,6 @@ export default function MyOrdersPage() {
                           ))}
                         </div>
                       )}
-
-                      <div className="order-card-actions">
-                        {req.status === 'OPEN' && (
-                          <button
-                            className="btn btn-outline btn-sm"
-                            onClick={() => toggleOffers(req.id)}
-                          >
-                            {isExpanded ? '▲ Скрыть отклики' : '📩 Смотреть отклики'}
-                          </button>
-                        )}
-                      </div>
 
                       {/* Offers panel */}
                       {isExpanded && (
@@ -281,7 +296,7 @@ export default function MyOrdersPage() {
                                     )}
                                   </div>
                                   {offer.workerName && (
-                                    <div style={{ fontSize: 13, color: '#666', fontWeight: 500 }}>👷 {offer.workerName}</div>
+                                    <div style={{ fontSize: 13, color: '#666', fontWeight: 500 }}>{offer.workerName}</div>
                                   )}
                                 </div>
                                 <button
@@ -289,7 +304,7 @@ export default function MyOrdersPage() {
                                   disabled={actionLoading === offer.id}
                                   onClick={() => handleAccept(offer.id)}
                                 >
-                                  {actionLoading === offer.id ? '⏳' : 'Принять'}
+                                  {actionLoading === offer.id ? '...' : 'Принять'}
                                 </button>
                               </div>
                               {offer.message && (
@@ -305,23 +320,6 @@ export default function MyOrdersPage() {
                 })}
               </div>
             )}
-          </div>
-
-          <div className="orders-sidebar">
-            <Link to="/sections" className="btn btn-primary btn-full orders-new-btn">
-              + Новая заявка
-            </Link>
-
-            <div className="card sidebar-tip">
-              <h4>💡 Совет</h4>
-              <p>Добавляйте фотографии к заявкам — это помогает мастерам точнее оценить объём работы и предложить лучшую цену.</p>
-            </div>
-
-            <div className="card sidebar-tip">
-              <h4>⚡ Быстрый отклик</h4>
-              <p>Первые отклики обычно поступают в течение 10 минут после публикации заявки.</p>
-            </div>
-          </div>
         </div>
       </div>
 
