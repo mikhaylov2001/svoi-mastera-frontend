@@ -48,6 +48,49 @@
   .order-card-right { border-left: none; border-top: 1px solid #f0f0f0; }
 }
 
+.req-grid-sections {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: 180px;
+  gap: 12px;
+}
+.req-sec-card { position: relative; border: none; border-radius: 14px; overflow: hidden; cursor: pointer; }
+.req-sec-card img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(.62); }
+.req-sec-overlay { position: absolute; inset: 0; background: linear-gradient(175deg, rgba(0,0,0,.06), rgba(0,0,0,.68)); }
+.req-sec-name { position: absolute; left: 14px; bottom: 12px; color: #fff; font-size: 24px; font-weight: 800; text-align: left; }
+.req-grid-sections .req-sec-card:nth-child(1) { grid-column: span 7; grid-row: span 2; }
+.req-grid-sections .req-sec-card:nth-child(2) { grid-column: span 5; }
+.req-grid-sections .req-sec-card:nth-child(3) { grid-column: span 5; }
+.req-grid-sections .req-sec-card:nth-child(4) { grid-column: span 6; }
+
+.req-grid-cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.req-cat-card { border: 1.5px solid #e8e8e8; border-radius: 12px; overflow: hidden; background: #fff; cursor: pointer; text-align: left; }
+.req-cat-card img { width: 100%; height: 130px; object-fit: cover; display: block; }
+.req-cat-name { padding: 10px 12px; font-size: 13px; font-weight: 700; color: #111827; }
+
+.req-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.req-input { border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: inherit; }
+.req-textarea { grid-column: span 2; min-height: 120px; resize: vertical; }
+.photo-remove-mini {
+  position: absolute; top: 6px; right: 6px; width: 24px; height: 24px;
+  border: none; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; cursor: pointer;
+}
+
+@media (max-width: 860px) {
+  .req-grid-sections { grid-template-columns: 1fr 1fr; }
+  .req-grid-sections .req-sec-card:nth-child(1),
+  .req-grid-sections .req-sec-card:nth-child(2),
+  .req-grid-sections .req-sec-card:nth-child(3),
+  .req-grid-sections .req-sec-card:nth-child(4) { grid-column: span 2; grid-row: span 1; }
+  .req-grid-cats { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 620px) {
+  .req-grid-cats { grid-template-columns: 1fr; }
+  .req-form-grid { grid-template-columns: 1fr; }
+  .req-textarea { grid-column: span 1; }
+}
+
 /* ═══ PHOTO GALLERY IN ORDER CARDS ═══ */
 
 .order-photos-grid {

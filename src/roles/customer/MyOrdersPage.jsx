@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMyJobRequests, getOffersForRequest, acceptOffer, getCategories } from '../../api';
+import { getMyJobRequests, getOffersForRequest, acceptOffer, getCategories, createJobRequest, updateJobRequest } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import { SECTIONS } from '../../pages/SectionsPage';
+import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './MyOrdersPage.css';
 
 const STATUS_LABELS = {
@@ -31,6 +33,19 @@ export default function MyOrdersPage() {
   const [status, setStatus] = useState('loading');
   const [tab, setTab] = useState('active'); // active | archive
   const [copyFlashId, setCopyFlashId] = useState(null);
+  const [view, setView] = useState(null); // null | 'create' | {edit:req}
+  const [pickedSection, setPickedSection] = useState(null);
+  const [formErr, setFormErr] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    budget: '',
+    address: '',
+    city: '',
+    categoryId: '',
+    photos: [],
+  });
 
   // Expanded request (show offers)
   const [expandedId, setExpandedId] = useState(null);
@@ -87,13 +102,13 @@ export default function MyOrdersPage() {
     setOffersLoading(false);
   };
 
-  const handleAccept = async (offerId) => {
+  const handleAccept = async (requestId, offerId) => {
     const conf = window.confirm('Принять этот отклик и начать работу с мастером?');
     if (!conf) return;
 
     setActionLoading(offerId);
     try {
-      await acceptOffer(userId, offerId);
+      await acceptOffer(userId, requestId, offerId);
       await load();
       setExpandedId(null);
       setOffers([]);
@@ -108,6 +123,76 @@ export default function MyOrdersPage() {
   const archive = requests.filter(r => !isActiveStatus(r.status));
   const filtered = tab === 'active' ? active : archive;
 
+  if (view !== null) {
+    const isEdit = view !== 'create';
+    const sectionSlug = isEdit ? getSectionSlugByCategoryId(form.categoryId) : pickedSection;
+    const sectionCats = sectionSlug ? (CATEGORIES_BY_SECTION[sectionSlug] || []) : [];
+    const step = isEdit ? 3 : (!sectionSlug ? 1 : (!form.categoryId ? 2 : 3));
+    return (
+      <div className="my-req-page">
+        <div className="my-req-hero">
+          <img className="my-req-hero-img" src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80" alt="" />
+          <div className="my-req-hero-overlay" />
+          <div className="my-req-hero-body container">
+            <div>
+              <h1>{isEdit ? 'Редактирование заявки' : 'Новая заявка'}</h1>
+              <p>Шаг {step} — {step === 1 ? 'выберите раздел' : step === 2 ? 'выберите категорию' : 'заполните заявку'}</p>
+            </div>
+            <button type="button" className="btn btn-outline" onClick={() => setView(null)}>К списку</button>
+          </div>
+        </div>
+        <div className="container" style={{ padding: '20px 0 50px' }}>
+          {!isEdit && !sectionSlug && (
+            <div className="req-grid-sections">
+              {SECTIONS.map(s => (
+                <button key={s.slug} className="req-sec-card" onClick={() => setPickedSection(s.slug)}>
+                  <img src={s.photo} alt="" />
+                  <div className="req-sec-overlay" />
+                  <div className="req-sec-name">{s.name}</div>
+                </button>
+              ))}
+            </div>
+          )}
+          {!isEdit && sectionSlug && !form.categoryId && (
+            <div className="req-grid-cats">
+              {sectionCats.map(c => (
+                <button key={c.name} className="req-cat-card" onClick={() => chooseCategoryByName(c.name)}>
+                  <img src={c.photo} alt="" />
+                  <div className="req-cat-name">{c.name}</div>
+                </button>
+              ))}
+            </div>
+          )}
+          {(isEdit || form.categoryId) && (
+            <div className="card" style={{ padding: 16 }}>
+              {formErr && <div className="orders-error" style={{ marginBottom: 10 }}>{formErr}</div>}
+              <div className="req-form-grid">
+                <input className="req-input" placeholder="Название заявки" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
+                <input className="req-input" placeholder="Бюджет, ₽" type="number" value={form.budget} onChange={e => setForm(p => ({ ...p, budget: e.target.value }))} />
+                <input className="req-input" placeholder="Город" value={form.city} onChange={e => setForm(p => ({ ...p, city: e.target.value }))} />
+                <input className="req-input" placeholder="Адрес" value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} />
+                <textarea className="req-input req-textarea" placeholder="Описание" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
+              </div>
+              <div className="order-photos-grid" style={{ marginTop: 12 }}>
+                {(form.photos || []).map(ph => (
+                  <div key={ph.id} className="order-photo-item">
+                    <img src={ph.data} alt="" />
+                    <button className="photo-remove-mini" onClick={() => removePhoto(ph.id)}>×</button>
+                  </div>
+                ))}
+              </div>
+              <input type="file" accept="image/*" multiple onChange={e => onAddPhotos(e.target.files)} />
+              <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+                {!isEdit && <button className="btn btn-outline" onClick={() => setForm(p => ({ ...p, categoryId: '' }))}>Сменить категорию</button>}
+                <button className="btn btn-primary" disabled={saving} onClick={saveRequest}>{saving ? 'Сохранение...' : (isEdit ? 'Сохранить' : 'Разместить заявку')}</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const copyRequestLink = (reqId, e) => {
     e?.stopPropagation?.();
     const url = `${window.location.origin}/my-requests?request=${reqId}`;
@@ -120,6 +205,107 @@ export default function MyOrdersPage() {
     } else {
       done();
     }
+  };
+
+  const getSectionSlugByCategoryId = (categoryId) => {
+    const cat = categories.find(c => String(c.id) === String(categoryId));
+    if (!cat) return null;
+    const n = String(cat.name || '').trim().toLowerCase();
+    for (const [slug, list] of Object.entries(CATEGORIES_BY_SECTION)) {
+      if ((list || []).some(x => String(x.name || '').trim().toLowerCase() === n)) return slug;
+    }
+    return null;
+  };
+
+  const chooseCategoryByName = (name) => {
+    const c = categories.find(x => String(x.name || '').trim().toLowerCase() === String(name).trim().toLowerCase());
+    if (!c) return;
+    setFormErr('');
+    setForm(prev => ({ ...prev, categoryId: c.id }));
+  };
+
+  const openCreate = () => {
+    setForm({
+      title: '',
+      description: '',
+      budget: '',
+      address: '',
+      city: '',
+      categoryId: '',
+      photos: [],
+    });
+    setFormErr('');
+    setPickedSection(null);
+    setView('create');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const openEdit = (req) => {
+    setForm({
+      title: req.title || '',
+      description: req.description && req.description !== 'Без описания' ? req.description : '',
+      budget: req.budgetTo || '',
+      address: req.addressText || '',
+      city: req.city || '',
+      categoryId: req.categoryId || '',
+      photos: (req.photos || []).map((p, i) => ({ id: i, data: p })),
+    });
+    setFormErr('');
+    setPickedSection(getSectionSlugByCategoryId(req.categoryId));
+    setView({ edit: req });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const onAddPhotos = async (files) => {
+    const arr = Array.from(files || []);
+    if (!arr.length) return;
+    if ((form.photos?.length || 0) + arr.length > 5) { setFormErr('Максимум 5 фото'); return; }
+    const uploaded = await Promise.all(arr.map(file => new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve({ id: Date.now() + Math.random(), data: reader.result });
+      reader.readAsDataURL(file);
+    })));
+    setForm(prev => ({ ...prev, photos: [...(prev.photos || []), ...uploaded] }));
+  };
+
+  const removePhoto = (id) => setForm(prev => ({ ...prev, photos: prev.photos.filter(ph => ph.id !== id) }));
+
+  const saveRequest = async () => {
+    if (!form.categoryId) { setFormErr('Выберите категорию'); return; }
+    if (!form.title.trim()) { setFormErr('Укажите название заявки'); return; }
+    if (!form.budget || Number(form.budget) <= 0) { setFormErr('Укажите бюджет больше нуля'); return; }
+    setSaving(true);
+    setFormErr('');
+    try {
+      const payload = {
+        categoryId: form.categoryId,
+        title: form.title.trim(),
+        description: (form.description || '').trim() || 'Без описания',
+        city: (form.city || '').trim(),
+        address: (form.address || '').trim(),
+        budget: Number(form.budget),
+        photos: (form.photos || []).map(p => p.data),
+      };
+      if (view === 'create') {
+        await createJobRequest(userId, payload);
+      } else {
+        await updateJobRequest(userId, view.edit.id, {
+          categoryId: payload.categoryId,
+          title: payload.title,
+          description: payload.description,
+          city: payload.city,
+          addressText: payload.address,
+          budgetFrom: payload.budget,
+          budgetTo: payload.budget,
+          photos: payload.photos,
+        });
+      }
+      setView(null);
+      await load();
+    } catch (e) {
+      setFormErr(e?.message || 'Не удалось сохранить');
+    }
+    setSaving(false);
   };
 
   return (
@@ -136,7 +322,7 @@ export default function MyOrdersPage() {
             <h1>Мои заявки</h1>
             <p>Управляйте заявками и откликами мастеров</p>
           </div>
-          <button type="button" className="btn btn-primary" onClick={() => navigate('/sections')}>
+          <button type="button" className="btn btn-primary" onClick={openCreate}>
             + Разместить заявку
           </button>
         </div>
@@ -180,7 +366,7 @@ export default function MyOrdersPage() {
               <div className="card empty-state">
                 <h3>{tab === 'active' ? 'Нет активных заявок' : 'Архив пуст'}</h3>
                 <p>{tab === 'active' ? 'Разместите заявку, чтобы мастера откликнулись' : 'Завершенные и закрытые заявки будут здесь'}</p>
-                {tab === 'active' && <button className="btn btn-primary" onClick={() => navigate('/sections')}>Разместить заявку</button>}
+                {tab === 'active' && <button className="btn btn-primary" onClick={openCreate}>Разместить заявку</button>}
               </div>
             )}
 
@@ -216,7 +402,7 @@ export default function MyOrdersPage() {
                             <span className="order-card-price">до {Number(req.budgetTo).toLocaleString('ru-RU')} ₽</span>
                           )}
                           {req.status === 'OPEN' && (
-                            <button className="btn btn-primary btn-sm" onClick={() => navigate('/sections')}>
+                            <button className="btn btn-primary btn-sm" onClick={() => openEdit(req)}>
                               Редактировать
                             </button>
                           )}
@@ -302,7 +488,7 @@ export default function MyOrdersPage() {
                                 <button
                                   className="btn btn-primary btn-sm"
                                   disabled={actionLoading === offer.id}
-                                  onClick={() => handleAccept(offer.id)}
+                                  onClick={() => handleAccept(req.id, offer.id)}
                                 >
                                   {actionLoading === offer.id ? '...' : 'Принять'}
                                 </button>
