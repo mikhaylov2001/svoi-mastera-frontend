@@ -601,44 +601,34 @@ const fw2css = `
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  .fw2-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+  }
   .fw2-card-price {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 900;
     color: #111;
-    margin-bottom: 12px;
+    line-height: 1.2;
   }
-  .fw2-card-btns { display: flex; flex-direction: column; gap: 6px; }
-  .fw2-btn-accept {
-    width: 100%;
-    padding: 10px;
-    background: #16a34a;
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background .15s;
-  }
-  .fw2-btn-accept:hover { background: #15803d; }
-  .fw2-btn-offer {
-    width: 100%;
-    padding: 10px;
-    background: #fff;
-    border: 1.5px solid #e0e0e0;
-    border-radius: 8px;
-    color: #555;
-    font-size: 13px;
+  .fw2-card-price-none {
+    font-size: 14px;
     font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all .15s;
+    color: #aaa;
   }
-  .fw2-btn-offer:hover { border-color: #999; color: #111; }
-  .fw2-btn-offer-primary {
-    width: 100%;
-    padding: 10px;
+  .fw2-card-info {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 2px;
+  }
+  .fw2-btn-respond {
+    flex-shrink: 0;
+    padding: 10px 16px;
     background: #e8410a;
     border: none;
     border-radius: 8px;
@@ -648,8 +638,9 @@ const fw2css = `
     cursor: pointer;
     font-family: inherit;
     transition: background .15s;
+    white-space: nowrap;
   }
-  .fw2-btn-offer-primary:hover { background: #c73208; }
+  .fw2-btn-respond:hover { background: #c73208; }
 
   /* ═══ ПУСТОЕ СОСТОЯНИЕ ═══ */
   .fw2-empty {
@@ -741,7 +732,7 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
               />
               {(request.budgetTo != null || request.budgetFrom != null) && (
                 <span className="fw-modal-hint">
-                  Цена в заявке заказчика: {formatJobRequestBudgetLabel(request)}
+                  Заказчик указал: {formatJobRequestBudgetLabel(request)}
                 </span>
               )}
             </div>
@@ -853,13 +844,9 @@ export default function FindWorkPage() {
   const getRequestsForCategory = (cat) =>
     requests.filter(r => r.categoryId === cat.id);
 
-  const handleOpenOfferModal = (request, prefillPrice) => {
+  const handleOpenOfferModal = (request) => {
     setShowOfferModal(request);
-    setOfferForm({
-      price: prefillPrice ? String(prefillPrice) : '',
-      comment: prefillPrice ? `Готов выполнить за ${Number(prefillPrice).toLocaleString('ru-RU')} ₽ — как указано в заявке` : '',
-      estimatedDays: '',
-    });
+    setOfferForm({ price: '', comment: '', estimatedDays: '' });
   };
 
   const handleCloseOfferModal = () => {
@@ -987,31 +974,19 @@ export default function FindWorkPage() {
             <div style={{ position:'sticky', top:72, display:'flex', flexDirection:'column', gap:12 }}>
               <div style={{ background:'#fff', borderRadius:12, padding:'20px' }}>
                 <div style={{ marginBottom:14 }}>
-                  <div style={{ fontSize:12, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Цена в заявке заказчика</div>
+                  <div style={{ fontSize:12, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Цена в заявке</div>
                   <div style={{ fontSize:28, fontWeight:900, color:'#111827' }}>{budget}</div>
-                  {listPrice != null && (
-                    <div style={{ fontSize:12, color:'#6b7280', marginTop:4 }}>
-                      Так заказчик указал сумму в заявке. Вы можете откликнуться с этой же ценой или предложить свою — дальше вы договоритесь вместе.
-                    </div>
-                  )}
+                  <div style={{ fontSize:12, color:'#6b7280', marginTop:4 }}>
+                    Заявленная цена заказчика. При отклике вы указываете свою цену и комментарий.
+                  </div>
                 </div>
-                {listPrice != null && (
-                  <button
-                    onClick={() => handleOpenOfferModal(req, listPrice)}
-                    style={{ width:'100%', padding:'14px', background:'#16a34a', border:'none', borderRadius:8, color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:8, transition:'background .15s', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}
-                    onMouseEnter={e => e.currentTarget.style.background='#15803d'}
-                    onMouseLeave={e => e.currentTarget.style.background='#16a34a'}
-                  >
-                    ✅ Готов за {Number(listPrice).toLocaleString('ru-RU')} ₽
-                  </button>
-                )}
                 <button
                   onClick={() => handleOpenOfferModal(req)}
-                  style={{ width:'100%', padding:'13px', background: listPrice != null ? '#fff' : '#e8410a', border: listPrice != null ? '1.5px solid #e5e7eb' : 'none', borderRadius:8, color: listPrice != null ? '#374151' : '#fff', fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:10, transition:'all .15s' }}
-                  onMouseEnter={e => { if (listPrice != null) { e.currentTarget.style.borderColor='#374151'; } else { e.currentTarget.style.background='#c73208'; }}}
-                  onMouseLeave={e => { if (listPrice != null) { e.currentTarget.style.borderColor='#e5e7eb'; } else { e.currentTarget.style.background='#e8410a'; }}}
+                  style={{ width:'100%', padding:'14px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:10, transition:'background .15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background='#c73208'}
+                  onMouseLeave={e => e.currentTarget.style.background='#e8410a'}
                 >
-                  📩 {listPrice != null ? 'Предложить свою цену' : 'Откликнуться'}
+                  ✓ Откликнуться
                 </button>
                 {req.customerId && (
                   <a href={`/chat/${req.customerId}?jobRequestId=${req.id}`}
@@ -1340,7 +1315,10 @@ export default function FindWorkPage() {
                           )}
                           <div>
                             <div className="fw2-card-customer-name">{custName}</div>
-                            <div className="fw2-card-customer-sub">● Активный заказчик</div>
+                            <div className="fw2-card-customer-sub">
+                              ● Активный заказчик
+                              {req.addressText ? ` · ${req.addressText}` : ''}
+                            </div>
                           </div>
                         </div>
 
@@ -1352,25 +1330,27 @@ export default function FindWorkPage() {
                           <div className="fw2-card-desc">{req.description}</div>
                         )}
 
-                        {/* Цена */}
-                        <div className="fw2-card-price">{budget}</div>
+                        {/* Дата */}
+                        {req.createdAt && (
+                          <div className="fw2-card-info">
+                            📅 {new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'short', year:'numeric' })}
+                          </div>
+                        )}
 
-                        {/* Кнопки */}
-                        <div className="fw2-card-btns" onClick={e => e.stopPropagation()}>
-                          {listPrice != null ? (
-                            <>
-                              <button className="fw2-btn-accept" onClick={() => handleOpenOfferModal(req, listPrice)}>
-                                ✅ Готов за {Number(listPrice).toLocaleString('ru-RU')} ₽
-                              </button>
-                              <button className="fw2-btn-offer" onClick={() => handleOpenOfferModal(req)}>
-                                📩 Предложить цену
-                              </button>
-                            </>
-                          ) : (
-                            <button className="fw2-btn-offer-primary" onClick={() => handleOpenOfferModal(req)}>
-                              📩 Откликнуться
-                            </button>
-                          )}
+                        {/* Цена + кнопка (горизонтально как у FindMasterPage) */}
+                        <div className="fw2-card-footer">
+                          <div>
+                            {listPrice != null
+                              ? <div className="fw2-card-price">{budget}</div>
+                              : <div className="fw2-card-price-none">Цена не указана</div>
+                            }
+                          </div>
+                          <button
+                            className="fw2-btn-respond"
+                            onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
+                          >
+                            ✓ Откликнуться
+                          </button>
                         </div>
                       </div>
                     </div>
