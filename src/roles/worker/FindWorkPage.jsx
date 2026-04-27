@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories } from '../../api';
@@ -464,7 +464,7 @@ const fw2css = `
     display: flex;
     flex-direction: column;
     transition: box-shadow .2s, transform .2s, border-color .2s;
-    cursor: pointer;
+    cursor: default;
   }
   .fw2-card:hover {
     box-shadow: 0 8px 32px rgba(0,0,0,.1);
@@ -477,6 +477,7 @@ const fw2css = `
     overflow: hidden;
     background: #f0f0f0;
     flex-shrink: 0;
+    cursor: pointer;
   }
   .fw2-card-photo img {
     position: absolute;
@@ -485,6 +486,7 @@ const fw2css = `
     height: 100%;
     object-fit: cover;
     display: block;
+    pointer-events: none;
     transition: transform .5s cubic-bezier(.25,.46,.45,.94);
   }
   .fw2-card:hover .fw2-card-photo img { transform: scale(1.05); }
@@ -519,6 +521,7 @@ const fw2css = `
     background: #fafafa;
     border-bottom: 1px solid #f0f0f0;
     overflow: hidden;
+    cursor: pointer;
   }
   .fw2-thumb {
     width: 48px;
@@ -526,6 +529,7 @@ const fw2css = `
     object-fit: cover;
     border-radius: 5px;
     cursor: pointer;
+    pointer-events: none;
     opacity: .75;
     transition: opacity .15s;
     flex-shrink: 0;
@@ -556,6 +560,30 @@ const fw2css = `
     align-items: center;
     gap: 9px;
     margin-bottom: 10px;
+  }
+  a.fw2-card-customer {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 10px;
+    margin: -4px -4px 6px;
+    padding: 4px;
+    transition: background .15s;
+  }
+  a.fw2-card-customer:hover { background: rgba(232,65,10,.06); }
+  a.fw2-card-customer:focus-visible {
+    outline: 2px solid #e8410a;
+    outline-offset: 2px;
+  }
+  .fw2-card-detail-zone {
+    cursor: pointer;
+    flex: 1;
+    min-height: 0;
+  }
+  .fw2-card-detail-zone:focus-visible {
+    outline: 2px solid #e8410a;
+    outline-offset: 2px;
+    border-radius: 6px;
   }
   .fw2-card-ava {
     width: 34px;
@@ -843,6 +871,11 @@ export default function FindWorkPage() {
 
   const getRequestsForCategory = (cat) =>
     requests.filter(r => r.categoryId === cat.id);
+
+  const openRequestDetail = useCallback((req) => {
+    setSelectedRequest(req);
+    setActivePhotoIdx(0);
+  }, []);
 
   const handleOpenOfferModal = (request) => {
     setShowOfferModal(request);
@@ -1271,14 +1304,29 @@ export default function FindWorkPage() {
                   const listPrice = jobRequestListPrice(req);
                   const custName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
 
-                  return (
-                    <div key={req.id} className="fw2-card" onClick={() => { setSelectedRequest(req); setActivePhotoIdx(0); }}>
+                  const customerHref = req.customerId
+                    ? `/customers/${req.customerId}?name=${encodeURIComponent(custName)}`
+                    : null;
 
-                      {/* Фото */}
-                      <div className="fw2-card-photo">
+                  return (
+                    <div key={req.id} className="fw2-card">
+
+                      {/* Фото — открыть заявку */}
+                      <div
+                        className="fw2-card-photo"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => openRequestDetail(req)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            openRequestDetail(req);
+                          }
+                        }}
+                      >
                         {hasPhoto ? (
                           <>
-                            <img src={photos[0]} alt={req.title} />
+                            <img src={photos[0]} alt="" draggable={false} />
                             {photos.length > 1 && (
                               <span className="fw2-card-photo-cnt">📷 {photos.length}</span>
                             )}
@@ -1291,11 +1339,22 @@ export default function FindWorkPage() {
                         )}
                       </div>
 
-                      {/* Миниатюры */}
+                      {/* Миниатюры — открыть заявку */}
                       {photos.length > 1 && (
-                        <div className="fw2-thumbs">
+                        <div
+                          className="fw2-thumbs"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => openRequestDetail(req)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              openRequestDetail(req);
+                            }
+                          }}
+                        >
                           {photos.slice(1, 4).map((p, i) => (
-                            <img key={i} src={p} alt="" className="fw2-thumb" />
+                            <img key={i} src={p} alt="" className="fw2-thumb" draggable={false} />
                           ))}
                           {photos.length > 4 && (
                             <div className="fw2-thumb-more">+{photos.length - 4}</div>
@@ -1304,38 +1363,79 @@ export default function FindWorkPage() {
                       )}
 
                       <div className="fw2-card-body">
-                        {/* Заказчик */}
-                        <div className="fw2-card-customer">
-                          {req.customerAvatar ? (
-                            <img src={req.customerAvatar} alt="" className="fw2-card-ava" />
-                          ) : (
-                            <div className="fw2-card-ava-ph" style={{ background:'linear-gradient(135deg,#e8410a,#ff7043)' }}>
-                              {(custName || 'З')[0].toUpperCase()}
+                        {/* Заказчик — профиль (клик отдельно от заявки) */}
+                        {customerHref ? (
+                          <Link to={customerHref} className="fw2-card-customer">
+                            {req.customerAvatar ? (
+                              <img src={req.customerAvatar} alt="" className="fw2-card-ava" />
+                            ) : (
+                              <div className="fw2-card-ava-ph" style={{ background:'linear-gradient(135deg,#e8410a,#ff7043)' }}>
+                                {(custName || 'З')[0].toUpperCase()}
+                              </div>
+                            )}
+                            <div style={{ flex:1, minWidth:0 }}>
+                              <div className="fw2-card-customer-name">{custName}</div>
+                              <div className="fw2-card-customer-sub">
+                                ● Активный заказчик
+                                {req.addressText ? ` · ${req.addressText}` : ''}
+                              </div>
+                            </div>
+                            <span style={{ color:'#ccc', fontSize:18, flexShrink:0 }}>›</span>
+                          </Link>
+                        ) : (
+                          <div
+                            className="fw2-card-customer"
+                            role="button"
+                            tabIndex={0}
+                            style={{ cursor:'pointer' }}
+                            onClick={() => openRequestDetail(req)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                openRequestDetail(req);
+                              }
+                            }}
+                          >
+                            {req.customerAvatar ? (
+                              <img src={req.customerAvatar} alt="" className="fw2-card-ava" />
+                            ) : (
+                              <div className="fw2-card-ava-ph" style={{ background:'linear-gradient(135deg,#e8410a,#ff7043)' }}>
+                                {(custName || 'З')[0].toUpperCase()}
+                              </div>
+                            )}
+                            <div>
+                              <div className="fw2-card-customer-name">{custName}</div>
+                              <div className="fw2-card-customer-sub">
+                                ● Активный заказчик
+                                {req.addressText ? ` · ${req.addressText}` : ''}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Заголовок, описание, дата — открыть заявку */}
+                        <div
+                          className="fw2-card-detail-zone"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => openRequestDetail(req)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              openRequestDetail(req);
+                            }
+                          }}
+                        >
+                          <div className="fw2-card-title">{req.title}</div>
+                          {req.description && req.description !== 'Без описания' && (
+                            <div className="fw2-card-desc">{req.description}</div>
+                          )}
+                          {req.createdAt && (
+                            <div className="fw2-card-info">
+                              📅 {new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'short', year:'numeric' })}
                             </div>
                           )}
-                          <div>
-                            <div className="fw2-card-customer-name">{custName}</div>
-                            <div className="fw2-card-customer-sub">
-                              ● Активный заказчик
-                              {req.addressText ? ` · ${req.addressText}` : ''}
-                            </div>
-                          </div>
                         </div>
-
-                        {/* Заголовок */}
-                        <div className="fw2-card-title">{req.title}</div>
-
-                        {/* Описание */}
-                        {req.description && req.description !== 'Без описания' && (
-                          <div className="fw2-card-desc">{req.description}</div>
-                        )}
-
-                        {/* Дата */}
-                        {req.createdAt && (
-                          <div className="fw2-card-info">
-                            📅 {new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'short', year:'numeric' })}
-                          </div>
-                        )}
 
                         {/* Цена + кнопка (горизонтально как у FindMasterPage) */}
                         <div className="fw2-card-footer">
@@ -1346,6 +1446,7 @@ export default function FindWorkPage() {
                             }
                           </div>
                           <button
+                            type="button"
                             className="fw2-btn-respond"
                             onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
                           >
