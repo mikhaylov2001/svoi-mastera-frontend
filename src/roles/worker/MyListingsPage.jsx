@@ -16,8 +16,7 @@ const PRICE_UNITS = ['за работу','за час','за день','дого
 const EMPTY_FORM  = { title:'', description:'', price:'', priceUnit:'за работу', category:'', photos:[] };
 const MAX_DESC    = 2000;
 
-/** Нейтральный фон по умолчанию (список объявлений, шаги мастера без выбора) */
-const DEFAULT_MY_LISTINGS_BG = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80';
+const DEFAULT_MY_LISTINGS_BG = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80';
 
 const CAT_TIPS = {
   'Ремонт квартир':    ['Укажите виды работ: штукатурка, обои, полы…', 'Добавьте фото — заказчик поймёт масштаб', 'Напишите опыт и регион работы'],
