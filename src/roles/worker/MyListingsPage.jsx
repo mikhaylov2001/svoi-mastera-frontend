@@ -1331,15 +1331,6 @@ export default function MyListingsPage() {
                   >
                     {copyFlashId === l.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
                   </button>
-                  <a
-                    className="ml-link-preview"
-                    href={`/listings/${l.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    Как видят заказчики ↗
-                  </a>
                   <div className="ml-actions-divider" />
                   <button type="button" className={l.active ? 'ml-btn-arch' : 'ml-btn-restore'} onClick={e => handleToggle(l, e)}>
                     {l.active ? 'Снять с публикации' : 'Восстановить'}
