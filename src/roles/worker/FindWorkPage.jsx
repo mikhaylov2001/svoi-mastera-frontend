@@ -12,7 +12,7 @@ Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
   cats.forEach(cat => { CAT_ALL[cat.slug] = cat; })
 );
 
-const HERO_PHOTO = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80';
+const FW_DEFAULT_BG = `${process.env.PUBLIC_URL || ''}/ml-defaults/my-listings-bg.png`;
 
 const fw2css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -39,7 +39,8 @@ const fw2css = `
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: brightness(.45) saturate(1.15);
+    filter: brightness(.55) saturate(1.05);
+    transition: opacity .4s ease;
   }
   .fw2-hero-overlay {
     position: absolute;
@@ -904,6 +905,7 @@ export default function FindWorkPage() {
   const [offerForm,        setOfferForm]        = useState({ price: '', comment: '', estimatedDays: '' });
   const [submitting,       setSubmitting]       = useState(false);
   const [lightbox,         setLightbox]         = useState(null);
+  const [heroCatSlug,      setHeroCatSlug]      = useState(null); // hover на карточке категории
 
   // Фильтры/поиск для экрана 2
   const [searchInput,   setSearchInput]   = useState('');
@@ -1620,7 +1622,7 @@ export default function FindWorkPage() {
 
       {/* Hero */}
       <div className="fw2-hero">
-        <img src={HERO_PHOTO} alt="" className="fw2-hero-bg" />
+        <img src={heroCatSlug ? (CAT_ALL[heroCatSlug]?.photo || FW_DEFAULT_BG) : FW_DEFAULT_BG} alt="" className="fw2-hero-bg" />
         <div className="fw2-hero-overlay" />
         <div className="fw2-hero-body">
           <h1>Найти работу<br/>в Йошкар-Оле</h1>
@@ -1658,7 +1660,7 @@ export default function FindWorkPage() {
             ))}
           </div>
         ) : (
-          <div className="fw2-cats-grid">
+          <div className="fw2-cats-grid" onMouseLeave={() => setHeroCatSlug(null)}>
             {categories.map(cat => {
               const meta  = CAT_ALL[cat.slug] || {};
               const count = getRequestsForCategory(cat).length;
@@ -1666,6 +1668,7 @@ export default function FindWorkPage() {
                 <button
                   key={cat.id}
                   className="fw2-cat-card"
+                  onMouseEnter={() => setHeroCatSlug(cat.slug)}
                   onClick={() => { setSelectedCategory(cat); resetCategoryFilters(); }}
                 >
                   <div className="fw2-cat-img-wrap">

@@ -17,10 +17,8 @@ const EMPTY_FORM  = { title:'', description:'', price:'', priceUnit:'за раб
 const MAX_DESC    = 2000;
 
 const PUBLIC = process.env.PUBLIC_URL || '';
-/** Светлый фон «Мои объявления» и запасной фон мастера (без категории / шаг 2) */
+/** Единый нейтральный фон по умолчанию (список объявлений, шаги мастера без выбора) */
 const DEFAULT_MY_LISTINGS_BG = `${PUBLIC}/ml-defaults/my-listings-bg.png`;
-/** Hero шага 1 «Выберите раздел» до наведения на карточку раздела */
-const DEFAULT_WIZARD_SECTION_HERO = `${PUBLIC}/ml-defaults/wizard-section-hero.png`;
 
 const CAT_TIPS = {
   'Ремонт квартир':    ['Укажите виды работ: штукатурка, обои, полы…', 'Добавьте фото — заказчик поймёт масштаб', 'Напишите опыт и регион работы'],
@@ -80,11 +78,11 @@ const css = `
   }
   .ml-list-bg img {
     width: 100%; height: 100%; object-fit: cover;
-    filter: brightness(.52) saturate(1.05);
+    filter: brightness(.75) saturate(1.0);
   }
   .ml-list-bg-scrim {
     position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,.96) 0%, rgba(255,255,255,.9) 22%, rgba(245,245,245,.94) 55%, #f0f0f0 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,.72) 0%, rgba(255,255,255,.62) 18%, rgba(245,245,245,.70) 55%, #f0f0f0 100%);
   }
   .ml-list-front { position: relative; z-index: 1; }
 
@@ -632,7 +630,7 @@ export default function MyListingsPage() {
     else if (!isEdit) {
       if (isSectionStep) {
         const hs = hoverSectionSlug && SECTIONS.find(s => s.slug === hoverSectionSlug);
-        createHeroSrc = hs?.photo || DEFAULT_WIZARD_SECTION_HERO;
+        createHeroSrc = hs?.photo || DEFAULT_MY_LISTINGS_BG;
       } else if (isCatStep) {
         createHeroSrc = DEFAULT_MY_LISTINGS_BG;
       } else if (form.category) {
@@ -724,11 +722,6 @@ export default function MyListingsPage() {
                 const cats = CATEGORIES_BY_SECTION[pickedSection] || [];
                 return (
                   <>
-                    <div className="mlf-cat-head-simple">
-                      <button type="button" className="mlf-cat-head-back" onClick={() => setPickedSection(null)}>← Все разделы</button>
-                      <h2 className="mlf-cat-head-name">{sec.name}</h2>
-                      <p className="mlf-cat-head-sub">Выберите категорию — форма откроется сразу</p>
-                    </div>
                     <div className="mlf-cat-grid">
                       {cats.map(cat => (
                         <button
