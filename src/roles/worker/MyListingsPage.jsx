@@ -4,8 +4,9 @@ import { useAuth } from '../../context/AuthContext';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
 import { SECTIONS } from '../../pages/SectionsPage';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
+import { uploadFile, API_BASE } from '../../api';
 
-const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
+const API = API_BASE;
 
 const CATEGORIES = [
   'Ремонт квартир','Сантехника','Электрика','Компьютерная помощь',
@@ -57,6 +58,15 @@ function pluralNewDeals(n) {
   return 'новых заявок';
 }
 
+/** data:image/... → File для multipart /files/upload */
+async function dataUrlToJpegFile(dataUrl, index) {
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  const mime = blob.type && blob.type.startsWith('image/') ? blob.type : 'image/jpeg';
+  const ext = mime.includes('png') ? 'png' : 'jpg';
+  return new File([blob], `listing-${index}-${Date.now()}.${ext}`, { type: mime });
+}
+
 function compressImage(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -64,13 +74,13 @@ function compressImage(file) {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX = 900;
+        const MAX = 720;
         let w = img.width, h = img.height;
         if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
         else       { if (h > MAX) { w = w * MAX / h; h = MAX; } }
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve({ id: Date.now() + Math.random(), data: canvas.toDataURL('image/jpeg', 0.85) });
+        resolve({ id: Date.now() + Math.random(), data: canvas.toDataURL('image/jpeg', 0.78) });
       };
       img.src = e.target.result;
     };
@@ -612,17 +622,40 @@ export default function MyListingsPage() {
     if (!form.title.trim()) { setFormErr('Укажите название объявления'); return; }
     if (!form.category)     { setFormErr('Выберите категорию'); return; }
     if (!form.price || Number(form.price) <= 0) { setFormErr('Укажите цену (больше нуля)'); return; }
+    if (!userId) { setFormErr('Войдите в аккаунт и попробуйте снова.'); return; }
     setSaving(true);
     setFormErr('');
     try {
       const isEdit = view !== 'create';
+      /** Не шлём base64 в JSON — только URL после multipart upload (иначе 500 на бэке / лимиты). */
+      const photoUrls = [];
+      const items = form.photos || [];
+      for (let i = 0; i < items.length; i++) {
+        const ph = items[i];
+        const d = ph?.data;
+        if (!d || typeof d !== 'string') continue;
+        if (d.startsWith('http://') || d.startsWith('https://')) {
+          photoUrls.push(d);
+          continue;
+        }
+        if (d.startsWith('/')) {
+          const origin = API.replace(/\/api\/v1\/?$/, '');
+          photoUrls.push(`${origin}${d}`);
+          continue;
+        }
+        if (d.startsWith('data:')) {
+          const file = await dataUrlToJpegFile(d, i);
+          const up = await uploadFile(userId, file);
+          if (up?.url) photoUrls.push(up.url);
+        }
+      }
       const payload = {
         title: form.title.trim(),
         description: (form.description || '').trim(),
         price: Number(form.price),
         priceUnit: form.priceUnit,
         category: form.category,
-        photos: (form.photos && form.photos.length > 0) ? form.photos.map(p => p.data) : [],
+        photos: photoUrls,
       };
       const r = await fetch(isEdit ? `${API}/listings/${view.edit.id}` : `${API}/listings`, {
         method: isEdit ? 'PUT' : 'POST',
@@ -637,17 +670,20 @@ export default function MyListingsPage() {
         let msg = 'Не удалось сохранить. Попробуйте ещё раз.';
         try {
           const j = JSON.parse(raw);
-          if (j.message) msg = String(j.message);
-          else if (j.error) msg = String(j.error);
+          if (j.message && String(j.message).trim() && !/^internal server error$/i.test(String(j.message).trim())) {
+            msg = String(j.message);
+          } else if (j.error && String(j.error).trim()) {
+            msg = String(j.error);
+          } else if (j.detail) msg = String(j.detail);
         } catch {
           if (raw && raw.length < 400 && !raw.trim().startsWith('<')) msg = raw.trim();
         }
-        if (r.status === 413) msg = 'Данные слишком большие (часто из‑за фото). Добавьте меньше или более сжатые снимки.';
+        if (r.status === 413) msg = 'Данные слишком большие. Уменьшите фото или уберите часть снимков.';
         if (r.status === 400 && payload.photos.length === 0) msg = msg || 'Проверьте обязательные поля.';
         setFormErr(msg);
       }
-    } catch {
-      setFormErr('Ошибка сети. Проверьте соединение.');
+    } catch (e) {
+      setFormErr(e?.message || 'Ошибка сети или загрузки фото. Проверьте соединение.');
     }
     setSaving(false);
   };
