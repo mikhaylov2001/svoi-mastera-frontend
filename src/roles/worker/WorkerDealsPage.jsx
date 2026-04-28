@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
-  getMyDeals, getListingsByWorker, completeDeal, createCustomerReview,
+  getMyDeals, completeDeal, createCustomerReview,
   workerStartDeal, cancelPendingDeal, cancelActiveDeal,
 } from '../../api';
 import { useAuth } from '../../context/AuthContext';
@@ -35,7 +35,6 @@ export default function WorkerDealsPage() {
   const location  = useLocation();
 
   const [deals,    setDeals]    = useState([]);
-  const [listings, setListings] = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [filter,   setFilter]   = useState('ALL');
   const [detail,   setDetail]   = useState(null);
@@ -62,15 +61,11 @@ export default function WorkerDealsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [data, lst] = await Promise.all([
-        getMyDeals(userId),
-        getListingsByWorker(userId).catch(() => []),
-      ]);
+      const data = await getMyDeals(userId);
       const uid = String(userId || '');
       setDeals((data || []).filter(d => String(d.workerId || '') === uid));
-      setListings(Array.isArray(lst) ? lst : []);
     } catch {
-      setDeals([]); setListings([]);
+      setDeals([]);
     }
     setLoading(false);
   }, [userId]);
@@ -148,7 +143,6 @@ export default function WorkerDealsPage() {
     COMPLETED:   deals.filter(d => d.status === 'COMPLETED').length,
   };
   const filtered       = filter === 'ALL' ? deals : deals.filter(d => d.status === filter);
-  const activeListings = listings.filter(l => l.active);
 
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
   const ava = userAvatar
@@ -535,12 +529,16 @@ export default function WorkerDealsPage() {
                 <div style={{ fontSize:52, marginBottom:16 }}>🤝</div>
                 <h3 style={{ fontSize:17, fontWeight:700, color:'#1a1a1a', margin:'0 0 8px' }}>Заказов пока нет</h3>
                 <p style={{ fontSize:14, margin:'0 0 20px' }}>Откликайтесь на заявки — заказы появятся здесь</p>
-                {activeListings.length > 0 && (
-                  <p style={{ fontSize:13, color:'#64748b', margin:'0 0 16px', maxWidth:380 }}>
-                    У вас <b>{activeListings.length}</b> активн. объявления в каталоге — заказчики могут вас найти
-                  </p>
-                )}
-                <Link to="/find-work" className="wd-find-btn" style={{ display:'inline-block' }}>Найти работу</Link>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:10, justifyContent:'center', alignItems:'center' }}>
+                  <Link to="/find-work" className="wd-find-btn" style={{ display:'inline-block' }}>Найти работу</Link>
+                  <Link
+                    to="/my-listings"
+                    className="wd-btn-outline"
+                    style={{ width:'auto', padding:'11px 20px', display:'inline-block', textDecoration:'none' }}
+                  >
+                    Мои объявления
+                  </Link>
+                </div>
               </div>
             ) : (
               filtered.map(d => {
