@@ -4,7 +4,7 @@ import { getCategories, getListings, acceptListingDeal, getMyDeals, cancelPendin
 import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 
-const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
+const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 
 /* Плоский словарь slug → данные категории (фото, описание, цена, …) */
 const CAT_ALL = {};

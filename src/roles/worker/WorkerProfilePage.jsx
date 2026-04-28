@@ -5,7 +5,7 @@ import { getMyDeals, getListingsByWorker, getReviewsByWorker, uploadAvatar, getU
 import ReviewForm from '../../components/ReviewForm';
 import '../../styles/profileDashboard.css';
 
-const BACKEND = 'https://svoi-mastera-backend.onrender.com';
+const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
 
 function resolveUrl(url) {
   if (!url) return null;

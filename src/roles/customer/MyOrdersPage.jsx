@@ -645,7 +645,7 @@ export default function MyOrdersPage() {
   };
 
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Заказчик';
-  const BACKEND  = 'https://svoi-mastera-backend.onrender.com';
+  const BACKEND  = 'https://svoi-mastera-backend-mf3h.onrender.com';
   const ava      = userAvatar ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND + userAvatar) : null;
 
   // ══ ФОРМА СОЗДАНИЯ / РЕДАКТИРОВАНИЯ ══

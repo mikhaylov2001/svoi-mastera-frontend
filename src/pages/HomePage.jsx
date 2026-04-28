@@ -6,7 +6,7 @@ import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
 
-const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
+const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 const ALL_CATS = Object.values(CATEGORIES_BY_SECTION).flat();
 
 const CAT_PHOTOS = {
@@ -341,7 +341,7 @@ function CustomerHome({ userId, userName }) {
   );
 }
 
-const BACKEND_ORIGIN = 'https://svoi-mastera-backend.onrender.com';
+const BACKEND_ORIGIN = 'https://svoi-mastera-backend-mf3h.onrender.com';
 
 function workerListingPhotoUrl(url) {
   if (!url) return null;
