@@ -238,7 +238,13 @@ function Header() {
               </>
             ) : userId ? (
               <>
-                {/* ══ НАВИГАЦИЯ ДЛЯ ЗАКАЗЧИКА ══ */}
+                {/* ══ НАВИГАЦИЯ ДЛЯ ЗАКАЗЧИКА (как у мастера: поиск → «мои» → сделки → сообщения) ══ */}
+                <NavLink
+                  to="/find-master"
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                >
+                  Найти мастера
+                </NavLink>
                 <NavLink
                   to="/my-requests"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
@@ -246,10 +252,10 @@ function Header() {
                   Мои заявки
                 </NavLink>
                 <NavLink
-                  to="/find-master"
+                  to="/deals"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
                 >
-                  Найти мастера
+                  Мои сделки
                 </NavLink>
                 <NavLink
                   to="/chat"
@@ -259,12 +265,6 @@ function Header() {
                   {unread > 0 && (
                     <span className="header-unread-badge" style={{background:'#e8410a',color:'#fff',borderRadius:999,fontSize:11,fontWeight:800,padding:'1px 6px',marginLeft:4,verticalAlign:'middle'}}>{unread}</span>
                   )}
-                </NavLink>
-                <NavLink
-                  to="/deals"
-                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                >
-                  Мои сделки
                 </NavLink>
               </>
             ) : (
@@ -434,17 +434,17 @@ function Header() {
                 ) : userId ? (
                   <>
                     {/* ══ МОБИЛЬНОЕ МЕНЮ ЗАКАЗЧИКА ══ */}
-                    <NavLink to="/my-requests" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                      Мои заявки
-                    </NavLink>
                     <NavLink to="/find-master" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
                       Найти мастера
                     </NavLink>
-                    <NavLink to="/chat" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                      Сообщения {unread > 0 && `• ${unread}`}
+                    <NavLink to="/my-requests" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Мои заявки
                     </NavLink>
                     <NavLink to="/deals" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
                       Мои сделки
+                    </NavLink>
+                    <NavLink to="/chat" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                      Сообщения {unread > 0 && `• ${unread}`}
                     </NavLink>
                   </>
                 ) : (

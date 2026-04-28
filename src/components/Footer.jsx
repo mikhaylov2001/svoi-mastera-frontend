@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import './Footer.css';
 
 function Footer() {
-  const { userId } = useAuth();
+  const { userId, userRole } = useAuth();
 
   return (
     <footer className="footer">
@@ -30,6 +30,12 @@ function Footer() {
             {/* Стать мастером — только для незарегистрированных */}
             {!userId && (
               <Link to="/register?role=WORKER" className="footer-link">Стать мастером</Link>
+            )}
+            {userId && userRole === 'WORKER' && (
+              <Link to="/my-listings" className="footer-link">Мои объявления</Link>
+            )}
+            {userId && userRole !== 'WORKER' && (
+              <Link to="/my-requests" className="footer-link">Мои заявки</Link>
             )}
             {userId && (
               <Link to="/deals" className="footer-link">Мои сделки</Link>
