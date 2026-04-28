@@ -371,7 +371,6 @@ export default function WorkerDealsPage() {
   const [deals,    setDeals]    = useState([]);
   const [listings, setListings] = useState([]);
   const [loading,  setLoading]  = useState(true);
-  const [pageTab,  setPageTab]  = useState('orders');
   const [filter,   setFilter]   = useState('ALL');
   const [detail,   setDetail]   = useState(null);
   const [photoIdx, setPhotoIdx] = useState(0);
@@ -484,7 +483,6 @@ export default function WorkerDealsPage() {
   };
   const filtered       = filter === 'ALL' ? deals : deals.filter(d => d.status === filter);
   const activeListings = listings.filter(l => l.active);
-  const archListings   = listings.filter(l => !l.active);
 
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
   const ava = userAvatar
@@ -825,7 +823,7 @@ export default function WorkerDealsPage() {
         <div className="wd-hero-body">
           <div>
             <h1 className="wd-h1">Мои сделки</h1>
-            <p className="wd-hsub">Заказы от клиентов и ваши объявления в каталоге</p>
+            <p className="wd-hsub">Заказы от клиентов — принимайте и управляйте</p>
           </div>
           <Link to="/find-work" className="wd-find-btn">Найти работу</Link>
         </div>
@@ -833,22 +831,7 @@ export default function WorkerDealsPage() {
 
       <div className="wd-wrap" style={{ paddingTop: 20 }}>
 
-        {/* Page tabs */}
-        <div className="wd-page-tabs">
-          <button type="button" className={`wd-page-tab${pageTab === 'orders' ? ' on' : ''}`} onClick={() => setPageTab('orders')}>
-            Заказы
-            <span className="wd-page-tab-n">{counts.ALL}</span>
-            {counts.NEW > 0 && <span className="wd-new-badge">{counts.NEW} новых</span>}
-          </button>
-          <button type="button" className={`wd-page-tab${pageTab === 'listings' ? ' on' : ''}`} onClick={() => setPageTab('listings')}>
-            Мои объявления
-            <span className="wd-page-tab-n">{listings.length}</span>
-            {activeListings.length > 0 && <span style={{ fontSize:11, color:'#16a34a', fontWeight:800 }}>({activeListings.length} акт.)</span>}
-          </button>
-        </div>
-
-        {/* ══ DEALS TAB ══ */}
-        {pageTab === 'orders' && (<>
+        {/* ══ DEALS ══ */}
           <div className="wd-filters">
             {[
               ['ALL',         'Все',       counts.ALL],
@@ -1022,78 +1005,7 @@ export default function WorkerDealsPage() {
               })
             )}
           </div>
-        </>)}
 
-        {/* ══ LISTINGS TAB ══ */}
-        {pageTab === 'listings' && (
-          <div className="wd-list">
-            {loading ? (
-              [1,2,3].map(i => (
-                <div key={i} className="wd-lst-card" style={{ pointerEvents:'none' }}>
-                  <div className="wd-lst-img"><div className="wd-sk" style={{ width:'100%', height:'100%', borderRadius:10 }} /></div>
-                  <div style={{ flex:1, display:'flex', flexDirection:'column', gap:6 }}>
-                    <div className="wd-sk" style={{ height:14, width:'55%' }} />
-                    <div className="wd-sk" style={{ height:18, width:'30%' }} />
-                    <div className="wd-sk" style={{ height:11, width:'42%' }} />
-                  </div>
-                </div>
-              ))
-            ) : listings.length === 0 ? (
-              <div className="wd-empty">
-                <div style={{ fontSize:52, marginBottom:16 }}>📢</div>
-                <h3 style={{ fontSize:17, fontWeight:700, color:'#1a1a1a', margin:'0 0 8px' }}>Объявлений пока нет</h3>
-                <p style={{ fontSize:14, margin:'0 0 20px' }}>Разместите услугу — она появится в каталоге для заказчиков</p>
-                <Link to="/my-listings" className="wd-find-btn" style={{ display:'inline-block' }}>Мои объявления</Link>
-              </div>
-            ) : (<>
-              {activeListings.length > 0 && (
-                <div className="wd-section-label">Активные в каталоге — {activeListings.length}</div>
-              )}
-              {activeListings.map(l => {
-                const t = thumb(l.photos?.[0]);
-                return (
-                  <Link key={l.id} to={`/listings/${l.id}`} className="wd-lst-card" style={{ borderLeft:'3px solid #7c3aed' }}>
-                    <div className="wd-lst-img">{t ? <img src={t} alt="" /> : '📢'}</div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div className="wd-lst-title">{l.title}</div>
-                      {l.price != null && (
-                        <div className="wd-lst-price">{Number(l.price).toLocaleString('ru-RU')} ₽{l.priceUnit && <span style={{ fontSize:12, color:'#9ca3af', fontWeight:600 }}> {l.priceUnit}</span>}</div>
-                      )}
-                      <div className="wd-lst-meta">
-                        {l.category && <span>{l.category}</span>}
-                        <span style={{ color:'#16a34a', fontWeight:700 }}>● В каталоге</span>
-                        <span>{timeAgo(l.createdAt)}</span>
-                      </div>
-                    </div>
-                    <div className="wd-lst-chevron">›</div>
-                  </Link>
-                );
-              })}
-              {archListings.length > 0 && (
-                <div className="wd-section-label" style={{ marginTop: activeListings.length > 0 ? 18 : 0 }}>Архив (сняты с публикации) — {archListings.length}</div>
-              )}
-              {archListings.map(l => {
-                const t = thumb(l.photos?.[0]);
-                return (
-                  <Link key={l.id} to="/my-listings" className="wd-lst-card" style={{ opacity:.82 }}>
-                    <div className="wd-lst-img">{t ? <img src={t} alt="" /> : '📁'}</div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div className="wd-lst-title">{l.title}</div>
-                      <div className="wd-lst-meta">
-                        {l.category && <span>{l.category}</span>}
-                        <span style={{ color:'#94a3b8' }}>В архиве</span>
-                      </div>
-                    </div>
-                    <div className="wd-lst-chevron">›</div>
-                  </Link>
-                );
-              })}
-              <div style={{ marginTop:16, textAlign:'center' }}>
-                <Link to="/my-listings" style={{ fontSize:14, fontWeight:700, color:'#e8410a', textDecoration:'none' }}>Управление объявлениями →</Link>
-              </div>
-            </>)}
-          </div>
-        )}
       </div>
     </div>
   );
