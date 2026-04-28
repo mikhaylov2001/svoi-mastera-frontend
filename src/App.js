@@ -53,9 +53,9 @@ function AppContent() {
   const isChatPage = location.pathname.startsWith('/chat');
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="app-shell">
       <Header />
-      <main style={{ flex: 1 }}>
+      <main className="app-main">
         <Routes>
           <Route path="/"                element={<HomePage />} />
           <Route path="/sections"        element={<SectionsPage />} />

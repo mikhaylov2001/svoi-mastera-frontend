@@ -5,6 +5,7 @@
   position: sticky;
   top: 0;
   z-index: 200;
+  padding-top: env(safe-area-inset-top, 0px);
   background: rgba(255,255,255,0.94);
   border-bottom: 1px solid rgba(31,41,55,0.08);
   backdrop-filter: blur(16px);
@@ -299,7 +300,7 @@
 
 .header-mobile-menu {
   position: fixed;
-  top: 62px;
+  top: calc(62px + env(safe-area-inset-top, 0px));
   right: 0;
   left: 0;
   background: #fff;

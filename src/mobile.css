@@ -4,14 +4,12 @@
    Подключить в index.css: @import './mobile.css';
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Базовые iOS фиксы ── */
+/* ── Базовые iOS фиксы (без изменения типографики десктопа) ── */
 * { -webkit-tap-highlight-color: transparent; }
 
 input, textarea, select {
-  font-size: 16px !important;
   -webkit-appearance: none;
 }
-button { touch-action: manipulation; }
 
 /* ═══════════════════════════════════════════════
    TABLET (768px – 1024px)
@@ -47,10 +45,51 @@ button { touch-action: manipulation; }
    MOBILE (≤768px)
 ═══════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  .container { padding: 0 16px !important; }
+  /* Единый «app» фон, safe-area, удобные тапы (только телефоны / узкое окно) */
+  html {
+    background-color: var(--app-bg, #f0f2f8);
+    overscroll-behavior-y: contain;
+  }
+  body {
+    background: var(--app-bg, #f0f2f8);
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  input, textarea, select {
+    font-size: 16px !important; /* чтобы iOS не зумил при фокусе */
+  }
+  button:not(:disabled),
+  .btn {
+    touch-action: manipulation;
+    border-radius: 14px;
+  }
+  .app-main {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .form-input {
+    padding: 12px 14px;
+    border-radius: 14px;
+  }
+  .card {
+    background: var(--app-surface, #fff);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--app-card-radius, 18px);
+    padding: 18px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  }
+  .container {
+    padding-left: max(16px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(16px, env(safe-area-inset-right, 0px)) !important;
+  }
 
   /* Page header */
-  .page-header-bar { padding: 14px 0; }
+  .page-header-bar {
+    background: var(--app-surface, #fff);
+    padding: 14px 0;
+    margin-bottom: 0;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+  }
   .page-header-bar h1 { font-size: 20px !important; }
   .page-header-bar p  { font-size: 12px !important; }
 
@@ -199,7 +238,10 @@ button { touch-action: manipulation; }
    SMALL PHONES (≤480px)
 ═══════════════════════════════════════════════ */
 @media (max-width: 480px) {
-  .container { padding: 0 12px !important; }
+  .container {
+    padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(12px, env(safe-area-inset-right, 0px)) !important;
+  }
   .hero-title { font-size: 24px !important; }
   .wp-stats-grid, .cp-stats-grid { grid-template-columns: 1fr !important; }
   .profile-stats-bar { grid-template-columns: 1fr !important; gap: 8px; }
@@ -212,7 +254,10 @@ button { touch-action: manipulation; }
    iPhone SE (≤375px)
 ═══════════════════════════════════════════════ */
 @media (max-width: 375px) {
-  .container { padding: 0 10px !important; }
+  .container {
+    padding-left: max(10px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(10px, env(safe-area-inset-right, 0px)) !important;
+  }
   .dpage-tab { font-size: 12px !important; padding: 8px 4px !important; }
   .ac-filter { padding: 8px 12px; font-size: 13px; }
   .hero-title { font-size: 22px !important; }
