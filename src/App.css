@@ -23,8 +23,8 @@
   --app-sheet-radius: 20px;
   --app-surface: #ffffff;
   /* Верхние баннеры (найти работу / мастера / заявки / объявления / сделки / категории) */
-  --page-hero-h-desktop: 360px;
-  --page-hero-h-mobile: 300px;
+  --page-hero-h-desktop: 300px;
+  --page-hero-h-mobile: 260px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }

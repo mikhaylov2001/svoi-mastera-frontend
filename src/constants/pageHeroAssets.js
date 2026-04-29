@@ -1,27 +1,25 @@
 /**
  * Единый верхний баннер: одни габариты (CSS vars) и достаточное разрешение фото,
- * чтобы при object-fit картинка оставалась чёткой на широких экранах.
+ * чтобы при object-fit: cover картинка оставалась чёткой на широких экранах.
  *
- * Фото: интерьер квартиры — окна, светлый пол, ощущение жилого пространства в городской квартире.
+ * Фото: светлый интерьер квартиры, широкая композиция — при cover заполняет баннер
+ * без «квадрата по центру» (в отличие от вертикальных кадров).
  */
 export const PAGE_HERO_DEFAULT_PHOTO =
-  'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=max&w=2400&q=88';
+  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=max&w=2400&q=88';
 
 /** Градиент поверх фото: лёгкий тёплый акцент под фирменный оранжевый (#e8410a), читаемый текст */
 export const PAGE_HERO_OVERLAY_GRADIENT =
   'linear-gradient(172deg, rgba(13,13,13,.05) 0%, rgba(232,65,10,.12) 44%, rgba(13,13,13,.68) 100%)';
 
 /** Единый фильтр для полноширинных hero-картинок */
-export const PAGE_HERO_IMG_FILTER = 'brightness(.72) saturate(1.02)';
+export const PAGE_HERO_IMG_FILTER = 'brightness(.68) saturate(1.03)';
 
-/** Кадрирование (актуально при contain — центрирование кадра в рамке) */
-export const PAGE_HERO_OBJECT_POSITION = 'center center';
+/** Якорь кропа при cover: чуть ниже центра — чаще попадает «тело» комнаты */
+export const PAGE_HERO_OBJECT_POSITION = 'center 46%';
 
-/** Весь кадр виден в баннере без обрезки (в отличие от cover); по краям возможны полосы фона */
-export const PAGE_HERO_OBJECT_FIT = 'contain';
-
-/** Фон под полосами letterbox при object-fit: contain */
-export const PAGE_HERO_FRAME_BG = '#141414';
+/** Заполнение баннера целиком (не contain — иначе полосы по бокам) */
+export const PAGE_HERO_OBJECT_FIT = 'cover';
 
 /** Поднимает качество готовых ссылок Unsplash в данных категорий / секций */
 export function heroPhotoHiRes(url) {

@@ -9,7 +9,7 @@ import {
   getCategories, createJobRequest, updateJobRequest,
 } from '../../api';
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
-import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT, PAGE_HERO_FRAME_BG } from '../../constants/pageHeroAssets';
+import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -67,7 +67,6 @@ const css = `
   .ml-list-shell { background: #f2f2f2; min-height: 100vh; }
   .ml-list-hero {
     position: relative; height: var(--page-hero-h-desktop); overflow: hidden;
-    background: ${PAGE_HERO_FRAME_BG};
   }
   @media (max-width: 768px) { .ml-list-hero { height: var(--page-hero-h-mobile); } }
   .ml-list-hero-img {
@@ -215,7 +214,7 @@ const css = `
   .ml-tag { display: inline-block; background: #fde8e0; color: #e8410a; border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 12px; }
 
   /* ФОРМА */
-  .mlf-hero { position: relative; height: var(--page-hero-h-desktop); overflow: hidden; background: ${PAGE_HERO_FRAME_BG}; }
+  .mlf-hero { position: relative; height: var(--page-hero-h-desktop); overflow: hidden; }
   @media (max-width: 768px) { .mlf-hero { height: var(--page-hero-h-mobile); } }
   .mlf-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: ${PAGE_HERO_OBJECT_FIT}; object-position: ${PAGE_HERO_OBJECT_POSITION}; filter: ${PAGE_HERO_IMG_FILTER}; }
   .mlf-hero-overlay { position: absolute; inset: 0; background: ${PAGE_HERO_OVERLAY_GRADIENT}; }
