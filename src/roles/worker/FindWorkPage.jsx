@@ -6,13 +6,14 @@ import { getOpenJobRequestsForWorker, createJobOffer, getCategories } from '../.
 import { formatJobRequestBudgetLabel } from '../../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
+import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes } from '../../constants/pageHeroAssets';
+
+const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 
 const CAT_ALL = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
-  cats.forEach(cat => { CAT_ALL[cat.slug] = cat; })
+  cats.forEach(cat => { CAT_ALL[cat.slug] = { ...cat, photo: heroPhotoHiRes(cat.photo) }; })
 );
-
-const FW_DEFAULT_BG = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80';
 
 const fw2css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -28,7 +29,7 @@ const fw2css = `
   /* ═══ HERO ═══ */
   .fw2-hero {
     position: relative;
-    height: 290px;
+    height: var(--page-hero-h-desktop);
     overflow: hidden;
     display: flex;
     align-items: flex-end;
@@ -39,7 +40,8 @@ const fw2css = `
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: brightness(.55) saturate(1.05);
+    object-position: center center;
+    filter: brightness(.58) saturate(1.06);
     transition: opacity .4s ease;
   }
   .fw2-hero-overlay {
@@ -793,7 +795,7 @@ const fw2css = `
   @media(max-width: 620px) {
     .fw2-list { grid-template-columns: 1fr; }
     .fw2-cats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .fw2-hero { height: 240px; }
+    .fw2-hero { height: var(--page-hero-h-mobile); }
   }
 `;
 

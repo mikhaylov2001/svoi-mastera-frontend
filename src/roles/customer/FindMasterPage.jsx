@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getCategories, getListings, acceptListingDeal, getMyDeals, cancelPendingDeal } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
+import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 
@@ -12,7 +13,7 @@ Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
   cats.forEach(cat => { CAT_ALL[cat.slug] = cat; })
 );
 
-const HERO_PHOTO = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80';
+const HERO_PHOTO = PAGE_HERO_DEFAULT_PHOTO;
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -28,7 +29,7 @@ const css = `
   /* ══ HERO — главная ══ */
   .fmp-hero {
     position: relative;
-    height: 300px;
+    height: var(--page-hero-h-desktop);
     overflow: hidden;
     display: flex;
     align-items: flex-end;
@@ -39,7 +40,8 @@ const css = `
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: brightness(.5) saturate(1.15);
+    object-position: center center;
+    filter: brightness(.52) saturate(1.08);
   }
   .fmp-hero-overlay {
     position: absolute;
@@ -886,7 +888,7 @@ const css = `
   @media(max-width: 620px) {
     .fmp-list { grid-template-columns: 1fr; }
     .fmp-cats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .fmp-hero { height: 260px; }
+    .fmp-hero { height: var(--page-hero-h-mobile); }
     .fmp-hero h1 { font-size: 24px; }
   }
 `;

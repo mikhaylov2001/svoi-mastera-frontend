@@ -6,8 +6,9 @@ import {
 } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { dealsWdCss } from '../shared/dealsWdStyles';
+import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 
-const DEFAULT_BG = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80';
+const DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
 
 const ST = {

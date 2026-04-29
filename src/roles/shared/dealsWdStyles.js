@@ -7,13 +7,13 @@ export const dealsWdCss = `
 
   /* ── HERO ── */
   .wd-hero {
-    position: relative; height: 260px; overflow: hidden;
+    position: relative; height: var(--page-hero-h-desktop); overflow: hidden;
   }
-  @media(max-width:768px){ .wd-hero { height: 210px; } }
+  @media(max-width:768px){ .wd-hero { height: var(--page-hero-h-mobile); } }
   .wd-hero-img {
     position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; object-position: center 40%;
-    filter: brightness(.58) saturate(1.15);
+    object-fit: cover; object-position: center center;
+    filter: brightness(.62) saturate(1.06);
   }
   .wd-hero-overlay {
     position: absolute; inset: 0;

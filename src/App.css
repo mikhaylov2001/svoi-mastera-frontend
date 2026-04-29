@@ -22,6 +22,9 @@
   --app-card-radius: 16px;
   --app-sheet-radius: 20px;
   --app-surface: #ffffff;
+  /* Верхние баннеры (найти работу / мастера / заявки / объявления / сделки / категории) */
+  --page-hero-h-desktop: 280px;
+  --page-hero-h-mobile: 240px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { heroPhotoHiRes } from '../constants/pageHeroAssets';
 
 const SECTIONS = [
   {
@@ -8,7 +9,7 @@ const SECTIONS = [
     desc: 'Ремонт квартир, сантехника, электрика',
     count: 3,
     tags: ['Отделка', 'Сантехника', 'Электрика'],
-    photo: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=80',
+    photo: heroPhotoHiRes('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=80'),
     accent: '#ff7043',
     featured: true,
   },
@@ -18,7 +19,7 @@ const SECTIONS = [
     desc: 'Генеральная уборка, после ремонта, мытьё окон',
     count: 1,
     tags: ['Генеральная', 'После ремонта', 'Окна'],
-    photo: 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=900&q=80',
+    photo: heroPhotoHiRes('https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=900&q=80'),
     accent: '#26c6da',
   },
   {
@@ -27,7 +28,7 @@ const SECTIONS = [
     desc: 'Парикмахер, маникюр, красота и здоровье',
     count: 3,
     tags: ['Парикмахер', 'Маникюр', 'Косметолог'],
-    photo: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80',
+    photo: heroPhotoHiRes('https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80'),
     accent: '#f06292',
   },
   {
@@ -36,7 +37,7 @@ const SECTIONS = [
     desc: 'Репетиторство, подготовка к экзаменам',
     count: 1,
     tags: ['Репетитор', 'ОГЭ / ЕГЭ', 'Языки'],
-    photo: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=900&q=80',
+    photo: heroPhotoHiRes('https://images.unsplash.com/photo-1509062522246-3755977927d7?w=900&q=80'),
     accent: '#42a5f5',
   },
   {
@@ -45,7 +46,7 @@ const SECTIONS = [
     desc: 'Компьютерная помощь, настройка техники',
     count: 1,
     tags: ['Ремонт ПК', 'Настройка', 'Вирусы'],
-    photo: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=900&q=80',
+    photo: heroPhotoHiRes('https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=900&q=80'),
     accent: '#66bb6a',
   },
 ];
