@@ -41,8 +41,8 @@ const css = `
     height: 100%;
     object-fit: cover;
     object-position: center center;
-    filter: brightness(.52) saturate(1.08);
-    transition: opacity 0.35s ease;
+    filter: brightness(.58) saturate(1.06);
+    transition: opacity .4s ease;
   }
   .fmp-hero-overlay {
     position: absolute;
@@ -58,64 +58,21 @@ const css = `
     width: 100%;
   }
   .fmp-hero h1 {
-    font-size: clamp(26px, 4vw, 40px);
+    font-size: clamp(24px, 4vw, 38px);
     font-weight: 900;
     color: #fff;
-    margin: 0 0 8px;
+    margin: 0 0 6px;
     letter-spacing: -.4px;
     line-height: 1.15;
   }
   .fmp-hero-sub {
-    font-size: 15px;
-    color: rgba(255,255,255,.7);
-    margin: 0 0 22px;
-  }
-  .fmp-hero-searchrow {
-    display: flex;
-    gap: 10px;
-    max-width: 600px;
-  }
-  .fmp-hero-searchbox {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #fff;
-    border-radius: 10px;
-    padding: 0 14px;
-    box-shadow: 0 4px 24px rgba(0,0,0,.3);
-  }
-  .fmp-hero-searchbox input {
-    flex: 1;
-    border: none;
-    background: none;
-    font-size: 15px;
-    padding: 13px 0;
-    outline: none;
-    font-family: Inter, sans-serif;
-    color: #1a1a1a;
-  }
-  .fmp-hero-searchbox input::placeholder { color: #bbb; }
-  .fmp-hero-searchbtn {
-    background: #e8410a;
-    border: none;
-    border-radius: 8px;
-    color: #fff;
     font-size: 14px;
-    font-weight: 700;
-    font-family: Inter, sans-serif;
-    padding: 12px 24px;
-    cursor: pointer;
-    transition: background .15s;
-    white-space: nowrap;
-    box-shadow: 0 4px 16px rgba(232,65,10,.5);
-    flex-shrink: 0;
+    color: rgba(255,255,255,.7);
+    margin: 0 0 18px;
   }
-  .fmp-hero-searchbtn:hover { background: #c73208; }
   .fmp-hero-stats {
     display: flex;
-    gap: 20px;
-    margin-top: 20px;
+    gap: 14px;
     flex-wrap: wrap;
   }
   .fmp-hero-stat {
@@ -126,7 +83,7 @@ const css = `
     border: 1px solid rgba(255,255,255,.2);
     backdrop-filter: blur(6px);
     border-radius: 8px;
-    padding: 7px 14px;
+    padding: 6px 12px;
     font-size: 13px;
     color: rgba(255,255,255,.9);
   }
@@ -890,7 +847,6 @@ const css = `
     .fmp-list { grid-template-columns: 1fr; }
     .fmp-cats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .fmp-hero { height: var(--page-hero-h-mobile); }
-    .fmp-hero h1 { font-size: 24px; }
   }
 `;
 
@@ -1042,24 +998,8 @@ export default function FindMasterPage() {
           />
           <div className="fmp-hero-overlay"/>
           <div className="fmp-hero-body">
-            <h1>Найти мастера<br/>в Йошкар-Оле</h1>
+            <h1>Мастера<br/>в Йошкар-Оле</h1>
             <p className="fmp-hero-sub">Ремонт, красота, обучение и всё остальное — мастера рядом</p>
-            <div className="fmp-hero-searchrow">
-              <div className="fmp-hero-searchbox">
-                <svg width="16" height="16" fill="none" stroke="#bbb" strokeWidth="2" viewBox="0 0 24 24">
-                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                </svg>
-                <input
-                  value={searchInput}
-                  onChange={e => setSearchInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && searchInput.trim()) setSearchTerm(searchInput); }}
-                  placeholder="Что нужно сделать?"
-                />
-              </div>
-              <button className="fmp-hero-searchbtn" onClick={() => setSearchTerm(searchInput)}>
-                Найти
-              </button>
-            </div>
             {!loading && (
               <div className="fmp-hero-stats">
                 {[
@@ -1074,7 +1014,7 @@ export default function FindMasterPage() {
                 ))}
               </div>
             )}
-            </div>
+          </div>
           </div>
 
         {/* Сетка категорий */}
@@ -1220,7 +1160,7 @@ export default function FindMasterPage() {
               </button>
             )}
           </div>
-          <button className="fmp-topbar-btn" onClick={() => setSearchTerm(searchInput)}>Найти</button>
+          <button className="fmp-topbar-btn" onClick={() => setSearchTerm(searchInput)}>Поиск</button>
         </div>
       </div>
 
