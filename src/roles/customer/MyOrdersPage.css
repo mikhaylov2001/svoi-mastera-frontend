@@ -1,7 +1,7 @@
 /* Page shell */
 .my-req-page { background: #f2f2f2; min-height: 100vh; }
 .my-req-hero { position: relative; height: 290px; overflow: hidden; }
-.my-req-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.67) saturate(1.03); }
+.my-req-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 44%; filter: brightness(.7) saturate(1.04); }
 .my-req-hero-overlay { position: absolute; inset: 0; background: linear-gradient(172deg, rgba(13,13,13,.05) 0%, rgba(232,65,10,.12) 44%, rgba(13,13,13,.68) 100%); }
 .my-req-hero-body { position: relative; z-index: 1; height: 100%; display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 32px; color: #fff; }
 .my-req-hero-body h1 { margin: 0 0 6px; font-size: clamp(24px,4vw,34px); font-weight: 900; }
