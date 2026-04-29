@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { heroPhotoHiRes } from '../constants/pageHeroAssets';
+import { heroPhotoHiRes, PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER } from '../constants/pageHeroAssets';
 
 const CATEGORIES_BY_SECTION = {
   remont: [
@@ -70,7 +70,7 @@ const CATEGORIES_BY_SECTION = {
 };
 
 const SECTION_META = {
-  remont:      { name: 'Ремонт',      photo: heroPhotoHiRes('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&q=80') },
+  remont:      { name: 'Ремонт',      photo: heroPhotoHiRes(PAGE_HERO_DEFAULT_PHOTO) },
   uborka:      { name: 'Уборка',      photo: heroPhotoHiRes('https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=1400&q=80') },
   krasota:     { name: 'Красота',     photo: heroPhotoHiRes('https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1400&q=80') },
   obrazovanie: { name: 'Образование', photo: heroPhotoHiRes('https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1400&q=80') },
@@ -92,11 +92,11 @@ const css = `
   .cp2-hero-img {
     position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover; object-position: center center; display: block;
-    filter: brightness(.58) saturate(1.06);
+    filter: ${PAGE_HERO_IMG_FILTER};
   }
   .cp2-hero-overlay {
     position: absolute; inset: 0; z-index: 1;
-    background: linear-gradient(170deg, rgba(0,0,0,.12) 0%, rgba(0,0,0,.62) 100%);
+    background: ${PAGE_HERO_OVERLAY_GRADIENT};
     pointer-events: none;
   }
   .cp2-hero-body {

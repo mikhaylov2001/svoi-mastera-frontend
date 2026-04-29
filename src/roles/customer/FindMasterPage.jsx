@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getCategories, getListings, acceptListingDeal, getMyDeals, cancelPendingDeal } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
-import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
+import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT } from '../../constants/pageHeroAssets';
 
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 
@@ -41,13 +41,13 @@ const css = `
     height: 100%;
     object-fit: cover;
     object-position: center center;
-    filter: brightness(.58) saturate(1.06);
+    filter: ${PAGE_HERO_IMG_FILTER};
     transition: opacity .4s ease;
   }
   .fmp-hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(170deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.65) 100%);
+    background: ${PAGE_HERO_OVERLAY_GRADIENT};
   }
   .fmp-hero-body {
     position: relative;

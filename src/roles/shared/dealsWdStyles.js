@@ -1,3 +1,5 @@
+import { PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT } from '../../constants/pageHeroAssets';
+
 /* Shared wd-* styles: worker + customer deals pages */
 export const dealsWdCss = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -13,11 +15,11 @@ export const dealsWdCss = `
   .wd-hero-img {
     position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover; object-position: center center;
-    filter: brightness(.62) saturate(1.06);
+    filter: ${PAGE_HERO_IMG_FILTER};
   }
   .wd-hero-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(170deg, rgba(0,0,0,.06) 0%, rgba(0,0,0,.58) 100%);
+    background: ${PAGE_HERO_OVERLAY_GRADIENT};
   }
   .wd-hero-body {
     position: relative; z-index: 1; height: 100%;

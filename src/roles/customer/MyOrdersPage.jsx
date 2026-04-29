@@ -9,7 +9,7 @@ import {
   getCategories, createJobRequest, updateJobRequest,
 } from '../../api';
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
-import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
+import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER } from '../../constants/pageHeroAssets';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -72,11 +72,11 @@ const css = `
   .ml-list-hero-img {
     position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover; object-position: center center;
-    filter: brightness(.62) saturate(1.06);
+    filter: ${PAGE_HERO_IMG_FILTER};
   }
   .ml-list-hero-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(170deg, rgba(0,0,0,.06) 0%, rgba(0,0,0,.55) 100%);
+    background: ${PAGE_HERO_OVERLAY_GRADIENT};
   }
   .ml-list-hero-body {
     position: relative; z-index: 1; height: 100%;
@@ -216,8 +216,8 @@ const css = `
   /* ФОРМА */
   .mlf-hero { position: relative; height: var(--page-hero-h-desktop); overflow: hidden; }
   @media (max-width: 768px) { .mlf-hero { height: var(--page-hero-h-mobile); } }
-  .mlf-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center center; filter: brightness(.62) saturate(1.06); }
-  .mlf-hero-overlay { position: absolute; inset: 0; background: linear-gradient(170deg, rgba(0,0,0,.06) 0%, rgba(0,0,0,.55) 100%); }
+  .mlf-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center center; filter: ${PAGE_HERO_IMG_FILTER}; }
+  .mlf-hero-overlay { position: absolute; inset: 0; background: ${PAGE_HERO_OVERLAY_GRADIENT}; }
   .mlf-hero-body { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 24px 32px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
   .mlf-hero-back { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: rgba(255,255,255,.8); background: none; border: none; font-family: inherit; cursor: pointer; padding: 0; margin-bottom: 10px; transition: color .15s; }
   .mlf-hero-back:hover { color: #fff; }

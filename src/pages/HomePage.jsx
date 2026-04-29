@@ -10,7 +10,7 @@ const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 const ALL_CATS = Object.values(CATEGORIES_BY_SECTION).flat();
 
 const CAT_PHOTOS = {
-  'remont-kvartir':       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80',
+  'remont-kvartir':       'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600&q=80',
   'santehnika':           'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
   'elektrika':            'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80',
   'uborka':               'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=600&q=80',
