@@ -2,21 +2,20 @@
  * Единый верхний баннер: одни габариты (CSS vars) и достаточное разрешение фото,
  * чтобы при object-fit: cover картинка оставалась чёткой на широких экранах.
  *
- * Фото: гостиная в тёплых нейтральных тонах — в кадре диван, журнальный стол, мебель
- * (приятная «домашняя» атмосфера под маркетплейс бытовых услуг).
+ * Фото: интерьер после ремонта — светлое пространство, чистая отделка, без упора на мебель.
  */
 export const PAGE_HERO_DEFAULT_PHOTO =
-  'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=max&w=2400&q=88';
+  'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?auto=format&fit=max&w=2400&q=88';
 
 /** Градиент поверх фото: лёгкий тёплый акцент под фирменный оранжевый (#e8410a), читаемый текст */
 export const PAGE_HERO_OVERLAY_GRADIENT =
   'linear-gradient(172deg, rgba(13,13,13,.05) 0%, rgba(232,65,10,.12) 44%, rgba(13,13,13,.68) 100%)';
 
 /** Единый фильтр для полноширинных hero-картинок */
-export const PAGE_HERO_IMG_FILTER = 'brightness(.7) saturate(1.04)';
+export const PAGE_HERO_IMG_FILTER = 'brightness(.72) saturate(1.02)';
 
-/** Кадрирование: чуть смещение вниз — в баннере чаще попадает зона дивана/столика */
-export const PAGE_HERO_OBJECT_POSITION = 'center 44%';
+/** Кадрирование по центру — равномерно показывает объём комнаты после ремонта */
+export const PAGE_HERO_OBJECT_POSITION = 'center center';
 
 /** Поднимает качество готовых ссылок Unsplash в данных категорий / секций */
 export function heroPhotoHiRes(url) {
