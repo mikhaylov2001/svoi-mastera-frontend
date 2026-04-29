@@ -6,7 +6,7 @@ import { getOpenJobRequestsForWorker, createJobOffer, getCategories } from '../.
 import { formatJobRequestBudgetLabel } from '../../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
-import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION } from '../../constants/pageHeroAssets';
+import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT, PAGE_HERO_FRAME_BG } from '../../constants/pageHeroAssets';
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 
@@ -33,13 +33,14 @@ const fw2css = `
     overflow: hidden;
     display: flex;
     align-items: flex-end;
+    background: ${PAGE_HERO_FRAME_BG};
   }
   .fw2-hero-bg {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: ${PAGE_HERO_OBJECT_FIT};
     object-position: ${PAGE_HERO_OBJECT_POSITION};
     filter: ${PAGE_HERO_IMG_FILTER};
     transition: opacity .4s ease;

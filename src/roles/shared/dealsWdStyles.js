@@ -1,4 +1,4 @@
-import { PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION } from '../../constants/pageHeroAssets';
+import { PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT, PAGE_HERO_FRAME_BG } from '../../constants/pageHeroAssets';
 
 /* Shared wd-* styles: worker + customer deals pages */
 export const dealsWdCss = `
@@ -10,11 +10,12 @@ export const dealsWdCss = `
   /* ── HERO ── */
   .wd-hero {
     position: relative; height: var(--page-hero-h-desktop); overflow: hidden;
+    background: ${PAGE_HERO_FRAME_BG};
   }
   @media(max-width:768px){ .wd-hero { height: var(--page-hero-h-mobile); } }
   .wd-hero-img {
     position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; object-position: ${PAGE_HERO_OBJECT_POSITION};
+    object-fit: ${PAGE_HERO_OBJECT_FIT}; object-position: ${PAGE_HERO_OBJECT_POSITION};
     filter: ${PAGE_HERO_IMG_FILTER};
   }
   .wd-hero-overlay {

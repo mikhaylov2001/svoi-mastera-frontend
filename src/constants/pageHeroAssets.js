@@ -1,6 +1,6 @@
 /**
  * Единый верхний баннер: одни габариты (CSS vars) и достаточное разрешение фото,
- * чтобы при object-fit: cover картинка оставалась чёткой на широких экранах.
+ * чтобы при object-fit картинка оставалась чёткой на широких экранах.
  *
  * Фото: интерьер квартиры — окна, светлый пол, ощущение жилого пространства в городской квартире.
  */
@@ -14,8 +14,14 @@ export const PAGE_HERO_OVERLAY_GRADIENT =
 /** Единый фильтр для полноширинных hero-картинок */
 export const PAGE_HERO_IMG_FILTER = 'brightness(.72) saturate(1.02)';
 
-/** Кадрирование по центру — комната квартиры читается целиком */
+/** Кадрирование (актуально при contain — центрирование кадра в рамке) */
 export const PAGE_HERO_OBJECT_POSITION = 'center center';
+
+/** Весь кадр виден в баннере без обрезки (в отличие от cover); по краям возможны полосы фона */
+export const PAGE_HERO_OBJECT_FIT = 'contain';
+
+/** Фон под полосами letterbox при object-fit: contain */
+export const PAGE_HERO_FRAME_BG = '#141414';
 
 /** Поднимает качество готовых ссылок Unsplash в данных категорий / секций */
 export function heroPhotoHiRes(url) {
