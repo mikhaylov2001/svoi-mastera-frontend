@@ -7,7 +7,7 @@ const CATEGORIES_BY_SECTION = {
     {
       slug: 'remont-kvartir', name: 'Ремонт квартир', emoji: '🏠', color: '#fff3e0',
       desc: 'Отделка, штукатурка, покраска, обои, полы',
-      photo: heroPhotoHiRes('https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&q=80'),
+      photo: heroPhotoHiRes(PAGE_HERO_DEFAULT_PHOTO),
       priceFrom: 'от 1 500 ₽/час', masters: '12+ мастеров',
     },
     {
