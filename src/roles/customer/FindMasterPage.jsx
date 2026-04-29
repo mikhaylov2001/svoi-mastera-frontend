@@ -42,6 +42,7 @@ const css = `
     object-fit: cover;
     object-position: center center;
     filter: brightness(.52) saturate(1.08);
+    transition: opacity 0.35s ease;
   }
   .fmp-hero-overlay {
     position: absolute;
@@ -929,6 +930,8 @@ export default function FindMasterPage() {
   // listingId → dealId  (состояние с бэка: NEW-сделка ожидает мастера)
   const [pendingDeals,  setPendingDeals]  = useState({});
   const [cancellingListingId, setCancellingListingId] = useState(null);
+  /** Подсветка фона hero при наведении на карточку категории (как на «Найти работу») */
+  const [heroCatSlug, setHeroCatSlug] = useState(null);
 
   // Строим pendingDeals из реальных сделок бэкенда (listingId → dealId)
   const buildPendingFromDeals = useCallback((deals) => {
@@ -1032,7 +1035,11 @@ export default function FindMasterPage() {
 
         {/* Hero с фото-фоном */}
         <div className="fmp-hero">
-          <img src={HERO_PHOTO} alt="" className="fmp-hero-bg"/>
+          <img
+            src={heroCatSlug ? (CAT_ALL[heroCatSlug]?.photo || HERO_PHOTO) : HERO_PHOTO}
+            alt=""
+            className="fmp-hero-bg"
+          />
           <div className="fmp-hero-overlay"/>
           <div className="fmp-hero-body">
             <h1>Найти мастера<br/>в Йошкар-Оле</h1>
@@ -1092,7 +1099,7 @@ export default function FindMasterPage() {
               <p style={{ color: '#888' }}>{error}</p>
             </div>
           ) : (
-            <div className="fmp-cats-grid">
+            <div className="fmp-cats-grid" onMouseLeave={() => setHeroCatSlug(null)}>
               {categories.map(cat => {
                 const meta  = CAT_ALL[cat.slug] || {};
                 const count = services.filter(s =>
@@ -1100,7 +1107,12 @@ export default function FindMasterPage() {
                 ).length;
 
                 return (
-                  <Link key={cat.id} to={`/find-master/${cat.slug}`} className="fmp-cat-card">
+                  <Link
+                    key={cat.id}
+                    to={`/find-master/${cat.slug}`}
+                    className="fmp-cat-card"
+                    onMouseEnter={() => setHeroCatSlug(cat.slug)}
+                  >
                     <div className="fmp-cat-img-wrap">
                       {meta.photo
                         ? <img src={meta.photo} alt={cat.name} loading="lazy"/>
