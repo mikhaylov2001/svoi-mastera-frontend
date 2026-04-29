@@ -3,7 +3,7 @@
  * чтобы при object-fit: cover картинка оставалась чёткой на широких экранах.
  */
 export const PAGE_HERO_DEFAULT_PHOTO =
-  'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=max&w=2400&q=88';
+  'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=max&w=2400&q=88';
 
 /** Поднимает качество готовых ссылок Unsplash в данных категорий / секций */
 export function heroPhotoHiRes(url) {
