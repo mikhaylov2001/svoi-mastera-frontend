@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { heroPhotoHiRes, PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER } from '../constants/pageHeroAssets';
+import { heroPhotoHiRes, PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION } from '../constants/pageHeroAssets';
 
 const CATEGORIES_BY_SECTION = {
   remont: [
@@ -91,7 +91,7 @@ const css = `
   }
   .cp2-hero-img {
     position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; object-position: center center; display: block;
+    object-fit: cover; object-position: ${PAGE_HERO_OBJECT_POSITION}; display: block;
     filter: ${PAGE_HERO_IMG_FILTER};
   }
   .cp2-hero-overlay {
