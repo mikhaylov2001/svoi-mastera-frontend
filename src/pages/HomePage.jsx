@@ -225,14 +225,16 @@ function CustomerHome({ userId, userName }) {
         <div className="av-hero-inner">
           <div className="av-hero-badge">
             <span className="av-hero-badge-dot"/>
-            <span className="av-hero-badge-text">Йошкар-Ола · Проверенные мастера рядом</span>
+            <span className="av-hero-badge-text">Йошкар-Ола · Личный кабинет заказчика</span>
           </div>
           <h1 className="av-hero-h1">
-            <span style={{display:'block',whiteSpace:'nowrap'}}>Найдите мастера в&nbsp;<span className="h1-line2">Йошкар-Оле</span></span>
-            <span style={{display:'block'}}>за&nbsp;10&nbsp;минут</span>
+            <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
+              Найдите мастера в&nbsp;<span className="h1-line2">Йошкар-Оле</span>
+            </span>
+            <span style={{ display: 'block' }}>рядом с вами</span>
           </h1>
           <p className="av-hero-sub">
-            Ремонт, сантехника, красота и ещё 6 категорий — первый отклик в течение 10 минут
+            Ремонт, сантехника, красота и другие услуги — разместите заявку или выберите мастера по объявлениям и отзывам.
           </p>
           <div className="av-hero-actions">
             <button className="av-hero-btn-primary" onClick={()=>navigate('/categories')}>
@@ -241,18 +243,6 @@ function CustomerHome({ userId, userName }) {
             <Link to="/find-master" className="av-hero-btn-ghost">
               Найти мастера
             </Link>
-          </div>
-        </div>
-
-        {/* Trust bar */}
-        <div className="av-hero-trust">
-          <div className="av-hero-trust-inner">
-            {[['24/7','Приём заявок'],['9','Категорий'],['5.0★','Средний рейтинг'],['≤10 мин','До первого отклика']].map(([v,l])=>(
-              <div key={l} className="av-trust-item">
-                <span className="av-trust-val">{v}</span>
-                <span className="av-trust-lbl">{l}</span>
-              </div>
-            ))}
           </div>
         </div>
       </div>
@@ -332,7 +322,7 @@ function CustomerHome({ userId, userName }) {
         <div className="av-side">
           <div className="av-promo">
             <h3>Нужен мастер прямо сейчас?</h3>
-            <p>Опишите задачу — первые отклики уже через 10 минут</p>
+            <p>Опишите задачу — мастера пришлют предложения с ценой и сроками.</p>
             <button className="av-promo-btn" onClick={()=>navigate('/categories')}>Разместить заявку →</button>
           </div>
         </div>
@@ -578,7 +568,7 @@ function GuestHome() {
             <h1 className="hp-hero-h1" style={{fontSize:52,marginBottom:20,lineHeight:1.06}}>
               Найдите мастера<br/>
               в <em>Йошкар-Оле</em><br/>
-              за 10 минут
+              рядом с вами
             </h1>
             <p style={{fontSize:16,color:'rgba(255,255,255,.55)',lineHeight:1.7,margin:'0 0 32px',maxWidth:400}}>
               Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
@@ -588,7 +578,7 @@ function GuestHome() {
               <Link to="/register?role=WORKER" className="hp-hero-btn-ghost">Стать мастером →</Link>
             </div>
             <div style={{display:'flex',gap:28,paddingTop:28,borderTop:'1px solid rgba(255,255,255,.08)'}}>
-              {[['24/7','Приём заявок'],['9','Категорий'],['≤10','Мин. отклик'],['5.0★','Рейтинг']].map(([n,l])=>(
+              {[['24/7','Приём заявок'],['9','Категорий'],['5.0★','Рейтинг']].map(([n,l])=>(
                 <div key={l}>
                   <div style={{fontSize:22,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
                   <div style={{fontSize:10,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:4}}>{l}</div>
@@ -679,7 +669,7 @@ function GuestHome() {
           </div>
           <div className="g-benefits-grid">
             {[
-              {ico:'⚡',bg:'#fffbeb',title:'Быстрый отклик',     desc:'Первые предложения от мастеров в течение 10 минут после публикации задачи'},
+              {ico:'⚡',bg:'#fffbeb',title:'Быстрый отклик',     desc:'Мастера видят вашу заявку и присылают предложения — выбирайте по цене и отзывам'},
               {ico:'🔒',bg:'#f0fdf4',title:'Безопасная сделка',  desc:'Деньги переходят мастеру только после подтверждения выполненной работы'},
               {ico:'⭐',bg:'#eff6ff',title:'Проверенные мастера',desc:'Рейтинг, отзывы и история работ — выбирайте лучшего с полной информацией'},
               {ico:'💬',bg:'#fdf4ff',title:'Чат внутри сервиса', desc:'Обсуждайте детали, отправляйте фото прямо в приложении'},
@@ -730,7 +720,7 @@ function GuestHome() {
           <div className="g-cta">
             <div>
               <h2 className="g-cta-title">Готовы разместить задачу?</h2>
-              <p className="g-cta-sub">Зарегистрируйтесь бесплатно — первые отклики уже через 10 минут</p>
+              <p className="g-cta-sub">Зарегистрируйтесь бесплатно и получайте предложения от мастеров рядом с вами</p>
             </div>
             <button className="g-cta-btn" onClick={()=>navigate('/register')}>Начать бесплатно →</button>
           </div>

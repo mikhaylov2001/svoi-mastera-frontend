@@ -339,7 +339,7 @@ export default function CategoryPage() {
             <h2>Заявка опубликована!</h2>
             <p>
               Мастера уже видят вашу задачу{form.photos.length > 0 ? ' и фотографии' : ''}.
-              Первые отклики обычно приходят в течение <strong>10 минут</strong>.
+              Скоро появятся отклики с ценой — проверяйте раздел «Мои заявки».
             </p>
             <div className="cp-success-btns">
               <Link to="/deals" className="cp-success-btn-primary">Перейти к сделкам →</Link>

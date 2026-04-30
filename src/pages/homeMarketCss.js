@@ -203,29 +203,9 @@ export const HOME_MARKET_CSS = `
     }
     .av-hero-btn-ghost:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.24); color: #fff; }
 
-    /* trust bar */
-    .av-hero-trust {
-      position: relative; z-index: 1;
-      border-top: 1px solid rgba(255,255,255,.08);
-      display: flex; justify-content: center;
-    }
-    .av-hero-trust-inner {
-      max-width: 1200px; width: 100%; margin: 0 auto;
-      padding: 0 24px;
-      display: grid; grid-template-columns: repeat(4, 1fr);
-    }
-    .av-trust-item {
-      padding: 22px 16px;
-      text-align: center;
-      border-right: 1px solid rgba(255,255,255,.07);
-    }
-    .av-trust-item:last-child { border-right: none; }
-    .av-trust-val { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; display: block; }
-    .av-trust-lbl { font-size: 11px; color: rgba(255,255,255,.38); font-weight: 600; margin-top: 6px; display: block; text-transform: uppercase; letter-spacing: .07em; }
-
     @keyframes av-pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.5)} }
 
-    @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } .av-hero-trust-inner { grid-template-columns: repeat(2,1fr); } .av-trust-item:nth-child(2) { border-right: none; } .av-trust-item:nth-child(1),.av-trust-item:nth-child(2) { border-bottom: 1px solid rgba(255,255,255,.07); } }
+    @media(max-width:960px) { .av-body { grid-template-columns: 1fr; } .av-side { position: static; } }
     @media(max-width:640px) {
       .av-cats-scroll { grid-template-columns: repeat(3,1fr); }
       .av-cards-grid { grid-template-columns: repeat(2,1fr); }
