@@ -278,9 +278,8 @@ function CustomerHome({ userId, userName }) {
           </div>
 
           {/* ── ОБЪЯВЛЕНИЯ ── */}
-          <div className="av-recs-hdr">
+          <div className="av-recs-hdr av-recs-hdr--solo">
             <h2 className="av-recs-title">Объявления мастеров</h2>
-            <Link to="/find-master" className="av-recs-link">Смотреть все →</Link>
           </div>
 
           {listings.length === 0 ? (
