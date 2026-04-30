@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
 import { SECTIONS } from '../../pages/SectionsPage';
@@ -24,6 +24,21 @@ function photoForCategoryName(name) {
   const n = String(name).trim();
   return CATEGORY_PHOTO_BY_NAME[n] || DEFAULT_BG;
 }
+
+function workerOfferAvatarSrc(offer, backendOrigin) {
+  const u = offer?.workerAvatarUrl;
+  if (!u) return null;
+  if (u.startsWith('data:') || u.startsWith('http')) return u;
+  return backendOrigin + u;
+}
+
+/** Публичный профиль мастера: API /workers/{userId} */
+function workerOfferPublicPath(offer) {
+  const id = offer?.workerUserId || offer?.workerId;
+  return id ? `/workers/${id}` : null;
+}
+
+const LISTING_OFFER_MESSAGE = 'Клиент принял работу по вашему объявлению';
 
 function pluralOffers(n) {
   const a = Math.abs(Number(n)) % 100;
@@ -1125,25 +1140,19 @@ export default function MyOrdersPage() {
               <div className="ml-detail-price-unit">{STATUS_LABELS[detail.status] || detail.status}</div>
               {catNameD && <div style={{marginTop:8}}><span className="ml-tag">{catNameD}</span></div>}
             </div>
-            <div className="ml-detail-actions-card">
-              <div className="ml-section-label" style={{ marginBottom: 4 }}>Управление</div>
-              {requestIsEditable(detail) ? (
-                <>
-                  <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
-                  <button
-                    type="button"
-                    className="ml-btn-outline"
-                    onClick={(e) => { setDetail(null); setTimeout(() => toggleOffers(detail.id, e), 100); }}
-                  >
-                    Смотреть отклики
-                  </button>
-                </>
-              ) : (
-                <p style={{ fontSize: 13, color: '#64748b', margin: 0, lineHeight: 1.5 }}>
-                  Заявка в архиве или уже закрыта — редактировать нельзя. Отклик мастера показан ниже.
-                </p>
-              )}
-            </div>
+            {requestIsEditable(detail) && (
+              <div className="ml-detail-actions-card">
+                <div className="ml-section-label" style={{ marginBottom: 4 }}>Управление</div>
+                <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
+                <button
+                  type="button"
+                  className="ml-btn-outline"
+                  onClick={(e) => { setDetail(null); setTimeout(() => toggleOffers(detail.id, e), 100); }}
+                >
+                  Смотреть отклики
+                </button>
+              </div>
+            )}
             {detail.status !== 'OPEN' && (
               <div style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', border: '1px solid #e8e8e8' }}>
                 <div className="ml-section-label" style={{ marginBottom: 10 }}>Мастер по заявке</div>
@@ -1153,33 +1162,62 @@ export default function MyOrdersPage() {
                     Отклики не найдены. Обновите страницу или откройте «Мои сделки» — мастер уже мог принять заказ по объявлению.
                   </p>
                 )}
-                {!detailOffersLoading && detailOffers.map((offer, oi) => (
-                  <div
-                    key={offer.id}
-                    style={{
-                      padding: '12px 0',
-                      borderTop: oi === 0 ? 'none' : '1px solid #f1f5f9',
-                    }}
-                  >
-                    <div style={{ fontWeight: 700, fontSize: 15, color: '#111827' }}>{offer.workerName || 'Мастер'}</div>
-                    <div style={{ fontSize: 14, color: '#e8410a', fontWeight: 700, marginTop: 4 }}>
-                      {offer.price != null ? `${Number(offer.price).toLocaleString('ru-RU')} ₽` : '—'}
+                {!detailOffersLoading && detailOffers.map((offer, oi) => {
+                  const workerHref = workerOfferPublicPath(offer);
+                  const workerAv = workerOfferAvatarSrc(offer, BACKEND);
+                  const workerInitial = (offer.workerName || 'М')[0].toUpperCase();
+                  const msg = offer.message?.trim();
+                  const showMsg = msg && msg !== LISTING_OFFER_MESSAGE;
+                  const profileRow = (
+                    <>
+                      {workerAv ? (
+                        <img src={workerAv} alt="" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                      ) : (
+                        <div style={{
+                          width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#e8410a,#ff7043)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 16, flexShrink: 0,
+                        }}>{workerInitial}</div>
+                      )}
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{offer.workerName || 'Мастер'}</div>
+                        <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Мастер</div>
+                      </div>
+                    </>
+                  );
+                  return (
+                    <div
+                      key={offer.id}
+                      style={{
+                        padding: '12px 0',
+                        borderTop: oi === 0 ? 'none' : '1px solid #f1f5f9',
+                      }}
+                    >
+                      {workerHref ? (
+                        <Link to={workerHref} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
+                          {profileRow}
+                        </Link>
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>{profileRow}</div>
+                      )}
+                      <div style={{ fontSize: 14, color: '#e8410a', fontWeight: 700, marginTop: 10 }}>
+                        {offer.price != null ? `${Number(offer.price).toLocaleString('ru-RU')} ₽` : '—'}
+                      </div>
+                      {offer.status === 'ACCEPTED' && (
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', marginTop: 6, display: 'inline-block' }}>
+                          ✓ Принят по этой заявке
+                        </span>
+                      )}
+                      {showMsg && (
+                        <p style={{ fontSize: 13, color: '#64748b', margin: '8px 0 0', lineHeight: 1.45 }}>{msg}</p>
+                      )}
                     </div>
-                    {offer.status === 'ACCEPTED' && (
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', marginTop: 6, display: 'inline-block' }}>
-                        ✓ Принят по этой заявке
-                      </span>
-                    )}
-                    {offer.message && (
-                      <p style={{ fontSize: 13, color: '#64748b', margin: '8px 0 0', lineHeight: 1.45 }}>{offer.message}</p>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
             <div style={{ background: '#fff', borderRadius: 12, padding: '16px 20px' }}>
               <div className="ml-section-label">Ваш профиль</div>
-              <div style={{display:'flex', alignItems:'center', gap:12, cursor:'pointer'}} onClick={() => navigate('/customer-profile')}>
+              <Link to="/customer-profile" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
                 {ava
                   ? <img src={ava} alt="" style={{width:44,height:44,borderRadius:'50%',objectFit:'cover',flexShrink:0}} />
                   : <div style={{width:44,height:44,borderRadius:'50%',background:'linear-gradient(135deg,#e8410a,#ff7043)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontWeight:800,fontSize:16,flexShrink:0}}>
@@ -1190,7 +1228,7 @@ export default function MyOrdersPage() {
                   <div style={{fontSize:14,fontWeight:700,color:'#111827'}}>{fullName}</div>
                   <div style={{fontSize:12,color:'#3b82f6',fontWeight:600}}>● Заказчик</div>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
