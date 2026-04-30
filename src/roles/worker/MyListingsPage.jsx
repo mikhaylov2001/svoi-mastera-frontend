@@ -4,7 +4,9 @@ import { useAuth } from '../../context/AuthContext';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
 import { SECTIONS } from '../../pages/SectionsPage';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
-import { API_BASE } from '../../api';
+import { API_BASE, getMyDeals } from '../../api';
+import ReviewForm from '../../components/ReviewForm';
+import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 
@@ -58,6 +60,66 @@ function pluralNewDeals(n) {
   if (b > 1 && b < 5) return 'новые заявки';
   if (b === 1) return 'новая заявка';
   return 'новых заявок';
+}
+
+function WorkerReviewDealModal({ dealId, onClose, onReload }) {
+  if (!dealId) return null;
+  return (
+    <div
+      role="presentation"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 10002,
+        background: 'rgba(15,23,42,.45)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+      }}
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        style={{
+          background: '#fff',
+          borderRadius: 16,
+          padding: '20px 22px 24px',
+          maxWidth: 440,
+          width: '100%',
+          maxHeight: '90vh',
+          overflow: 'auto',
+          position: 'relative',
+          boxShadow: '0 24px 48px rgba(0,0,0,.2)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          aria-label="Закрыть"
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: 12,
+            right: 14,
+            width: 36,
+            height: 36,
+            border: 'none',
+            background: '#f1f5f9',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            fontSize: 20,
+            lineHeight: 1,
+            color: '#64748b',
+          }}
+        >
+          ×
+        </button>
+        <ReviewForm forWorker dealId={dealId} onSuccess={() => { onReload(); onClose(); }} />
+      </div>
+    </div>
+  );
 }
 
 function compressImage(file) {
@@ -194,6 +256,13 @@ const css = `
     font-weight: 700; transition: color .15s; width: 100%;
   }
   .ml-btn-restore:hover { color: #166534; }
+  .ml-btn-review-customer {
+    width: 100%; background: linear-gradient(135deg,#6366f1,#8b5cf6); border: none; border-radius: 10px;
+    padding: 10px 0; font-size: 13px; font-weight: 700; color: #fff;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 4px 14px rgba(99,102,241,.28);
+  }
+  .ml-btn-review-customer:hover { filter: brightness(1.06); }
   .ml-empty {
     text-align: center; padding: 72px 24px;
     background: rgba(255,255,255,.95); border: 1.5px solid #e8e8e8; border-radius: 16px;
@@ -522,6 +591,8 @@ export default function MyListingsPage() {
   const navigate = useNavigate();
 
   const [listings, setListings] = useState([]);
+  const [workerDeals, setWorkerDeals] = useState([]);
+  const [workerReviewDealId, setWorkerReviewDealId] = useState(null);
   const [loading,  setLoading]  = useState(true);
   const [tab,      setTab]      = useState('active');
   const [detail,   setDetail]   = useState(null);
@@ -566,15 +637,20 @@ export default function MyListingsPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const r = await fetch(`${API}/workers/${userId}/listings`);
-      if (r.ok) {
-        const data = await r.json();
-        setListings(data);
-        setDetail(prev => {
-          if (!prev) return null;
-          return data.find(l => l.id === prev.id) || prev;
-        });
-      }
+      const [lr, dealsRaw] = await Promise.all([
+        fetch(`${API}/workers/${userId}/listings`).then((r) => (r.ok ? r.json() : [])),
+        getMyDeals(userId).catch(() => []),
+      ]);
+      const list = Array.isArray(lr) ? lr : [];
+      setListings(list);
+      const wd = (Array.isArray(dealsRaw) ? dealsRaw : []).filter(
+        (d) => String(d.workerId) === String(userId),
+      );
+      setWorkerDeals(wd);
+      setDetail((prev) => {
+        if (!prev) return null;
+        return list.find((l) => l.id === prev.id) || prev;
+      });
     } catch {}
     setLoading(false);
   };
@@ -596,6 +672,18 @@ export default function MyListingsPage() {
   const active  = listings.filter(l => l.active);
   const archive = listings.filter(l => !l.active);
   const shown   = tab === 'active' ? active : archive;
+
+  const completedDealForListing = (listingId) =>
+    workerDeals.find(
+      (d) =>
+        String(d.listingId || '') === String(listingId) &&
+        d.status === 'COMPLETED',
+    );
+
+  const showWorkerReviewForListing = (listingId) => {
+    const d = completedDealForListing(listingId);
+    return !!(d && dealEligibleForReviews(d) && !d.hasWorkerReview);
+  };
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
@@ -1177,10 +1265,29 @@ export default function MyListingsPage() {
             </div>
             <div className="ml-detail-actions-card">
               <div className="ml-section-label" style={{marginBottom:4}}>Управление</div>
+              {completedDealForListing(detail.id) && (
+                <div style={{ fontSize: 12, color: '#166534', marginBottom: 12, padding: '10px 12px', background: '#f0fdf4', borderRadius: 10, border: '1px solid #bbf7d0', lineHeight: 1.45 }}>
+                  Сделка по этому объявлению завершена.
+                  {!detail.active && ' Объявление в архиве и не показывается в каталоге.'}
+                </div>
+              )}
               <button className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
               <button className="ml-btn-outline" onClick={e => handleToggle(detail, e)}>
                 {detail.active ? 'Снять с публикации' : 'Восстановить'}
               </button>
+              {showWorkerReviewForListing(detail.id) && (
+                <button
+                  type="button"
+                  className="ml-btn-review-customer"
+                  style={{ marginTop: 10 }}
+                  onClick={() => {
+                    const d = completedDealForListing(detail.id);
+                    if (d) setWorkerReviewDealId(d.id);
+                  }}
+                >
+                  Отзыв о заказчике
+                </button>
+              )}
             </div>
             <div style={{background:'#fff', borderRadius:12, padding:'16px 20px'}}>
               <div className="ml-section-label">Ваш профиль</div>
@@ -1227,6 +1334,11 @@ export default function MyListingsPage() {
             )}
           </div>
         )}
+        <WorkerReviewDealModal
+          dealId={workerReviewDealId}
+          onClose={() => setWorkerReviewDealId(null)}
+          onReload={load}
+        />
       </div>
     );
   }
@@ -1279,7 +1391,7 @@ export default function MyListingsPage() {
                 {tab === 'active' ? 'Нет активных объявлений' : 'Архив пуст'}
               </h3>
               <p style={{ fontSize: 14, margin: '0 0 20px' }}>
-                {tab === 'active' ? 'Разместите объявление, чтобы заказчики могли вас найти' : 'Снятые объявления появятся здесь'}
+                {tab === 'active' ? 'Разместите объявление, чтобы заказчики могли вас найти' : 'Объявления с завершённой сделкой и снятые с публикации попадают в архив'}
               </p>
               {tab === 'active' && <button type="button" className="ml-new-btn" onClick={openCreate}>+ Разместить объявление</button>}
             </div>
@@ -1332,6 +1444,19 @@ export default function MyListingsPage() {
                   >
                     {copyFlashId === l.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
                   </button>
+                  {showWorkerReviewForListing(l.id) && (
+                    <button
+                      type="button"
+                      className="ml-btn-review-customer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const d = completedDealForListing(l.id);
+                        if (d) setWorkerReviewDealId(d.id);
+                      }}
+                    >
+                      Отзыв о заказчике
+                    </button>
+                  )}
                   <div className="ml-actions-divider" />
                   <button type="button" className={l.active ? 'ml-btn-arch' : 'ml-btn-restore'} onClick={e => handleToggle(l, e)}>
                     {l.active ? 'Снять с публикации' : 'Восстановить'}
@@ -1342,6 +1467,11 @@ export default function MyListingsPage() {
             </div>
           )}
         </div>
+      <WorkerReviewDealModal
+        dealId={workerReviewDealId}
+        onClose={() => setWorkerReviewDealId(null)}
+        onReload={load}
+      />
     </div>
   );
 }
