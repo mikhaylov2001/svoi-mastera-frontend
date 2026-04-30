@@ -211,16 +211,12 @@ const css = `
 function CustomerHome({ userId, userName }) {
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
+  const [shown, setShown] = useState(8);
 
   useEffect(() => {
     fetch(`${API}/listings`).then(r => r.ok ? r.json() : [])
       .then(d => setListings(Array.isArray(d) ? d.filter(l => l.active) : [])).catch(() => {});
   }, []);
-
-  const sortedListings = useMemo(
-    () => [...listings].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
-    [listings],
-  );
 
   return (
     <div className="av-page">
@@ -281,45 +277,56 @@ function CustomerHome({ userId, userName }) {
             </div>
           </div>
 
-          {/* ── ОБЪЯВЛЕНИЯ — лента как у мастера / авито ── */}
-          <div className="av-recs-hdr av-recs-hdr--solo">
+          {/* ── ОБЪЯВЛЕНИЯ ── */}
+          <div className="av-recs-hdr">
             <h2 className="av-recs-title">Объявления мастеров</h2>
+            <Link to="/find-master" className="av-recs-link">Смотреть все →</Link>
           </div>
 
-          {sortedListings.length === 0 ? (
+          {listings.length === 0 ? (
             <div className="av-empty">
               <div className="av-empty-ico">🔍</div>
               <h3>Пока нет объявлений</h3>
               <p>Мастера скоро появятся!</p>
             </div>
           ) : (
-            <div className="av-feed-list">
-              {sortedListings.map(l => {
-                const img0 = l.photos?.[0];
-                const src = workerListingPhotoUrl(img0);
-                const priceStr = l.price ? `${Number(l.price).toLocaleString('ru-RU')} ₽` : '— ₽';
-                const wname = [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
-                return (
-                  <Link key={l.id} to={`/listings/${l.id}`} className="av-feed-row">
-                    <div className="av-feed-thumb">
-                      {src ? <img src={src} alt="" /> : '🔧'}
-                    </div>
-                    <div className="av-feed-main">
-                      <div className="av-feed-title">{l.title || 'Объявление'}</div>
-                      <div className="av-feed-meta">
-                        {l.category && <span>{l.category}</span>}
-                        <span>{wname}</span>
-                        <span>📍 Йошкар-Ола</span>
+            <>
+              <div className="av-cards-grid">
+                {listings.slice(0, shown).map(l => {
+                  const img0 = l.photos?.[0];
+                  const src = workerListingPhotoUrl(img0);
+                  const avUrl = workerListingPhotoUrl(l.workerAvatar);
+                  const wname = [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
+                  return (
+                    <Link key={l.id} to={`/listings/${l.id}`} className="av-card">
+                      <div className="av-card-img">
+                        {src ? <img src={src} alt="" /> : '🔧'}
+                        {l.category ? <span className="av-card-cat">{l.category}</span> : null}
                       </div>
-                    </div>
-                    <div className="av-feed-side">
-                      <div className="av-feed-price">{priceStr}</div>
-                      {l.priceUnit && <div className="av-feed-cat">{l.priceUnit}</div>}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+                      <div className="av-card-body">
+                        <div className="av-card-price">
+                          {l.price ? Number(l.price).toLocaleString('ru-RU') : '—'} ₽
+                          {l.priceUnit ? <span className="av-card-price-unit">{l.priceUnit}</span> : null}
+                        </div>
+                        <div className="av-card-title">{l.title || 'Объявление'}</div>
+                        <div className="av-card-footer">
+                          <div className="av-card-ava">
+                            {avUrl ? <img src={avUrl} alt="" /> : (wname || 'М')[0]}
+                          </div>
+                          <span className="av-card-wname">{wname}</span>
+                          <span className="av-card-city">📍 Йошкар-Ола</span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+              {shown < listings.length && (
+                <button type="button" className="av-more-btn" onClick={() => setShown(s => s + 8)}>
+                  Показать ещё · осталось {listings.length - shown}
+                </button>
+              )}
+            </>
           )}
         </div>
 
@@ -451,7 +458,7 @@ function WorkerHome({ userId, userName }) {
               <p>Когда заказчики опубликуют задачи, они появятся здесь и в «Найти работу»</p>
             </div>
           ) : (
-            <div className="av-feed-list">
+            <div className="av-cards-grid">
               {sortedOpenRequests.map(req => {
                 const img0 = req.photos?.[0];
                 const src = workerListingPhotoUrl(img0);
@@ -463,21 +470,26 @@ function WorkerHome({ userId, userName }) {
                   <Link
                     key={req.id}
                     to={`/find-work?request=${encodeURIComponent(req.id)}`}
-                    className="av-feed-row"
+                    className="av-card"
                   >
-                    <div className="av-feed-thumb">
+                    <div className="av-card-img">
                       {src ? <img src={src} alt="" /> : '👤'}
+                      <span className="av-card-cat">{cname}</span>
                     </div>
-                    <div className="av-feed-main">
-                      <div className="av-feed-title">{req.title}</div>
-                      <div className="av-feed-meta">
-                        <span>{cname}</span>
-                        <span>{custName}</span>
-                        <span>📍 {loc}</span>
+                    <div className="av-card-body">
+                      <div className="av-card-price">{budget}</div>
+                      <div className="av-card-title">{req.title}</div>
+                      <div className="av-card-footer">
+                        <div className="av-card-ava">
+                          {req.customerAvatar ? (
+                            <img src={workerListingPhotoUrl(req.customerAvatar)} alt="" />
+                          ) : (
+                            (custName || 'З')[0]
+                          )}
+                        </div>
+                        <span className="av-card-wname">{custName}</span>
+                        <span className="av-card-city">📍 {loc}</span>
                       </div>
-                    </div>
-                    <div className="av-feed-side">
-                      <div className="av-feed-price">{budget}</div>
                     </div>
                   </Link>
                 );
