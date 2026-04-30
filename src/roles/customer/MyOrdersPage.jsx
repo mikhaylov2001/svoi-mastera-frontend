@@ -40,8 +40,10 @@ function workerOfferPublicPath(offer) {
 
 function workerOfferFullName(offer) {
   if (!offer) return 'Мастер';
-  const full = [offer.workerName, offer.workerLastName].filter(Boolean).join(' ').trim();
-  return full || offer.workerName || 'Мастер';
+  const last = (offer.workerLastName || '').trim();
+  const first = (offer.workerName || '').trim();
+  if (last) return `${first} ${last}`.trim();
+  return first || 'Мастер';
 }
 
 function pluralOffers(n) {
