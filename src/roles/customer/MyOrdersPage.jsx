@@ -38,7 +38,11 @@ function workerOfferPublicPath(offer) {
   return id ? `/workers/${id}` : null;
 }
 
-const LISTING_OFFER_MESSAGE = 'Клиент принял работу по вашему объявлению';
+function workerOfferFullName(offer) {
+  if (!offer) return 'Мастер';
+  const full = [offer.workerName, offer.workerLastName].filter(Boolean).join(' ').trim();
+  return full || offer.workerName || 'Мастер';
+}
 
 function pluralOffers(n) {
   const a = Math.abs(Number(n)) % 100;
@@ -1154,20 +1158,19 @@ export default function MyOrdersPage() {
               </div>
             )}
             {detail.status !== 'OPEN' && (
-              <div style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', border: '1px solid #e8e8e8' }}>
-                <div className="ml-section-label" style={{ marginBottom: 10 }}>Мастер по заявке</div>
-                {detailOffersLoading && <div style={{ fontSize: 13, color: '#94a3b8' }}>Загрузка…</div>}
+              <div style={{ background: '#fff', borderRadius: 12, padding: '16px 20px' }}>
+                <div className="ml-section-label">Мастер по заявке</div>
+                {detailOffersLoading && <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 8 }}>Загрузка…</div>}
                 {!detailOffersLoading && detailOffers.length === 0 && (
-                  <p style={{ fontSize: 13, color: '#9ca3af', margin: 0, lineHeight: 1.45 }}>
+                  <p style={{ fontSize: 13, color: '#9ca3af', margin: '8px 0 0', lineHeight: 1.45 }}>
                     Отклики не найдены. Обновите страницу или откройте «Мои сделки» — мастер уже мог принять заказ по объявлению.
                   </p>
                 )}
                 {!detailOffersLoading && detailOffers.map((offer, oi) => {
                   const workerHref = workerOfferPublicPath(offer);
                   const workerAv = workerOfferAvatarSrc(offer, BACKEND);
-                  const workerInitial = (offer.workerName || 'М')[0].toUpperCase();
-                  const msg = offer.message?.trim();
-                  const showMsg = msg && msg !== LISTING_OFFER_MESSAGE;
+                  const workerLabel = workerOfferFullName(offer);
+                  const workerInitial = (workerLabel || 'М')[0].toUpperCase();
                   const profileRow = (
                     <>
                       {workerAv ? (
@@ -1179,7 +1182,7 @@ export default function MyOrdersPage() {
                         }}>{workerInitial}</div>
                       )}
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{offer.workerName || 'Мастер'}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{workerLabel}</div>
                         <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Мастер</div>
                       </div>
                     </>
@@ -1188,7 +1191,8 @@ export default function MyOrdersPage() {
                     <div
                       key={offer.id}
                       style={{
-                        padding: '12px 0',
+                        marginTop: oi === 0 ? 8 : 12,
+                        paddingTop: oi === 0 ? 0 : 12,
                         borderTop: oi === 0 ? 'none' : '1px solid #f1f5f9',
                       }}
                     >
@@ -1198,17 +1202,6 @@ export default function MyOrdersPage() {
                         </Link>
                       ) : (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>{profileRow}</div>
-                      )}
-                      <div style={{ fontSize: 14, color: '#e8410a', fontWeight: 700, marginTop: 10 }}>
-                        {offer.price != null ? `${Number(offer.price).toLocaleString('ru-RU')} ₽` : '—'}
-                      </div>
-                      {offer.status === 'ACCEPTED' && (
-                        <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', marginTop: 6, display: 'inline-block' }}>
-                          ✓ Принят по этой заявке
-                        </span>
-                      )}
-                      {showMsg && (
-                        <p style={{ fontSize: 13, color: '#64748b', margin: '8px 0 0', lineHeight: 1.45 }}>{msg}</p>
                       )}
                     </div>
                   );
@@ -1409,7 +1402,9 @@ export default function MyOrdersPage() {
                                     </span>
                                   )}
                                 </div>
-                                {offer.workerName && <div className="ml-offer-name">{offer.workerName}</div>}
+                                {offer.workerName && (
+                                  <div className="ml-offer-name">{workerOfferFullName(offer)}</div>
+                                )}
                               </div>
                               {requestIsEditable(req) && offer.status !== 'ACCEPTED' && (
                               <button

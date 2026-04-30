@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
 import { SECTIONS } from '../../pages/SectionsPage';
@@ -44,24 +44,6 @@ function photoForCategoryName(name) {
   const n = String(name).trim();
   if (CATEGORY_PHOTO_BY_NAME[n]) return CATEGORY_PHOTO_BY_NAME[n];
   return DEFAULT_MY_LISTINGS_BG;
-}
-
-function pluralViews(n) {
-  const a = Math.abs(Number(n)) % 100;
-  const b = a % 10;
-  if (a > 10 && a < 20) return 'просмотров';
-  if (b > 1 && b < 5) return 'просмотра';
-  if (b === 1) return 'просмотр';
-  return 'просмотров';
-}
-
-function pluralNewDeals(n) {
-  const a = Math.abs(Number(n)) % 100;
-  const b = a % 10;
-  if (a > 10 && a < 20) return 'новых заявок';
-  if (b > 1 && b < 5) return 'новые заявки';
-  if (b === 1) return 'новая заявка';
-  return 'новых заявок';
 }
 
 function WorkerReviewDealModal({ dealId, onClose, onReload }) {
@@ -590,7 +572,6 @@ const css = `
 
 export default function MyListingsPage() {
   const { userId, userName, userLastName, userAvatar } = useAuth();
-  const navigate = useNavigate();
 
   const [listings, setListings] = useState([]);
   const [workerDeals, setWorkerDeals] = useState([]);
@@ -666,8 +647,8 @@ export default function MyListingsPage() {
     const onArchived = (ev) => {
       const lid = ev.detail?.listingId;
       if (lid == null) return;
-      setListings((prev) => prev.map((l) => (String(l.id) === String(lid) ? { ...l, active: false } : l)));
-      setDetail((prev) => (prev && String(prev.id) === String(lid) ? { ...prev, active: false } : prev));
+      setListings((prev) => prev.map((l) => (String(l.id) === String(lid) ? { ...l, active: false, lockedAfterCompletedDeal: true } : l)));
+      setDetail((prev) => (prev && String(prev.id) === String(lid) ? { ...prev, active: false, lockedAfterCompletedDeal: true } : prev));
     };
     window.addEventListener(LISTING_ARCHIVED_AFTER_DEAL, onArchived);
     return () => window.removeEventListener(LISTING_ARCHIVED_AFTER_DEAL, onArchived);
@@ -685,10 +666,6 @@ export default function MyListingsPage() {
     return () => window.removeEventListener('keydown', h);
   }, [lightbox]);
 
-  const active  = listings.filter(l => l.active);
-  const archive = listings.filter(l => !l.active);
-  const shown   = tab === 'active' ? active : archive;
-
   const completedDealForListing = (listingId) =>
     workerDeals.find(
       (d) =>
@@ -701,6 +678,16 @@ export default function MyListingsPage() {
     return !!(d && dealEligibleForReviews(d) && !d.hasWorkerReview);
   };
 
+  const listingLockedAfterDeal = (l) => {
+    if (!l) return false;
+    if (l.lockedAfterCompletedDeal) return true;
+    return !!completedDealForListing(l.id);
+  };
+
+  const active  = listings.filter(l => l.active && !listingLockedAfterDeal(l));
+  const archive = listings.filter(l => !l.active || listingLockedAfterDeal(l));
+  const shown   = tab === 'active' ? active : archive;
+
   const openCreate = () => {
     setForm(EMPTY_FORM);
     setFormErr('');
@@ -712,6 +699,7 @@ export default function MyListingsPage() {
   };
   const openEdit = (l, e) => {
     e?.stopPropagation();
+    if (listingLockedAfterDeal(l)) return;
     setForm({ title: l.title, description: l.description || '', price: l.price, priceUnit: l.priceUnit || 'за работу', category: l.category || '', photos: (l.photos || []).map((p, i) => ({ id: i, data: p })) });
     setFormErr('');
     setView({ edit: l });
@@ -745,10 +733,14 @@ export default function MyListingsPage() {
     if (!form.category)     { setFormErr('Выберите категорию'); return; }
     if (!form.price || Number(form.price) <= 0) { setFormErr('Укажите цену (больше нуля)'); return; }
     if (!userId) { setFormErr('Войдите в аккаунт и попробуйте снова.'); return; }
+    const isEdit = view !== 'create';
+    if (isEdit && listingLockedAfterDeal(view.edit)) {
+      setFormErr('Объявление закрыто после завершённой сделки — редактирование недоступно.');
+      return;
+    }
     setSaving(true);
     setFormErr('');
     try {
-      const isEdit = view !== 'create';
       const payload = {
         title:       form.title.trim(),
         description: (form.description || '').trim(),
@@ -792,6 +784,7 @@ export default function MyListingsPage() {
 
   const handleToggle = async (l, e) => {
     e?.stopPropagation();
+    if (listingLockedAfterDeal(l)) return;
     const newActive = !l.active;
     setListings(prev => prev.map(x => x.id === l.id ? {...x, active: newActive} : x));
     if (detail?.id === l.id) setDetail(prev => ({...prev, active: newActive}));
@@ -1279,22 +1272,22 @@ export default function MyListingsPage() {
               <div className="ml-detail-price-unit">{detail.priceUnit}</div>
               {detail.category && <div style={{marginTop:8}}><span className="ml-tag">{detail.category}</span></div>}
             </div>
+            {(showWorkerReviewForListing(detail.id) || !listingLockedAfterDeal(detail)) && (
             <div className="ml-detail-actions-card">
               <div className="ml-section-label" style={{marginBottom:4}}>Управление</div>
-              {completedDealForListing(detail.id) && (
-                <div style={{ fontSize: 12, color: '#166534', marginBottom: 12, padding: '10px 12px', background: '#f0fdf4', borderRadius: 10, border: '1px solid #bbf7d0', lineHeight: 1.45 }}>
-                  Сделка по этому объявлению завершена. Объявление автоматически уходит в архив и не показывается в каталоге. Нужна новая публикация — нажмите «Восстановить».
-                </div>
+              {!listingLockedAfterDeal(detail) && (
+                <>
+                  <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
+                  <button type="button" className="ml-btn-outline" onClick={e => handleToggle(detail, e)}>
+                    {detail.active ? 'Снять с публикации' : 'Восстановить'}
+                  </button>
+                </>
               )}
-              <button className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
-              <button className="ml-btn-outline" onClick={e => handleToggle(detail, e)}>
-                {detail.active ? 'Снять с публикации' : 'Восстановить'}
-              </button>
               {showWorkerReviewForListing(detail.id) && (
                 <button
                   type="button"
                   className="ml-btn-review-customer"
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: !listingLockedAfterDeal(detail) ? 10 : 0 }}
                   onClick={() => {
                     const d = completedDealForListing(detail.id);
                     if (d) setWorkerReviewDealId(d.id);
@@ -1304,9 +1297,10 @@ export default function MyListingsPage() {
                 </button>
               )}
             </div>
+            )}
             <div style={{background:'#fff', borderRadius:12, padding:'16px 20px'}}>
               <div className="ml-section-label">Ваш профиль</div>
-              <div style={{display:'flex', alignItems:'center', gap:12, cursor:'pointer'}} onClick={() => navigate('/worker-profile')}>
+              <Link to={userId ? `/workers/${userId}` : '/worker-profile'} style={{display:'flex', alignItems:'center', gap:12, textDecoration:'none', color:'inherit'}}>
                 {ava
                   ? <img src={ava} alt="" style={{width:44,height:44,borderRadius:'50%',objectFit:'cover',flexShrink:0}} />
                   : <div style={{width:44,height:44,borderRadius:'50%',background:'linear-gradient(135deg,#e8410a,#ff7043)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontWeight:800,fontSize:16,flexShrink:0}}>
@@ -1317,7 +1311,7 @@ export default function MyListingsPage() {
                   <div style={{fontSize:14,fontWeight:700,color:'#111827'}}>{fullName}</div>
                   <div style={{fontSize:12,color:'#22c55e',fontWeight:600}}>● Мастер</div>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -1406,7 +1400,7 @@ export default function MyListingsPage() {
                 {tab === 'active' ? 'Нет активных объявлений' : 'Архив пуст'}
               </h3>
               <p style={{ fontSize: 14, margin: '0 0 20px' }}>
-                {tab === 'active' ? 'Разместите объявление, чтобы заказчики могли вас найти' : 'Объявления с завершённой сделкой и снятые с публикации попадают в архив'}
+                {tab === 'active' ? 'Разместите объявление, чтобы заказчики могли вас найти' : 'Завершённые по сделке объявления и снятые вручную с публикации. После завершённой сделки восстановить объявление нельзя — создайте новое.'}
               </p>
               {tab === 'active' && <button type="button" className="ml-new-btn" onClick={openCreate}>+ Разместить объявление</button>}
             </div>
@@ -1436,22 +1430,11 @@ export default function MyListingsPage() {
                   {l.category && <span className="ml-row-cat">{l.category}</span>}
                   {l.description && <div className="ml-row-desc">{l.description}</div>}
                   <div className="ml-row-date">{l.createdAt ? new Date(l.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) : '—'}</div>
-                  <div className="ml-row-stats">
-                    <div className="ml-row-stat">
-                      <span className="ml-row-stat-num">{l.viewCount ?? 0}</span>
-                      <span>{pluralViews(l.viewCount ?? 0)}</span>
-                    </div>
-                    <div className="ml-row-stat">
-                      <span className="ml-row-stat-num">{l.pendingDealsCount ?? 0}</span>
-                      <span>{pluralNewDeals(l.pendingDealsCount ?? 0)}</span>
-                    </div>
-                    <div className={l.active ? 'ml-row-stat-status-active' : 'ml-row-stat-status-arch'}>
-                      {l.active ? 'Активно' : 'В архиве'}
-                    </div>
-                  </div>
                 </div>
                 <div className="ml-row-actions" onClick={e => e.stopPropagation()}>
-                  <button type="button" className="ml-btn-edit" onClick={e => openEdit(l, e)}>Редактировать</button>
+                  {!listingLockedAfterDeal(l) && (
+                    <button type="button" className="ml-btn-edit" onClick={e => openEdit(l, e)}>Редактировать</button>
+                  )}
                   <button
                     type="button"
                     className={`ml-btn-copy${copyFlashId === l.id ? ' copied' : ''}`}
@@ -1472,10 +1455,14 @@ export default function MyListingsPage() {
                       Отзыв о заказчике
                     </button>
                   )}
-                  <div className="ml-actions-divider" />
-                  <button type="button" className={l.active ? 'ml-btn-arch' : 'ml-btn-restore'} onClick={e => handleToggle(l, e)}>
-                    {l.active ? 'Снять с публикации' : 'Восстановить'}
-                  </button>
+                  {!listingLockedAfterDeal(l) && (
+                    <>
+                      <div className="ml-actions-divider" />
+                      <button type="button" className={l.active ? 'ml-btn-arch' : 'ml-btn-restore'} onClick={e => handleToggle(l, e)}>
+                        {l.active ? 'Снять с публикации' : 'Восстановить'}
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
