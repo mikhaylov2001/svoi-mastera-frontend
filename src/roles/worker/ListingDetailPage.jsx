@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { acceptListingDeal, recordListingView } from '../../api';
+import { acceptListingDeal, recordListingView, getMyDeals } from '../../api';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
+import { dealsWdCss } from '../shared/dealsWdStyles';
 
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 
@@ -185,6 +186,13 @@ const css = `
   .ld-seller-link { font-size: 13px; color: #e8410a; font-weight: 600; text-decoration: none; display: block; text-align: center; transition: opacity .15s; }
   .ld-seller-link:hover { opacity: .75; }
 
+  .ld-own-profile-label {
+    font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px;
+    padding: 18px 18px 0; display: block;
+  }
+  .ld-own-profile-top { padding: 14px 18px 14px; display: flex; align-items: flex-start; gap: 14px; }
+  .ld-own-profile-footer { border-top: 1px solid #f4f4f4; padding: 12px 18px; }
+
   /* SIMILAR */
   .ld-similar { background: #fff; border-radius: 16px; border: 1px solid #eaeaea; padding: 16px 18px; }
   .ld-similar-head { font-size: 14px; font-weight: 700; margin: 0 0 12px; color: #111; display: flex; align-items: center; justify-content: space-between; }
@@ -225,11 +233,14 @@ const css = `
   @media(max-width:580px) { .ld-page { padding: 12px 12px 48px; } .ld-title { font-size: 19px; } .ld-price-big { font-size: 26px; } .ld-title-block,.ld-info-block,.ld-desc-block { padding-left: 16px; padding-right: 16px; } }
 `;
 
+const TERMINAL_DEAL_STATUSES = ['CANCELLED', 'REFUNDED'];
+
 export default function ListingDetailPage() {
   const { id } = useParams();
-  const { userId } = useAuth();
+  const { userId, userName, userLastName, userAvatar } = useAuth();
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
+  const [listingDeal, setListingDeal] = useState(null);
   const [stats, setStats] = useState(null);
   const [similar, setSimilar] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -271,6 +282,33 @@ export default function ListingDetailPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id, userId]);
+
+  /* Сделка по этому объявлению — показываем заказчика в сайдбаре (как на странице «Мои сделки») */
+  useEffect(() => {
+    if (!listing || !userId || String(userId) !== String(listing.workerId)) {
+      setListingDeal(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getMyDeals(userId);
+        if (cancelled) return;
+        const lid = String(listing.id);
+        const wid = String(userId);
+        const matches = (data || []).filter(
+          d => String(d.workerId || '') === wid
+            && String(d.listingId || '') === lid
+            && !TERMINAL_DEAL_STATUSES.includes(d.status || ''),
+        );
+        matches.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        setListingDeal(matches[0] || null);
+      } catch {
+        if (!cancelled) setListingDeal(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [listing, userId]);
 
   const photos = listing?.photos?.length ? listing.photos : [];
   const catSlug = CAT_SLUGS[listing?.category] || '';
@@ -334,10 +372,15 @@ export default function ListingDetailPage() {
   const reviews = stats?.reviewCount || 0;
   const completed = stats?.completedWorksCount || 0;
   const isOwnListing = String(userId) === String(listing.workerId);
+  const ownerFullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
+  const ownerAva = userAvatar
+    ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : `${API.replace(/\/api\/v1$/, '')}${userAvatar.startsWith('/') ? '' : '/'}${userAvatar}`)
+    : null;
 
   return (
     <div className="ld">
       <style>{css}</style>
+      {listingDeal ? <style>{dealsWdCss}</style> : null}
 
       {/* Lightbox */}
       {lightbox && allPhotos.length > 0 && (
@@ -517,53 +560,115 @@ export default function ListingDetailPage() {
             )}
           </div>
 
-          {/* Seller */}
-          <div className="ld-seller">
-            <div className="ld-seller-top">
-              <div className="ld-seller-ava">
-                {listing.workerAvatar?.length > 10
-                  ? <img src={listing.workerAvatar} alt={workerName}/>
-                  : initials
-                }
-              </div>
-              <div style={{flex:1,minWidth:0}}>
-                <div className="ld-seller-name">
-                  <Link to={`/workers/${listing.workerId}`}>{workerName}</Link>
-                </div>
-                <div className="ld-seller-since">На платформе с 2024 года</div>
-                {rating > 0 && (
-                  <div className="ld-seller-stars">
-                    {[1,2,3,4,5].map(i => (
-                      <span key={i} className="ld-star" style={{color: i <= Math.round(rating) ? '#f59e0b' : '#e5e7eb'}}>★</span>
-                    ))}
-                    <span style={{fontSize:12,color:'#555',fontWeight:600,marginLeft:3}}>{Number(rating).toFixed(1)}</span>
-                    {reviews > 0 && <span style={{fontSize:11,color:'#aaa',marginLeft:3}}>({reviews})</span>}
+          {/* Заказчик по активной/завершённой сделке — как в WorkerDealsPage */}
+          {isOwnListing && listingDeal?.customerId && (
+            <div className="wd-customer-card">
+              <div className="wd-info-label">Заказчик</div>
+              <div
+                className="wd-customer-row"
+                onClick={() => listingDeal.customerId && navigate(`/customers/${listingDeal.customerId}`)}
+                role="presentation"
+              >
+                {listingDeal.customerAvatar && listingDeal.customerAvatar.length > 10 && listingDeal.customerAvatar !== 'null'
+                  ? <img src={listingDeal.customerAvatar} alt="" className="wd-customer-avatar" />
+                  : <div className="wd-customer-fallback">{(listingDeal.customerName || 'З')[0].toUpperCase()}</div>}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
+                    {[listingDeal.customerName, listingDeal.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
                   </div>
-                )}
-                <div className="ld-seller-verify">✅ Документы проверены</div>
+                  <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Активный заказчик</div>
+                </div>
+                <div style={{ color: '#d1d5db', fontSize: 20 }}>›</div>
               </div>
+              <button
+                type="button"
+                onClick={() => navigate(`/chat/${listingDeal.customerId}`)}
+                className="wd-btn-full-outline"
+                style={{ marginTop: 12 }}
+              >
+                💬 Написать заказчику
+              </button>
+              <button
+                type="button"
+                className="ld-deals-link"
+                style={{ marginTop: 10 }}
+                onClick={() => navigate(`/deals?dealId=${listingDeal.id}`)}
+              >
+                Открыть сделку →
+              </button>
             </div>
+          )}
 
-            <div className="ld-seller-stats">
-              <div className="ld-sstat">
-                <span className="ld-sstat-num">{completed || 0}</span>
-                <span className="ld-sstat-lbl">Заказов</span>
-              </div>
-              <div className="ld-sstat">
-                <span className="ld-sstat-num">{rating > 0 ? Number(rating).toFixed(1) : '—'}</span>
-                <span className="ld-sstat-lbl">Рейтинг</span>
-              </div>
-              <div className="ld-sstat">
-                <span className="ld-sstat-num">{reviews}</span>
-                <span className="ld-sstat-lbl">Отзывов</span>
-              </div>
-            </div>
+          {/* Seller / ваш профиль */}
+          <div className="ld-seller">
+            {isOwnListing ? (
+              <>
+                <div className="ld-own-profile-label">Ваш профиль</div>
+                <div className="ld-own-profile-top">
+                  <div className="ld-seller-ava">
+                    {ownerAva
+                      ? <img src={ownerAva} alt={ownerFullName} />
+                      : (userName || 'М')[0].toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="ld-seller-name"><span>{ownerFullName}</span></div>
+                    <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Мастер</div>
+                  </div>
+                </div>
+                <div className="ld-own-profile-footer">
+                  <Link to="/worker-profile" className="ld-seller-link">
+                    Редактировать профиль →
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="ld-seller-top">
+                  <div className="ld-seller-ava">
+                    {listing.workerAvatar?.length > 10
+                      ? <img src={listing.workerAvatar} alt={workerName}/>
+                      : initials}
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div className="ld-seller-name">
+                      <Link to={`/workers/${listing.workerId}`}>{workerName}</Link>
+                    </div>
+                    <div className="ld-seller-since">На платформе с 2024 года</div>
+                    {rating > 0 && (
+                      <div className="ld-seller-stars">
+                        {[1,2,3,4,5].map(i => (
+                          <span key={i} className="ld-star" style={{color: i <= Math.round(rating) ? '#f59e0b' : '#e5e7eb'}}>★</span>
+                        ))}
+                        <span style={{fontSize:12,color:'#555',fontWeight:600,marginLeft:3}}>{Number(rating).toFixed(1)}</span>
+                        {reviews > 0 && <span style={{fontSize:11,color:'#aaa',marginLeft:3}}>({reviews})</span>}
+                      </div>
+                    )}
+                    <div className="ld-seller-verify">✅ Документы проверены</div>
+                  </div>
+                </div>
 
-            <div className="ld-seller-footer">
-              <Link to={`/workers/${listing.workerId}`} className="ld-seller-link">
-                Профиль мастера →
-              </Link>
-            </div>
+                <div className="ld-seller-stats">
+                  <div className="ld-sstat">
+                    <span className="ld-sstat-num">{completed || 0}</span>
+                    <span className="ld-sstat-lbl">Заказов</span>
+                  </div>
+                  <div className="ld-sstat">
+                    <span className="ld-sstat-num">{rating > 0 ? Number(rating).toFixed(1) : '—'}</span>
+                    <span className="ld-sstat-lbl">Рейтинг</span>
+                  </div>
+                  <div className="ld-sstat">
+                    <span className="ld-sstat-num">{reviews}</span>
+                    <span className="ld-sstat-lbl">Отзывов</span>
+                  </div>
+                </div>
+
+                <div className="ld-seller-footer">
+                  <Link to={`/workers/${listing.workerId}`} className="ld-seller-link">
+                    Профиль мастера →
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Similar */}
