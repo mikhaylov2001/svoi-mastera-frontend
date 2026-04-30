@@ -693,6 +693,19 @@ const fw2css = `
     color: #888;
     flex-wrap: wrap;
   }
+  a.fw2-card-stats--link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    margin: 0 -4px;
+    padding: 4px 6px;
+    transition: background .15s;
+  }
+  a.fw2-card-stats--link:hover {
+    background: rgba(232, 65, 10, 0.08);
+    color: #444;
+  }
   .fw2-stars { color: #f59e0b; font-size: 11px; letter-spacing: .5px; }
   .fw2-rating-val { font-weight: 800; color: #1a1a1a; font-size: 12px; }
   .fw2-rating-opt {
@@ -1529,6 +1542,10 @@ export default function FindWorkPage() {
                   const cCnt = cst?.reviewsCount ?? 0;
                   const cFill = Math.min(5, Math.max(0, Math.round(Number(cAvg) || 0)));
 
+                  const customerReviewsPath = req.customerId
+                    ? `/customers/${req.customerId}${custName ? `?name=${encodeURIComponent(custName)}` : ''}#reviews`
+                    : null;
+
                   return (
                     <div key={req.id} className="fw2-card">
 
@@ -1660,14 +1677,30 @@ export default function FindWorkPage() {
                           <span className="fw2-badge fw2-badge-g">🛡 Безопасная сделка</span>
                         </div>
 
-                        <div className="fw2-card-stats">
-                          <span className="fw2-stars">
-                            {'★'.repeat(cFill)}
-                            {'☆'.repeat(5 - cFill)}
-                          </span>
-                          <span className="fw2-rating-val">{cAvg.toFixed(1)}</span>
-                          <span>({reviewsCountLabel(cCnt)})</span>
-                        </div>
+                        {customerReviewsPath ? (
+                          <Link
+                            to={customerReviewsPath}
+                            className="fw2-card-stats fw2-card-stats--link"
+                            title="Открыть отзывы о заказчике"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <span className="fw2-stars">
+                              {'★'.repeat(cFill)}
+                              {'☆'.repeat(5 - cFill)}
+                            </span>
+                            <span className="fw2-rating-val">{cAvg.toFixed(1)}</span>
+                            <span>({reviewsCountLabel(cCnt)})</span>
+                          </Link>
+                        ) : (
+                          <div className="fw2-card-stats">
+                            <span className="fw2-stars">
+                              {'★'.repeat(cFill)}
+                              {'☆'.repeat(5 - cFill)}
+                            </span>
+                            <span className="fw2-rating-val">{cAvg.toFixed(1)}</span>
+                            <span>({reviewsCountLabel(cCnt)})</span>
+                          </div>
+                        )}
 
                         <div className="fw2-card-footer">
                           <div className="fw2-card-price-block">

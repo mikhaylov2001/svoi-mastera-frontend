@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getMyDeals, getListingsByWorker, getReviewsByWorker, uploadAvatar, getUserProfile } from '../../api';
 import ReviewForm from '../../components/ReviewForm';
+import DashboardReviewsSection from '../../components/DashboardReviewsSection';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import '../../styles/profileDashboard.css';
 
@@ -138,9 +139,19 @@ export default function WorkerProfilePage() {
   const since = fmtSince(profile?.registeredAt || profile?.createdAt);
   const cityLabel = (profile?.city || '').trim();
 
-  const avgRating = reviews.length > 0
+  const avgRatingDisplay = reviews.length > 0
     ? (reviews.reduce((s, x) => s + (x.rating || 0), 0) / reviews.length).toFixed(1)
-    : null;
+    : '0.0';
+  const reviewsCountLabel = (() => {
+    const n = reviews.length;
+    if (n === 0) return '0 отзывов';
+    if (n === 1) return '1 отзыв';
+    if (n >= 2 && n <= 4) return `${n} отзыва`;
+    return `${n} отзывов`;
+  })();
+  const scrollToDashboardReviews = () => {
+    document.getElementById('dash-reviews-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const activeDealsCount = useMemo(
     () => deals.filter(d => ['IN_PROGRESS', 'NEW'].includes(d.status)).length,
@@ -217,9 +228,9 @@ export default function WorkerProfilePage() {
               <span className="pp-pill pp-pill-g">✓ Документы проверены</span>
               {cityLabel && <span className="pp-pill pp-pill-w">📍 {cityLabel}</span>}
               {since && <span className="pp-pill pp-pill-w">С {since}</span>}
-              {avgRating != null && (
-                <span className="pp-pill pp-pill-w">⭐ {avgRating} · {reviews.length} отзыв.</span>
-              )}
+              <button type="button" className="pp-pill pp-pill-w pp-pill-link" onClick={scrollToDashboardReviews}>
+                ⭐ {avgRatingDisplay} · {reviewsCountLabel}
+              </button>
             </div>
           </div>
 
@@ -280,6 +291,8 @@ export default function WorkerProfilePage() {
                 </div>
               </Link>
             </div>
+
+            <DashboardReviewsSection reviews={reviews} aboutTarget="worker" />
 
             <div className="pp-deals">
               <div className="pp-tabs">

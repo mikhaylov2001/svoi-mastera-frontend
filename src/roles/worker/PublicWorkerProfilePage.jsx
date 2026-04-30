@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
@@ -322,6 +322,7 @@ const PAGE_SIZE = 8;
 export default function PublicWorkerProfilePage() {
   const { workerId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { userId } = useAuth();
 
   const [worker,         setWorker]        = useState(null);
@@ -369,6 +370,15 @@ export default function PublicWorkerProfilePage() {
       setWorker({ name: 'Мастер', lastName: '', city: 'Йошкар-Ола', rating: 0, reviewsCount: 0 });
     }).finally(() => setLoading(false));
   }, [workerId]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (location.hash !== '#reviews') return;
+    const timer = window.setTimeout(() => {
+      document.getElementById('pw-reviews-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [loading, location.hash, workerId]);
 
   if (loading) return (
     <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center', color:'#999', fontFamily:'Inter,Arial,sans-serif' }}>
@@ -427,10 +437,10 @@ export default function PublicWorkerProfilePage() {
             <h1 className="pw-name">{fullName}</h1>
 
             {reviews.length === 0
-              ? <button className="pw-review-link" onClick={() => document.getElementById('pw-reviews-anchor')?.scrollIntoView({behavior:'smooth'})}>
-                  Оставить первый отзыв
+              ? <button type="button" className="pw-review-link" onClick={() => document.getElementById('pw-reviews-anchor')?.scrollIntoView({behavior:'smooth'})}>
+                  Отзывов пока нет
                 </button>
-              : <button className="pw-review-link" onClick={() => document.getElementById('pw-reviews-anchor')?.scrollIntoView({behavior:'smooth'})}>
+              : <button type="button" className="pw-review-link" onClick={() => document.getElementById('pw-reviews-anchor')?.scrollIntoView({behavior:'smooth'})}>
                   {reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}
                 </button>
             }

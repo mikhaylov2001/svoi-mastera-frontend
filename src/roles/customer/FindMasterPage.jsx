@@ -679,6 +679,19 @@ const css = `
     display: flex; align-items: center; gap: 6px;
     font-size: 11px; color: #888; flex-wrap: wrap;
   }
+  a.fmp-card-stats {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    margin: 0 -4px;
+    padding: 4px 6px;
+    transition: background .15s;
+  }
+  a.fmp-card-stats:hover {
+    background: rgba(232, 65, 10, 0.08);
+    color: #1a1a1a;
+  }
   .fmp-stars { color: #f59e0b; font-size: 11px; letter-spacing: .5px; }
   .fmp-rating-val { font-weight: 800; color: #1a1a1a; font-size: 12px; }
 
@@ -1393,7 +1406,12 @@ export default function FindMasterPage() {
                     </div>
 
                     {stats && (
-                        <div className="fmp-card-stats">
+                        <Link
+                          to={`/workers/${wid}#reviews`}
+                          className="fmp-card-stats"
+                          title="Открыть отзывы о мастере"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <span className="fmp-stars">
                             {'★'.repeat(Math.min(5, Math.round(stats.averageRating || 0)))}
                             {'☆'.repeat(Math.max(0, 5 - Math.round(stats.averageRating || 0)))}
@@ -1401,7 +1419,7 @@ export default function FindMasterPage() {
                           <span className="fmp-rating-val">{(stats.averageRating || 0).toFixed(1)}</span>
                           <span>({stats.reviewsCount || 0} {(stats.reviewsCount || 0) === 1 ? 'отзыв' : (stats.reviewsCount || 0) < 5 ? 'отзыва' : 'отзывов'})</span>
                           {stats.completedWorksCount > 0 && <span>· 📦 {stats.completedWorksCount} заказов</span>}
-                      </div>
+                      </Link>
                     )}
 
                       {pendingDeals[String(s.id)] ? (
