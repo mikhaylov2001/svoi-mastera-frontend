@@ -190,10 +190,19 @@ export default function PublicCustomerProfilePage() {
     ]).then(([p, r, rev, d]) => {
       setCustomer(p || { displayName: nameFromQuery || 'Заказчик', city: 'Йошкар-Ола' });
       setRequests(Array.isArray(r) ? r : []);
-      setReviews(Array.isArray(rev) ? rev.filter(x => x.status === 'APPROVED') : []);
+      setReviews(Array.isArray(rev) ? rev : []);
       setDeals(Array.isArray(d) ? d.filter(deal => deal.customerId === customerId) : []);
     }).finally(() => setLoading(false));
   }, [customerId]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (location.hash !== '#reviews') return;
+    const timer = window.setTimeout(() => {
+      document.getElementById('pw-reviews-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [loading, location.hash, customerId]);
 
   const handleReviewSubmit = async () => {
     if (!reviewForm.text.trim() || !reviewDeal) return;
@@ -209,7 +218,10 @@ export default function PublicCustomerProfilePage() {
       });
       setReviewDone(true);
       const rev = await fetch(`${API}/customers/${customerId}/reviews`);
-      if (rev.ok) setReviews((await rev.json()).filter(r => r.status === 'APPROVED'));
+      if (rev.ok) {
+        const list = await rev.json();
+        setReviews(Array.isArray(list) ? list : []);
+      }
     } catch(e) { console.error(e); }
     setReviewSending(false);
   };
@@ -309,8 +321,10 @@ export default function PublicCustomerProfilePage() {
             <h1 className="pw-name">{fullName}</h1>
 
             {reviews.length === 0
-              ? null
-              : <button className="pw-review-link" onClick={() => document.getElementById('pw-reviews-anchor')?.scrollIntoView({behavior:'smooth'})}>
+              ? <button type="button" className="pw-review-link" onClick={() => document.getElementById('pw-reviews-anchor')?.scrollIntoView({behavior:'smooth'})}>
+                  Отзывов пока нет
+                </button>
+              : <button type="button" className="pw-review-link" onClick={() => document.getElementById('pw-reviews-anchor')?.scrollIntoView({behavior:'smooth'})}>
                   {reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}
                 </button>
             }
@@ -446,7 +460,7 @@ export default function PublicCustomerProfilePage() {
                       const firstName = r.authorName || r.workerName || 'Мастер';
                       const rLast   = r.authorLastName || r.workerLastName || '';
                       const fullN   = [firstName, rLast].filter(Boolean).join(' ');
-                      const wId     = r.authorId || r.workerId || null;
+                      const wId     = r.authorUserId || r.authorId || r.workerId || null;
                       const rStars  = r.rating || 0;
                       return (
                         <div key={r.id} className="pw-review-item">

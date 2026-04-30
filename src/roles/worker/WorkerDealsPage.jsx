@@ -463,7 +463,7 @@ export default function WorkerDealsPage() {
                     onClick={handleReviewSubmit}
                     disabled={reviewStatus === 'sending' || !reviewForm.text?.trim()}
                     style={{ width:'100%', padding:'13px', background: reviewForm.text?.trim() ? '#e8410a' : '#e5e7eb', border:'none', borderRadius:9, color: reviewForm.text?.trim() ? '#fff' : '#9ca3af', fontSize:15, fontWeight:700, cursor: reviewForm.text?.trim() ? 'pointer' : 'not-allowed', transition:'background .15s' }}
-                  >{reviewStatus === 'sending' ? 'Отправляем...' : '⭐ Отправить отзыв'}</button>
+                  >{reviewStatus === 'sending' ? 'Отправляем...' : 'Отправить отзыв'}</button>
                 </>
               )}
             </div>

@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getMyDeals, uploadAvatar, getUserProfile } from '../../api';
+import { getMyDeals, uploadAvatar, getUserProfile, getReviewsByCustomer } from '../../api';
 import ReviewForm from '../../components/ReviewForm';
+import DashboardReviewsSection from '../../components/DashboardReviewsSection';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import '../../styles/profileDashboard.css';
 
@@ -59,6 +60,7 @@ export default function CustomerProfilePage() {
 
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [deals, setDeals]     = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab]         = useState('ALL');
@@ -73,9 +75,10 @@ export default function CustomerProfilePage() {
   useEffect(() => {
     if (!userId || userRole === 'WORKER') return;
     setLoading(true);
-    Promise.all([getMyDeals(userId), getUserProfile(userId)])
-      .then(([d, p]) => {
+    Promise.all([getMyDeals(userId), getUserProfile(userId), getReviewsByCustomer(userId)])
+      .then(([d, p, rev]) => {
       setDeals(d || []);
+        setReviews(Array.isArray(rev) ? rev : []);
         const prof = p || {};
         setProfile(prof);
         // Сразу обновляем контекст — имя/фамилия в шапке без ожидания «второго» источника
@@ -127,6 +130,20 @@ export default function CustomerProfilePage() {
   const fullName = [userName, lastNameLive.trim()].filter(Boolean).join(' ') || 'Заказчик';
   const since     = fmtSince(profile?.registeredAt || profile?.createdAt);
 
+  const avgRatingDisplay = reviews.length > 0
+    ? (reviews.reduce((s, x) => s + (x.rating || 0), 0) / reviews.length).toFixed(1)
+    : '0.0';
+  const reviewsCountLabel = (() => {
+    const n = reviews.length;
+    if (n === 0) return '0 отзывов';
+    if (n === 1) return '1 отзыв';
+    if (n >= 2 && n <= 4) return `${n} отзыва`;
+    return `${n} отзывов`;
+  })();
+  const scrollToDashboardReviews = () => {
+    document.getElementById('dash-reviews-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const activeDealsCount = useMemo(
     () => deals.filter(d => ['IN_PROGRESS', 'NEW'].includes(d.status)).length,
     [deals],
@@ -167,6 +184,9 @@ export default function CustomerProfilePage() {
               <span className="pp-pill pp-pill-g">✓ Документы проверены</span>
               <span className="pp-pill pp-pill-w">📍 Йошкар-Ола</span>
               {since && <span className="pp-pill pp-pill-w">С {since}</span>}
+              <button type="button" className="pp-pill pp-pill-w pp-pill-link" onClick={scrollToDashboardReviews}>
+                ⭐ {avgRatingDisplay} · {reviewsCountLabel}
+              </button>
             </div>
           </div>
 
@@ -225,6 +245,8 @@ export default function CustomerProfilePage() {
                 </div>
               </Link>
             </div>
+
+            <DashboardReviewsSection reviews={reviews} aboutTarget="customer" />
 
             {/* Deals */}
             <div className="pp-deals">
