@@ -6,6 +6,7 @@ import {
   uploadFile,
 } from '../api';
 import { useAuth } from '../context/AuthContext';
+import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
 import './ChatPage.css';
 
 // ─── Фоны ───────────────────────────────────────────────────
@@ -430,6 +431,13 @@ export default function ChatPage() {
   }, [userId, pid]);
 
   useEffect(() => { loadConvos(); }, [loadConvos]);
+
+  const refetchChatShell = useCallback(() => {
+    loadConvos();
+    loadMsgs();
+  }, [loadConvos, loadMsgs]);
+
+  useSameRouteRefetch('/chat', refetchChatShell);
 
   useEffect(() => {
     if (!pid) return;

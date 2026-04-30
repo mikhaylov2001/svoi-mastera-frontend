@@ -373,7 +373,7 @@ export default function ListingDetailPage() {
           <button
             type="button"
             className="ld-back-btn"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(catSlug ? `/find-master/${catSlug}` : '/find-master')}
             aria-label="Назад"
           >
             ← Назад

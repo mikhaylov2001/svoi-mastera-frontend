@@ -9,6 +9,8 @@ import ReviewForm from '../../components/ReviewForm';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
+import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
+import { LISTING_ARCHIVED_AFTER_DEAL } from '../../utils/listingArchiveEvents';
 
 const API = API_BASE;
 
@@ -634,7 +636,8 @@ export default function MyListingsPage() {
     }
   }, []);
 
-  const load = async () => {
+  const load = useCallback(async () => {
+    if (!userId) return;
     setLoading(true);
     try {
       const [lr, dealsRaw] = await Promise.all([
@@ -653,9 +656,22 @@ export default function MyListingsPage() {
       });
     } catch {}
     setLoading(false);
-  };
+  }, [userId]);
 
-  useEffect(() => { if (userId) load(); }, [userId]);
+  useEffect(() => { load(); }, [load]);
+
+  useSameRouteRefetch('/my-listings', load);
+
+  useEffect(() => {
+    const onArchived = (ev) => {
+      const lid = ev.detail?.listingId;
+      if (lid == null) return;
+      setListings((prev) => prev.map((l) => (String(l.id) === String(lid) ? { ...l, active: false } : l)));
+      setDetail((prev) => (prev && String(prev.id) === String(lid) ? { ...prev, active: false } : prev));
+    };
+    window.addEventListener(LISTING_ARCHIVED_AFTER_DEAL, onArchived);
+    return () => window.removeEventListener(LISTING_ARCHIVED_AFTER_DEAL, onArchived);
+  }, []);
 
   // Lightbox keyboard
   useEffect(() => {
@@ -1267,8 +1283,7 @@ export default function MyListingsPage() {
               <div className="ml-section-label" style={{marginBottom:4}}>Управление</div>
               {completedDealForListing(detail.id) && (
                 <div style={{ fontSize: 12, color: '#166534', marginBottom: 12, padding: '10px 12px', background: '#f0fdf4', borderRadius: 10, border: '1px solid #bbf7d0', lineHeight: 1.45 }}>
-                  Сделка по этому объявлению завершена.
-                  {!detail.active && ' Объявление в архиве и не показывается в каталоге.'}
+                  Сделка по этому объявлению завершена. Объявление автоматически уходит в архив и не показывается в каталоге. Нужна новая публикация — нажмите «Восстановить».
                 </div>
               )}
               <button className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>

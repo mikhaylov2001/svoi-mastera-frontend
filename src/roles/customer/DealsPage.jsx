@@ -8,6 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 import { dealsWdCss } from '../shared/dealsWdStyles';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
+import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
+import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
 
 const DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
@@ -78,6 +80,8 @@ export default function DealsPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  useSameRouteRefetch('/deals', load);
+
   useEffect(() => {
     const id = new URLSearchParams(location.search).get('dealId');
     if (id && deals.length > 0) {
@@ -96,7 +100,11 @@ export default function DealsPage() {
   const handleComplete = async (dealId, e) => {
     e?.stopPropagation?.();
     setActionId(dealId);
-    try { await completeDeal(userId, dealId); await load(); } catch { /* noop */ }
+    try {
+      const deal = await completeDeal(userId, dealId);
+      dispatchListingArchivedAfterDeal(deal);
+      await load();
+    } catch { /* noop */ }
     setActionId(null);
   };
 

@@ -7,6 +7,7 @@ import { formatJobRequestBudgetLabel } from '../../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
 import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
+import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 
@@ -974,8 +975,6 @@ export default function FindWorkPage() {
     return () => window.removeEventListener('keydown', handler);
   }, [lightbox]);
 
-  useEffect(() => { loadData(); }, [userId]);
-
   const requestIdFromUrl = searchParams.get('request');
 
   useEffect(() => {
@@ -995,7 +994,7 @@ export default function FindWorkPage() {
     setSearchParams(p => { const next = new URLSearchParams(p); next.delete('request'); return next; }, { replace: true });
   }, [requestIdFromUrl, loading, requests, categories, setSearchParams, showToast]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [cats, reqs] = await Promise.all([
@@ -1009,7 +1008,11 @@ export default function FindWorkPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => { loadData(); }, [loadData]);
+
+  useSameRouteRefetch('/find-work', loadData);
 
   useEffect(() => {
     if (!requests?.length) return undefined;

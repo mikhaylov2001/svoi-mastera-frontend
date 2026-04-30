@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUnreadCount } from '../api';
+import { dispatchSameRouteRefetch, isSameNavDest } from '../utils/sameRouteRefetch';
 import './Header.css';
 
 const NOTIF_API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1/notifications';
@@ -28,6 +29,15 @@ function Header() {
         : BACKEND + userAvatar)
     : '';
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const onRepeatNavClick = (navTo, opts = {}) => (e) => {
+    if (isSameNavDest(location.pathname, navTo, opts)) {
+      e.preventDefault();
+      dispatchSameRouteRefetch(navTo);
+    }
+  };
+
   const [menuOpen,       setMenuOpen]       = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm,     setSearchTerm]     = useState('');
@@ -170,7 +180,16 @@ function Header() {
         <div className="header-inner">
 
           {/* ── LOGO ── */}
-          <Link to="/" className="header-logo">
+          <Link
+            to="/"
+            className="header-logo"
+            onClick={(e) => {
+              if (location.pathname === '/') {
+                e.preventDefault();
+                dispatchSameRouteRefetch('/');
+              }
+            }}
+          >
             <LogoIcon />
             <span className="header-logo-text">СвоиМастера</span>
           </Link>
@@ -199,8 +218,10 @@ function Header() {
           {/* ── NAV ── */}
           <nav className="header-nav">
             <NavLink
-              to="/" end
+              to="/"
+              end
               className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+              onClick={onRepeatNavClick('/')}
             >
               Главная
             </NavLink>
@@ -211,18 +232,21 @@ function Header() {
                 <NavLink
                   to="/find-work"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                  onClick={onRepeatNavClick('/find-work')}
                 >
                   Найти работу
                 </NavLink>
                 <NavLink
                   to="/my-listings"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                  onClick={onRepeatNavClick('/my-listings')}
                 >
                   Мои объявления
                 </NavLink>
                 <NavLink
                   to="/chat"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                  onClick={onRepeatNavClick('/chat')}
                 >
                   Сообщения
                   {unread > 0 && (
@@ -232,6 +256,7 @@ function Header() {
                 <NavLink
                   to="/deals"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                  onClick={onRepeatNavClick('/deals')}
                 >
                   Мои сделки
                 </NavLink>
@@ -242,18 +267,21 @@ function Header() {
                 <NavLink
                   to="/find-master"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                  onClick={onRepeatNavClick('/find-master')}
                 >
                   Найти мастера
                 </NavLink>
                 <NavLink
                   to="/my-requests"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                  onClick={onRepeatNavClick('/my-requests')}
                 >
                   Мои заявки
                 </NavLink>
                 <NavLink
                   to="/chat"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                  onClick={onRepeatNavClick('/chat')}
                 >
                   Сообщения
                   {unread > 0 && (
@@ -263,6 +291,7 @@ function Header() {
                 <NavLink
                   to="/deals"
                   className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                  onClick={onRepeatNavClick('/deals')}
                 >
                   Мои сделки
                 </NavLink>
@@ -411,39 +440,39 @@ function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               />
               <div className="header-mobile-menu">
-                <NavLink to="/" end className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                <NavLink to="/" end className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/')(e); setMobileMenuOpen(false); }}>
                   Главная
                 </NavLink>
 
                 {userId && userRole === 'WORKER' ? (
                   <>
                     {/* ══ МОБИЛЬНОЕ МЕНЮ МАСТЕРА ══ */}
-                    <NavLink to="/find-work" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                    <NavLink to="/find-work" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/find-work')(e); setMobileMenuOpen(false); }}>
                       Найти работу
                     </NavLink>
-                    <NavLink to="/my-listings" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                    <NavLink to="/my-listings" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/my-listings')(e); setMobileMenuOpen(false); }}>
                       Мои объявления
                     </NavLink>
-                    <NavLink to="/chat" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                    <NavLink to="/chat" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/chat')(e); setMobileMenuOpen(false); }}>
                       Сообщения {unread > 0 && `• ${unread}`}
                     </NavLink>
-                    <NavLink to="/deals" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                    <NavLink to="/deals" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/deals')(e); setMobileMenuOpen(false); }}>
                       Мои сделки
                     </NavLink>
                   </>
                 ) : userId ? (
                   <>
                     {/* ══ МОБИЛЬНОЕ МЕНЮ ЗАКАЗЧИКА ══ */}
-                    <NavLink to="/find-master" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                    <NavLink to="/find-master" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/find-master')(e); setMobileMenuOpen(false); }}>
                       Найти мастера
                     </NavLink>
-                    <NavLink to="/my-requests" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                    <NavLink to="/my-requests" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/my-requests')(e); setMobileMenuOpen(false); }}>
                       Мои заявки
                     </NavLink>
-                    <NavLink to="/chat" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                    <NavLink to="/chat" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/chat')(e); setMobileMenuOpen(false); }}>
                       Сообщения {unread > 0 && `• ${unread}`}
                     </NavLink>
-                    <NavLink to="/deals" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+                    <NavLink to="/deals" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/deals')(e); setMobileMenuOpen(false); }}>
                       Мои сделки
                     </NavLink>
                   </>

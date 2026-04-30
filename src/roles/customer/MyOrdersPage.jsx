@@ -10,6 +10,7 @@ import {
 } from '../../api';
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
+import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -435,6 +436,10 @@ function isActiveStatus(s) {
   return ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'].includes(s);
 }
 
+function requestIsEditable(req) {
+  return !!(req && req.status === 'OPEN');
+}
+
 export default function MyOrdersPage() {
   const { userId, userName, userLastName, userAvatar } = useAuth();
   const navigate = useNavigate();
@@ -461,6 +466,8 @@ export default function MyOrdersPage() {
   const [offers,        setOffers]        = useState([]);
   const [offersLoading, setOffersLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
+  const [detailOffers, setDetailOffers] = useState([]);
+  const [detailOffersLoading, setDetailOffersLoading] = useState(false);
 
   const photoRef = useRef();
   const titleRef = useRef();
@@ -494,6 +501,29 @@ export default function MyOrdersPage() {
   }, [userId]);
 
   useEffect(() => { if (userId) load(); }, [userId, load]);
+
+  useSameRouteRefetch('/my-requests', load);
+
+  useEffect(() => {
+    if (!detail || detail.status === 'OPEN') {
+      setDetailOffers([]);
+      setDetailOffersLoading(false);
+      return undefined;
+    }
+    let cancelled = false;
+    setDetailOffersLoading(true);
+    getOffersForRequest(detail.id)
+      .then((data) => {
+        if (!cancelled) setDetailOffers(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setDetailOffers([]);
+      })
+      .finally(() => {
+        if (!cancelled) setDetailOffersLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [detail?.id, detail?.status]);
 
   // Lightbox keyboard
   useEffect(() => {
@@ -564,6 +594,7 @@ export default function MyOrdersPage() {
 
   const openEdit = (req, e) => {
     e?.stopPropagation?.();
+    if (!requestIsEditable(req)) return;
     setForm({
       title:       req.title || '',
       description: (req.description && req.description !== 'Без описания') ? req.description : '',
@@ -1095,13 +1126,58 @@ export default function MyOrdersPage() {
               {catNameD && <div style={{marginTop:8}}><span className="ml-tag">{catNameD}</span></div>}
             </div>
             <div className="ml-detail-actions-card">
-              <div className="ml-section-label" style={{marginBottom:4}}>Управление</div>
-              <button className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
-              <button className="ml-btn-outline" onClick={e => { setDetail(null); setTimeout(() => toggleOffers(detail.id, e), 100); }}>
-                Смотреть отклики
-              </button>
+              <div className="ml-section-label" style={{ marginBottom: 4 }}>Управление</div>
+              {requestIsEditable(detail) ? (
+                <>
+                  <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
+                  <button
+                    type="button"
+                    className="ml-btn-outline"
+                    onClick={(e) => { setDetail(null); setTimeout(() => toggleOffers(detail.id, e), 100); }}
+                  >
+                    Смотреть отклики
+                  </button>
+                </>
+              ) : (
+                <p style={{ fontSize: 13, color: '#64748b', margin: 0, lineHeight: 1.5 }}>
+                  Заявка в архиве или уже закрыта — редактировать нельзя. Отклик мастера показан ниже.
+                </p>
+              )}
             </div>
-            <div style={{background:'#fff', borderRadius:12, padding:'16px 20px'}}>
+            {detail.status !== 'OPEN' && (
+              <div style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', border: '1px solid #e8e8e8' }}>
+                <div className="ml-section-label" style={{ marginBottom: 10 }}>Мастер по заявке</div>
+                {detailOffersLoading && <div style={{ fontSize: 13, color: '#94a3b8' }}>Загрузка…</div>}
+                {!detailOffersLoading && detailOffers.length === 0 && (
+                  <p style={{ fontSize: 13, color: '#9ca3af', margin: 0, lineHeight: 1.45 }}>
+                    Отклики не найдены. Обновите страницу или откройте «Мои сделки» — мастер уже мог принять заказ по объявлению.
+                  </p>
+                )}
+                {!detailOffersLoading && detailOffers.map((offer, oi) => (
+                  <div
+                    key={offer.id}
+                    style={{
+                      padding: '12px 0',
+                      borderTop: oi === 0 ? 'none' : '1px solid #f1f5f9',
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, fontSize: 15, color: '#111827' }}>{offer.workerName || 'Мастер'}</div>
+                    <div style={{ fontSize: 14, color: '#e8410a', fontWeight: 700, marginTop: 4 }}>
+                      {offer.price != null ? `${Number(offer.price).toLocaleString('ru-RU')} ₽` : '—'}
+                    </div>
+                    {offer.status === 'ACCEPTED' && (
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', marginTop: 6, display: 'inline-block' }}>
+                        ✓ Принят по этой заявке
+                      </span>
+                    )}
+                    {offer.message && (
+                      <p style={{ fontSize: 13, color: '#64748b', margin: '8px 0 0', lineHeight: 1.45 }}>{offer.message}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ background: '#fff', borderRadius: 12, padding: '16px 20px' }}>
               <div className="ml-section-label">Ваш профиль</div>
               <div style={{display:'flex', alignItems:'center', gap:12, cursor:'pointer'}} onClick={() => navigate('/customer-profile')}>
                 {ava
@@ -1225,8 +1301,8 @@ export default function MyOrdersPage() {
                       <div className="ml-row-date">{req.createdAt ? new Date(req.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) : '—'}</div>
                       <div className="ml-row-stats">
                         <div className="ml-row-stat">
-                          <span className="ml-row-stat-num">{req.offersCount ?? 0}</span>
-                          <span>{pluralOffers(req.offersCount ?? 0)}</span>
+                          <span className="ml-row-stat-num">{req.offersCount != null ? req.offersCount : 0}</span>
+                          <span>{pluralOffers(Number(req.offersCount) || 0)}</span>
                         </div>
                         <div className={isActive ? 'ml-row-stat-status-active' : 'ml-row-stat-status-arch'}>
                           {stLabel}
@@ -1234,7 +1310,9 @@ export default function MyOrdersPage() {
                       </div>
                     </div>
                     <div className="ml-row-actions" onClick={e => e.stopPropagation()}>
-                      <button type="button" className="ml-btn-edit" onClick={e => openEdit(req, e)}>Редактировать</button>
+                      {requestIsEditable(req) && (
+                        <button type="button" className="ml-btn-edit" onClick={e => openEdit(req, e)}>Редактировать</button>
+                      )}
                       <button
                         type="button"
                         className={`ml-btn-copy${copyFlashId === req.id ? ' copied' : ''}`}
@@ -1256,10 +1334,14 @@ export default function MyOrdersPage() {
                   {/* Offers panel */}
                   {isExp && (
                     <div className="ml-offers-panel">
-                      <div className="ml-offers-title">Отклики мастеров</div>
+                      <div className="ml-offers-title">{isActive ? 'Отклики мастеров' : 'Отклики и назначенный мастер'}</div>
                       {offersLoading && <div className="ml-sk" style={{height:60, borderRadius:12}} />}
                       {!offersLoading && offers.length === 0 && (
-                        <p style={{fontSize:13, color:'#9ca3af', margin:0}}>Откликов пока нет. Мастера увидят вашу заявку и предложат цену.</p>
+                        <p style={{fontSize:13, color:'#9ca3af', margin:0, lineHeight:1.45}}>
+                          {isActive
+                            ? 'Откликов пока нет. Мастера увидят вашу заявку и предложат цену.'
+                            : 'Нет данных об откликах. Откройте карточку заявки или раздел «Мои сделки».'}
+                        </p>
                       )}
                       {!offersLoading && offers.map(offer => {
                         const agreedPrice = budget && Number(offer.price) === Number(budget);
@@ -1268,7 +1350,7 @@ export default function MyOrdersPage() {
                           <div
                             key={offer.id}
                             className="ml-offer-card"
-                            style={agreedPrice ? { borderColor: '#22c55e', background: '#f0fdf4' } : {}}
+                            style={agreedPrice || offer.status === 'ACCEPTED' ? { borderColor: '#22c55e', background: '#f0fdf4' } : {}}
                           >
                             <div className="ml-offer-top">
                               <div>
@@ -1291,6 +1373,7 @@ export default function MyOrdersPage() {
                                 </div>
                                 {offer.workerName && <div className="ml-offer-name">{offer.workerName}</div>}
                               </div>
+                              {requestIsEditable(req) && offer.status !== 'ACCEPTED' && (
                               <button
                                 className="ml-accept-btn"
                                 disabled={actionLoading === offer.id}
@@ -1298,6 +1381,10 @@ export default function MyOrdersPage() {
                               >
                                 {actionLoading === offer.id ? '...' : 'Принять'}
                               </button>
+                              )}
+                              {offer.status === 'ACCEPTED' && (
+                                <span style={{ fontSize: 13, fontWeight: 700, color: '#16a34a', whiteSpace: 'nowrap' }}>✓ Принят</span>
+                              )}
                             </div>
                             {offer.message && <p className="ml-offer-msg">{offer.message}</p>}
                           </div>

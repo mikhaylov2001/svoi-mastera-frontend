@@ -4,6 +4,7 @@ import { getCategories, getListings, acceptListingDeal, getMyDeals, cancelPendin
 import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
+import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 
@@ -954,34 +955,42 @@ export default function FindMasterPage() {
     }
   }, [userId, pendingDeals, buildPendingFromDeals]);
 
-  useEffect(() => {
+  const reloadCatalog = useCallback(async () => {
     setLoading(true);
-    const dealsPromise = userId ? getMyDeals(userId).catch(() => []) : Promise.resolve([]);
-    Promise.all([getCategories(), getListings(), dealsPromise])
-      .then(([cats, listings, deals]) => {
-        setCategories(cats);
-        buildPendingFromDeals(deals);
-        const processed = (listings || []).map(item => ({
-          ...item,
-          workerId:  item.workerId,
-          workerName: [item.workerName, item.workerLastName].filter(Boolean).join(' ') || 'Мастер',
-          priceFrom:  item.price || 0,
-        }));
-        setServices(processed);
-        const ids = [...new Set(processed.map(s => s.workerId))];
-        ids.forEach(async (wid) => {
-          try {
-            const r = await fetch(`${API}/workers/${wid}/stats`);
-            if (r.ok) {
-              const st = await r.json();
-              setWorkerStats(prev => ({ ...prev, [wid]: st }));
-            }
-          } catch {}
-        });
-      })
-      .catch(e => setError(e?.message || 'Ошибка загрузки'))
-      .finally(() => setLoading(false));
+    setError('');
+    setWorkerStats({});
+    try {
+      const dealsPromise = userId ? getMyDeals(userId).catch(() => []) : Promise.resolve([]);
+      const [cats, listings, deals] = await Promise.all([getCategories(), getListings(), dealsPromise]);
+      setCategories(cats);
+      buildPendingFromDeals(deals);
+      const processed = (listings || []).map(item => ({
+        ...item,
+        workerId:  item.workerId,
+        workerName: [item.workerName, item.workerLastName].filter(Boolean).join(' ') || 'Мастер',
+        priceFrom:  item.price || 0,
+      }));
+      setServices(processed);
+      const ids = [...new Set(processed.map(s => s.workerId))];
+      ids.forEach(async (wid) => {
+        try {
+          const r = await fetch(`${API}/workers/${wid}/stats`);
+          if (r.ok) {
+            const st = await r.json();
+            setWorkerStats(prev => ({ ...prev, [wid]: st }));
+          }
+        } catch {}
+      });
+    } catch (e) {
+      setError(e?.message || 'Ошибка загрузки');
+    } finally {
+      setLoading(false);
+    }
   }, [userId, buildPendingFromDeals]);
+
+  useEffect(() => { reloadCatalog(); }, [reloadCatalog]);
+
+  useSameRouteRefetch('/find-master', reloadCatalog);
 
   const resetFilters = useCallback(() => {
     setSearchTerm(''); setSearchInput('');

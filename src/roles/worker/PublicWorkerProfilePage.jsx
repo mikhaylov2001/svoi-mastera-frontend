@@ -417,7 +417,7 @@ export default function PublicWorkerProfilePage() {
       {/* Хлебная крошка */}
       <div className="pw-breadcrumb">
         <div className="pw-wrap" style={{ padding:'8px 20px' }}>
-          <button className="pw-breadcrumb-btn" onClick={() => navigate(-1)}>
+          <button className="pw-breadcrumb-btn" onClick={() => navigate('/find-master')}>
             ← Назад
           </button>
         </div>

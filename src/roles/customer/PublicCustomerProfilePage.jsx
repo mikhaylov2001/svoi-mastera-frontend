@@ -301,7 +301,7 @@ export default function PublicCustomerProfilePage() {
 
       <div className="pw-breadcrumb">
         <div className="pw-wrap" style={{ padding:'10px 20px' }}>
-          <button className="pw-breadcrumb-btn" onClick={() => navigate(-1)}>
+          <button className="pw-breadcrumb-btn" onClick={() => navigate('/find-work')}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
             Назад
           </button>

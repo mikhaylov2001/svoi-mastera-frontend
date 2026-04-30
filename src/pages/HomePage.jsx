@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
 import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
+import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
 
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 const BACKEND_ORIGIN = 'https://svoi-mastera-backend-mf3h.onrender.com';
@@ -213,10 +214,14 @@ function CustomerHome({ userId, userName }) {
   const [listings, setListings] = useState([]);
   const [shown, setShown] = useState(8);
 
-  useEffect(() => {
+  const reloadListings = useCallback(() => {
     fetch(`${API}/listings`).then(r => r.ok ? r.json() : [])
       .then(d => setListings(Array.isArray(d) ? d.filter(l => l.active) : [])).catch(() => {});
   }, []);
+
+  useEffect(() => { reloadListings(); }, [reloadListings]);
+
+  useSameRouteRefetch('/', reloadListings);
 
   return (
     <div className="av-page">
@@ -356,22 +361,27 @@ function WorkerHome({ userId, userName }) {
   const [city, setCity] = useState('Йошкар-Ола');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const reloadWorkerHome = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
-    Promise.all([
-      getOpenJobRequestsForWorker(userId).catch(() => []),
-      getUserProfile(userId).catch(() => null),
-      getCategories().catch(() => []),
-    ])
-      .then(([reqs, prof, cats]) => {
-        setOpenRequests(Array.isArray(reqs) ? reqs : []);
-        setCategories(Array.isArray(cats) ? cats : []);
-        const c = (prof && prof.city && String(prof.city).trim()) || '';
-        if (c) setCity(c);
-      })
-      .finally(() => setLoading(false));
+    try {
+      const [reqs, prof, cats] = await Promise.all([
+        getOpenJobRequestsForWorker(userId).catch(() => []),
+        getUserProfile(userId).catch(() => null),
+        getCategories().catch(() => []),
+      ]);
+      setOpenRequests(Array.isArray(reqs) ? reqs : []);
+      setCategories(Array.isArray(cats) ? cats : []);
+      const c = (prof && prof.city && String(prof.city).trim()) || '';
+      if (c) setCity(c);
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
+
+  useEffect(() => { reloadWorkerHome(); }, [reloadWorkerHome]);
+
+  useSameRouteRefetch('/', reloadWorkerHome);
 
   const sortedOpenRequests = useMemo(
     () => [...openRequests].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
