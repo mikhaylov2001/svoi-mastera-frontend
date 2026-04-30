@@ -293,28 +293,30 @@ function CustomerHome({ userId, userName }) {
               <p>Мастера скоро появятся!</p>
             </div>
           ) : (
-            <div className="av-feed-list">
+            <div className="av-cards-stack">
               {sortedListings.map(l => {
                 const img0 = l.photos?.[0];
                 const src = workerListingPhotoUrl(img0);
                 const priceStr = l.price ? `${Number(l.price).toLocaleString('ru-RU')} ₽` : '— ₽';
                 const wname = [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
+                const initials = wname.split(/\s+/).filter(Boolean).map(p => p[0]).join('').slice(0, 2).toUpperCase() || 'М';
                 return (
-                  <Link key={l.id} to={`/listings/${l.id}`} className="av-feed-row">
-                    <div className="av-feed-thumb">
+                  <Link key={l.id} to={`/listings/${l.id}`} className="av-card av-card--listing-row">
+                    <div className="av-card-img">
                       {src ? <img src={src} alt="" /> : '🔧'}
+                      {l.category ? <span className="av-card-cat">{l.category}</span> : null}
                     </div>
-                    <div className="av-feed-main">
-                      <div className="av-feed-title">{l.title || 'Объявление'}</div>
-                      <div className="av-feed-meta">
-                        {l.category && <span>{l.category}</span>}
-                        <span>{wname}</span>
-                        <span>📍 Йошкар-Ола</span>
+                    <div className="av-card-body av-card-body--listing-row">
+                      <div className="av-card-title">{l.title || 'Объявление'}</div>
+                      <div className="av-card-footer">
+                        <div className="av-card-ava">{initials}</div>
+                        <span className="av-card-wname">{wname}</span>
+                        <span className="av-card-city">📍 Йошкар-Ола</span>
                       </div>
                     </div>
-                    <div className="av-feed-side">
-                      <div className="av-feed-price">{priceStr}</div>
-                      {l.priceUnit && <div className="av-feed-cat">{l.priceUnit}</div>}
+                    <div className="av-card-aside">
+                      <div className="av-card-price">{priceStr}</div>
+                      {l.priceUnit ? <span className="av-card-price-unit">{l.priceUnit}</span> : null}
                     </div>
                   </Link>
                 );

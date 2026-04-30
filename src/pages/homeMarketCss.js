@@ -42,7 +42,51 @@ export const HOME_MARKET_CSS = `
     .av-recs-title { font-size: 18px; font-weight: 800; color: #1a1a1a; margin: 0; }
     .av-recs-link { font-size: 13px; color: #e8410a; text-decoration: none; font-weight: 600; }
     .av-recs-link:hover { text-decoration: underline; }
-    .av-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .av-cards-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+    .av-card.av-card--listing-row {
+      flex-direction: row;
+      align-items: stretch;
+      overflow: visible;
+    }
+    .av-card--listing-row .av-card-img {
+      width: 148px;
+      min-width: 148px;
+      height: auto;
+      min-height: 111px;
+      align-self: stretch;
+      aspect-ratio: 4/3;
+    }
+    .av-card-body--listing-row {
+      flex: 1;
+      min-width: 0;
+      justify-content: center;
+    }
+    .av-card-aside {
+      padding: 10px 14px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 4px;
+      flex-shrink: 0;
+      background: #fff;
+    }
+    .av-card-aside .av-card-price { font-size: 17px; }
+    .av-card-aside .av-card-price-unit {
+      display: block;
+      margin-left: 0;
+      text-align: right;
+      font-size: 11px;
+      color: #aaa;
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: 0;
+    }
     .av-card { background: #fff; border-radius: 10px; overflow: hidden; text-decoration: none; color: #1a1a1a; display: flex; flex-direction: column; transition: box-shadow .18s, transform .18s; border: 1px solid #e8e8e8; }
     .av-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.1); transform: translateY(-2px); }
     .av-card-img { aspect-ratio: 4/3; background: #f0f0f0; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #ccc; }
@@ -58,6 +102,12 @@ export const HOME_MARKET_CSS = `
     .av-card-ava img { width: 100%; height: 100%; object-fit: cover; }
     .av-card-wname { font-size: 12px; color: #888; font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; }
     .av-card-city { font-size: 11px; color: #bbb; white-space: nowrap; }
+    .av-card--listing-row .av-card-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1a1a1a;
+      -webkit-line-clamp: 3;
+    }
     .av-more-btn { width: 100%; margin-top: 14px; padding: 13px; background: #fff; border: 2px solid #e8e8e8; border-radius: 8px; font-size: 14px; font-weight: 700; color: #333; cursor: pointer; font-family: Manrope, Arial, sans-serif; transition: all .15s; }
     .av-more-btn:hover { border-color: #e8410a; color: #e8410a; }
     .av-feed-list { display: flex; flex-direction: column; gap: 10px; width: 100%; }
@@ -215,5 +265,16 @@ export const HOME_MARKET_CSS = `
       .av-feed-row { flex-wrap: wrap; }
       .av-feed-thumb { width: 100%; min-width: 0; height: 140px; }
       .av-feed-side { width: 100%; text-align: left; flex-direction: row; justify-content: space-between; align-items: center; min-width: 0; }
+      .av-card.av-card--listing-row { flex-direction: column; }
+      .av-card--listing-row .av-card-img { width: 100%; min-width: 0; aspect-ratio: 16/9; min-height: 0; }
+      .av-card-aside {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0 12px 12px;
+        border-left: none;
+      }
+      .av-card-aside .av-card-price-unit { text-align: left; }
     }
 `;
