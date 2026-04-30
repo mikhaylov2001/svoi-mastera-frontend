@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
@@ -7,7 +7,14 @@ import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
 
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
+const BACKEND_ORIGIN = 'https://svoi-mastera-backend-mf3h.onrender.com';
 const ALL_CATS = Object.values(CATEGORIES_BY_SECTION).flat();
+
+function workerListingPhotoUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  return BACKEND_ORIGIN + url;
+}
 
 const CAT_PHOTOS = {
   'remont-kvartir':       'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80',
@@ -203,14 +210,17 @@ const css = `
 
 function CustomerHome({ userId, userName }) {
   const navigate = useNavigate();
-  const [q, setQ] = useState('');
   const [listings, setListings] = useState([]);
-  const [shown, setShown] = useState(8);
 
   useEffect(() => {
     fetch(`${API}/listings`).then(r => r.ok ? r.json() : [])
       .then(d => setListings(Array.isArray(d) ? d.filter(l => l.active) : [])).catch(() => {});
   }, []);
+
+  const sortedListings = useMemo(
+    () => [...listings].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
+    [listings],
+  );
 
   return (
     <div className="av-page">
@@ -271,50 +281,45 @@ function CustomerHome({ userId, userName }) {
             </div>
           </div>
 
-          {/* ── ОБЪЯВЛЕНИЯ ── */}
-          <div className="av-recs-hdr">
+          {/* ── ОБЪЯВЛЕНИЯ — лента как у мастера / авито ── */}
+          <div className="av-recs-hdr av-recs-hdr--solo">
             <h2 className="av-recs-title">Объявления мастеров</h2>
-            <Link to="/find-master" className="av-recs-link">Смотреть все →</Link>
           </div>
 
-          {listings.length === 0 ? (
+          {sortedListings.length === 0 ? (
             <div className="av-empty">
               <div className="av-empty-ico">🔍</div>
               <h3>Пока нет объявлений</h3>
               <p>Мастера скоро появятся!</p>
             </div>
           ) : (
-            <>
-              <div className="av-cards-grid">
-                {listings.slice(0, shown).map(l => (
-                  <Link key={l.id} to={`/listings/${l.id}`} className="av-card">
-                    <div className="av-card-img">
-                      {l.photos?.length ? <img src={l.photos[0]} alt=""/> : '🔧'}
-                      {l.category && <span className="av-card-cat">{l.category}</span>}
+            <div className="av-feed-list">
+              {sortedListings.map(l => {
+                const img0 = l.photos?.[0];
+                const src = workerListingPhotoUrl(img0);
+                const priceStr = l.price ? `${Number(l.price).toLocaleString('ru-RU')} ₽` : '— ₽';
+                const wname = [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
+                return (
+                  <Link key={l.id} to={`/listings/${l.id}`} className="av-feed-row">
+                    <div className="av-feed-thumb">
+                      {src ? <img src={src} alt="" /> : '🔧'}
                     </div>
-                    <div className="av-card-body">
-                      <div className="av-card-price">
-                        {l.price ? Number(l.price).toLocaleString('ru-RU') : '—'} ₽
-                        <span className="av-card-price-unit">{l.priceUnit}</span>
+                    <div className="av-feed-main">
+                      <div className="av-feed-title">{l.title || 'Объявление'}</div>
+                      <div className="av-feed-meta">
+                        {l.category && <span>{l.category}</span>}
+                        <span>{wname}</span>
+                        <span>📍 Йошкар-Ола</span>
                       </div>
-                      <div className="av-card-title">{l.title}</div>
-                      <div className="av-card-footer">
-                        <div className="av-card-ava">
-                          {l.workerAvatar?.length > 10 ? <img src={l.workerAvatar} alt=""/> : (l.workerName||'М')[0]}
-                        </div>
-                        <span className="av-card-wname">{[l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер'}</span>
-                        <span className="av-card-city">📍 Йошкар-Ола</span>
-                      </div>
+                    </div>
+                    <div className="av-feed-side">
+                      <div className="av-feed-price">{priceStr}</div>
+                      {l.priceUnit && <div className="av-feed-cat">{l.priceUnit}</div>}
                     </div>
                   </Link>
-                ))}
-              </div>
-              {shown < listings.length && (
-                <button className="av-more-btn" onClick={()=>setShown(s=>s+8)}>
-                  Показать ещё · осталось {listings.length - shown}
-                </button>
-              )}
-            </>
+                );
+              })}
+            </div>
           )}
         </div>
 
@@ -329,14 +334,6 @@ function CustomerHome({ userId, userName }) {
       </div>
     </div>
   );
-}
-
-const BACKEND_ORIGIN = 'https://svoi-mastera-backend-mf3h.onrender.com';
-
-function workerListingPhotoUrl(url) {
-  if (!url) return null;
-  if (url.startsWith('http') || url.startsWith('data:')) return url;
-  return BACKEND_ORIGIN + url;
 }
 
 /** Город после предлога «в» (предложный падеж) */
