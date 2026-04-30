@@ -7,6 +7,7 @@ import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import {
   getMyJobRequests, getOffersForRequest, acceptOffer,
   getCategories, createJobRequest, updateJobRequest,
+  getMyDeals,
 } from '../../api';
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
@@ -457,6 +458,19 @@ function isActiveStatus(s) {
   return ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'].includes(s);
 }
 
+/** Скрыть из «Активных», если по заявке сделка уже COMPLETED, а в заявке ещё старый статус. */
+function mergeRequestStatusesFromCustomerDeals(requests, deals, customerUserId) {
+  if (!requests?.length || !customerUserId) return requests || [];
+  const custDeals = (deals || []).filter((d) => String(d.customerId) === String(customerUserId));
+  return requests.map((r) => {
+    const completedDeal = custDeals.some(
+      (d) => d.status === 'COMPLETED' && String(d.jobRequestId || '') === String(r.id),
+    );
+    if (completedDeal && r.status !== 'COMPLETED') return { ...r, status: 'COMPLETED' };
+    return r;
+  });
+}
+
 function requestIsEditable(req) {
   return !!(req && req.status === 'OPEN');
 }
@@ -508,12 +522,17 @@ export default function MyOrdersPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [reqs, cats] = await Promise.all([getMyJobRequests(userId), getCategories()]);
-      setRequests(reqs || []);
+      const [reqs, cats, deals] = await Promise.all([
+        getMyJobRequests(userId),
+        getCategories(),
+        getMyDeals(userId).catch(() => []),
+      ]);
+      const merged = mergeRequestStatusesFromCustomerDeals(reqs || [], deals, userId);
+      setRequests(merged);
       setCategories(cats || []);
       setDetail(prev => {
         if (!prev) return null;
-        return (reqs || []).find(r => r.id === prev.id) || prev;
+        return (merged || []).find(r => r.id === prev.id) || prev;
       });
     } catch (e) {
       console.error(e);
