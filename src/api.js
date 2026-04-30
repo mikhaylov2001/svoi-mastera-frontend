@@ -198,6 +198,11 @@ export async function getReviewsByCustomer(customerUserId) {
   return apiCall(`/customers/${customerUserId}/reviews`);
 }
 
+/** Средний рейтинг заказчика по отзывам мастеров (публично). */
+export async function getCustomerStats(customerUserId) {
+  return apiCall(`/customers/${customerUserId}/stats`);
+}
+
 // ── WORKER SERVICES ──
 export async function getWorkerServicesByWorker(workerUserId) {
   return apiCall(`/workers/${workerUserId}/services`);

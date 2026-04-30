@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { getOpenJobRequestsForWorker, createJobOffer, getCategories } from '../../api';
+import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats } from '../../api';
 import { formatJobRequestBudgetLabel } from '../../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
@@ -14,6 +14,16 @@ const CAT_ALL = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
   cats.forEach(cat => { CAT_ALL[cat.slug] = { ...cat, photo: heroPhotoHiRes(cat.photo) }; })
 );
+
+function reviewsCountLabel(n) {
+  const x = Number(n) || 0;
+  const abs = x % 100;
+  const d = x % 10;
+  if (abs > 10 && abs < 20) return `${x} отзывов`;
+  if (d === 1) return `${x} отзыв`;
+  if (d >= 2 && d <= 4) return `${x} отзыва`;
+  return `${x} отзывов`;
+}
 
 const fw2css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -685,6 +695,27 @@ const fw2css = `
   }
   .fw2-stars { color: #f59e0b; font-size: 11px; letter-spacing: .5px; }
   .fw2-rating-val { font-weight: 800; color: #1a1a1a; font-size: 12px; }
+  .fw2-rating-opt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    border: 1.5px solid #e8e8e8;
+    background: #fafafa;
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color .15s, background .15s, color .15s;
+  }
+  .fw2-rating-opt:last-child { margin-bottom: 0; }
+  .fw2-rating-opt:hover { border-color: #e8410a; background: #fff8f5; }
+  .fw2-rating-opt.active { border-color: #e8410a; background: #fff5f2; color: #e8410a; font-weight: 700; }
+  .fw2-stars-filter { color: #f59e0b; font-size: 13px; letter-spacing: .5px; }
   .fw2-card-footer {
     display: flex;
     flex-direction: column;
@@ -916,6 +947,8 @@ export default function FindWorkPage() {
   const [priceMax,      setPriceMax]      = useState('');
   const [onlyWithPhoto, setOnlyWithPhoto] = useState(false);
   const [sortBy,        setSortBy]        = useState('recency');
+  const [ratingMin,     setRatingMin]     = useState(0);
+  const [customerStats, setCustomerStats] = useState({});
 
   React.useEffect(() => {
     if (!lightbox) return;
@@ -965,6 +998,34 @@ export default function FindWorkPage() {
     }
   };
 
+  useEffect(() => {
+    if (!requests?.length) return undefined;
+    const ids = [...new Set(requests.map(r => r.customerId).filter(Boolean))];
+    let cancelled = false;
+    (async () => {
+      const pairs = await Promise.all(
+        ids.map(async (cid) => {
+          try {
+            const st = await getCustomerStats(cid);
+            return [String(cid), st];
+          } catch {
+            return [String(cid), { averageRating: 0, reviewsCount: 0 }];
+          }
+        }),
+      );
+      if (!cancelled) {
+        setCustomerStats(prev => {
+          const next = { ...prev };
+          pairs.forEach(([id, st]) => {
+            next[id] = st;
+          });
+          return next;
+        });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [requests]);
+
   const getRequestsForCategory = (cat) =>
     requests.filter(r => r.categoryId === cat.id);
 
@@ -1007,7 +1068,7 @@ export default function FindWorkPage() {
   const resetCategoryFilters = useCallback(() => {
     setSearchInput(''); setSearchTerm('');
     setPriceMin(''); setPriceMax('');
-    setOnlyWithPhoto(false); setSortBy('recency');
+    setOnlyWithPhoto(false); setSortBy('recency'); setRatingMin(0);
   }, []);
 
   // ═══ ЭКРАН 3: детальная заявка ═══
@@ -1017,6 +1078,10 @@ export default function FindWorkPage() {
     const catStyle = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '📋', color: '#f3f4f6' };
     const budget = formatJobRequestBudgetLabel(req);
     const listPrice = jobRequestListPrice(req);
+    const custRatingStats = req.customerId ? customerStats[String(req.customerId)] : null;
+    const custAvg = custRatingStats?.averageRating ?? 0;
+    const custCnt = custRatingStats?.reviewsCount ?? 0;
+    const custStars = Math.min(5, Math.max(0, Math.round(Number(custAvg) || 0)));
 
     return (
       <>
@@ -1145,6 +1210,11 @@ export default function FindWorkPage() {
                         {[req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
                       </div>
                       <div style={{ fontSize:12, color:'#22c55e', fontWeight:600 }}>● Активный заказчик</div>
+                      <div style={{ fontSize:12, color:'#6b7280', marginTop:6, display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>
+                        <span style={{ color:'#f59e0b', letterSpacing:1 }}>{'★'.repeat(custStars)}{'☆'.repeat(5 - custStars)}</span>
+                        <span style={{ fontWeight:800, color:'#111827' }}>{custAvg.toFixed(1)}</span>
+                        <span>({reviewsCountLabel(custCnt)})</span>
+                      </div>
                     </div>
                     <div style={{ color:'#9ca3af', fontSize:18 }}>›</div>
                   </a>
@@ -1228,6 +1298,12 @@ export default function FindWorkPage() {
             !(req.description || '').toLowerCase().includes(q)
           ) return false;
         }
+        if (ratingMin > 0) {
+          const cid = req.customerId;
+          const st = cid ? customerStats[String(cid)] : null;
+          const avg = st?.averageRating ?? 0;
+          if (avg < ratingMin) return false;
+        }
         return true;
       })
       .sort((a, b) => {
@@ -1241,10 +1317,15 @@ export default function FindWorkPage() {
           const pb = jobRequestListPrice(b) ?? -Infinity;
           return pb - pa;
         }
+        if (sortBy === 'ratingDesc') {
+          const ra = a.customerId ? (customerStats[String(a.customerId)]?.averageRating ?? 0) : 0;
+          const rb = b.customerId ? (customerStats[String(b.customerId)]?.averageRating ?? 0) : 0;
+          if (rb !== ra) return rb - ra;
+        }
         return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
       });
 
-    const hasFilters = onlyWithPhoto || priceMin || priceMax || searchTerm;
+    const hasFilters = onlyWithPhoto || priceMin || priceMax || searchTerm || ratingMin > 0;
 
     return (
       <div className="fw2-page">
@@ -1325,8 +1406,30 @@ export default function FindWorkPage() {
                     <input className="fw2-price-inp" type="number" min="0" placeholder="∞" value={priceMax} onChange={e => setPriceMax(e.target.value)} />
               </div>
             </div>
-          </div>
+            </div>
         </div>
+
+            {/* Рейтинг заказчика (по отзывам мастеров) */}
+            <div className="fw2-filter-card">
+              <div className="fw2-filter-title">Рейтинг заказчика</div>
+              <div className="fw2-filter-body" style={{ display:'flex', flexDirection:'column', gap:0 }}>
+                {[
+                  { r: 0,   label: 'Любой', stars: '' },
+                  { r: 4,   label: '4.0+', stars: '★★★★' },
+                  { r: 4.5, label: '4.5+', stars: '★★★★☆' },
+                ].map(({ r, label, stars }) => (
+                  <button
+                    key={String(r)}
+                    type="button"
+                    className={`fw2-rating-opt${ratingMin === r ? ' active' : ''}`}
+                    onClick={() => setRatingMin(r)}
+                  >
+                    {stars ? <span className="fw2-stars-filter">{stars}</span> : null}
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Параметры */}
             <div className="fw2-filter-card">
@@ -1354,9 +1457,10 @@ export default function FindWorkPage() {
               <span className="fw2-sort-label">Сортировать:</span>
               <div className="fw2-sort-opts">
                 {[
-                  { val: 'recency',   label: 'Новые' },
-                  { val: 'priceAsc',  label: 'Цена ↑' },
-                  { val: 'priceDesc', label: 'Цена ↓' },
+                  { val: 'recency',    label: 'Новые' },
+                  { val: 'ratingDesc', label: 'Рейтинг' },
+                  { val: 'priceAsc',   label: 'Цена ↑' },
+                  { val: 'priceDesc',  label: 'Цена ↓' },
                 ].map(o => (
                   <button
                     key={o.val}
@@ -1420,6 +1524,10 @@ export default function FindWorkPage() {
                   const activeCustomerSub = req.addressText && String(req.addressText).trim()
                     ? `● Активный заказчик · ${String(req.addressText).trim()}`
                     : `● Активный заказчик · ${cityLine}`;
+                  const cst = req.customerId ? customerStats[String(req.customerId)] : null;
+                  const cAvg = cst?.averageRating ?? 0;
+                  const cCnt = cst?.reviewsCount ?? 0;
+                  const cFill = Math.min(5, Math.max(0, Math.round(Number(cAvg) || 0)));
 
                   return (
                     <div key={req.id} className="fw2-card">
@@ -1553,9 +1661,12 @@ export default function FindWorkPage() {
                         </div>
 
                         <div className="fw2-card-stats">
-                          <span className="fw2-stars">{'☆'.repeat(5)}</span>
-                          <span className="fw2-rating-val">0.0</span>
-                          <span>(0 отзывов)</span>
+                          <span className="fw2-stars">
+                            {'★'.repeat(cFill)}
+                            {'☆'.repeat(5 - cFill)}
+                          </span>
+                          <span className="fw2-rating-val">{cAvg.toFixed(1)}</span>
+                          <span>({reviewsCountLabel(cCnt)})</span>
                         </div>
 
                         <div className="fw2-card-footer">
