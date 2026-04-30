@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 
@@ -262,7 +263,7 @@ export default function PublicCustomerProfilePage() {
         <div className="pw-card-loc"><span>📍</span><span>{customer?.city || 'Йошкар-Ола'}</span></div>
         {item.createdAt && <div className="pw-card-date">{new Date(item.createdAt).toLocaleDateString('ru-RU', {day:'numeric',month:'long',year:'numeric'})}</div>}
 
-        {isDeal && userId === customerId && !item.hasReview && (
+        {isDeal && userId === customerId && dealEligibleForReviews(item) && !item.hasReview && (
           <button className="pw-card-review-btn" onClick={e => { e.stopPropagation(); setReviewDeal({...item,_reviewByWorker:false}); setReviewModal(true); setReviewDone(false); setReviewForm({rating:5,text:''}); }}>
             ⭐ Оставить отзыв
           </button>
@@ -270,7 +271,7 @@ export default function PublicCustomerProfilePage() {
         {isDeal && userId === customerId && item.hasReview && (
           <div className="pw-card-review-done">✓ Отзыв оставлен</div>
         )}
-        {isDeal && userId !== customerId && item.workerId === userId && !item.hasWorkerReview && (
+        {isDeal && userId !== customerId && item.workerId === userId && dealEligibleForReviews(item) && !item.hasWorkerReview && (
           <button className="pw-card-review-btn" onClick={e => { e.stopPropagation(); setReviewDeal({...item,_reviewByWorker:true}); setReviewModal(true); setReviewDone(false); setReviewForm({rating:5,text:''}); }}>
             ⭐ Отзыв заказчику
           </button>

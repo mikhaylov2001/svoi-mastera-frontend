@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getMyDeals, uploadAvatar, getUserProfile } from '../../api';
 import ReviewForm from '../../components/ReviewForm';
+import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import '../../styles/profileDashboard.css';
 
 const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
@@ -309,7 +310,7 @@ export default function CustomerProfilePage() {
                             </div>
                           </Link>
 
-                        {s === 'COMPLETED' && !deal.hasReview && (
+                        {s === 'COMPLETED' && dealEligibleForReviews(deal) && !deal.hasReview && (
                           <div className="pp-rv">
                             {reviewFor === deal.id
                               ? <ReviewForm dealId={deal.id} onSuccess={() => { setReviewFor(null); reloadDeals(); }} />

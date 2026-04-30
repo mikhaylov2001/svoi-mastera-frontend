@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getMyDeals, getListingsByWorker, getReviewsByWorker, uploadAvatar, getUserProfile } from '../../api';
 import ReviewForm from '../../components/ReviewForm';
+import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import '../../styles/profileDashboard.css';
 
 const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
@@ -409,7 +410,7 @@ export default function WorkerProfilePage() {
                               <span className={`pp-dc-btn ${si.btnStyle}`}>{si.btn} →</span>
                           </div>
                         </Link>
-                          {s === 'COMPLETED' && !deal.hasWorkerReview && (
+                          {s === 'COMPLETED' && dealEligibleForReviews(deal) && !deal.hasWorkerReview && (
                             <div className="pp-rv">
                               {reviewFor === deal.id ? (
                                 <ReviewForm
@@ -489,7 +490,7 @@ export default function WorkerProfilePage() {
                           </div>
                         </Link>
 
-                        {s === 'COMPLETED' && !deal.hasWorkerReview && (
+                        {s === 'COMPLETED' && dealEligibleForReviews(deal) && !deal.hasWorkerReview && (
                           <div className="pp-rv">
                             {reviewFor === deal.id ? (
                               <ReviewForm

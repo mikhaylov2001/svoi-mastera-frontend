@@ -7,6 +7,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { dealsWdCss } from '../shared/dealsWdStyles';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
+import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 
 const DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
@@ -317,7 +318,7 @@ export default function DealsPage() {
                 <div style={{ fontSize: 32, marginBottom: 4 }}>🏆</div>
                 <div style={{ fontSize: 14, fontWeight: 800, color: '#111827', marginBottom: 4 }}>Сделка завершена!</div>
                 <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>Обе стороны подтвердили выполнение</div>
-                {!detail.hasReview && detail.workerId ? (
+                {!detail.hasReview && detail.workerId && dealEligibleForReviews(detail) ? (
                   <button
                     type="button"
                     onClick={() => { setReviewForm({ rating: 5, text: '' }); setReviewStatus('idle'); setReviewDeal(detail); }}
@@ -615,7 +616,7 @@ export default function DealsPage() {
                       )}
                     </>)}
                     {isDone && (<>
-                      {!d.hasReview && d.workerId && (
+                      {!d.hasReview && d.workerId && dealEligibleForReviews(d) && (
                         <button
                           type="button"
                           className="wd-btn-primary"

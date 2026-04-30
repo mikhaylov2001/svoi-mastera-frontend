@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaMapMarkerAlt, FaCalendarAlt, FaBell, FaUser, FaCreditCard, FaClipboardList, FaCheckCircle, FaClock } from 'react-icons/fa';
 import { getCustomerProfile, getMyDeals, createReview } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import './ProfilePage.css';
 
 const STATUS_MAP = {
@@ -163,11 +164,9 @@ export default function ProfilePage() {
 
           {!loading && deals.slice(0, 5).map(deal => {
             const st = STATUS_MAP[deal.status] || { label: deal.status, cls: 'badge-new' };
-            // Показываем кнопку отзыва только если:
-            // 1. Сделка завершена
-            // 2. Есть мастер
-            // 3. Ещё НЕ оставлен отзыв
-            const canReview = deal.status === 'COMPLETED' && deal.workerName && !deal.hasReview;
+            // Показываем кнопку отзыва только если сделка завершена с обеих сторон,
+            // есть мастер и отзыв ещё не оставлен
+            const canReview = dealEligibleForReviews(deal) && deal.workerName && !deal.hasReview;
 
             return (
               <div className="profile-deal-row" key={deal.id}>
