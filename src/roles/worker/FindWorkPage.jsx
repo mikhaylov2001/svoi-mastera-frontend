@@ -887,7 +887,7 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
         <form onSubmit={onSubmit}>
           <div className="fw-modal-body">
             <div className="fw-modal-field">
-              <label className="fw-modal-label">Ваша цена, ₽ *</label>
+              <label className="fw-modal-label">Стоимость работы, ₽ *</label>
               <input
                 type="number"
                 className="fw-modal-input"
@@ -898,11 +898,6 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
                 min="1"
                 autoFocus
               />
-              {(request.budgetTo != null || request.budgetFrom != null) && (
-                <span className="fw-modal-hint">
-                  Заказчик указал: {formatJobRequestBudgetLabel(request)}
-                </span>
-              )}
             </div>
             <div className="fw-modal-field">
               <label className="fw-modal-label">Срок выполнения (дней)</label>
@@ -1053,7 +1048,12 @@ export default function FindWorkPage() {
 
   const handleOpenOfferModal = (request) => {
     setShowOfferModal(request);
-    setOfferForm({ price: '', comment: '', estimatedDays: '' });
+    const p = jobRequestListPrice(request);
+    setOfferForm({
+      price: p != null && !Number.isNaN(p) ? String(p) : '',
+      comment: '',
+      estimatedDays: '',
+    });
   };
 
   const handleCloseOfferModal = () => {
@@ -1094,7 +1094,6 @@ export default function FindWorkPage() {
     const hasPhoto = req.photos && req.photos.length > 0;
     const catStyle = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '📋', color: '#f3f4f6' };
     const budget = formatJobRequestBudgetLabel(req);
-    const listPrice = jobRequestListPrice(req);
     const custRatingStats = req.customerId ? customerStats[String(req.customerId)] : null;
     const custAvg = custRatingStats?.averageRating ?? 0;
     const custCnt = custRatingStats?.reviewsCount ?? 0;
@@ -1105,8 +1104,20 @@ export default function FindWorkPage() {
       <div style={{ background:'#f5f5f5', minHeight:'100vh' }}>
         <div style={{ background:'#fff', borderBottom:'1px solid #e5e7eb', padding:'10px 0' }}>
           <div className="container">
-            <button className="cats-back-link" onClick={() => { setSelectedRequest(null); setActivePhotoIdx(0); }}>
-              ← Назад к заявкам
+            <button
+              type="button"
+              onClick={() => { setSelectedRequest(null); setActivePhotoIdx(0); }}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '8px 18px 8px 14px',
+                border: '1px solid #e5e7eb', borderRadius: 999,
+                background: '#fff', color: '#374151', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit',
+                boxShadow: '0 1px 2px rgba(0,0,0,.04)',
+              }}
+            >
+              <span style={{ fontSize: 16, lineHeight: 1, color: '#6b7280', fontWeight: 700 }}>←</span>
+              Назад к заявкам
             </button>
           </div>
         </div>
@@ -1170,7 +1181,7 @@ export default function FindWorkPage() {
                   {[
                     selectedCategory && ['Категория', selectedCategory.name],
                     req.addressText  && ['Адрес',     req.addressText],
-                    ['Цена в заявке', budget],
+                    ['Стоимость', budget],
                     req.createdAt    && ['Опубликована', new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })],
                   ].filter(Boolean).map(([label, value]) => (
                     <div key={label} style={{ display:'flex', justifyContent:'space-between', padding:'12px 0', borderBottom:'1px solid #f3f4f6', fontSize:14 }}>
@@ -1185,11 +1196,9 @@ export default function FindWorkPage() {
             <div style={{ position:'sticky', top:72, display:'flex', flexDirection:'column', gap:12 }}>
               <div style={{ background:'#fff', borderRadius:12, padding:'20px' }}>
                 <div style={{ marginBottom:14 }}>
-                  <div style={{ fontSize:12, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Цена в заявке</div>
+                  <div style={{ fontSize:12, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Стоимость</div>
                   <div style={{ fontSize:28, fontWeight:900, color:'#111827' }}>{budget}</div>
-                  <div style={{ fontSize:12, color:'#6b7280', marginTop:4 }}>
-                    Заявленная цена заказчика. При отклике вы указываете свою цену и комментарий.
-                </div>
+                  <div style={{ fontSize:13, color:'#9ca3af', marginTop:4, fontWeight:500 }}>за работу</div>
                 </div>
                 <button
                   onClick={() => handleOpenOfferModal(req)}
@@ -1236,14 +1245,6 @@ export default function FindWorkPage() {
                     <div style={{ color:'#9ca3af', fontSize:18 }}>›</div>
                   </a>
                 </div>
-              )}
-
-              {req.customerGuaranteeTermsAccepted && (
-              <div style={{ background:'#fff', borderRadius:12, padding:'14px 20px' }}>
-                <div style={{ fontSize:12, color:'#9ca3af', lineHeight:1.6 }}>
-                  ✅ Безопасная сделка — оплата только после выполнения работы
-                </div>
-              </div>
               )}
             </div>
           </div>
@@ -1680,9 +1681,6 @@ export default function FindWorkPage() {
                         <div className="fw2-card-badges">
                           <span className="fw2-badge fw2-badge-v">✓ Открыта</span>
                           <span className="fw2-badge fw2-badge-f">⚡ Заявка</span>
-                          {req.customerGuaranteeTermsAccepted && (
-                            <span className="fw2-badge fw2-badge-g">🛡 Безопасная сделка</span>
-                          )}
                         </div>
 
                         {customerReviewsPath ? (
@@ -1715,7 +1713,7 @@ export default function FindWorkPage() {
                             {budgetLabel !== 'Не указана' ? (
                               <>
                                 <div className="fw2-card-price">{budgetLabel}</div>
-                                <span className="fw2-card-price-unit">в заявке</span>
+                                <span className="fw2-card-price-unit">за работу</span>
                               </>
                             ) : (
                               <>

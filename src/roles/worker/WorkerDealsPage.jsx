@@ -100,7 +100,15 @@ export default function WorkerDealsPage() {
   const handleStart = async (dealId, e) => {
     e?.stopPropagation?.();
     setActionId(dealId);
-    try { await workerStartDeal(userId, dealId); await load(); } catch {}
+    try {
+      const updated = await workerStartDeal(userId, dealId);
+      if (updated?.id) {
+        const uid = String(updated.id);
+        setDeals(prev => prev.map(d => String(d.id) === uid ? { ...d, ...updated } : d));
+        setDetail(prev => (prev && String(prev.id) === uid ? { ...prev, ...updated } : prev));
+      }
+      await load();
+    } catch {}
     setActionId(null);
   };
 

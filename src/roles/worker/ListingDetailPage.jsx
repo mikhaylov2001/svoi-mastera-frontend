@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { acceptListingDeal, recordListingView, getMyDeals } from '../../api';
+import { acceptListingDeal, recordListingView, getMyDeals, workerStartDeal } from '../../api';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
 import { dealsWdCss } from '../shared/dealsWdStyles';
 
@@ -38,14 +38,19 @@ const css = `
   .ld-bread { background: #fff; border-bottom: 1px solid #eaeaea; }
   .ld-bread-inner { max-width: 1180px; margin: 0 auto; padding: 11px 20px; display: flex; align-items: center; gap: 7px; font-size: 13px; color: #aaa; flex-wrap: wrap; }
   .ld-back-btn {
-    display: inline-flex; align-items: center; gap: 5px;
-    margin-right: 6px; padding: 7px 12px 7px 10px;
-    border: 1px solid #e5e5e5; border-radius: 10px;
-    background: #fafafa; color: #333; font-size: 13px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 18px 8px 14px;
+    border: 1px solid #e5e7eb; border-radius: 999px;
+    background: #fff; color: #374151; font-size: 13px; font-weight: 600;
     font-family: inherit; cursor: pointer; flex-shrink: 0;
-    transition: background .15s, border-color .15s, color .15s;
+    transition: background .15s, border-color .15s, color .15s, box-shadow .15s;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
   }
-  .ld-back-btn:hover { background: #fff7ed; border-color: #fdba74; color: #c2410c; }
+  .ld-back-btn:hover { background: #fafafa; border-color: #d1d5db; color: #111827; }
+  .ld-back-btn .ld-back-ico {
+    font-size: 16px; line-height: 1; color: #6b7280; font-weight: 700;
+    letter-spacing: -0.06em;
+  }
   .ld-bread a { color: #888; text-decoration: none; transition: color .15s; }
   .ld-bread a:hover { color: #e8410a; }
   .ld-bread-sep { color: #ddd; }
@@ -247,8 +252,11 @@ export default function ListingDetailPage() {
   const [activePhoto, setActivePhoto] = useState(0);
   const [lightbox, setLightbox] = useState(false);
   const [accepting, setAccepting] = useState(false);
-  const [accepted, setAccepted] = useState(false);
+  /** Сделка заказчика по этому объявлению (с бэка — сохраняется после обновления страницы) */
+  const [customerListingDeal, setCustomerListingDeal] = useState(null);
   const [actionError, setActionError] = useState('');
+  const [workerAccepting, setWorkerAccepting] = useState(false);
+  const [workerDealError, setWorkerDealError] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -282,6 +290,34 @@ export default function ListingDetailPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id, userId]);
+
+  /** Восстановить сделку заказчика по этому listing после F5 */
+  useEffect(() => {
+    if (!listing?.id || !userId || String(userId) === String(listing.workerId)) {
+      setCustomerListingDeal(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const deals = await getMyDeals(userId);
+        if (cancelled) return;
+        const lid = String(listing.id);
+        const uid = String(userId);
+        const match = (deals || []).find(
+          d => String(d.listingId || '') === lid && String(d.customerId || '') === uid,
+        );
+        if (!match || TERMINAL_DEAL_STATUSES.includes(String(match.status || ''))) {
+          setCustomerListingDeal(null);
+        } else {
+          setCustomerListingDeal(match);
+        }
+      } catch {
+        if (!cancelled) setCustomerListingDeal(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [listing?.id, listing?.workerId, userId]);
 
   /* Сделка по этому объявлению — показываем заказчика в сайдбаре (как на странице «Мои сделки») */
   useEffect(() => {
@@ -335,11 +371,49 @@ export default function ListingDetailPage() {
     setAccepting(true);
     try {
       await acceptListingDeal(userId, listing.id);
-      setAccepted(true);
+      const deals = await getMyDeals(userId);
+      const lid = String(listing.id);
+      const uid = String(userId);
+      const match = (deals || []).find(
+        d => String(d.listingId || '') === lid && String(d.customerId || '') === uid,
+      );
+      if (match && !TERMINAL_DEAL_STATUSES.includes(String(match.status || ''))) {
+        setCustomerListingDeal(match);
+      } else {
+        setCustomerListingDeal(null);
+      }
     } catch (e) {
       setActionError(e?.message || 'Не удалось принять работу. Попробуйте ещё раз.');
     } finally {
       setAccepting(false);
+    }
+  };
+
+  const reloadListingDealForWorker = async () => {
+    if (!listing?.id || !userId) return;
+    const data = await getMyDeals(userId);
+    const lid = String(listing.id);
+    const wid = String(userId);
+    const matches = (data || []).filter(
+      d => String(d.workerId || '') === wid
+        && String(d.listingId || '') === lid
+        && !TERMINAL_DEAL_STATUSES.includes(String(d.status || '')),
+    );
+    matches.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    setListingDeal(matches[0] || null);
+  };
+
+  const handleWorkerAcceptOnListing = async () => {
+    if (!userId || !listingDeal?.id) { navigate('/login'); return; }
+    setWorkerDealError('');
+    setWorkerAccepting(true);
+    try {
+      await workerStartDeal(userId, listingDeal.id);
+      await reloadListingDealForWorker();
+    } catch (e) {
+      setWorkerDealError(e?.message || 'Не удалось принять заказ. Попробуйте ещё раз.');
+    } finally {
+      setWorkerAccepting(false);
     }
   };
 
@@ -368,9 +442,9 @@ export default function ListingDetailPage() {
 
   const workerName = [listing.workerName, listing.workerLastName].filter(Boolean).join(' ') || 'Мастер';
   const initials = (listing.workerName || 'М')[0].toUpperCase();
-  const rating = stats?.averageRating || listing.workerRating || 0;
-  const reviews = stats?.reviewCount || 0;
-  const completed = stats?.completedWorksCount || 0;
+  const rating = stats?.averageRating ?? listing.workerRating ?? 0;
+  const reviews = Number(stats?.reviewsCount ?? stats?.reviewCount ?? 0);
+  const completed = stats?.completedWorksCount ?? 0;
   const isOwnListing = String(userId) === String(listing.workerId);
   const ownerFullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
   const ownerAva = userAvatar
@@ -419,7 +493,8 @@ export default function ListingDetailPage() {
             onClick={() => navigate(catSlug ? `/find-master/${catSlug}` : '/find-master')}
             aria-label="Назад"
           >
-            ← Назад
+            <span className="ld-back-ico" aria-hidden>←</span>
+            Назад
           </button>
           <span className="ld-bread-sep" style={{ color: '#e5e5e5' }}>|</span>
           <Link to="/">Главная</Link>
@@ -443,7 +518,6 @@ export default function ListingDetailPage() {
             <h1 className="ld-title">{listing.title}</h1>
             <div className="ld-actions-row">
               <button className="ld-action-btn">♡ В избранное</button>
-              <button className="ld-action-btn">📝 Добавить заметку</button>
             </div>
           </div>
 
@@ -537,29 +611,44 @@ export default function ListingDetailPage() {
                   Написать мастеру
                 </Link>
 
-                {accepted ? (
-                  <div className="ld-success-banner">
-                    🕐 Заявка отправлена мастеру
-                  </div>
+                {customerListingDeal && !TERMINAL_DEAL_STATUSES.includes(String(customerListingDeal.status || '')) ? (
+                  <>
+                    {customerListingDeal.status === 'NEW' && (
+                      <>
+                        <div className="ld-success-banner">
+                          🕐 Заявка отправлена мастеру
+                        </div>
+                        <div className="ld-pending-banner">
+                          ℹ️ Сделка создана и ждёт подтверждения мастера. Как только мастер примет — она станет активной. Вы можете следить за статусом в разделе «Мои сделки».
+                        </div>
+                      </>
+                    )}
+                    {customerListingDeal.status === 'IN_PROGRESS' && (
+                      <>
+                        <div className="ld-success-banner">
+                          ✓ Мастер принял заказ — сделка в работе
+                        </div>
+                        <div className="ld-pending-banner">
+                          ℹ️ Обсуждайте детали в чате и отслеживайте этапы в «Мои сделки».
+                        </div>
+                      </>
+                    )}
+                    {customerListingDeal.status === 'COMPLETED' && (
+                      <div className="ld-success-banner">
+                        ✓ Сделка по этому объявлению завершена
+                      </div>
+                    )}
+                    <button className="ld-deals-link" type="button" onClick={() => navigate('/deals')}>
+                      Перейти к сделкам →
+                    </button>
+                  </>
                 ) : (
-                  <button className="ld-btn-accept" onClick={handleAcceptWork} disabled={accepting}>
-                    {accepting ? 'Отправляем…' : 'Принять работу'}
+                  <button className="ld-btn-accept" type="button" onClick={handleAcceptWork} disabled={accepting}>
+                    {accepting ? 'Отправляем…' : 'Принять'}
                   </button>
-                )}
-
-                {accepted && (
-                  <div className="ld-pending-banner">
-                    ℹ️ Сделка создана и ждёт подтверждения мастера. Как только мастер примет — она станет активной. Вы можете следить за статусом в разделе «Мои сделки».
-                  </div>
                 )}
 
                 {actionError && <div className="ld-error-msg">{actionError}</div>}
-
-                {accepted && (
-                  <button className="ld-deals-link" onClick={() => navigate('/deals')}>
-                    Перейти к сделкам →
-                  </button>
-                )}
               </div>
             )}
           </div>
@@ -580,7 +669,15 @@ export default function ListingDetailPage() {
                   <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
                     {[listingDeal.customerName, listingDeal.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
                   </div>
-                  <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Активный заказчик</div>
+                  {listingDeal.status === 'NEW' && (
+                    <div style={{ fontSize: 12, color: '#d97706', fontWeight: 600 }}>● Ожидает вашего подтверждения</div>
+                  )}
+                  {listingDeal.status === 'IN_PROGRESS' && (
+                    <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Сделка в работе</div>
+                  )}
+                  {listingDeal.status === 'COMPLETED' && (
+                    <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>● Сделка завершена</div>
+                  )}
                 </div>
                 <div style={{ color: '#d1d5db', fontSize: 20 }}>›</div>
               </div>
@@ -590,8 +687,25 @@ export default function ListingDetailPage() {
                 className="wd-btn-full-outline"
                 style={{ marginTop: 12 }}
               >
-                💬 Написать заказчику
+                Написать заказчику
               </button>
+              {listingDeal.status === 'NEW' && (
+                <button
+                  type="button"
+                  className="ld-btn-accept"
+                  style={{ marginTop: 10, width: '100%' }}
+                  onClick={handleWorkerAcceptOnListing}
+                  disabled={workerAccepting}
+                >
+                  {workerAccepting ? 'Отправляем…' : 'Принять'}
+                </button>
+              )}
+              {listingDeal.status === 'IN_PROGRESS' && (
+                <div className="ld-success-banner" style={{ marginTop: 12 }}>
+                  ✓ Вы приняли заказ — сделка активна
+                </div>
+              )}
+              {workerDealError && <div className="ld-error-msg" style={{ marginTop: 8 }}>{workerDealError}</div>}
               <button
                 type="button"
                 className="ld-deals-link"

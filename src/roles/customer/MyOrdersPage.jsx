@@ -217,7 +217,7 @@ const css = `
   /* DETAIL */
   .ml-detail { background: #f2f2f2; min-height: 100vh; }
   .ml-detail-nav { background: #fff; border-bottom: 1.5px solid #e5e7eb; padding: 12px 0; }
-  .ml-detail-wrap { max-width: 1000px; margin: 0 auto; padding: 20px 20px 60px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: flex-start; }
+  .ml-detail-wrap { max-width: 1000px; margin: 0 auto; padding: 20px 20px 60px; display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: flex-start; }
   .ml-detail-gallery { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
   .ml-detail-main-img { position: relative; aspect-ratio: 16/9; overflow: hidden; cursor: pointer; background: #f5f5f5; display: flex; align-items: center; justify-content: center; }
   .ml-detail-main-img img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
@@ -227,8 +227,10 @@ const css = `
   .ml-detail-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .ml-detail-right { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 72px; }
   .ml-detail-price-card { background: #fff; border-radius: 12px; padding: 20px; }
+  .ml-detail-price-label { font-size: 12px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
   .ml-detail-price { font-size: 28px; font-weight: 900; color: #1a1a1a; }
-  .ml-detail-price-unit { font-size: 13px; color: #8f8f8f; margin-top: 2px; }
+  .ml-detail-price-unit { font-size: 13px; color: #9ca3af; margin-top: 4px; font-weight: 500; }
+  .ml-detail-status-line { font-size: 12px; color: #6b7280; margin-top: 10px; font-weight: 500; }
   .ml-detail-actions-card { background: #fff; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
   .ml-btn-primary { background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700; padding: 13px; cursor: pointer; width: 100%; font-family: inherit; }
   .ml-btn-primary:hover { background: #c73208; }
@@ -1069,7 +1071,6 @@ export default function MyOrdersPage() {
             <div className="mlf-sb-card">
               <div className="mlf-sb-title">🛡 Ваши преимущества</div>
               {[
-                ['🔒', 'Безопасная сделка',  'Оплата поступает только после подтверждения работы'],
                 ['⭐', 'Отзывы и рейтинг',  'Честные отзывы — только от реальных мастеров'],
                 ['💬', 'Прямой чат',         'Общайтесь с мастером без посредников'],
               ].map(([ico, title, desc]) => (
@@ -1114,9 +1115,20 @@ export default function MyOrdersPage() {
         <div className="ml-detail-nav">
           <div style={{maxWidth:1000, margin:'0 auto', padding:'0 20px'}}>
             <button
-              style={{background:'none', border:'none', cursor:'pointer', color:'#888', fontSize:14, fontFamily:'Inter,sans-serif', padding:0}}
+              type="button"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '8px 18px 8px 14px',
+                border: '1px solid #e5e7eb', borderRadius: 999,
+                background: '#fff', color: '#374151', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit',
+                boxShadow: '0 1px 2px rgba(0,0,0,.04)',
+              }}
               onClick={() => { setDetail(null); setPhotoIdx(0); }}
-            >← Мои заявки</button>
+            >
+              <span style={{ fontSize: 16, lineHeight: 1, color: '#6b7280', fontWeight: 700 }}>←</span>
+              Мои заявки
+            </button>
           </div>
         </div>
 
@@ -1160,10 +1172,12 @@ export default function MyOrdersPage() {
 
           <div className="ml-detail-right">
             <div className="ml-detail-price-card">
+              <div className="ml-detail-price-label">Стоимость</div>
               <div className="ml-detail-price">
                 {budget && Number(budget) > 0 ? `${Number(budget).toLocaleString('ru-RU')} ₽` : 'Договорной'}
               </div>
-              <div className="ml-detail-price-unit">{STATUS_LABELS[detail.status] || detail.status}</div>
+              <div className="ml-detail-price-unit">за работу</div>
+              <div className="ml-detail-status-line">{STATUS_LABELS[detail.status] || detail.status}</div>
               {catNameD && <div style={{marginTop:8}}><span className="ml-tag">{catNameD}</span></div>}
             </div>
             {requestIsEditable(detail) && (
