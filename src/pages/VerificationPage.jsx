@@ -34,10 +34,31 @@ const css = `
   .ver-btn-p { background: linear-gradient(135deg,#e8410a,#ff7043); color: #fff; box-shadow: 0 4px 14px rgba(232,65,10,.28); }
   .ver-btn-p:hover:not(:disabled) { transform: translateY(-1px); }
   .ver-check {
-    display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: #374151; line-height: 1.55;
-    margin: 14px 0;
+    display: flex; gap: 12px; align-items: flex-start; font-size: 13px; color: #374151; line-height: 1.55;
+    margin: 14px 0; cursor: pointer;
   }
-  .ver-check input { margin-top: 3px; flex-shrink: 0; width: 18px; height: 18px; accent-color: #e8410a; }
+  .ver-check-ui {
+    position: relative; flex-shrink: 0; width: 24px; height: 24px; margin-top: 2px;
+  }
+  .ver-check-input {
+    position: absolute !important; inset: 0 !important; width: 24px !important; height: 24px !important;
+    margin: 0 !important; opacity: 0 !important; cursor: pointer; z-index: 2;
+    -webkit-appearance: none !important; appearance: none !important;
+  }
+  .ver-check-input:disabled { cursor: not-allowed; }
+  .ver-check-fake {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    border: 2px solid #cbd5e1; border-radius: 6px; background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; color: #fff; line-height: 1;
+    transition: border-color .15s, background .15s, box-shadow .15s;
+  }
+  .ver-check-fake-on {
+    background: linear-gradient(135deg,#e8410a,#ff7043);
+    border-color: #e8410a;
+    box-shadow: 0 1px 4px rgba(232,65,10,.35);
+  }
+  .ver-check-copy { flex: 1; min-width: 0; }
   .ver-err { font-size: 13px; color: #dc2626; font-weight: 600; margin-top: 8px; }
   .ver-ok { font-size: 13px; color: #15803d; font-weight: 600; margin-top: 8px; }
   .ver-q { margin-bottom: 22px; padding-bottom: 20px; border-bottom: 1px solid #f3f4f6; }
@@ -262,15 +283,21 @@ export default function VerificationPage() {
         <div className="ver-card">
           <span className="ver-label">Согласие с правилами</span>
           <label className="ver-check">
-            <input
-              type="checkbox"
-              checked={agreeRules}
-              onChange={(e) => setAgreeRules(e.target.checked)}
-              disabled={blocked}
-            />
-            <span>
+            <span className="ver-check-ui">
+              <input
+                type="checkbox"
+                className="ver-check-input"
+                checked={agreeRules}
+                onChange={(e) => setAgreeRules(e.target.checked)}
+                disabled={blocked}
+              />
+              <span className={`ver-check-fake ${agreeRules ? 'ver-check-fake-on' : ''}`} aria-hidden>
+                {agreeRules ? '✓' : ''}
+              </span>
+            </span>
+            <span className="ver-check-copy">
               Подтверждаю, что ознакомился(ась) с{' '}
-              <Link to="/terms" style={{ color: '#e8410a', fontWeight: 600 }}>правилами платформы</Link>
+              <Link to="/terms" style={{ color: '#e8410a', fontWeight: 600 }} onClick={(e) => e.stopPropagation()}>правилами платформы</Link>
               {' '}(включая рекомендации по общению), обязуюсь их соблюдать, не обходить правила через личные каналы
               и понимаю, что нарушения могут повлечь ограничение аккаунта.
             </span>
