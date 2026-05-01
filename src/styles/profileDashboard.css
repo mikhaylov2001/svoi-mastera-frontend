@@ -294,15 +294,33 @@ button.pp-pill-link:hover {
   text-decoration: none; color: inherit; transition: background .15s; margin-bottom: 0;
   position: relative;
 }
-.pp-si:hover:not(.pp-dis) { background: #f8faff; }
+.pp-si:hover:not(.pp-dis):not(.pp-si-verified) { background: #f8faff; }
 .pp-dis { opacity: .38; cursor: default; }
+.pp-si-verified {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid #34d399;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  cursor: default;
+  margin: 4px 8px 8px;
+}
+.pp-si-verified .pp-si-t { color: #065f46; }
+.pp-si-verified .pp-si-d { color: #047857; font-weight: 500; }
+.pp-si-verified .pp-si-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: #065f46;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #6ee7b7;
+  border-radius: 8px;
+  padding: 4px 10px;
+}
 .pp-si-left { display: flex; flex-direction: column; gap: 2px; }
 .pp-si-t { font-size: 14px; font-weight: 600; color: #1e293b; letter-spacing: -.01em; }
 .pp-si-d { font-size: 12px; color: #94a3b8; font-weight: 400; }
 .pp-si-right { display: flex; align-items: center; gap: 8px; }
 .pp-soon { font-size: 10px; font-weight: 700; background: #f0f4ff; color: #6366f1; border-radius: 6px; padding: 2px 8px; }
 .pp-si-arr { font-size: 16px; color: #cbd5e1; transition: transform .15s; }
-.pp-si:hover:not(.pp-dis) .pp-si-arr { transform: translateX(2px); color: #94a3b8; }
+.pp-si:hover:not(.pp-dis):not(.pp-si-verified) .pp-si-arr { transform: translateX(2px); color: #94a3b8; }
 
 /* ── Отзывы в личном кабинете ── */
 .pp-dash-reviews {

@@ -214,13 +214,24 @@ export default function ProfilePage() {
                 <div className="profile-settings-desc">Измените имя, контактную информацию</div>
               </div>
             </Link>
-            <Link to="/verification" className="profile-settings-item profile-settings-clickable">
-              <FaIdCard className="profile-settings-icon" />
-              <div>
-                <div className="profile-settings-title">Верификация</div>
-                <div className="profile-settings-desc">Тест по правилам и согласие с условиями</div>
+            {profile?.verified ? (
+              <div className="profile-settings-item profile-settings-verified" role="status">
+                <FaCheckCircle className="profile-settings-icon profile-settings-verified-icon" />
+                <div>
+                  <div className="profile-settings-title profile-settings-verified-title">Верификация</div>
+                  <div className="profile-settings-desc profile-settings-verified-desc">Профиль проверен — проходить снова не нужно</div>
+                </div>
+                <span className="settings-badge settings-badge-verified">✓ Готово</span>
               </div>
-            </Link>
+            ) : (
+              <Link to="/verification" className="profile-settings-item profile-settings-clickable">
+                <FaIdCard className="profile-settings-icon" />
+                <div>
+                  <div className="profile-settings-title">Верификация</div>
+                  <div className="profile-settings-desc">Тест по правилам и согласие с условиями</div>
+                </div>
+              </Link>
+            )}
             <div className="profile-settings-item profile-settings-disabled">
               <FaCreditCard className="profile-settings-icon" />
               <div>

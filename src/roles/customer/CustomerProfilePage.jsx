@@ -390,7 +390,6 @@ export default function CustomerProfilePage() {
               {[
                 { to:'/settings/personal',      t:'Личные данные', d:'Имя и контакты' },
                 { to:'/settings/notifications', t:'Уведомления',   d:'Push и email' },
-                { to:'/verification',           t:'Верификация',   d:'Тест и правила платформы' },
               ].map(item => (
                 <Link key={item.to} to={item.to} className="pp-si">
                   <div className="pp-si-left">
@@ -402,6 +401,27 @@ export default function CustomerProfilePage() {
                   </div>
                 </Link>
               ))}
+              {profile?.verified ? (
+                <div className="pp-si pp-si-verified" role="status" aria-label="Верификация пройдена">
+                  <div className="pp-si-left">
+                    <div className="pp-si-t">Верификация</div>
+                    <div className="pp-si-d">Профиль проверен — раздел проходить снова не нужно</div>
+                  </div>
+                  <div className="pp-si-right">
+                    <span className="pp-si-badge">✓ Готово</span>
+                  </div>
+                </div>
+              ) : (
+                <Link to="/verification" className="pp-si">
+                  <div className="pp-si-left">
+                    <div className="pp-si-t">Верификация</div>
+                    <div className="pp-si-d">Тест и правила платформы</div>
+                  </div>
+                  <div className="pp-si-right">
+                    <span className="pp-si-arr">›</span>
+                  </div>
+                </Link>
+              )}
               <div className="pp-si pp-dis">
                 <div className="pp-si-left">
                   <div className="pp-si-t">Дополнительные опции</div>

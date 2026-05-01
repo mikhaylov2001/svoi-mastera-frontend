@@ -162,7 +162,29 @@
   letter-spacing: 0.3px;
 }
 
-.profile-settings-item:hover {
+.profile-settings-verified {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #34d399;
+  cursor: default;
+}
+.profile-settings-verified:hover {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #34d399;
+  box-shadow: none;
+  transform: none;
+}
+.profile-settings-verified-title { color: #065f46; }
+.profile-settings-verified-desc { color: #047857; font-weight: 500; }
+.profile-settings-verified-icon { color: #059669; border-color: #6ee7b7; }
+.settings-badge-verified {
+  background: rgba(255, 255, 255, 0.92);
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.profile-settings-item:hover:not(.profile-settings-verified) {
   background: #fff; border-color: var(--primary); box-shadow: 0 2px 8px rgba(232, 65, 10, 0.1);
 }
 .profile-settings-icon {
