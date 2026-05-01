@@ -240,17 +240,6 @@ export default function WorkerProfilePage() {
                 ⭐ {avgRatingDisplay} · {reviewsCountLabel}
               </button>
             </div>
-            {!profile?.verified && profile?.verificationStatus !== 'PENDING' && (
-              <div style={{ marginTop: 12 }}>
-                <Link to="/verification" style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 700,
-                  color: '#fff', background: 'rgba(255,255,255,.18)', border: '1px solid rgba(255,255,255,.35)',
-                  padding: '10px 16px', borderRadius: 10, textDecoration: 'none',
-                }}>
-                  Пройти верификацию
-                </Link>
-              </div>
-            )}
           </div>
 
           <div className="pp-hero-btns">
