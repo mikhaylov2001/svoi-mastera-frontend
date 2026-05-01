@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaMapMarkerAlt, FaCalendarAlt, FaBell, FaUser, FaCreditCard, FaClipboardList, FaCheckCircle, FaClock } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaBell, FaUser, FaCreditCard, FaClipboardList, FaCheckCircle, FaClock, FaIdCard } from 'react-icons/fa';
 import { getCustomerProfile, getMyDeals, createReview } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
@@ -212,6 +212,13 @@ export default function ProfilePage() {
               <div>
                 <div className="profile-settings-title">Личные данные</div>
                 <div className="profile-settings-desc">Измените имя, контактную информацию</div>
+              </div>
+            </Link>
+            <Link to="/verification" className="profile-settings-item profile-settings-clickable">
+              <FaIdCard className="profile-settings-icon" />
+              <div>
+                <div className="profile-settings-title">Верификация</div>
+                <div className="profile-settings-desc">Тест по правилам и согласие с условиями</div>
               </div>
             </Link>
             <div className="profile-settings-item profile-settings-disabled">

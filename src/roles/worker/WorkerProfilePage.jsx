@@ -578,6 +578,7 @@ export default function WorkerProfilePage() {
               {[
                 { to: '/settings/personal', t: 'Личные данные', d: 'Имя и контакты' },
                 { to: '/settings/notifications', t: 'Уведомления', d: 'Push и email' },
+                { to: '/verification', t: 'Верификация', d: 'Тест и правила платформы' },
               ].map(item => (
                 <Link key={item.to} to={item.to} className="pp-si">
                   <div className="pp-si-left">

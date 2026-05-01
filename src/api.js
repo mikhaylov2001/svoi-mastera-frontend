@@ -405,7 +405,7 @@ export async function changePassword(userId, data) {
   });
 }
 
-// ── VERIFICATION (документы + ЭП) ──
+// ── VERIFICATION (тест по правилам + согласие) ──
 export async function getVerificationMe(userId) {
   return apiCall('/verification/me', { headers: { 'X-User-Id': userId }, cache: 'no-store' });
 }
