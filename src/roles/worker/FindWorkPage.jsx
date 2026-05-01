@@ -1108,16 +1108,20 @@ export default function FindWorkPage() {
               type="button"
               onClick={() => { setSelectedRequest(null); setActivePhotoIdx(0); }}
               style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                padding: '8px 18px 8px 14px',
-                border: '1px solid #e5e7eb', borderRadius: 999,
-                background: '#fff', color: '#374151', fontSize: 13, fontWeight: 600,
-                cursor: 'pointer', fontFamily: 'inherit',
-                boxShadow: '0 1px 2px rgba(0,0,0,.04)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: 0,
+                border: 'none',
+                background: 'none',
+                color: '#888',
+                fontSize: 14,
+                fontWeight: 500,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
               }}
             >
-              <span style={{ fontSize: 16, lineHeight: 1, color: '#6b7280', fontWeight: 700 }}>←</span>
-              Назад к заявкам
+              ← Назад к заявкам
             </button>
           </div>
         </div>

@@ -29,6 +29,17 @@ const CAT_SLUGS = {
   'Репетиторство': 'repetitorstvo', 'Компьютерная помощь': 'kompyuternaya-pomosh',
 };
 
+function reviewsCountRu(n) {
+  const x = Number(n);
+  if (!Number.isFinite(x) || x <= 0) return '';
+  const mod10 = x % 10;
+  const mod100 = x % 100;
+  if (mod100 >= 11 && mod100 <= 14) return `${x} отзывов`;
+  if (mod10 === 1) return `${x} отзыв`;
+  if ([2, 3, 4].includes(mod10)) return `${x} отзыва`;
+  return `${x} отзывов`;
+}
+
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
   .ld * { box-sizing: border-box; }
@@ -38,17 +49,21 @@ const css = `
   .ld-bread { background: #fff; border-bottom: 1px solid #eaeaea; }
   .ld-bread-inner { max-width: 1180px; margin: 0 auto; padding: 11px 20px; display: flex; align-items: center; gap: 7px; font-size: 13px; color: #aaa; flex-wrap: wrap; }
   .ld-back-btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 8px 18px 8px 14px;
-    border: 1px solid #e5e7eb; border-radius: 999px;
-    background: #fff; color: #374151; font-size: 13px; font-weight: 600;
-    font-family: inherit; cursor: pointer; flex-shrink: 0;
-    transition: background .15s, border-color .15s, color .15s, box-shadow .15s;
-    box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #888;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color .15s;
   }
-  .ld-back-btn:hover { background: #fafafa; border-color: #d1d5db; color: #111827; }
+  .ld-back-btn:hover { color: #e8410a; }
   .ld-back-btn .ld-back-ico {
-    font-size: 16px; line-height: 1; color: #6b7280; font-weight: 700;
+    font-size: 15px; line-height: 1; color: inherit; font-weight: 600;
     letter-spacing: -0.06em;
   }
   .ld-bread a { color: #888; text-decoration: none; transition: color .15s; }
@@ -125,14 +140,16 @@ const css = `
   /* RIGHT COLUMN */
   .ld-right { position: sticky; top: 72px; display: flex; flex-direction: column; gap: 12px; }
 
-  /* PRICE PANEL */
-  .ld-price-panel { background: #fff; border-radius: 16px; border: 1px solid #eaeaea; padding: 22px 22px 20px; box-shadow: 0 4px 24px rgba(0,0,0,.05); }
-  .ld-price-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 18px; }
-  .ld-price-big { font-size: 30px; font-weight: 800; color: #111; letter-spacing: -1px; }
-  .ld-price-unit { font-size: 14px; color: #999; font-weight: 500; }
+  /* PRICE PANEL (как карточка на детали заявки) */
+  .ld-price-panel { background: #fff; border-radius: 12px; border: 1px solid #eaeaea; padding: 20px; box-shadow: none; }
+  .ld-price-head { margin-bottom: 14px; }
+  .ld-price-label { font-size: 12px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .ld-price-big { font-size: 28px; font-weight: 900; color: #111827; letter-spacing: -0.5px; line-height: 1.15; }
+  .ld-price-sub { font-size: 13px; color: #9ca3af; margin-top: 4px; font-weight: 500; }
   .ld-price-btns { display: flex; flex-direction: column; gap: 10px; }
 
   /* КНОПКА: НАПИСАТЬ */
+  button.ld-btn-msg { border: none; font-family: inherit; }
   .ld-btn-msg {
     background: #e8410a;
     border: none; border-radius: 10px;
@@ -148,7 +165,26 @@ const css = `
   .ld-btn-msg:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
   .ld-btn-msg:active { transform: translateY(0); }
 
-  /* КНОПКА: ПРИНЯТЬ */
+  /* вторичная: «Написать …» — серая обводка, как «Написать сообщение» на заявке */
+  .ld-btn-contact {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%;
+    padding: 13px 18px;
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    color: #374151;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    text-decoration: none;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .ld-btn-contact:hover { border-color: #374151; background: #fafafa; }
+
+  /* КНОПКА: ПРИНЯТЬ (контур — для мастера на своём объявлении и т.п.) */
   .ld-btn-accept {
     background: #fff;
     border: 1.5px solid #e8410a; border-radius: 10px;
@@ -171,7 +207,13 @@ const css = `
   .ld-deals-link:hover { opacity: .75; }
 
   /* SELLER */
-  .ld-seller { background: #fff; border-radius: 16px; border: 1px solid #eaeaea; overflow: hidden; }
+  .ld-seller-card-label {
+    font-size: 13px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+    padding: 16px 18px 0;
+    display: block;
+  }
+  .ld-seller { background: #fff; border-radius: 12px; border: 1px solid #eaeaea; overflow: hidden; box-shadow: none; }
+  .ld-seller-card-label + .ld-seller-top { padding-top: 12px; }
   .ld-seller-top { padding: 18px 18px 14px; display: flex; align-items: flex-start; gap: 14px; }
   .ld-seller-ava { width: 54px; height: 54px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: linear-gradient(135deg,#e8410a,#ff8c55); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; font-weight: 800; box-shadow: 0 4px 12px rgba(232,65,10,.25); }
   .ld-seller-ava img { width: 100%; height: 100%; object-fit: cover; }
@@ -199,7 +241,7 @@ const css = `
   .ld-own-profile-footer { border-top: 1px solid #f4f4f4; padding: 12px 18px; }
 
   /* SIMILAR */
-  .ld-similar { background: #fff; border-radius: 16px; border: 1px solid #eaeaea; padding: 16px 18px; }
+  .ld-similar { background: #fff; border-radius: 12px; border: 1px solid #eaeaea; padding: 16px 18px; box-shadow: none; }
   .ld-similar-head { font-size: 14px; font-weight: 700; margin: 0 0 12px; color: #111; display: flex; align-items: center; justify-content: space-between; }
   .ld-similar-head a { font-size: 12px; color: #e8410a; text-decoration: none; font-weight: 600; }
   .ld-similar-list { display: flex; flex-direction: column; gap: 2px; }
@@ -451,6 +493,15 @@ export default function ListingDetailPage() {
     ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : `${API.replace(/\/api\/v1$/, '')}${userAvatar.startsWith('/') ? '' : '/'}${userAvatar}`)
     : null;
 
+  const priceNum = listing.price != null ? Number(listing.price) : NaN;
+  const priceHasAmount = Number.isFinite(priceNum) && priceNum > 0;
+  const priceMainLine = priceHasAmount
+    ? `${priceNum.toLocaleString('ru-RU')} ₽`
+    : (listing.priceUnit || 'Договорная');
+  const priceSubLine = priceHasAmount
+    ? (listing.priceUnit && String(listing.priceUnit).trim() ? listing.priceUnit : 'за работу')
+    : null;
+
   return (
     <div className="ld">
       <style>{css}</style>
@@ -597,20 +648,14 @@ export default function ListingDetailPage() {
 
           {/* Price + CTA */}
           <div className="ld-price-panel">
-            <div className="ld-price-row">
-              <span className="ld-price-big">{Number(listing.price || 0).toLocaleString('ru-RU')} ₽</span>
-              {listing.priceUnit && <span className="ld-price-unit">{listing.priceUnit}</span>}
+            <div className="ld-price-head">
+              <div className="ld-price-label">Стоимость</div>
+              <div className="ld-price-big">{priceMainLine}</div>
+              {priceSubLine && <div className="ld-price-sub">{priceSubLine}</div>}
             </div>
 
             {!isOwnListing && (
               <div className="ld-price-btns">
-                <Link
-                  to={userId ? `/chat/${listing.workerId}` : '/login'}
-                  className="ld-btn-msg"
-                >
-                  Написать мастеру
-                </Link>
-
                 {customerListingDeal && !TERMINAL_DEAL_STATUSES.includes(String(customerListingDeal.status || '')) ? (
                   <>
                     {customerListingDeal.status === 'NEW' && (
@@ -638,14 +683,28 @@ export default function ListingDetailPage() {
                         ✓ Сделка по этому объявлению завершена
                       </div>
                     )}
+                    <Link
+                      to={userId ? `/chat/${listing.workerId}` : '/login'}
+                      className="ld-btn-contact"
+                    >
+                      Написать мастеру
+                    </Link>
                     <button className="ld-deals-link" type="button" onClick={() => navigate('/deals')}>
                       Перейти к сделкам →
                     </button>
                   </>
                 ) : (
-                  <button className="ld-btn-accept" type="button" onClick={handleAcceptWork} disabled={accepting}>
-                    {accepting ? 'Отправляем…' : 'Принять'}
-                  </button>
+                  <>
+                    <button className="ld-btn-msg" type="button" onClick={handleAcceptWork} disabled={accepting}>
+                      {accepting ? 'Отправляем…' : 'Принять'}
+                    </button>
+                    <Link
+                      to={userId ? `/chat/${listing.workerId}` : '/login'}
+                      className="ld-btn-contact"
+                    >
+                      Написать мастеру
+                    </Link>
+                  </>
                 )}
 
                 {actionError && <div className="ld-error-msg">{actionError}</div>}
@@ -741,6 +800,7 @@ export default function ListingDetailPage() {
               </>
             ) : (
               <>
+                <span className="ld-seller-card-label">Мастер</span>
                 <div className="ld-seller-top">
                   <div className="ld-seller-ava">
                     {listing.workerAvatar?.length > 10
@@ -758,7 +818,7 @@ export default function ListingDetailPage() {
                           <span key={i} className="ld-star" style={{color: i <= Math.round(rating) ? '#f59e0b' : '#e5e7eb'}}>★</span>
                         ))}
                         <span style={{fontSize:12,color:'#555',fontWeight:600,marginLeft:3}}>{Number(rating).toFixed(1)}</span>
-                        {reviews > 0 && <span style={{fontSize:11,color:'#aaa',marginLeft:3}}>({reviews})</span>}
+                        {reviews > 0 && <span style={{fontSize:11,color:'#aaa',marginLeft:3}}>({reviewsCountRu(reviews)})</span>}
                       </div>
                 )}
                 {(stats?.verified || listing.workerVerified) && (
