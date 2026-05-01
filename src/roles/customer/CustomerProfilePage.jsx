@@ -203,7 +203,7 @@ export default function CustomerProfilePage() {
                   color: '#fff', background: 'rgba(255,255,255,.18)', border: '1px solid rgba(255,255,255,.35)',
                   padding: '10px 16px', borderRadius: 10, textDecoration: 'none',
                 }}>
-                  🛂 Пройти верификацию
+                  Пройти верификацию
                 </Link>
               </div>
             )}

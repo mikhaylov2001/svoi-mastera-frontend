@@ -14,10 +14,11 @@ const css = `
     box-shadow: 0 4px 24px rgba(0,0,0,.04);
   }
   .ver-h1 { font-size: 22px; font-weight: 800; margin: 0 0 8px; letter-spacing: -.02em; }
-  .ver-lead { font-size: 14px; color: #6b7280; line-height: 1.65; margin: 0 0 18px; }
+  .ver-lead { font-size: 14px; color: #6b7280; line-height: 1.65; margin: 0; }
   .ver-back { display: inline-flex; align-items: center; gap: 6px; color: #e8410a; font-weight: 600; font-size: 14px; text-decoration: none; margin-bottom: 16px; }
   .ver-back:hover { text-decoration: underline; }
   .ver-label { font-size: 12px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; display: block; }
+  .ver-sub { font-size: 12px; color: #9ca3af; margin: -6px 0 14px; line-height: 1.45; }
   .ver-input {
     width: 100%; padding: 11px 13px; border-radius: 10px; border: 1px solid #e5e7eb;
     font-size: 15px; font-family: inherit; margin-bottom: 14px;
@@ -39,7 +40,6 @@ const css = `
   .ver-check input { margin-top: 3px; flex-shrink: 0; width: 18px; height: 18px; accent-color: #e8410a; }
   .ver-err { font-size: 13px; color: #dc2626; font-weight: 600; margin-top: 8px; }
   .ver-ok { font-size: 13px; color: #15803d; font-weight: 600; margin-top: 8px; }
-  .ver-steps { font-size: 13px; color: #6b7280; padding-left: 18px; margin: 0 0 16px; line-height: 1.7; }
   .ver-q { margin-bottom: 22px; padding-bottom: 20px; border-bottom: 1px solid #f3f4f6; }
   .ver-q:last-of-type { border-bottom: none; margin-bottom: 8px; padding-bottom: 0; }
   .ver-q-num { font-size: 11px; font-weight: 700; color: #e8410a; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
@@ -54,12 +54,30 @@ const css = `
   .ver-opt.ver-opt-on { border-color: #e8410a; background: #fff7ed; box-shadow: 0 0 0 1px rgba(232,65,10,.15); }
 `;
 
+function isReasonableBirthDate(iso) {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return false;
+  const d = new Date(`${iso}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return false;
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  if (d >= today) return false;
+  const min = new Date();
+  min.setFullYear(min.getFullYear() - 120);
+  if (d < min) return false;
+  const maxYoung = new Date();
+  maxYoung.setFullYear(maxYoung.getFullYear() - 14);
+  if (d > maxYoung) return false;
+  return true;
+}
+
 export default function VerificationPage() {
   const { userId, userRole, userName, userLastName } = useAuth();
   const navigate = useNavigate();
 
   const [me, setMe] = useState(null);
   const [fullName, setFullName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [residence, setResidence] = useState('');
   const [agreeRules, setAgreeRules] = useState(false);
   /** индекс выбранного варианта на каждый вопрос или null */
   const [picked, setPicked] = useState(() => VERIFICATION_QUIZ_QUESTIONS.map(() => null));
@@ -74,10 +92,16 @@ export default function VerificationPage() {
     [picked],
   );
 
+  const personalOk =
+    fullName.trim().length >= 3 &&
+    birthDate.trim().length > 0 &&
+    isReasonableBirthDate(birthDate.trim()) &&
+    residence.trim().length >= 3;
+
   const formValid =
     quizComplete &&
-    agreeRules &&
-    fullName.trim().length >= 3;
+    personalOk &&
+    agreeRules;
 
   useEffect(() => {
     setFullName([userName, userLastName].filter(Boolean).join(' ').trim());
@@ -106,7 +130,9 @@ export default function VerificationPage() {
     if (!userId) return;
     setErr('');
     if (!formValid) {
-      setErr('Ответьте на все вопросы, укажите ФИО и отметьте согласие с правилами.');
+      setErr(
+        'Заполните все обязательные поля: ФИО, дату рождения, место проживания, ответьте на каждый вопрос теста верно и отметьте согласие с правилами.',
+      );
       return;
     }
     setSubmitting(true);
@@ -115,6 +141,8 @@ export default function VerificationPage() {
         quizAnswers: picked,
         signature: {
           fullLegalName: fullName.trim(),
+          birthDate: birthDate.trim(),
+          residence: residence.trim(),
           agreementAccepted: agreeRules,
         },
       });
@@ -128,6 +156,7 @@ export default function VerificationPage() {
   };
 
   const back = profileHref;
+  const blocked = submitting || me?.verificationStatus === 'PENDING' || me?.verified;
 
   if (!userId) {
     return (
@@ -150,29 +179,65 @@ export default function VerificationPage() {
         <div className="ver-card">
           <h1 className="ver-h1">Верификация на платформе</h1>
           <p className="ver-lead">
-            Пройдите короткий тест о том, как безопасно и корректно работать с другими пользователями на «СвоиМастера».
-            После проверки заявки в профиле может появиться отметка «Проверен». Доступно заказчикам и мастерам из личного кабинета.
+            Укажите данные о себе, ответьте на все вопросы теста и подтвердите согласие с правилами — после проверки может появиться отметка «Проверен».
           </p>
-          <ol className="ver-steps">
-            <li>Внимательно ответьте на все вопросы — нужны только правильные варианты.</li>
-            <li>Укажите полное ФИО.</li>
-            <li>Поставьте галочку: вы подтверждаете, что ознакомились с правилами платформы и обязуетесь их соблюдать.</li>
-          </ol>
 
           {me?.verificationStatus === 'PENDING' && (
-            <p style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: 12, fontSize: 14, color: '#92400e' }}>
+            <p style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: 12, fontSize: 14, color: '#92400e', marginTop: 16 }}>
               Заявка уже на проверке. Обычно это занимает до 1 рабочего дня.
             </p>
           )}
           {me?.verificationStatus === 'REJECTED' && me?.verificationRejectionReason && (
-            <p style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: 12, fontSize: 14, color: '#991b1b' }}>
-              Ранее отклонено: {me.verificationRejectionReason}. Пройдите тест и отправьте заявку снова.
+            <p style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: 12, fontSize: 14, color: '#991b1b', marginTop: 16 }}>
+              Ранее отклонено: {me.verificationRejectionReason}. Заполните форму заново и отправьте заявку снова.
             </p>
           )}
         </div>
 
         <div className="ver-card">
+          <span className="ver-label">Личные данные</span>
+          <p className="ver-sub">Все поля обязательны — без них заявку отправить нельзя.</p>
+          <label className="ver-label" style={{ textTransform: 'none', letterSpacing: 'normal', color: '#374151', fontSize: 13 }} htmlFor="ver-fullname">
+            ФИО полностью
+          </label>
+          <input
+            id="ver-fullname"
+            className="ver-input"
+            placeholder="Фамилия Имя Отчество"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            autoComplete="name"
+            disabled={blocked}
+          />
+          <label className="ver-label" style={{ textTransform: 'none', letterSpacing: 'normal', color: '#374151', fontSize: 13 }} htmlFor="ver-birth">
+            Дата рождения
+          </label>
+          <input
+            id="ver-birth"
+            className="ver-input"
+            type="date"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            max={new Date(new Date().setFullYear(new Date().getFullYear() - 14)).toISOString().slice(0, 10)}
+            disabled={blocked}
+          />
+          <label className="ver-label" style={{ textTransform: 'none', letterSpacing: 'normal', color: '#374151', fontSize: 13 }} htmlFor="ver-live">
+            Где проживаете
+          </label>
+          <input
+            id="ver-live"
+            className="ver-input"
+            placeholder="Город или населённый пункт, регион"
+            value={residence}
+            onChange={(e) => setResidence(e.target.value)}
+            autoComplete="address-level2"
+            disabled={blocked}
+          />
+        </div>
+
+        <div className="ver-card">
           <span className="ver-label">Тест: общение и правила</span>
+          <p className="ver-sub">Нужно ответить на каждый вопрос и выбрать верный вариант.</p>
           {VERIFICATION_QUIZ_QUESTIONS.map((q, qi) => (
             <div className="ver-q" key={qi}>
               <div className="ver-q-num">Вопрос {qi + 1} из {VERIFICATION_QUIZ_QUESTIONS.length}</div>
@@ -184,6 +249,7 @@ export default function VerificationPage() {
                     type="button"
                     className={`ver-opt ${picked[qi] === oi ? 'ver-opt-on' : ''}`}
                     onClick={() => setAnswer(qi, oi)}
+                    disabled={blocked}
                   >
                     {label}
                   </button>
@@ -194,19 +260,13 @@ export default function VerificationPage() {
         </div>
 
         <div className="ver-card">
-          <span className="ver-label">ФИО и согласие с правилами</span>
-          <input
-            className="ver-input"
-            placeholder="Фамилия Имя Отчество"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            autoComplete="name"
-          />
+          <span className="ver-label">Согласие с правилами</span>
           <label className="ver-check">
             <input
               type="checkbox"
               checked={agreeRules}
               onChange={(e) => setAgreeRules(e.target.checked)}
+              disabled={blocked}
             />
             <span>
               Подтверждаю, что ознакомился(ась) с{' '}
@@ -223,7 +283,7 @@ export default function VerificationPage() {
             type="button"
             className="ver-btn ver-btn-p"
             style={{ width: '100%', marginTop: 12, padding: '14px' }}
-            disabled={submitting || me?.verificationStatus === 'PENDING' || me?.verified}
+            disabled={blocked || !formValid}
             onClick={handleSubmit}
           >
             {submitting ? 'Отправляем…' : 'Отправить на проверку'}
