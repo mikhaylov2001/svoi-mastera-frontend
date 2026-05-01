@@ -2,9 +2,18 @@ import React, { useMemo, useState } from 'react';
 
 const LIP_CSS = `
   .lip-wrap { display: flex; flex-direction: column; gap: 12px; }
+  .lip-wrap--merged { gap: 0; }
   .lip-section {
     background: #fff; border: 1px solid #e6e6e6; border-radius: 14px;
     padding: 20px 22px;
+  }
+  .lip-section--merged {
+    border-radius: 12px; border: 1px solid #e8e8e8;
+    box-shadow: 0 2px 12px rgba(0,0,0,.04);
+    padding: 20px 22px;
+  }
+  .lip-merge-divider {
+    height: 1px; background: #f0f0f0; margin: 18px 0 16px;
   }
   .lip-h { font-size: 15px; font-weight: 700; margin: 0 0 12px; color: #111; letter-spacing: -0.02em; }
   .lip-desc { font-size: 14px; color: #444; line-height: 1.75; margin: 0; white-space: pre-wrap; word-break: break-word; }
@@ -52,6 +61,8 @@ export default function ListingInfoPanels({
   budgetLabel,
   publishedAt,
   emptyDescriptionText = 'Описание не добавлено',
+  /** Одна карточка вместо двух отдельных блоков */
+  mergedSections = false,
 }) {
   const [expanded, setExpanded] = useState(false);
   const { bodyText, urgencyLabel } = useMemo(() => parseListingDescription(description || ''), [description]);
@@ -63,54 +74,71 @@ export default function ListingInfoPanels({
   const showToggle = bodyText.length > COLLAPSE;
   const visibleBody = !expanded && showToggle ? `${bodyText.slice(0, COLLAPSE).trim()}…` : bodyText;
 
+  const descBlock = (
+    <>
+      <h2 className="lip-h">Описание</h2>
+      {bodyText ? (
+        <>
+          <p className="lip-desc">{visibleBody}</p>
+          {showToggle && (
+            <button type="button" className="lip-toggle" onClick={() => setExpanded(e => !e)}>
+              {expanded ? 'Свернуть ↑' : 'Читать полностью ↓'}
+            </button>
+          )}
+          {urgencyLabel && (
+            <div className="lip-urgency">
+              <span>⏰ Срочность:</span>
+              <span>📅 {urgencyLabel.replace(/^📅\s*/, '')}</span>
+            </div>
+          )}
+        </>
+      ) : (
+        <p className="lip-empty">{emptyDescriptionText}</p>
+      )}
+    </>
+  );
+
+  const detailsBlock = (
+    <>
+      <h2 className="lip-h">Подробности</h2>
+      <dl className="lip-rows">
+        <div className="lip-row">
+          <dt>Категория</dt>
+          <dd>{category || '—'}</dd>
+        </div>
+        <div className="lip-row">
+          <dt>Адрес</dt>
+          <dd>{address || 'Уточняется при заказе'}</dd>
+        </div>
+        <div className="lip-row">
+          <dt>Бюджет</dt>
+          <dd>{budgetLabel || '—'}</dd>
+        </div>
+        <div className="lip-row">
+          <dt>Опубликована</dt>
+          <dd>{pubStr}</dd>
+        </div>
+      </dl>
+    </>
+  );
+
   return (
     <>
       <style>{LIP_CSS}</style>
-      <div className="lip-wrap">
-        <section className="lip-section">
-          <h2 className="lip-h">Описание</h2>
-          {bodyText ? (
-            <>
-              <p className="lip-desc">{visibleBody}</p>
-              {showToggle && (
-                <button type="button" className="lip-toggle" onClick={() => setExpanded(e => !e)}>
-                  {expanded ? 'Свернуть ↑' : 'Читать полностью ↓'}
-                </button>
-              )}
-              {urgencyLabel && (
-                <div className="lip-urgency">
-                  <span>⏰ Срочность:</span>
-                  <span>📅 {urgencyLabel.replace(/^📅\s*/, '')}</span>
-                </div>
-              )}
-            </>
-          ) : (
-            <p className="lip-empty">{emptyDescriptionText}</p>
-          )}
-        </section>
-
-        <section className="lip-section">
-          <h2 className="lip-h">Подробности</h2>
-          <dl className="lip-rows">
-            <div className="lip-row">
-              <dt>Категория</dt>
-              <dd>{category || '—'}</dd>
-            </div>
-            <div className="lip-row">
-              <dt>Адрес</dt>
-              <dd>{address || 'Уточняется при заказе'}</dd>
-            </div>
-            <div className="lip-row">
-              <dt>Бюджет</dt>
-              <dd>{budgetLabel || '—'}</dd>
-            </div>
-            <div className="lip-row">
-              <dt>Опубликована</dt>
-              <dd>{pubStr}</dd>
-            </div>
-          </dl>
-        </section>
-      </div>
+      {mergedSections ? (
+        <div className="lip-wrap lip-wrap--merged">
+          <section className="lip-section lip-section--merged">
+            {descBlock}
+            <div className="lip-merge-divider" />
+            {detailsBlock}
+          </section>
+        </div>
+      ) : (
+        <div className="lip-wrap">
+          <section className="lip-section">{descBlock}</section>
+          <section className="lip-section">{detailsBlock}</section>
+        </div>
+      )}
     </>
   );
 }

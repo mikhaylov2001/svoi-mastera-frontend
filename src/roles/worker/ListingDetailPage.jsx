@@ -29,25 +29,14 @@ const CAT_SLUGS = {
   'Репетиторство': 'repetitorstvo', 'Компьютерная помощь': 'kompyuternaya-pomosh',
 };
 
-function reviewsCountRu(n) {
-  const x = Number(n);
-  if (!Number.isFinite(x) || x <= 0) return '';
-  const mod10 = x % 10;
-  const mod100 = x % 100;
-  if (mod100 >= 11 && mod100 <= 14) return `${x} отзывов`;
-  if (mod10 === 1) return `${x} отзыв`;
-  if ([2, 3, 4].includes(mod10)) return `${x} отзыва`;
-  return `${x} отзывов`;
-}
-
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
   .ld * { box-sizing: border-box; }
-  .ld { font-family: Inter, Arial, sans-serif; background: #f2f3f5; min-height: 100vh; color: #111; }
+  .ld { font-family: Inter, Arial, sans-serif; background: #f2f2f2; min-height: 100vh; color: #111; }
 
   /* BREADCRUMB */
   .ld-bread { background: #fff; border-bottom: 1px solid #eaeaea; }
-  .ld-bread-inner { max-width: 1180px; margin: 0 auto; padding: 11px 20px; display: flex; align-items: center; gap: 7px; font-size: 13px; color: #aaa; flex-wrap: wrap; }
+  .ld-bread-inner { max-width: 1000px; margin: 0 auto; padding: 11px 20px; display: flex; align-items: center; gap: 7px; font-size: 13px; color: #aaa; flex-wrap: wrap; }
   .ld-back-btn {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 0;
@@ -70,46 +59,70 @@ const css = `
   .ld-bread a:hover { color: #e8410a; }
   .ld-bread-sep { color: #ddd; }
 
-  /* PAGE LAYOUT */
-  .ld-page { max-width: 1180px; margin: 0 auto; padding: 20px 20px 64px; display: grid; grid-template-columns: 1fr 348px; gap: 20px; align-items: flex-start; }
-  .ld-left { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+  /* PAGE LAYOUT — как превью «Мои объявления» */
+  .ld-page { max-width: 1000px; margin: 0 auto; padding: 20px 20px 64px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: flex-start; }
+  .ld-left { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
 
   /* CARDS BASE */
-  .ld-card { background: #fff; border-radius: 16px; border: 1px solid #eaeaea; overflow: hidden; }
+  .ld-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
 
-  /* TITLE */
-  .ld-title-block { background: #fff; border: 1px solid #e6e6e6; border-radius: 14px; padding: 22px 24px 18px; }
-  .ld-title { font-size: 24px; font-weight: 700; margin: 0 0 14px; line-height: 1.3; color: #111; letter-spacing: -0.3px; }
-  .ld-actions-row { display: flex; gap: 8px; }
+  /* HERO: заголовок + галерея + бейджи — одна карточка */
+  .ld-hero-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .ld-hero-head .ld-title { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.25; color: #111827; letter-spacing: -0.4px; flex: 1; min-width: 0; }
+  .ld-hero-badges {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    padding: 12px 20px 16px;
+    background: #fafafa;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .ld-actions-row { display: flex; gap: 8px; flex-shrink: 0; }
   .ld-action-btn { display: inline-flex; align-items: center; gap: 6px; background: #f5f5f7; border: none; border-radius: 10px; font-size: 13px; font-weight: 500; color: #555; padding: 8px 14px; cursor: pointer; font-family: inherit; transition: background .15s, color .15s; }
   .ld-action-btn:hover { background: #ececec; color: #222; }
 
-  /* GALLERY */
-  .ld-gallery-wrap { position: relative; background: #111; border-radius: 16px 16px 0 0; overflow: hidden; user-select: none; }
-  .ld-gallery-main { position: relative; aspect-ratio: 16/10; background: #1a1a1a; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  /* GALLERY — светлая зона 16:9 как в ml-detail */
+  .ld-gallery-wrap { position: relative; background: #fff; overflow: hidden; user-select: none; }
+  .ld-gallery-main { position: relative; aspect-ratio: 16/9; background: #f5f5f5; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
   .ld-gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .22s ease; image-rendering: -webkit-optimize-contrast; }
-  .ld-gallery-ph { font-size: 56px; color: #555; }
-  .ld-gallery-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.65); background: rgba(255,255,255,.9); color: #111; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 14px rgba(0,0,0,.22); z-index: 5; transition: transform .15s, background .15s; line-height: 1; }
-  .ld-gallery-nav-btn:hover { transform: translateY(-50%) scale(1.06); background: #fff; }
-  .ld-gallery-nav-btn.prev { left: 12px; }
-  .ld-gallery-nav-btn.next { right: 12px; }
+  .ld-gallery-ph { font-size: 56px; color: #d1d5db; }
+  .ld-gallery-nav-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    background: rgba(0,0,0,.45); color: #fff; font-size: 22px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; z-index: 5;
+    transition: background .15s; line-height: 1;
+  }
+  .ld-gallery-nav-btn:hover { background: rgba(0,0,0,.6); }
+  .ld-gallery-nav-btn.prev { left: 10px; }
+  .ld-gallery-nav-btn.next { right: 10px; }
 
-  /* кнопка открыть лайтбокс */
-  .ld-gallery-zoom { position: absolute; bottom: 14px; right: 14px; z-index: 4; width: 36px; height: 36px; background: rgba(0,0,0,.48); border: 1.5px solid rgba(255,255,255,.25); border-radius: 8px; color: #fff; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: zoom-in; backdrop-filter: blur(4px); transition: background .15s; }
-  .ld-gallery-zoom:hover { background: rgba(0,0,0,.68); }
-  .ld-gallery-count { position: absolute; bottom: 14px; left: 14px; background: rgba(0,0,0,.48); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 20px; backdrop-filter: blur(4px); z-index: 4; pointer-events: none; }
+  .ld-gallery-zoom {
+    position: absolute; bottom: 12px; right: 12px; z-index: 4;
+    width: 34px; height: 34px; background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.35);
+    border-radius: 8px; color: #fff; font-size: 15px;
+    display: flex; align-items: center; justify-content: center; cursor: zoom-in;
+    transition: background .15s;
+  }
+  .ld-gallery-zoom:hover { background: rgba(0,0,0,.55); }
+  .ld-gallery-count {
+    position: absolute; bottom: 12px; left: 12px;
+    background: rgba(0,0,0,.5); color: #fff; font-size: 12px; font-weight: 700;
+    padding: 4px 10px; border-radius: 999; z-index: 4; pointer-events: none;
+  }
 
-  /* точки-индикаторы */
-  .ld-gallery-dots { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 4; pointer-events: none; }
-  .ld-gallery-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.45); transition: all .2s; }
+  .ld-gallery-dots { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 4; pointer-events: none; }
+  .ld-gallery-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.5); transition: all .2s; }
   .ld-gallery-dot.active { background: #fff; width: 18px; border-radius: 3px; }
 
-  /* миниатюры */
-  .ld-thumbs { display: flex; gap: 8px; padding: 10px 14px; background: #f5f5f7; border-top: 1px solid #eaeaea; overflow-x: auto; scrollbar-width: none; }
+  .ld-thumbs { display: flex; gap: 6px; padding: 10px 12px; background: #fafafa; border-top: 1px solid #f0f0f0; overflow-x: auto; scrollbar-width: none; }
   .ld-thumbs::-webkit-scrollbar { display: none; }
-  .ld-thumb { width: 80px; height: 60px; border-radius: 10px; overflow: hidden; flex-shrink: 0; cursor: pointer; border: 2.5px solid transparent; transition: all .18s; opacity: .55; flex-shrink: 0; }
-  .ld-thumb.active { border-color: #e8410a; opacity: 1; box-shadow: 0 0 0 3px rgba(232,65,10,.15); }
-  .ld-thumb:hover { opacity: .85; transform: scale(1.04); }
+  .ld-thumb { width: 72px; height: 54px; border-radius: 6px; overflow: hidden; flex-shrink: 0; cursor: pointer; border: 2px solid transparent; transition: all .18s; opacity: .65; }
+  .ld-thumb.active { border-color: #e8410a; opacity: 1; }
+  .ld-thumb:hover { opacity: .9; }
   .ld-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; image-rendering: -webkit-optimize-contrast; }
 
   /* INFO GRID */
@@ -121,8 +134,7 @@ const css = `
   .ld-info-key { font-size: 11px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
   .ld-info-val { font-size: 14px; color: #111; font-weight: 600; }
 
-  /* BADGES */
-  .ld-badges-block { background: #fff; border: 1px solid #e6e6e6; border-radius: 14px; padding: 14px 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+  /* BADGES (внутри hero) */
   .ld-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 8px; }
   .ld-badge-green { background: #f0fdf4; color: #16a34a; }
   .ld-badge-orange { background: #fff7ed; color: #ea580c; }
@@ -140,13 +152,12 @@ const css = `
   /* RIGHT COLUMN */
   .ld-right { position: sticky; top: 72px; display: flex; flex-direction: column; gap: 12px; }
 
-  /* PRICE PANEL (как карточка на детали заявки) */
-  .ld-price-panel { background: #fff; border-radius: 12px; border: 1px solid #eaeaea; padding: 20px; box-shadow: none; }
-  .ld-price-head { margin-bottom: 14px; }
-  .ld-price-label { font-size: 12px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-  .ld-price-big { font-size: 28px; font-weight: 900; color: #111827; letter-spacing: -0.5px; line-height: 1.15; }
-  .ld-price-sub { font-size: 13px; color: #9ca3af; margin-top: 4px; font-weight: 500; }
-  .ld-price-btns { display: flex; flex-direction: column; gap: 10px; }
+  /* PRICE PANEL — как ml-detail-price-card */
+  .ld-price-panel { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+  .ld-price-big { font-size: 28px; font-weight: 900; color: #1a1a1a; letter-spacing: -0.5px; line-height: 1.15; }
+  .ld-price-sub { font-size: 13px; color: #8f8f8f; margin-top: 2px; font-weight: 500; }
+  .ld-cat-tag { display: inline-block; background: #fde8e0; color: #e8410a; border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 12px; }
+  .ld-price-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
 
   /* КНОПКА: НАПИСАТЬ */
   button.ld-btn-msg { border: none; font-family: inherit; }
@@ -206,29 +217,27 @@ const css = `
   .ld-deals-link { display: block; text-align: center; font-size: 13px; color: #e8410a; font-weight: 600; background: none; border: none; cursor: pointer; font-family: inherit; padding: 2px 0; transition: opacity .15s; }
   .ld-deals-link:hover { opacity: .75; }
 
-  /* SELLER */
-  .ld-seller-card-label {
-    font-size: 13px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
-    padding: 16px 18px 0;
-    display: block;
+  /* SELLER / профиль — мастер в «Мои объявления»: компактная карточка */
+  .ld-seller { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+  .ld-profile-card {
+    background: #fff; border-radius: 12px; border: 1px solid #e8e8e8;
+    padding: 16px 20px; box-shadow: 0 2px 12px rgba(0,0,0,.04);
   }
-  .ld-seller { background: #fff; border-radius: 12px; border: 1px solid #eaeaea; overflow: hidden; box-shadow: none; }
-  .ld-seller-card-label + .ld-seller-top { padding-top: 12px; }
+  .ld-profile-card .ld-own-profile-label { padding: 0 0 10px; }
+  .ld-profile-card .ld-own-profile-top { padding: 0; gap: 12px; align-items: center; }
+  .ld-profile-card .ld-own-profile-footer {
+    border-top: 1px solid #f4f4f4; padding: 12px 0 0; margin-top: 12px;
+  }
+  .ld-profile-card .ld-seller-ava {
+    width: 44px; height: 44px; font-size: 16px;
+    box-shadow: none;
+  }
   .ld-seller-top { padding: 18px 18px 14px; display: flex; align-items: flex-start; gap: 14px; }
   .ld-seller-ava { width: 54px; height: 54px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: linear-gradient(135deg,#e8410a,#ff8c55); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; font-weight: 800; box-shadow: 0 4px 12px rgba(232,65,10,.25); }
   .ld-seller-ava img { width: 100%; height: 100%; object-fit: cover; }
   .ld-seller-name { font-size: 15px; font-weight: 700; margin: 0 0 3px; color: #111; }
   .ld-seller-name a { color: inherit; text-decoration: none; }
   .ld-seller-name a:hover { color: #e8410a; }
-  .ld-seller-since { font-size: 12px; color: #aaa; margin-bottom: 6px; }
-  .ld-seller-verify { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; color: #16a34a; font-weight: 600; background: #f0fdf4; border-radius: 6px; padding: 3px 8px; }
-  .ld-seller-stars { display: flex; align-items: center; gap: 2px; margin-bottom: 6px; }
-  .ld-star { font-size: 12px; }
-  .ld-seller-stats { display: grid; grid-template-columns: repeat(3,1fr); border-top: 1px solid #f4f4f4; }
-  .ld-sstat { text-align: center; padding: 12px 4px; border-right: 1px solid #f4f4f4; }
-  .ld-sstat:last-child { border-right: none; }
-  .ld-sstat-num { font-size: 18px; font-weight: 800; color: #111; display: block; line-height: 1; }
-  .ld-sstat-lbl { font-size: 10px; color: #bbb; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; display: block; }
   .ld-seller-footer { border-top: 1px solid #f4f4f4; padding: 12px 18px; }
   .ld-seller-link { font-size: 13px; color: #e8410a; font-weight: 600; text-decoration: none; display: block; text-align: center; transition: opacity .15s; }
   .ld-seller-link:hover { opacity: .75; }
@@ -241,7 +250,7 @@ const css = `
   .ld-own-profile-footer { border-top: 1px solid #f4f4f4; padding: 12px 18px; }
 
   /* SIMILAR */
-  .ld-similar { background: #fff; border-radius: 12px; border: 1px solid #eaeaea; padding: 16px 18px; box-shadow: none; }
+  .ld-similar { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 16px 18px; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
   .ld-similar-head { font-size: 14px; font-weight: 700; margin: 0 0 12px; color: #111; display: flex; align-items: center; justify-content: space-between; }
   .ld-similar-head a { font-size: 12px; color: #e8410a; text-decoration: none; font-weight: 600; }
   .ld-similar-list { display: flex; flex-direction: column; gap: 2px; }
@@ -277,7 +286,7 @@ const css = `
   .ld-lb-hint { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.35); font-size: 12px; white-space: nowrap; pointer-events: none; }
 
   @media(max-width:900px) { .ld-page { grid-template-columns: 1fr; } .ld-right { position: static; } .ld-info-grid { grid-template-columns: 1fr; } .ld-info-row { border-right: none; } .ld-info-row:nth-last-child(-n+2) { border-bottom: 1px solid #ececec; } .ld-info-row:last-child { border-bottom: none; } }
-  @media(max-width:580px) { .ld-page { padding: 12px 12px 48px; } .ld-title { font-size: 19px; } .ld-price-big { font-size: 26px; } .ld-title-block,.ld-info-block,.ld-desc-block { padding-left: 16px; padding-right: 16px; } }
+  @media(max-width:580px) { .ld-page { padding: 12px 12px 48px; } .ld-title { font-size: 18px; } .ld-price-big { font-size: 26px; } .ld-hero-head { padding: 14px 16px 12px; } }
 `;
 
 const TERMINAL_DEAL_STATUSES = ['CANCELLED', 'REFUNDED'];
@@ -484,8 +493,6 @@ export default function ListingDetailPage() {
 
   const workerName = [listing.workerName, listing.workerLastName].filter(Boolean).join(' ') || 'Мастер';
   const initials = (listing.workerName || 'М')[0].toUpperCase();
-  const rating = stats?.averageRating ?? listing.workerRating ?? 0;
-  const reviews = Number(stats?.reviewsCount ?? stats?.reviewCount ?? 0);
   const completed = stats?.completedWorksCount ?? 0;
   const isOwnListing = String(userId) === String(listing.workerId);
   const ownerFullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
@@ -564,16 +571,14 @@ export default function ListingDetailPage() {
         {/* ── LEFT ── */}
         <div className="ld-left">
 
-          {/* Title */}
-          <div className="ld-title-block">
-            <h1 className="ld-title">{listing.title}</h1>
-            <div className="ld-actions-row">
-              <button className="ld-action-btn">♡ В избранное</button>
+          {/* Одна карточка: заголовок + галерея (+ бейджи только для владельца — как в «Мои объявления») */}
+          <div className="ld-card" style={{ overflow: 'hidden' }}>
+            <div className="ld-hero-head">
+              <h1 className="ld-title">{listing.title}</h1>
+              <div className="ld-actions-row">
+                <button type="button" className="ld-action-btn">♡ В избранное</button>
+              </div>
             </div>
-          </div>
-
-          {/* Gallery */}
-          <div className="ld-card" style={{overflow:'hidden'}}>
             <div className="ld-gallery-wrap">
               <div className="ld-gallery-main" onClick={() => allPhotos.length && setLightbox(true)}>
                 {allPhotos.length > 0
@@ -582,16 +587,14 @@ export default function ListingDetailPage() {
                 }
 
                 {allPhotos.length > 1 && <>
-                  <button className="ld-gallery-nav-btn prev" onClick={e => { e.stopPropagation(); prevPhoto(); }} aria-label="Предыдущее фото">‹</button>
-                  <button className="ld-gallery-nav-btn next" onClick={e => { e.stopPropagation(); nextPhoto(); }} aria-label="Следующее фото">›</button>
+                  <button type="button" className="ld-gallery-nav-btn prev" onClick={e => { e.stopPropagation(); prevPhoto(); }} aria-label="Предыдущее фото">‹</button>
+                  <button type="button" className="ld-gallery-nav-btn next" onClick={e => { e.stopPropagation(); nextPhoto(); }} aria-label="Следующее фото">›</button>
                 </>}
 
-                {/* Кнопка открыть */}
                 {allPhotos.length > 0 && (
-                  <div className="ld-gallery-zoom" onClick={() => setLightbox(true)} title="Открыть полноэкранно">⤢</div>
+                  <div className="ld-gallery-zoom" onClick={e => { e.stopPropagation(); setLightbox(true); }} title="Открыть полноэкранно" role="button">⤢</div>
                 )}
 
-                {/* Точки-индикаторы */}
                 {allPhotos.length > 1 && allPhotos.length <= 8 && (
                   <div className="ld-gallery-dots">
                     {allPhotos.map((_, i) => (
@@ -600,7 +603,6 @@ export default function ListingDetailPage() {
                   </div>
                 )}
 
-                {/* Счётчик если много фото */}
                 {allPhotos.length > 8 && (
                   <div className="ld-gallery-count">{activePhoto + 1} / {allPhotos.length}</div>
                 )}
@@ -616,9 +618,23 @@ export default function ListingDetailPage() {
                 </div>
               )}
             </div>
+
+            {isOwnListing && (
+              <div className="ld-hero-badges">
+                {listing.workerVerified && (
+                  <span className="ld-badge ld-badge-green">✅ Проверен</span>
+                )}
+                <span className="ld-badge ld-badge-orange">⚡ Быстрый отклик</span>
+                {listing.ownerGuaranteeTermsAccepted && (
+                  <span className="ld-badge ld-badge-blue">🛡️ Гарантия</span>
+                )}
+                {completed > 0 && <span className="ld-badge ld-badge-green">🏆 {completed} заказов</span>}
+              </div>
+            )}
           </div>
 
           <ListingInfoPanels
+            mergedSections
             description={listing.description}
             category={listing.category}
             address={listing.address || 'Йошкар-Ола · выезд по договорённости'}
@@ -629,18 +645,6 @@ export default function ListingDetailPage() {
             }
             publishedAt={listing.createdAt}
           />
-
-          {/* Badges */}
-          <div className="ld-badges-block">
-            {listing.workerVerified && (
-              <span className="ld-badge ld-badge-green">✅ Проверен</span>
-            )}
-            <span className="ld-badge ld-badge-orange">⚡ Быстрый отклик</span>
-            {listing.ownerGuaranteeTermsAccepted && (
-              <span className="ld-badge ld-badge-blue">🛡️ Гарантия</span>
-            )}
-            {completed > 0 && <span className="ld-badge ld-badge-green">🏆 {completed} заказов</span>}
-          </div>
         </div>
 
         {/* ── RIGHT ── */}
@@ -648,11 +652,16 @@ export default function ListingDetailPage() {
 
           {/* Price + CTA */}
           <div className="ld-price-panel">
-            <div className="ld-price-head">
-              <div className="ld-price-label">Стоимость</div>
-              <div className="ld-price-big">{priceMainLine}</div>
-              {priceSubLine && <div className="ld-price-sub">{priceSubLine}</div>}
-            </div>
+            <div className="ld-price-big">{priceMainLine}</div>
+            {(priceSubLine || (!priceHasAmount && listing.priceUnit)) && (
+              <div className="ld-price-sub">{priceSubLine || listing.priceUnit}</div>
+            )}
+
+            {listing.category && (
+              <div style={{ marginTop: 8 }}>
+                <span className="ld-cat-tag">{listing.category}</span>
+              </div>
+            )}
 
             {!isOwnListing && (
               <div className="ld-price-btns">
@@ -799,55 +808,29 @@ export default function ListingDetailPage() {
                 </div>
               </>
             ) : (
-              <>
-                <span className="ld-seller-card-label">Мастер</span>
-                <div className="ld-seller-top">
+              <div className="ld-profile-card">
+                <div className="ld-own-profile-label">Мастер</div>
+                <Link
+                  to={`/workers/${listing.workerId}`}
+                  className="ld-own-profile-top"
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
                   <div className="ld-seller-ava">
                     {listing.workerAvatar?.length > 10
-                      ? <img src={listing.workerAvatar} alt={workerName}/>
+                      ? <img src={listing.workerAvatar} alt="" />
                       : initials}
                   </div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div className="ld-seller-name">
-                      <Link to={`/workers/${listing.workerId}`}>{workerName}</Link>
-                    </div>
-                    <div className="ld-seller-since">На платформе с 2024 года</div>
-                    {rating > 0 && (
-                      <div className="ld-seller-stars">
-                        {[1,2,3,4,5].map(i => (
-                          <span key={i} className="ld-star" style={{color: i <= Math.round(rating) ? '#f59e0b' : '#e5e7eb'}}>★</span>
-                        ))}
-                        <span style={{fontSize:12,color:'#555',fontWeight:600,marginLeft:3}}>{Number(rating).toFixed(1)}</span>
-                        {reviews > 0 && <span style={{fontSize:11,color:'#aaa',marginLeft:3}}>({reviewsCountRu(reviews)})</span>}
-                      </div>
-                )}
-                {(stats?.verified || listing.workerVerified) && (
-                  <div className="ld-seller-verify">✅ Документы проверены</div>
-                )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{workerName}</div>
+                    <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Мастер</div>
                   </div>
-                </div>
-
-                <div className="ld-seller-stats">
-                  <div className="ld-sstat">
-                    <span className="ld-sstat-num">{completed || 0}</span>
-                    <span className="ld-sstat-lbl">Заказов</span>
-                  </div>
-                  <div className="ld-sstat">
-                    <span className="ld-sstat-num">{rating > 0 ? Number(rating).toFixed(1) : '—'}</span>
-                    <span className="ld-sstat-lbl">Рейтинг</span>
-                  </div>
-                  <div className="ld-sstat">
-                    <span className="ld-sstat-num">{reviews}</span>
-                    <span className="ld-sstat-lbl">Отзывов</span>
-                  </div>
-                </div>
-
-                <div className="ld-seller-footer">
+                </Link>
+                <div className="ld-own-profile-footer">
                   <Link to={`/workers/${listing.workerId}`} className="ld-seller-link">
                     Профиль мастера →
                   </Link>
                 </div>
-              </>
+              </div>
             )}
           </div>
 
