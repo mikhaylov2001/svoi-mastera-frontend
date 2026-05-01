@@ -1197,7 +1197,7 @@ export default function FindWorkPage() {
                   onMouseEnter={e => e.currentTarget.style.background='#c73208'}
                   onMouseLeave={e => e.currentTarget.style.background='#e8410a'}
                 >
-                  ✓ Откликнуться
+                  Откликнуться
                 </button>
                 {req.customerId && (
                   <a href={`/chat/${req.customerId}?jobRequestId=${req.id}`}
@@ -1205,7 +1205,7 @@ export default function FindWorkPage() {
                     onMouseEnter={e => { e.currentTarget.style.borderColor='#374151'; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor='#e5e7eb'; }}
                   >
-                    💬 Написать сообщение
+                    Написать сообщение
                   </a>
                 )}
               </div>
@@ -1730,7 +1730,7 @@ export default function FindWorkPage() {
                               className="fw2-btn-respond"
                               onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
                             >
-                              ✓ Откликнуться
+                              Откликнуться
                             </button>
                             <button
                               type="button"
@@ -1742,7 +1742,7 @@ export default function FindWorkPage() {
                                 if (req.customerId) navigate(`/chat/${req.customerId}?jobRequestId=${req.id}`);
                               }}
                             >
-                              💬 Написать
+                              Написать
                             </button>
                           </div>
                         </div>

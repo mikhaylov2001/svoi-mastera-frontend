@@ -1491,14 +1491,14 @@ export default function FindMasterPage() {
                               title={String(userId) === String(wid) ? 'Нельзя принять своё объявление' : ''}
                               onClick={(e) => { e.stopPropagation(); handleAcceptListing(s.id, wid); }}
                             >
-                              {acceptingId === s.id ? '⏳ Оформляем…' : '✓ Принять сразу'}
+                              {acceptingId === s.id ? '⏳ Оформляем…' : 'Принять'}
                             </button>
                             <button
                               type="button"
                               className="fmp-btn-msg"
                               onClick={(e) => { e.stopPropagation(); navigate(`/chat/${wid}`); }}
                             >
-                              💬 Написать
+                              Написать
                             </button>
                             {acceptErr[s.id] && (
                               <div className="fmp-card-action-err">{acceptErr[s.id]}</div>
