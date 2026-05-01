@@ -181,13 +181,32 @@ export default function CustomerProfilePage() {
             <div className="pp-hero-role">Личный кабинет заказчика</div>
             <div className="pp-hero-pills">
               <span className="pp-pill pp-pill-o">👤 Заказчик</span>
-              <span className="pp-pill pp-pill-g">✓ Документы проверены</span>
+              {profile?.verified && (
+                <span className="pp-pill pp-pill-g">✓ Проверенный профиль</span>
+              )}
+              {profile && !profile.verified && profile.verificationStatus === 'PENDING' && (
+                <span className="pp-pill" style={{ background: '#fff7ed', color: '#c2410c', border: '1px solid #fdba74' }}>⏳ Документы на проверке</span>
+              )}
+              {profile && !profile.verified && profile.verificationStatus === 'REJECTED' && (
+                <span className="pp-pill" style={{ background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' }}>Верификация отклонена</span>
+              )}
               <span className="pp-pill pp-pill-w">📍 Йошкар-Ола</span>
               {since && <span className="pp-pill pp-pill-w">С {since}</span>}
               <button type="button" className="pp-pill pp-pill-w pp-pill-link" onClick={scrollToDashboardReviews}>
                 ⭐ {avgRatingDisplay} · {reviewsCountLabel}
               </button>
             </div>
+            {!profile?.verified && profile?.verificationStatus !== 'PENDING' && (
+              <div style={{ marginTop: 12 }}>
+                <Link to="/verification" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 700,
+                  color: '#fff', background: 'rgba(255,255,255,.18)', border: '1px solid rgba(255,255,255,.35)',
+                  padding: '10px 16px', borderRadius: 10, textDecoration: 'none',
+                }}>
+                  🛂 Пройти верификацию
+                </Link>
+              </div>
+            )}
           </div>
 
           <div className="pp-hero-btns">

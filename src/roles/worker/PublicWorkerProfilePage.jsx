@@ -365,9 +365,10 @@ export default function PublicWorkerProfilePage() {
         rating: stats?.averageRating || 0,
         reviewsCount: stats?.reviewsCount || 0,
         registeredAt: stats?.registeredAt || null,
+        verified: stats?.verified === true,
       });
     }).catch(() => {
-      setWorker({ name: 'Мастер', lastName: '', city: 'Йошкар-Ола', rating: 0, reviewsCount: 0 });
+      setWorker({ name: 'Мастер', lastName: '', city: 'Йошкар-Ола', rating: 0, reviewsCount: 0, verified: false });
     }).finally(() => setLoading(false));
   }, [workerId]);
 
@@ -451,13 +452,15 @@ export default function PublicWorkerProfilePage() {
             </div>
 
             <div className="pw-badges">
-              <div className="pw-badge">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="#666" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Документы проверены
-              </div>
+              {worker?.verified && (
+                <div className="pw-badge">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="7.5" stroke="#666" strokeWidth="1"/>
+                    <path d="M5 8l2 2 4-4" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Документы проверены
+                </div>
+              )}
               <div className="pw-badge">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <circle cx="8" cy="8" r="7.5" stroke="#666" strokeWidth="1"/>

@@ -507,7 +507,9 @@ export default function ListingDetailPage() {
 
           {/* Badges */}
           <div className="ld-badges-block">
-            <span className="ld-badge ld-badge-green">✅ Проверен</span>
+            {listing.workerVerified && (
+              <span className="ld-badge ld-badge-green">✅ Проверен</span>
+            )}
             <span className="ld-badge ld-badge-orange">⚡ Быстрый отклик</span>
             <span className="ld-badge ld-badge-blue">🛡️ Гарантия</span>
             {completed > 0 && <span className="ld-badge ld-badge-green">🏆 {completed} заказов</span>}
@@ -642,8 +644,10 @@ export default function ListingDetailPage() {
                         <span style={{fontSize:12,color:'#555',fontWeight:600,marginLeft:3}}>{Number(rating).toFixed(1)}</span>
                         {reviews > 0 && <span style={{fontSize:11,color:'#aaa',marginLeft:3}}>({reviews})</span>}
                       </div>
-                    )}
-                    <div className="ld-seller-verify">✅ Документы проверены</div>
+                )}
+                {(stats?.verified || listing.workerVerified) && (
+                  <div className="ld-seller-verify">✅ Документы проверены</div>
+                )}
                   </div>
                 </div>
 

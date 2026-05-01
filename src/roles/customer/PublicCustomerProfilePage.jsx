@@ -349,13 +349,15 @@ export default function PublicCustomerProfilePage() {
             )}
 
             <div className="pw-badges">
-              <div className="pw-badge">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Документы проверены
-              </div>
+              {customer?.verified && (
+                <div className="pw-badge">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
+                    <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Документы проверены
+                </div>
+              )}
               <div className="pw-badge">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>

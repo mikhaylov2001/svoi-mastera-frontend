@@ -30,7 +30,7 @@ import SupportPage from './pages/SupportPage';
 import TermsPage   from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import FaqPage     from './pages/FaqPage';
-import ListingDetailPage from './roles/worker/ListingDetailPage';
+import VerificationPage from './pages/VerificationPage';
 import './App.css';
 
 function ProtectedRoute({ children, workerOnly = false }) {
@@ -85,6 +85,7 @@ function AppContent() {
           <Route path="/terms"   element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/faq"     element={<FaqPage />} />
+          <Route path="/verification" element={<ProtectedRoute><VerificationPage /></ProtectedRoute>} />
           <Route path="/listings/:id"    element={<ListingDetailPage />} />
           <Route path="*"                element={<NotFoundPage />} />
         </Routes>

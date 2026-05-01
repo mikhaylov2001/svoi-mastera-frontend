@@ -969,6 +969,7 @@ export default function FindMasterPage() {
         workerId:  item.workerId,
         workerName: [item.workerName, item.workerLastName].filter(Boolean).join(' ') || 'Мастер',
         priceFrom:  item.price || 0,
+        verified: item.workerVerified === true,
       }));
       setServices(processed);
       const ids = [...new Set(processed.map(s => s.workerId))];
@@ -1409,7 +1410,9 @@ export default function FindMasterPage() {
                       {s.description && <div className="fmp-card-desc">{s.description}</div>}
 
                       <div className="fmp-card-badges">
-                        <span className="fmp-badge fmp-badge-v">✓ Проверен</span>
+                        {s.verified && (
+                          <span className="fmp-badge fmp-badge-v">✓ Проверен</span>
+                        )}
                         <span className="fmp-badge fmp-badge-f">⚡ Отклик</span>
                         <span className="fmp-badge fmp-badge-g">🛡 Гарантия</span>
                     </div>

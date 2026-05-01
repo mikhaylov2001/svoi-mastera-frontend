@@ -404,3 +404,16 @@ export async function changePassword(userId, data) {
     body: JSON.stringify(data),
   });
 }
+
+// ── VERIFICATION (документы + ЭП) ──
+export async function getVerificationMe(userId) {
+  return apiCall('/verification/me', { headers: { 'X-User-Id': userId }, cache: 'no-store' });
+}
+
+export async function submitVerification(userId, payload) {
+  return apiCall('/verification/submit', {
+    method: 'POST',
+    headers: { 'X-User-Id': userId },
+    body: JSON.stringify(payload),
+  });
+}
