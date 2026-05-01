@@ -8,6 +8,7 @@ import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
 import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
+import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 
@@ -1159,7 +1160,7 @@ export default function FindWorkPage() {
               {req.description && req.description !== 'Без описания' && (
                 <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
                   <h2 style={{ fontSize:18, fontWeight:800, color:'#111827', margin:'0 0 12px' }}>Описание</h2>
-                  <p style={{ fontSize:15, color:'#374151', lineHeight:1.7, margin:0, whiteSpace:'pre-wrap' }}>{req.description}</p>
+                  <p style={{ fontSize:15, color:'#374151', lineHeight:1.7, margin:0, whiteSpace:'pre-wrap' }}>{formatListingOriginDescription('WORKER', req.description)}</p>
                 </div>
               )}
 
@@ -1665,7 +1666,7 @@ export default function FindWorkPage() {
                         >
                           <div className="fw2-card-title">{req.title}</div>
                           {req.description && req.description !== 'Без описания' && (
-                            <div className="fw2-card-desc">{req.description}</div>
+                            <div className="fw2-card-desc">{formatListingOriginDescription('WORKER', req.description)}</div>
                           )}
                           {req.createdAt && (
                             <div className="fw2-card-info">

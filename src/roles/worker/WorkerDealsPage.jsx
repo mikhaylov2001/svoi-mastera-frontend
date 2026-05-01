@@ -10,6 +10,7 @@ import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
+import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 
 const DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 const BACKEND    = 'https://svoi-mastera-backend-mf3h.onrender.com';
@@ -165,6 +166,7 @@ export default function WorkerDealsPage() {
     const hasPhoto = detail.photos?.length > 0;
     const myOk    = detail.workerConfirmed;
     const custOk  = detail.customerConfirmed;
+    const taskDescShown = formatListingOriginDescription('WORKER', detail.description);
 
     return (
       <div className="wd-detail">
@@ -210,10 +212,10 @@ export default function WorkerDealsPage() {
             </div>
 
             {/* Description */}
-            {detail.description && detail.description !== 'Без описания' && (
+            {taskDescShown && (
               <div className="wd-info-card">
                 <div className="wd-info-label">Описание задачи</div>
-                <p style={{ fontSize:14, color:'#374151', lineHeight:1.75, margin:0 }}>{detail.description}</p>
+                <p style={{ fontSize:14, color:'#374151', lineHeight:1.75, margin:0 }}>{taskDescShown}</p>
               </div>
             )}
 

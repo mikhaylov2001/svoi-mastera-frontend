@@ -12,6 +12,7 @@ import {
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
+import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -1149,7 +1150,7 @@ export default function MyOrdersPage() {
             </div>
 
             <ListingInfoPanels
-              description={detail.description && detail.description !== 'Без описания' ? detail.description : ''}
+              description={formatListingOriginDescription('CUSTOMER', detail.description)}
               category={catNameD}
               address={[detail.city, detail.addressText].filter(Boolean).join(', ') || 'Не указан'}
               budgetLabel={budget && Number(budget) > 0 ? `${Number(budget).toLocaleString('ru-RU')} ₽` : 'Договорной'}
@@ -1348,7 +1349,7 @@ export default function MyOrdersPage() {
                       </div>
                       {catName && <span className="ml-row-cat">{catName}</span>}
                       {req.description && req.description !== 'Без описания' && (
-                        <div className="ml-row-desc">{req.description}</div>
+                        <div className="ml-row-desc">{formatListingOriginDescription('CUSTOMER', req.description)}</div>
                       )}
                       <div className="ml-row-date">{req.createdAt ? new Date(req.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) : '—'}</div>
                       <div className="ml-row-stats">
