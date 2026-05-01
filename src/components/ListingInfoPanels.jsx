@@ -36,6 +36,25 @@ const LIP_CSS = `
   .lip-row:last-child { border-bottom: none; padding-bottom: 0; }
   .lip-row dt { color: #9ca3af; font-weight: 600; flex-shrink: 0; min-width: 100px; }
   .lip-row dd { margin: 0; text-align: right; color: #111827; font-weight: 600; max-width: 62%; line-height: 1.45; }
+
+  /* Вариант как экран детали заявки (Найти работу) */
+  .lip-wrap--job { gap: 0; }
+  .lip-section--job {
+    background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px;
+    border: none;
+  }
+  .lip-section--job:last-of-type { margin-bottom: 0; }
+  .lip-wrap--job .lip-h {
+    font-size: 18px; font-weight: 800; color: #111827; letter-spacing: -0.02em;
+    margin: 0 0 12px;
+  }
+  .lip-wrap--job .lip-desc { font-size: 15px; color: #374151; line-height: 1.7; }
+  .lip-wrap--job .lip-row {
+    padding: 12px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px;
+  }
+  .lip-wrap--job .lip-row dt { font-weight: 500; color: #9ca3af; min-width: 90px; }
+  .lip-wrap--job .lip-row:last-child { border-bottom: none; }
+  .lip-wrap--job .lip-section--job + .lip-section--job .lip-h { margin-bottom: 16px; }
 `;
 
 /** Убирает из текста блок «⏰ Срочность: …», добавленный при создании заявки */
@@ -63,6 +82,10 @@ export default function ListingInfoPanels({
   emptyDescriptionText = 'Описание не добавлено',
   /** Одна карточка вместо двух отдельных блоков */
   mergedSections = false,
+  /** Карточки как на детали заявки (отдельные блоки, типографика) */
+  variant = 'default',
+  /** Подпись строки цены в подробностях */
+  budgetDtLabel = 'Бюджет',
 }) {
   const [expanded, setExpanded] = useState(false);
   const { bodyText, urgencyLabel } = useMemo(() => parseListingDescription(description || ''), [description]);
@@ -111,7 +134,7 @@ export default function ListingInfoPanels({
           <dd>{address || 'Уточняется при заказе'}</dd>
         </div>
         <div className="lip-row">
-          <dt>Бюджет</dt>
+          <dt>{budgetDtLabel}</dt>
           <dd>{budgetLabel || '—'}</dd>
         </div>
         <div className="lip-row">
@@ -121,6 +144,10 @@ export default function ListingInfoPanels({
       </dl>
     </>
   );
+
+  const jobDetail = variant === 'jobDetail';
+  const sectionClass = jobDetail ? 'lip-section lip-section--job' : 'lip-section';
+  const wrapClass = jobDetail ? 'lip-wrap lip-wrap--job' : 'lip-wrap';
 
   return (
     <>
@@ -134,9 +161,9 @@ export default function ListingInfoPanels({
           </section>
         </div>
       ) : (
-        <div className="lip-wrap">
-          <section className="lip-section">{descBlock}</section>
-          <section className="lip-section">{detailsBlock}</section>
+        <div className={wrapClass}>
+          <section className={sectionClass}>{descBlock}</section>
+          <section className={sectionClass}>{detailsBlock}</section>
         </div>
       )}
     </>

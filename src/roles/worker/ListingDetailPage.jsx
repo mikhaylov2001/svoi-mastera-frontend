@@ -29,10 +29,20 @@ const CAT_SLUGS = {
   'Репетиторство': 'repetitorstvo', 'Компьютерная помощь': 'kompyuternaya-pomosh',
 };
 
+function reviewsCountLabel(n) {
+  const x = Number(n) || 0;
+  const abs = x % 100;
+  const d = x % 10;
+  if (abs > 10 && abs < 20) return `${x} отзывов`;
+  if (d === 1) return `${x} отзыв`;
+  if (d >= 2 && d <= 4) return `${x} отзыва`;
+  return `${x} отзывов`;
+}
+
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
   .ld * { box-sizing: border-box; }
-  .ld { font-family: Inter, Arial, sans-serif; background: #f2f2f2; min-height: 100vh; color: #111; }
+  .ld { font-family: Inter, Arial, sans-serif; background: #f5f5f5; min-height: 100vh; color: #111; }
 
   /* BREADCRUMB */
   .ld-bread { background: #fff; border-bottom: 1px solid #eaeaea; }
@@ -60,35 +70,35 @@ const css = `
   .ld-bread-sep { color: #ddd; }
 
   /* PAGE LAYOUT — как превью «Мои объявления» */
-  .ld-page { max-width: 1000px; margin: 0 auto; padding: 20px 20px 64px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: flex-start; }
-  .ld-left { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .ld-page { max-width: 1000px; margin: 0 auto; padding: 20px 20px 64px; display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: flex-start; }
+  .ld-left { min-width: 0; display: flex; flex-direction: column; gap: 0; }
+
+  /* Шапка блока как «ЭКРАН 3» FindWork */
+  .ld-fw-head { margin-bottom: 16px; }
+  .ld-fw-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 6px; }
+  .ld-fw-title { margin: 0; font-size: 24px; font-weight: 800; line-height: 1.2; color: #111827; letter-spacing: -0.02em; flex: 1; min-width: 0; }
+  .ld-fw-meta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #9ca3af; }
+
+  /* Карточка только с галереей */
+  .ld-fw-gallery-card {
+    background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 16px;
+    border: none; box-shadow: none;
+  }
 
   /* CARDS BASE */
   .ld-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
-
-  /* HERO: заголовок + галерея + бейджи — одна карточка */
-  .ld-hero-head {
-    display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;
-    padding: 18px 20px 14px;
-    border-bottom: 1px solid #f0f0f0;
-  }
-  .ld-hero-head .ld-title { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.25; color: #111827; letter-spacing: -0.4px; flex: 1; min-width: 0; }
-  .ld-hero-badges {
-    display: flex; gap: 8px; flex-wrap: wrap;
-    padding: 12px 20px 16px;
-    background: #fafafa;
-    border-top: 1px solid #f0f0f0;
-  }
 
   .ld-actions-row { display: flex; gap: 8px; flex-shrink: 0; }
   .ld-action-btn { display: inline-flex; align-items: center; gap: 6px; background: #f5f5f7; border: none; border-radius: 10px; font-size: 13px; font-weight: 500; color: #555; padding: 8px 14px; cursor: pointer; font-family: inherit; transition: background .15s, color .15s; }
   .ld-action-btn:hover { background: #ececec; color: #222; }
 
-  /* GALLERY — светлая зона 16:9 как в ml-detail */
+  /* GALLERY */
   .ld-gallery-wrap { position: relative; background: #fff; overflow: hidden; user-select: none; }
+  .ld-fw-gallery-card .ld-gallery-main { aspect-ratio: 4/3; background: #f3f4f6; cursor: pointer; }
   .ld-gallery-main { position: relative; aspect-ratio: 16/9; background: #f5f5f5; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
   .ld-gallery-main img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .22s ease; image-rendering: -webkit-optimize-contrast; }
-  .ld-gallery-ph { font-size: 56px; color: #d1d5db; }
+  .ld-gallery-ph { font-size: 64px; color: #d1d5db; }
+  .ld-fw-gallery-card .ld-gallery-ph { display: flex; background: #f9fafb; width: 100%; height: 100%; align-items: center; justify-content: center; }
   .ld-gallery-nav-btn {
     position: absolute; top: 50%; transform: translateY(-50%);
     width: 36px; height: 36px; border-radius: 50%; border: none;
@@ -99,6 +109,17 @@ const css = `
   .ld-gallery-nav-btn:hover { background: rgba(0,0,0,.6); }
   .ld-gallery-nav-btn.prev { left: 10px; }
   .ld-gallery-nav-btn.next { right: 10px; }
+  .ld-fw-gallery-card .ld-gallery-nav-btn {
+    width: 40px; height: 40px;
+    background: rgba(255,255,255,0.85); color: #111827;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .ld-fw-gallery-card .ld-gallery-nav-btn:hover { background: rgba(255,255,255,0.95); }
+  .ld-fw-gallery-card .ld-gallery-nav-btn.prev { left: 12px; }
+  .ld-fw-gallery-card .ld-gallery-nav-btn.next { right: 12px; }
+  .ld-fw-gallery-card .ld-gallery-dots { display: none !important; }
+  .ld-fw-gallery-card .ld-gallery-zoom { display: none !important; }
+  .ld-fw-gallery-card .ld-thumb { width: 80px; height: 60px; border-radius: 6px; }
 
   .ld-gallery-zoom {
     position: absolute; bottom: 12px; right: 12px; z-index: 4;
@@ -152,18 +173,19 @@ const css = `
   /* RIGHT COLUMN */
   .ld-right { position: sticky; top: 72px; display: flex; flex-direction: column; gap: 12px; }
 
-  /* PRICE PANEL — как ml-detail-price-card */
-  .ld-price-panel { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
-  .ld-price-big { font-size: 28px; font-weight: 900; color: #1a1a1a; letter-spacing: -0.5px; line-height: 1.15; }
-  .ld-price-sub { font-size: 13px; color: #8f8f8f; margin-top: 2px; font-weight: 500; }
-  .ld-cat-tag { display: inline-block; background: #fde8e0; color: #e8410a; border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 12px; }
-  .ld-price-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  /* PRICE PANEL — как блок «Стоимость» на заявке FindWork */
+  .ld-price-panel { background: #fff; border-radius: 12px; border: none; padding: 20px; box-shadow: none; }
+  .ld-price-label { font-size: 12px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .ld-price-head { margin-bottom: 14px; }
+  .ld-price-big { font-size: 28px; font-weight: 900; color: #111827; letter-spacing: -0.5px; line-height: 1.15; }
+  .ld-price-sub { font-size: 13px; color: #9ca3af; margin-top: 4px; font-weight: 500; }
+  .ld-price-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 0; }
 
   /* КНОПКА: НАПИСАТЬ */
   button.ld-btn-msg { border: none; font-family: inherit; }
   .ld-btn-msg {
     background: #e8410a;
-    border: none; border-radius: 10px;
+    border: none; border-radius: 8px;
     color: #fff; font-size: 15px; font-weight: 700;
     padding: 14px 18px; cursor: pointer;
     font-family: inherit;
@@ -183,7 +205,7 @@ const css = `
     padding: 13px 18px;
     background: #fff;
     border: 1.5px solid #e5e7eb;
-    border-radius: 10px;
+    border-radius: 8px;
     color: #374151;
     font-size: 15px;
     font-weight: 600;
@@ -216,6 +238,23 @@ const css = `
   .ld-error-msg { font-size: 12px; color: #ef4444; font-weight: 600; padding: 2px 0; }
   .ld-deals-link { display: block; text-align: center; font-size: 13px; color: #e8410a; font-weight: 600; background: none; border: none; cursor: pointer; font-family: inherit; padding: 2px 0; transition: opacity .15s; }
   .ld-deals-link:hover { opacity: .75; }
+
+  /* Карточка мастера — как «Заказчик» на заявке */
+  .ld-fw-person-card { background: #fff; border-radius: 12px; padding: 16px 20px; border: none; box-shadow: none; }
+  .ld-fw-person-label { font-size: 13px; color: #9ca3af; font-weight: 600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .ld-fw-person-link { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+  .ld-fw-person-link:hover .ld-fw-person-name { color: #e8410a; }
+  .ld-fw-person-chevron { color: #9ca3af; font-size: 18px; flex-shrink: 0; }
+  .ld-fw-person-ava {
+    width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+    object-fit: cover; border: 2px solid #f3f4f6;
+  }
+  .ld-fw-person-ava-fallback {
+    width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg,#e8410a,#ff7043);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 18px;
+  }
 
   /* SELLER / профиль — мастер в «Мои объявления»: компактная карточка */
   .ld-seller { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
@@ -286,7 +325,7 @@ const css = `
   .ld-lb-hint { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.35); font-size: 12px; white-space: nowrap; pointer-events: none; }
 
   @media(max-width:900px) { .ld-page { grid-template-columns: 1fr; } .ld-right { position: static; } .ld-info-grid { grid-template-columns: 1fr; } .ld-info-row { border-right: none; } .ld-info-row:nth-last-child(-n+2) { border-bottom: 1px solid #ececec; } .ld-info-row:last-child { border-bottom: none; } }
-  @media(max-width:580px) { .ld-page { padding: 12px 12px 48px; } .ld-title { font-size: 18px; } .ld-price-big { font-size: 26px; } .ld-hero-head { padding: 14px 16px 12px; } }
+  @media(max-width:580px) { .ld-page { padding: 12px 12px 48px; } .ld-fw-title { font-size: 18px; } .ld-price-big { font-size: 26px; } }
 `;
 
 const TERMINAL_DEAL_STATUSES = ['CANCELLED', 'REFUNDED'];
@@ -493,7 +532,9 @@ export default function ListingDetailPage() {
 
   const workerName = [listing.workerName, listing.workerLastName].filter(Boolean).join(' ') || 'Мастер';
   const initials = (listing.workerName || 'М')[0].toUpperCase();
-  const completed = stats?.completedWorksCount ?? 0;
+  const workerRating = Number(stats?.averageRating ?? listing.workerRating ?? 0);
+  const workerReviews = Number(stats?.reviewsCount ?? stats?.reviewCount ?? 0);
+  const workerStars = Math.min(5, Math.max(0, Math.round(workerRating)));
   const isOwnListing = String(userId) === String(listing.workerId);
   const ownerFullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
   const ownerAva = userAvatar
@@ -571,14 +612,25 @@ export default function ListingDetailPage() {
         {/* ── LEFT ── */}
         <div className="ld-left">
 
-          {/* Одна карточка: заголовок + галерея (+ бейджи только для владельца — как в «Мои объявления») */}
-          <div className="ld-card" style={{ overflow: 'hidden' }}>
-            <div className="ld-hero-head">
-              <h1 className="ld-title">{listing.title}</h1>
+          <div className="ld-fw-head">
+            <div className="ld-fw-title-row">
+              <h1 className="ld-fw-title">{listing.title}</h1>
               <div className="ld-actions-row">
                 <button type="button" className="ld-action-btn">♡ В избранное</button>
               </div>
             </div>
+            <div className="ld-fw-meta">
+              {listing.category && <span>🏷 {listing.category}</span>}
+              <span>📍 {listing.address || 'Йошкар-Ола · выезд по договорённости'}</span>
+              {listing.createdAt && (
+                <span>
+                  📅 {new Date(listing.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="ld-fw-gallery-card">
             <div className="ld-gallery-wrap">
               <div className="ld-gallery-main" onClick={() => allPhotos.length && setLightbox(true)}>
                 {allPhotos.length > 0
@@ -618,23 +670,12 @@ export default function ListingDetailPage() {
                 </div>
               )}
             </div>
-
-            {isOwnListing && (
-              <div className="ld-hero-badges">
-                {listing.workerVerified && (
-                  <span className="ld-badge ld-badge-green">✅ Проверен</span>
-                )}
-                <span className="ld-badge ld-badge-orange">⚡ Быстрый отклик</span>
-                {listing.ownerGuaranteeTermsAccepted && (
-                  <span className="ld-badge ld-badge-blue">🛡️ Гарантия</span>
-                )}
-                {completed > 0 && <span className="ld-badge ld-badge-green">🏆 {completed} заказов</span>}
-              </div>
-            )}
           </div>
 
           <ListingInfoPanels
-            mergedSections
+            variant="jobDetail"
+            mergedSections={false}
+            budgetDtLabel="Стоимость"
             description={listing.description}
             category={listing.category}
             address={listing.address || 'Йошкар-Ола · выезд по договорённости'}
@@ -652,16 +693,13 @@ export default function ListingDetailPage() {
 
           {/* Price + CTA */}
           <div className="ld-price-panel">
-            <div className="ld-price-big">{priceMainLine}</div>
-            {(priceSubLine || (!priceHasAmount && listing.priceUnit)) && (
-              <div className="ld-price-sub">{priceSubLine || listing.priceUnit}</div>
-            )}
-
-            {listing.category && (
-              <div style={{ marginTop: 8 }}>
-                <span className="ld-cat-tag">{listing.category}</span>
-              </div>
-            )}
+            <div className="ld-price-head">
+              <div className="ld-price-label">Стоимость</div>
+              <div className="ld-price-big">{priceMainLine}</div>
+              {(priceSubLine || (!priceHasAmount && listing.priceUnit)) && (
+                <div className="ld-price-sub">{priceSubLine || listing.priceUnit}</div>
+              )}
+            </div>
 
             {!isOwnListing && (
               <div className="ld-price-btns">
@@ -696,7 +734,7 @@ export default function ListingDetailPage() {
                       to={userId ? `/chat/${listing.workerId}` : '/login'}
                       className="ld-btn-contact"
                     >
-                      Написать мастеру
+                      Написать сообщение
                     </Link>
                     <button className="ld-deals-link" type="button" onClick={() => navigate('/deals')}>
                       Перейти к сделкам →
@@ -711,7 +749,7 @@ export default function ListingDetailPage() {
                       to={userId ? `/chat/${listing.workerId}` : '/login'}
                       className="ld-btn-contact"
                     >
-                      Написать мастеру
+                      Написать сообщение
                     </Link>
                   </>
                 )}
@@ -785,54 +823,51 @@ export default function ListingDetailPage() {
             </div>
           )}
 
-          {/* Seller / ваш профиль */}
-          <div className="ld-seller">
-            {isOwnListing ? (
-              <>
-                <div className="ld-own-profile-label">Ваш профиль</div>
-                <div className="ld-own-profile-top">
-                  <div className="ld-seller-ava">
-                    {ownerAva
-                      ? <img src={ownerAva} alt={ownerFullName} />
-                      : (userName || 'М')[0].toUpperCase()}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="ld-seller-name"><span>{ownerFullName}</span></div>
-                    <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Мастер</div>
-                  </div>
+          {/* Мастер / ваш профиль */}
+          {isOwnListing ? (
+            <div className="ld-seller">
+              <div className="ld-own-profile-label">Ваш профиль</div>
+              <div className="ld-own-profile-top">
+                <div className="ld-seller-ava">
+                  {ownerAva
+                    ? <img src={ownerAva} alt={ownerFullName} />
+                    : (userName || 'М')[0].toUpperCase()}
                 </div>
-                <div className="ld-own-profile-footer">
-                  <Link to="/worker-profile" className="ld-seller-link">
-                    Редактировать профиль →
-                  </Link>
-                </div>
-              </>
-            ) : (
-              <div className="ld-profile-card">
-                <div className="ld-own-profile-label">Мастер</div>
-                <Link
-                  to={`/workers/${listing.workerId}`}
-                  className="ld-own-profile-top"
-                  style={{ textDecoration: 'none', color: 'inherit' }}
-                >
-                  <div className="ld-seller-ava">
-                    {listing.workerAvatar?.length > 10
-                      ? <img src={listing.workerAvatar} alt="" />
-                      : initials}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{workerName}</div>
-                    <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Мастер</div>
-                  </div>
-                </Link>
-                <div className="ld-own-profile-footer">
-                  <Link to={`/workers/${listing.workerId}`} className="ld-seller-link">
-                    Профиль мастера →
-                  </Link>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="ld-seller-name"><span>{ownerFullName}</span></div>
+                  <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Мастер</div>
                 </div>
               </div>
-            )}
-          </div>
+              <div className="ld-own-profile-footer">
+                <Link to="/worker-profile" className="ld-seller-link">
+                  Редактировать профиль →
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="ld-fw-person-card">
+              <div className="ld-fw-person-label">Мастер</div>
+              <Link to={`/workers/${listing.workerId}`} className="ld-fw-person-link">
+                {listing.workerAvatar?.length > 10 ? (
+                  <img src={listing.workerAvatar} alt="" className="ld-fw-person-ava" />
+                ) : (
+                  <div className="ld-fw-person-ava-fallback">{initials}</div>
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="ld-fw-person-name" style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>
+                    {workerName}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Активный мастер</div>
+                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                    <span style={{ color: '#f59e0b', letterSpacing: 1 }}>{'★'.repeat(workerStars)}{'☆'.repeat(5 - workerStars)}</span>
+                    <span style={{ fontWeight: 800, color: '#111827' }}>{workerRating.toFixed(1)}</span>
+                    <span>({reviewsCountLabel(workerReviews)})</span>
+                  </div>
+                </div>
+                <div className="ld-fw-person-chevron">›</div>
+              </Link>
+            </div>
+          )}
 
           {/* Similar */}
           {similar.length > 0 && (
