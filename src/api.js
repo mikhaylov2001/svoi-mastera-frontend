@@ -417,3 +417,16 @@ export async function submitVerification(userId, payload) {
     body: JSON.stringify(payload),
   });
 }
+
+// ── GUARANTEE TERMS (после верификации) ──
+export async function getGuaranteeMe(userId) {
+  return apiCall('/guarantee/me', { headers: { 'X-User-Id': userId }, cache: 'no-store' });
+}
+
+export async function acceptGuaranteeTerms(userId, body) {
+  return apiCall('/guarantee/accept', {
+    method: 'POST',
+    headers: { 'X-User-Id': userId },
+    body: JSON.stringify(body),
+  });
+}

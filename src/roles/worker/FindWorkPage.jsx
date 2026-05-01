@@ -1238,11 +1238,13 @@ export default function FindWorkPage() {
                 </div>
               )}
 
+              {req.customerGuaranteeTermsAccepted && (
               <div style={{ background:'#fff', borderRadius:12, padding:'14px 20px' }}>
                 <div style={{ fontSize:12, color:'#9ca3af', lineHeight:1.6 }}>
                   ✅ Безопасная сделка — оплата только после выполнения работы
                 </div>
               </div>
+              )}
             </div>
           </div>
         </div>
@@ -1678,7 +1680,9 @@ export default function FindWorkPage() {
                         <div className="fw2-card-badges">
                           <span className="fw2-badge fw2-badge-v">✓ Открыта</span>
                           <span className="fw2-badge fw2-badge-f">⚡ Заявка</span>
-                          <span className="fw2-badge fw2-badge-g">🛡 Безопасная сделка</span>
+                          {req.customerGuaranteeTermsAccepted && (
+                            <span className="fw2-badge fw2-badge-g">🛡 Безопасная сделка</span>
+                          )}
                         </div>
 
                         {customerReviewsPath ? (

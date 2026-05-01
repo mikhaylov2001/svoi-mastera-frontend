@@ -599,6 +599,36 @@ export default function WorkerProfilePage() {
                   </div>
                 </Link>
               )}
+              {profile?.verified ? (
+                profile?.guaranteeTermsAccepted ? (
+                  <div className="pp-si pp-si-verified" role="status" aria-label="Условия гарантии приняты">
+                    <div className="pp-si-left">
+                      <div className="pp-si-t">Гарантия и ответственность</div>
+                      <div className="pp-si-d">Заявление о гарантии и ответственности принято</div>
+                    </div>
+                    <div className="pp-si-right">
+                      <span className="pp-si-badge">✓ Принято</span>
+                    </div>
+                  </div>
+                ) : (
+                  <Link to="/guarantee" className="pp-si">
+                    <div className="pp-si-left">
+                      <div className="pp-si-t">Гарантия и ответственность</div>
+                      <div className="pp-si-d">Прочитайте заявление и отметьте согласие (галочки)</div>
+                    </div>
+                    <div className="pp-si-right">
+                      <span className="pp-si-arr">›</span>
+                    </div>
+                  </Link>
+                )
+              ) : (
+                <div className="pp-si pp-dis" aria-disabled="true">
+                  <div className="pp-si-left">
+                    <div className="pp-si-t">Гарантия и ответственность</div>
+                    <div className="pp-si-d">Личная гарантия и ответственность — после верификации</div>
+                  </div>
+                </div>
+              )}
               <div className="pp-si pp-dis">
                 <div className="pp-si-left">
                   <div className="pp-si-t">Подписка для объявлений</div>

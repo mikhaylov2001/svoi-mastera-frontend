@@ -1414,7 +1414,9 @@ export default function FindMasterPage() {
                           <span className="fmp-badge fmp-badge-v">✓ Проверен</span>
                         )}
                         <span className="fmp-badge fmp-badge-f">⚡ Отклик</span>
-                        <span className="fmp-badge fmp-badge-g">🛡 Гарантия</span>
+                        {s.ownerGuaranteeTermsAccepted && (
+                          <span className="fmp-badge fmp-badge-g">🛡 Гарантия</span>
+                        )}
                     </div>
 
                     {stats && (

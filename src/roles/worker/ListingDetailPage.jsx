@@ -511,7 +511,9 @@ export default function ListingDetailPage() {
               <span className="ld-badge ld-badge-green">✅ Проверен</span>
             )}
             <span className="ld-badge ld-badge-orange">⚡ Быстрый отклик</span>
-            <span className="ld-badge ld-badge-blue">🛡️ Гарантия</span>
+            {listing.ownerGuaranteeTermsAccepted && (
+              <span className="ld-badge ld-badge-blue">🛡️ Гарантия</span>
+            )}
             {completed > 0 && <span className="ld-badge ld-badge-green">🏆 {completed} заказов</span>}
           </div>
         </div>
