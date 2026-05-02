@@ -261,7 +261,7 @@ const css = `
   /* ── DETAIL ── */
   .ml-detail { background: #f2f2f2; min-height: 100vh; }
   .ml-detail-nav { background: #fff; border-bottom: 1.5px solid #e5e7eb; padding: 12px 0; }
-  .ml-detail-wrap { max-width: 1000px; margin: 0 auto; padding: 20px 20px 60px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: flex-start; }
+  .ml-detail-wrap { max-width: 1000px; margin: 0 auto; padding: 20px 20px 60px; display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: flex-start; }
   .ml-detail-gallery { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
   .ml-detail-main-img { position: relative; aspect-ratio: 16/9; overflow: hidden; cursor: pointer; background: #f5f5f5; display: flex; align-items: center; justify-content: center; }
   .ml-detail-main-img img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
@@ -271,8 +271,10 @@ const css = `
   .ml-detail-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .ml-detail-right { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 72px; }
   .ml-detail-price-card { background: #fff; border-radius: 12px; padding: 20px; }
+  .ml-detail-price-label { font-size: 12px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
   .ml-detail-price { font-size: 28px; font-weight: 900; color: #1a1a1a; }
-  .ml-detail-price-unit { font-size: 13px; color: #8f8f8f; margin-top: 2px; }
+  .ml-detail-price-unit { font-size: 13px; color: #9ca3af; margin-top: 4px; font-weight: 500; }
+  .ml-detail-status-line { font-size: 12px; color: #6b7280; margin-top: 10px; font-weight: 500; }
   .ml-detail-actions-card { background: #fff; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
   .ml-btn-primary {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
@@ -1294,9 +1296,21 @@ export default function MyListingsPage() {
 
           <div className="ml-detail-right">
             <div className="ml-detail-price-card">
-              <div className="ml-detail-price">{Number(detail.price).toLocaleString('ru-RU')} ₽</div>
-              <div className="ml-detail-price-unit">{detail.priceUnit}</div>
-              {detail.category && <div style={{marginTop:8}}><span className="ml-tag">{detail.category}</span></div>}
+              <div className="ml-detail-price-label">Стоимость</div>
+              {detail.priceUnit === 'договорная' || !detail.price || Number(detail.price) <= 0 ? (
+                <div className="ml-detail-price" style={{ fontSize: 22 }}>Договорная</div>
+              ) : (
+                <div className="ml-detail-price">{Number(detail.price).toLocaleString('ru-RU')} ₽</div>
+              )}
+              <div className="ml-detail-price-unit">{detail.priceUnit || 'за работу'}</div>
+              <div className="ml-detail-status-line">
+                {listingLockedAfterDeal(detail)
+                  ? 'Завершено по сделке'
+                  : detail.active
+                    ? 'В каталоге'
+                    : 'Снято с публикации'}
+              </div>
+              {detail.category && <div style={{ marginTop: 8 }}><span className="ml-tag">{detail.category}</span></div>}
             </div>
             {(showWorkerReviewForListing(detail.id) || !listingLockedAfterDeal(detail)) && (
             <div className="ml-detail-actions-card">
@@ -1311,6 +1325,7 @@ export default function MyListingsPage() {
                   >
                     {copyFlashId === detail.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
                   </button>
+                  <div className="ml-actions-divider" />
                   <button type="button" className="ml-btn-outline" onClick={e => handleToggle(detail, e)}>
                     {detail.active ? 'Снять с публикации' : 'Восстановить'}
                   </button>

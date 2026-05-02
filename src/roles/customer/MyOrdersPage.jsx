@@ -197,6 +197,10 @@ const css = `
     background: #f9fafb; border: 1.5px solid #e8e8e8; border-top: none;
     border-radius: 0 0 16px 16px; padding: 16px 18px;
   }
+  .ml-detail-offers-card {
+    background: #fff; border: 1.5px solid #e8e8e8; border-radius: 12px;
+    padding: 16px 18px;
+  }
   .ml-offers-title { font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 12px; }
   .ml-offer-card {
     background: #fff; border: 1.5px solid #e5e7eb; border-radius: 12px;
@@ -529,13 +533,11 @@ export default function MyOrdersPage() {
   const [copyFlashId,    setCopyFlashId]    = useState(null);
   const [removeLoadingId, setRemoveLoadingId] = useState(null);
 
-  // Offers
-  const [expandedId,    setExpandedId]    = useState(null);
-  const [offers,        setOffers]        = useState([]);
-  const [offersLoading, setOffersLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
   const [detailOffers, setDetailOffers] = useState([]);
   const [detailOffersLoading, setDetailOffersLoading] = useState(false);
+  /** Отклики на детальной странице (OPEN), без раскрытия на «карте» списка */
+  const [detailShowResponses, setDetailShowResponses] = useState(false);
 
   const photoRef = useRef();
   const titleRef = useRef();
@@ -578,7 +580,16 @@ export default function MyOrdersPage() {
   useSameRouteRefetch('/my-requests', load);
 
   useEffect(() => {
-    if (!detail || detail.status === 'OPEN') {
+    setDetailShowResponses(false);
+  }, [detail?.id]);
+
+  useEffect(() => {
+    if (!detail?.id) {
+      setDetailOffers([]);
+      setDetailOffersLoading(false);
+      return undefined;
+    }
+    if (detail.status === 'OPEN' && !detailShowResponses) {
       setDetailOffers([]);
       setDetailOffersLoading(false);
       return undefined;
@@ -596,7 +607,7 @@ export default function MyOrdersPage() {
         if (!cancelled) setDetailOffersLoading(false);
       });
     return () => { cancelled = true; };
-  }, [detail?.id, detail?.status]);
+  }, [detail?.id, detail?.status, detailShowResponses]);
 
   // Lightbox keyboard
   useEffect(() => {
@@ -627,19 +638,6 @@ export default function MyOrdersPage() {
     } else { done(); }
   }, []);
 
-  /* ── offers ── */
-  const toggleOffers = useCallback(async (reqId, e) => {
-    e?.stopPropagation?.();
-    if (expandedId === reqId) { setExpandedId(null); setOffers([]); return; }
-    setExpandedId(reqId);
-    setOffersLoading(true);
-    try {
-      const data = await getOffersForRequest(reqId);
-      setOffers(data || []);
-    } catch { setOffers([]); }
-    setOffersLoading(false);
-  }, [expandedId]);
-
   const handleRemoveRequest = useCallback(async (req, e) => {
     e?.stopPropagation?.();
     if (!userId || !req?.id) return;
@@ -654,7 +652,7 @@ export default function MyOrdersPage() {
     try {
       await cancelJobRequest(userId, req.id);
       await load();
-      setExpandedId((cur) => (cur === req.id ? null : cur));
+      setDetailShowResponses(false);
       setDetail((prev) => (prev && prev.id === req.id ? { ...prev, status: 'CANCELLED' } : prev));
     } catch (err) {
       window.alert(humanizeServerErrorMessage(err));
@@ -670,7 +668,12 @@ export default function MyOrdersPage() {
     try {
       await acceptOffer(userId, requestId, offerId);
       await load();
-      setExpandedId(null); setOffers([]);
+      try {
+        const data = await getOffersForRequest(requestId);
+        setDetailOffers(Array.isArray(data) ? data : []);
+      } catch {
+        setDetailOffers([]);
+      }
     } catch (err) {
       alert('Ошибка при принятии отклика: ' + (err.message || ''));
     }
@@ -1241,24 +1244,15 @@ export default function MyOrdersPage() {
               <div className="ml-detail-actions-card">
                 <div className="ml-section-label" style={{ marginBottom: 4 }}>Управление</div>
                 {requestIsEditable(detail) && (
-                  <>
-                    <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
-                    <button
-                      type="button"
-                      className="ml-btn-outline"
-                      onClick={(e) => { setDetail(null); setTimeout(() => toggleOffers(detail.id, e), 100); }}
-                    >
-                      Смотреть отклики
-                    </button>
-                  </>
+                  <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
                 )}
-                {!requestIsEditable(detail) && requestCanRemove(detail) && (
+                {detail.status === 'OPEN' && (
                   <button
                     type="button"
                     className="ml-btn-outline"
-                    onClick={(e) => { setDetail(null); setTimeout(() => toggleOffers(detail.id, e), 100); }}
+                    onClick={() => setDetailShowResponses((v) => !v)}
                   >
-                    Смотреть отклики
+                    {detailShowResponses ? 'Скрыть отклики' : 'Смотреть отклики'}
                   </button>
                 )}
                 {requestCanRemove(detail) && (
@@ -1271,6 +1265,66 @@ export default function MyOrdersPage() {
                     {removeLoadingId === detail.id ? 'Убираем…' : 'Убрать заявку'}
                   </button>
                 )}
+              </div>
+            )}
+            {detail.status === 'OPEN' && detailShowResponses && (
+              <div className="ml-detail-offers-card">
+                <div className="ml-offers-title">Отклики мастеров</div>
+                {detailOffersLoading && <div className="ml-sk" style={{ height: 60, borderRadius: 12 }} />}
+                {!detailOffersLoading && detailOffers.length === 0 && (
+                  <p style={{ fontSize: 13, color: '#9ca3af', margin: 0, lineHeight: 1.45 }}>
+                    Откликов пока нет. Мастера увидят вашу заявку и предложат цену.
+                  </p>
+                )}
+                {!detailOffersLoading && detailOffers.map((offer) => {
+                  const agreedPrice = budget && Number(offer.price) === Number(budget);
+                  const cheaper = budget && Number(offer.price) < Number(budget);
+                  return (
+                    <div
+                      key={offer.id}
+                      className="ml-offer-card"
+                      style={agreedPrice || offer.status === 'ACCEPTED' ? { borderColor: '#22c55e', background: '#f0fdf4' } : {}}
+                    >
+                      <div className="ml-offer-top">
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <span className="ml-offer-price">{Number(offer.price).toLocaleString('ru-RU')} ₽</span>
+                            {offer.estimatedDays && <span className="ml-offer-days">· {offer.estimatedDays} дн.</span>}
+                            {agreedPrice && (
+                              <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', background: '#dcfce7', padding: '2px 8px', borderRadius: 12 }}>✅ Принял вашу цену</span>
+                            )}
+                            {cheaper && !agreedPrice && (
+                              <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', background: '#dbeafe', padding: '2px 8px', borderRadius: 12 }}>
+                                −{(Number(budget) - Number(offer.price)).toLocaleString('ru-RU')} ₽ дешевле
+                              </span>
+                            )}
+                            {budget && Number(offer.price) > Number(budget) && (
+                              <span style={{ fontSize: 12, fontWeight: 600, color: '#d97706', background: '#fef3c7', padding: '2px 8px', borderRadius: 12 }}>
+                                +{(Number(offer.price) - Number(budget)).toLocaleString('ru-RU')} ₽ к бюджету
+                              </span>
+                            )}
+                          </div>
+                          {offer.workerName && (
+                            <div className="ml-offer-name">{workerOfferFullName(offer)}</div>
+                          )}
+                        </div>
+                        {requestIsEditable(detail) && offer.status !== 'ACCEPTED' && (
+                          <button
+                            className="ml-accept-btn"
+                            disabled={actionLoading === offer.id}
+                            onClick={e => handleAccept(detail.id, offer.id, e)}
+                          >
+                            {actionLoading === offer.id ? '...' : 'Принять'}
+                          </button>
+                        )}
+                        {offer.status === 'ACCEPTED' && (
+                          <span style={{ fontSize: 13, fontWeight: 700, color: '#16a34a', whiteSpace: 'nowrap' }}>✓ Принят</span>
+                        )}
+                      </div>
+                      {offer.message && <p className="ml-offer-msg">{offer.message}</p>}
+                    </div>
+                  );
+                })}
               </div>
             )}
             {detail.status !== 'OPEN' && (
@@ -1419,14 +1473,12 @@ export default function MyOrdersPage() {
               const budget   = req.budgetTo || req.budgetFrom;
               const stLabel  = STATUS_LABELS[req.status] || req.status;
               const isActive = isActiveStatus(req.status);
-              const isExp    = expandedId === req.id;
               return (
-                <div key={req.id}>
-                  <div
-                    className="ml-row"
-                    style={isExp ? { borderRadius: '16px 16px 0 0', borderBottomColor: 'transparent' } : {}}
-                    onClick={() => { setDetail(req); setPhotoIdx(0); }}
-                  >
+                <div
+                  key={req.id}
+                  className="ml-row"
+                  onClick={() => { setDetail(req); setPhotoIdx(0); }}
+                >
                     <div className="ml-row-img">
                       {req.photos?.length
                         ? <><img src={req.photos[0]} alt="" />{req.photos.length > 1 && <span className="ml-row-img-cnt">📷{req.photos.length}</span>}</>
@@ -1467,90 +1519,20 @@ export default function MyOrdersPage() {
                       >
                         {copyFlashId === req.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
                       </button>
-                      <div className="ml-actions-divider" />
-                      <button
-                        type="button"
-                        className="ml-btn-outline"
-                        onClick={e => toggleOffers(req.id, e)}
-                      >
-                        {isExp ? 'Скрыть отклики' : 'Смотреть отклики'}
-                      </button>
                       {requestCanRemove(req) && (
-                        <button
-                          type="button"
-                          className="ml-btn-outline"
-                          disabled={removeLoadingId === req.id}
-                          onClick={e => handleRemoveRequest(req, e)}
-                        >
-                          {removeLoadingId === req.id ? 'Убираем…' : 'Убрать заявку'}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Offers panel */}
-                  {isExp && (
-                    <div className="ml-offers-panel">
-                      <div className="ml-offers-title">{isActive ? 'Отклики мастеров' : 'Отклики и назначенный мастер'}</div>
-                      {offersLoading && <div className="ml-sk" style={{height:60, borderRadius:12}} />}
-                      {!offersLoading && offers.length === 0 && (
-                        <p style={{fontSize:13, color:'#9ca3af', margin:0, lineHeight:1.45}}>
-                          {isActive
-                            ? 'Откликов пока нет. Мастера увидят вашу заявку и предложат цену.'
-                            : 'Нет данных об откликах. Откройте карточку заявки или раздел «Мои сделки».'}
-                        </p>
-                      )}
-                      {!offersLoading && offers.map(offer => {
-                        const agreedPrice = budget && Number(offer.price) === Number(budget);
-                        const cheaper     = budget && Number(offer.price) < Number(budget);
-                        return (
-                          <div
-                            key={offer.id}
-                            className="ml-offer-card"
-                            style={agreedPrice || offer.status === 'ACCEPTED' ? { borderColor: '#22c55e', background: '#f0fdf4' } : {}}
+                        <>
+                          <div className="ml-actions-divider" />
+                          <button
+                            type="button"
+                            className="ml-btn-outline"
+                            disabled={removeLoadingId === req.id}
+                            onClick={e => handleRemoveRequest(req, e)}
                           >
-                            <div className="ml-offer-top">
-                              <div>
-                                <div style={{display:'flex', alignItems:'center', gap:8, flexWrap:'wrap'}}>
-                                  <span className="ml-offer-price">{Number(offer.price).toLocaleString('ru-RU')} ₽</span>
-                                  {offer.estimatedDays && <span className="ml-offer-days">· {offer.estimatedDays} дн.</span>}
-                                  {agreedPrice && (
-                                    <span style={{fontSize:12, fontWeight:700, color:'#16a34a', background:'#dcfce7', padding:'2px 8px', borderRadius:12}}>✅ Принял вашу цену</span>
-                                  )}
-                                  {cheaper && !agreedPrice && (
-                                    <span style={{fontSize:12, fontWeight:700, color:'#2563eb', background:'#dbeafe', padding:'2px 8px', borderRadius:12}}>
-                                      −{(Number(budget) - Number(offer.price)).toLocaleString('ru-RU')} ₽ дешевле
-                                    </span>
-                                  )}
-                                  {budget && Number(offer.price) > Number(budget) && (
-                                    <span style={{fontSize:12, fontWeight:600, color:'#d97706', background:'#fef3c7', padding:'2px 8px', borderRadius:12}}>
-                                      +{(Number(offer.price) - Number(budget)).toLocaleString('ru-RU')} ₽ к бюджету
-                                    </span>
-                                  )}
-                                </div>
-                                {offer.workerName && (
-                                  <div className="ml-offer-name">{workerOfferFullName(offer)}</div>
-                                )}
-                              </div>
-                              {requestIsEditable(req) && offer.status !== 'ACCEPTED' && (
-                              <button
-                                className="ml-accept-btn"
-                                disabled={actionLoading === offer.id}
-                                onClick={e => handleAccept(req.id, offer.id, e)}
-                              >
-                                {actionLoading === offer.id ? '...' : 'Принять'}
-                              </button>
-                              )}
-                              {offer.status === 'ACCEPTED' && (
-                                <span style={{ fontSize: 13, fontWeight: 700, color: '#16a34a', whiteSpace: 'nowrap' }}>✓ Принят</span>
-                              )}
-                            </div>
-                            {offer.message && <p className="ml-offer-msg">{offer.message}</p>}
-                          </div>
-                        );
-                      })}
+                            {removeLoadingId === req.id ? 'Убираем…' : 'Убрать заявку'}
+                          </button>
+                        </>
+                      )}
                     </div>
-                  )}
                 </div>
               );
             })}
