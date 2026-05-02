@@ -154,6 +154,13 @@ const css = `
     padding: 8px 12px; margin: 0 -18px -10px; border-top: 1px solid #f3f4f6;
     background: #f9f9f9; border-radius: 0 0 0 12px;
   }
+  .ml-row-stat-offers {
+    cursor: pointer; border-radius: 8px; padding: 2px 8px; margin: -2px -8px;
+    transition: background .15s;
+    outline: none;
+  }
+  .ml-row-stat-offers:hover { background: rgba(232, 65, 10, 0.09); }
+  .ml-row-stat-offers:focus-visible { box-shadow: 0 0 0 2px rgba(232, 65, 10, 0.35); }
   .ml-row-stat { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 5px; }
   .ml-row-stat-num { font-weight: 800; color: #111827; font-variant-numeric: tabular-nums; font-size: 14px; }
   .ml-row-stat-status-active { font-size: 12px; font-weight: 700; color: #16a34a; }
@@ -255,16 +262,6 @@ const css = `
   .ml-btn-primary:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
   .ml-btn-primary:active { transform: translateY(0); }
   .ml-btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
-  .ml-btn-outline-neutral {
-    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center;
-    background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; color: #374151;
-    font-family: inherit; cursor: pointer;
-    transition: border-color .15s, background .15s;
-  }
-  .ml-btn-outline-neutral:hover { border-color: #374151; background: #fafafa; }
-  .ml-btn-outline-neutral:disabled { opacity: .55; cursor: not-allowed; }
   /* как «Снять с публикации» у мастера */
   .ml-btn-outline-orange {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
@@ -542,10 +539,11 @@ export default function MyOrdersPage() {
   const [actionLoading, setActionLoading] = useState(null);
   const [detailOffers, setDetailOffers] = useState([]);
   const [detailOffersLoading, setDetailOffersLoading] = useState(false);
-  /** Отклики на детальной странице (OPEN), без раскрытия на «карте» списка */
-  const [detailShowResponses, setDetailShowResponses] = useState(false);
+  /** Прокрутить к блоку откликов после открытия заявки по клику на «N откликов» в списке */
+  const [scrollOffersIntoViewFlag, setScrollOffersIntoViewFlag] = useState(false);
 
   const photoRef = useRef();
+  const offersSectionRef = useRef(null);
   const titleRef = useRef();
 
   /* ── helpers ── */
@@ -586,16 +584,7 @@ export default function MyOrdersPage() {
   useSameRouteRefetch('/my-requests', load);
 
   useEffect(() => {
-    setDetailShowResponses(false);
-  }, [detail?.id]);
-
-  useEffect(() => {
     if (!detail?.id) {
-      setDetailOffers([]);
-      setDetailOffersLoading(false);
-      return undefined;
-    }
-    if (detail.status === 'OPEN' && !detailShowResponses) {
       setDetailOffers([]);
       setDetailOffersLoading(false);
       return undefined;
@@ -613,7 +602,20 @@ export default function MyOrdersPage() {
         if (!cancelled) setDetailOffersLoading(false);
       });
     return () => { cancelled = true; };
-  }, [detail?.id, detail?.status, detailShowResponses]);
+  }, [detail?.id, detail?.status]);
+
+  useEffect(() => {
+    if (!scrollOffersIntoViewFlag) return undefined;
+    if (!detail?.id || detail.status !== 'OPEN') {
+      setScrollOffersIntoViewFlag(false);
+      return undefined;
+    }
+    const id = window.requestAnimationFrame(() => {
+      offersSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      setScrollOffersIntoViewFlag(false);
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [detail?.id, detail?.status, scrollOffersIntoViewFlag]);
 
   // Lightbox keyboard
   useEffect(() => {
@@ -659,7 +661,6 @@ export default function MyOrdersPage() {
     try {
       await cancelJobRequest(userId, req.id);
       await load();
-      setDetailShowResponses(false);
       setDetail((prev) => (prev && prev.id === req.id ? { ...prev, status: 'CANCELLED' } : prev));
     } catch (err) {
       window.alert(humanizeServerErrorMessage(err));
@@ -1244,20 +1245,16 @@ export default function MyOrdersPage() {
                 {requestIsEditable(detail) && (
                   <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
                 )}
-                {detail.status === 'OPEN' && (
-                  <button
-                    type="button"
-                    className="ml-btn-outline-neutral"
-                    onClick={() => setDetailShowResponses((v) => !v)}
-                  >
-                    {detailShowResponses ? 'Скрыть отклики' : 'Смотреть отклики'}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className={`ml-btn-copy${copyFlashId === detail.id ? ' copied' : ''}`}
+                  onClick={(e) => copyRequestLink(detail.id, e)}
+                >
+                  {copyFlashId === detail.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
+                </button>
                 {requestCanRemove(detail) && (
                   <>
-                    {(requestIsEditable(detail) || detail.status === 'OPEN') && (
-                      <div className="ml-actions-divider" />
-                    )}
+                    <div className="ml-actions-divider" />
                     <button
                       type="button"
                       className="ml-btn-outline-orange"
@@ -1270,8 +1267,8 @@ export default function MyOrdersPage() {
                 )}
               </div>
             )}
-            {detail.status === 'OPEN' && detailShowResponses && (
-              <div className="ml-detail-offers-card">
+            {detail.status === 'OPEN' && (
+              <div ref={offersSectionRef} className="ml-detail-offers-card">
                 <div className="ml-offers-title">Отклики мастеров</div>
                 {detailOffersLoading && <div className="ml-sk" style={{ height: 60, borderRadius: 12 }} />}
                 {!detailOffersLoading && detailOffers.length === 0 && (
@@ -1480,7 +1477,7 @@ export default function MyOrdersPage() {
                 <div
                   key={req.id}
                   className="ml-row"
-                  onClick={() => { setDetail(req); setPhotoIdx(0); }}
+                  onClick={() => { setScrollOffersIntoViewFlag(false); setDetail(req); setPhotoIdx(0); }}
                 >
                     <div className="ml-row-img">
                       {req.photos?.length
@@ -1502,7 +1499,27 @@ export default function MyOrdersPage() {
                       )}
                       <div className="ml-row-date">{req.createdAt ? new Date(req.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) : '—'}</div>
                       <div className="ml-row-stats">
-                        <div className="ml-row-stat">
+                        <div
+                          className="ml-row-stat ml-row-stat-offers"
+                          role="button"
+                          tabIndex={0}
+                          title="Открыть отклики"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setScrollOffersIntoViewFlag(true);
+                            setDetail(req);
+                            setPhotoIdx(0);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setScrollOffersIntoViewFlag(true);
+                              setDetail(req);
+                              setPhotoIdx(0);
+                            }
+                          }}
+                        >
                           <span className="ml-row-stat-num">{req.offersCount != null ? req.offersCount : 0}</span>
                           <span>{pluralOffers(Number(req.offersCount) || 0)}</span>
                         </div>
