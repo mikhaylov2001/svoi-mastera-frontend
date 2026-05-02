@@ -175,6 +175,16 @@ const css = `
   }
   .ml-btn-edit:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.34); }
   .ml-btn-edit:active { transform: translateY(0); }
+  .ml-btn-copy {
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; line-height: 1.25; text-align: center;
+    white-space: nowrap;
+    background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; color: #374151;
+    cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s;
+  }
+  .ml-btn-copy:hover { border-color: #374151; background: #fafafa; }
+  .ml-btn-copy.copied { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
   .ml-actions-divider { height: 1px; background: #ebebeb; margin: 2px 0; }
   .ml-empty {
     text-align: center; padding: 72px 24px;
@@ -526,6 +536,7 @@ export default function MyOrdersPage() {
   const [formErr,        setFormErr]        = useState('');
   const [lightbox,       setLightbox]       = useState(null);
   const [isDragging,     setIsDragging]     = useState(false);
+  const [copyFlashId,    setCopyFlashId]    = useState(null);
   const [removeLoadingId, setRemoveLoadingId] = useState(null);
 
   const [actionLoading, setActionLoading] = useState(null);
@@ -619,6 +630,20 @@ export default function MyOrdersPage() {
   const active  = requests.filter(r => isActiveStatus(r.status));
   const archive = requests.filter(r => !isActiveStatus(r.status));
   const shown   = tab === 'active' ? active : archive;
+
+  const copyRequestLink = useCallback((reqId, e) => {
+    e?.stopPropagation?.();
+    const url = `${window.location.origin}/my-requests?request=${reqId}`;
+    const done = () => {
+      setCopyFlashId(reqId);
+      window.setTimeout(() => setCopyFlashId((cur) => (cur === reqId ? null : cur)), 2200);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(done).catch(done);
+    } else {
+      done();
+    }
+  }, []);
 
   const handleRemoveRequest = useCallback(async (req, e) => {
     e?.stopPropagation?.();
@@ -1490,9 +1515,16 @@ export default function MyOrdersPage() {
                       {requestIsEditable(req) && (
                         <button type="button" className="ml-btn-edit" onClick={e => openEdit(req, e)}>Редактировать</button>
                       )}
+                      <button
+                        type="button"
+                        className={`ml-btn-copy${copyFlashId === req.id ? ' copied' : ''}`}
+                        onClick={e => copyRequestLink(req.id, e)}
+                      >
+                        {copyFlashId === req.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
+                      </button>
                       {requestCanRemove(req) && (
                         <>
-                          {requestIsEditable(req) && <div className="ml-actions-divider" />}
+                          <div className="ml-actions-divider" />
                           <button
                             type="button"
                             className="ml-btn-outline-orange"
