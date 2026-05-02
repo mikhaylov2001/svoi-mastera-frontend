@@ -90,7 +90,8 @@ export const dealsWdCss = `
     box-shadow: 0 2px 10px rgba(0,0,0,.04);
     transition: box-shadow .2s, transform .2s, border-color .2s;
   }
-  .wd-card:hover { box-shadow: 0 10px 32px rgba(0,0,0,.09); transform: translateY(-2px); border-color: #e8410a; }
+  .wd-card:hover { box-shadow: 0 10px 32px rgba(0,0,0,.09); transform: translateY(-2px); border-color: #d1d5db; }
+  .wd-card:focus-within { border-color: #e8e8e8; }
   .wd-card.new  { border-left: 3px solid #f59e0b; background: #fffdf7; }
   .wd-card.prog { border-left: 3px solid #3b82f6; }
   .wd-card.done { border-left: 3px solid #22c55e; }
@@ -190,7 +191,8 @@ export const dealsWdCss = `
     box-shadow: 0 2px 8px rgba(0,0,0,.04);
     transition: box-shadow .2s, transform .2s, border-color .2s;
   }
-  .wd-lst-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.09); transform: translateY(-2px); border-color: #e8410a; }
+  .wd-lst-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.09); transform: translateY(-2px); border-color: #d1d5db; }
+  .wd-lst-card:focus-within { border-color: #e8e8e8; }
   .wd-lst-img {
     width: 64px; height: 64px; border-radius: 10px; overflow: hidden;
     background: #f5f5f5; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
