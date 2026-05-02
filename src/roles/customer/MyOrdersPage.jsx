@@ -8,7 +8,6 @@ import {
   getMyJobRequests, getOffersForRequest, acceptOffer,
   getCategories, createJobRequest, updateJobRequest,
   getMyDeals,
-  cancelJobRequest,
 } from '../../api';
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
@@ -147,8 +146,8 @@ const css = `
   .ml-row-unit { font-size: 12px; color: #8f8f8f; font-weight: 500; margin-left: 4px; }
   .ml-row-cat {
     display: inline-block; align-self: flex-start; max-width: 100%;
-    font-size: 12px; font-weight: 700; color: #c73208;
-    background: #fde8e0; border-radius: 20px; padding: 4px 12px; margin-bottom: 6px;
+    font-size: 12px; font-weight: 700; color: #475569;
+    background: #f1f5f9; border-radius: 20px; padding: 4px 12px; margin-bottom: 6px;
   }
   .ml-row-desc { font-size: 13px; color: #6b7280; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; margin-bottom: 6px; line-height: 1.45; }
   .ml-row-date { font-size: 12px; color: #9ca3af; margin-bottom: 10px; }
@@ -178,12 +177,12 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #e8410a; border: none; border-radius: 10px; color: #fff;
+    background: #334155; border: none; border-radius: 10px; color: #fff;
     cursor: pointer; font-family: inherit;
-    box-shadow: 0 3px 14px rgba(232,65,10,.28);
+    box-shadow: 0 3px 14px rgba(51,65,85,.28);
     transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ml-btn-edit:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.34); }
+  .ml-btn-edit:hover { background: #1e293b; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(30,41,59,.34); }
   .ml-btn-edit:active { transform: translateY(0); }
   .ml-btn-copy {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 10px;
@@ -257,12 +256,12 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #e8410a; border: none; border-radius: 10px; color: #fff;
+    background: #334155; border: none; border-radius: 10px; color: #fff;
     cursor: pointer; font-family: inherit;
-    box-shadow: 0 3px 14px rgba(232,65,10,.30);
+    box-shadow: 0 3px 14px rgba(51,65,85,.30);
     transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ml-btn-primary:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
+  .ml-btn-primary:hover { background: #1e293b; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(30,41,59,.36); }
   .ml-btn-primary:active { transform: translateY(0); }
   .ml-btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
   .ml-btn-outline-neutral {
@@ -275,19 +274,8 @@ const css = `
   }
   .ml-btn-outline-neutral:hover { border-color: #374151; background: #fafafa; }
   .ml-btn-outline-neutral:disabled { opacity: .55; cursor: not-allowed; }
-  /* как «Снять с публикации» у мастера */
-  .ml-btn-outline-orange {
-    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #fff9f6; border: 1.5px solid #e8410a; border-radius: 10px; color: #e8410a;
-    font-family: inherit; cursor: pointer;
-    transition: background .15s, transform .15s;
-  }
-  .ml-btn-outline-orange:hover { background: #fde8e0; }
-  .ml-btn-outline-orange:disabled { opacity: .55; cursor: not-allowed; transform: none !important; }
   .ml-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
-  .ml-tag { display: inline-block; background: #fde8e0; color: #e8410a; border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 12px; }
+  .ml-tag { display: inline-block; background: #f1f5f9; color: #475569; border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 12px; }
 
   /* ФОРМА */
   .mlf-hero { position: relative; height: var(--page-hero-h-desktop); overflow: hidden; }
@@ -523,10 +511,6 @@ function requestIsEditable(req) {
   return !!(req && req.status === 'OPEN');
 }
 
-function requestCanRemove(req) {
-  return !!(req && ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'].includes(req.status));
-}
-
 export default function MyOrdersPage() {
   const { userId, userName, userLastName, userAvatar } = useAuth();
   const navigate = useNavigate();
@@ -547,7 +531,6 @@ export default function MyOrdersPage() {
   const [lightbox,       setLightbox]       = useState(null);
   const [isDragging,     setIsDragging]     = useState(false);
   const [copyFlashId,    setCopyFlashId]    = useState(null);
-  const [removeLoadingId, setRemoveLoadingId] = useState(null);
 
   const [actionLoading, setActionLoading] = useState(null);
   const [detailOffers, setDetailOffers] = useState([]);
@@ -654,29 +637,6 @@ export default function MyOrdersPage() {
       done();
     }
   }, []);
-
-  const handleRemoveRequest = useCallback(async (req, e) => {
-    e?.stopPropagation?.();
-    if (!userId || !req?.id) return;
-    const withDeal = req.status === 'IN_PROGRESS';
-    const ok = window.confirm(
-      withDeal
-        ? 'Снять заявку и отменить сделку с мастером?'
-        : 'Убрать заявку с публикации? Она перейдёт в архив.',
-    );
-    if (!ok) return;
-    setRemoveLoadingId(req.id);
-    try {
-      await cancelJobRequest(userId, req.id);
-      await load();
-      setDetailShowOffersPanel(false);
-      setDetail((prev) => (prev && prev.id === req.id ? { ...prev, status: 'CANCELLED' } : prev));
-    } catch (err) {
-      window.alert(humanizeServerErrorMessage(err));
-    } finally {
-      setRemoveLoadingId(null);
-    }
-  }, [userId, load]);
 
   const handleAccept = async (requestId, offerId, e) => {
     e?.stopPropagation?.();
@@ -1248,7 +1208,7 @@ export default function MyOrdersPage() {
               <div className="ml-detail-status-line">{STATUS_LABELS[detail.status] || detail.status}</div>
               {catNameD && <div style={{marginTop:8}}><span className="ml-tag">{catNameD}</span></div>}
             </div>
-            {(requestIsEditable(detail) || requestCanRemove(detail) || detail.status === 'OPEN') && (
+            {(requestIsEditable(detail) || detail.status === 'OPEN') && (
               <div className="ml-detail-actions-card">
                 <div className="ml-section-label" style={{ marginBottom: 4 }}>Управление</div>
                 {requestIsEditable(detail) && (
@@ -1262,19 +1222,6 @@ export default function MyOrdersPage() {
                   >
                     {detailShowOffersPanel ? 'Скрыть отклики' : 'Смотреть отклики'}
                   </button>
-                )}
-                {requestCanRemove(detail) && (
-                  <>
-                    <div className="ml-actions-divider" />
-                    <button
-                      type="button"
-                      className="ml-btn-outline-orange"
-                      disabled={removeLoadingId === detail.id}
-                      onClick={e => handleRemoveRequest(detail, e)}
-                    >
-                      {removeLoadingId === detail.id ? 'Убираем…' : 'Убрать заявку'}
-                    </button>
-                  </>
                 )}
               </div>
             )}
@@ -1550,19 +1497,6 @@ export default function MyOrdersPage() {
                       >
                         {copyFlashId === req.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
                       </button>
-                      {requestCanRemove(req) && (
-                        <>
-                          <div className="ml-actions-divider" />
-                          <button
-                            type="button"
-                            className="ml-btn-outline-orange"
-                            disabled={removeLoadingId === req.id}
-                            onClick={e => handleRemoveRequest(req, e)}
-                          >
-                            {removeLoadingId === req.id ? 'Убираем…' : 'Убрать заявку'}
-                          </button>
-                        </>
-                      )}
                     </div>
                 </div>
               );

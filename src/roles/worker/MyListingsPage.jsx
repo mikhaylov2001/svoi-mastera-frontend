@@ -196,8 +196,8 @@ const css = `
   .ml-row-unit { font-size: 12px; color: #8f8f8f; font-weight: 500; margin-left: 4px; }
   .ml-row-cat {
     display: inline-block; align-self: flex-start; max-width: 100%;
-    font-size: 12px; font-weight: 700; color: #c73208;
-    background: #fde8e0; border-radius: 20px; padding: 4px 12px; margin-bottom: 6px;
+    font-size: 12px; font-weight: 700; color: #475569;
+    background: #f1f5f9; border-radius: 20px; padding: 4px 12px; margin-bottom: 6px;
   }
   .ml-row-desc { font-size: 13px; color: #6b7280; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; margin-bottom: 6px; line-height: 1.45; }
   .ml-row-date { font-size: 12px; color: #9ca3af; margin-bottom: 10px; }
@@ -220,12 +220,12 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #e8410a; border: none; border-radius: 10px; color: #fff;
+    background: #334155; border: none; border-radius: 10px; color: #fff;
     cursor: pointer; font-family: inherit;
-    box-shadow: 0 3px 14px rgba(232,65,10,.28);
+    box-shadow: 0 3px 14px rgba(51,65,85,.28);
     transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ml-btn-edit:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.34); }
+  .ml-btn-edit:hover { background: #1e293b; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(30,41,59,.34); }
   .ml-btn-edit:active { transform: translateY(0); }
   .ml-btn-copy {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 10px;
@@ -283,28 +283,18 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #e8410a; border: none; border-radius: 10px; color: #fff;
+    background: #334155; border: none; border-radius: 10px; color: #fff;
     cursor: pointer; font-family: inherit;
-    box-shadow: 0 3px 14px rgba(232,65,10,.30);
+    box-shadow: 0 3px 14px rgba(51,65,85,.30);
     transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ml-btn-primary:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
+  .ml-btn-primary:hover { background: #1e293b; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(30,41,59,.36); }
   .ml-btn-primary:active { transform: translateY(0); }
   .ml-btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none !important; box-shadow: none; }
-  .ml-btn-outline {
-    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #fff9f6; border: 1.5px solid #e8410a; border-radius: 10px; color: #e8410a;
-    cursor: pointer; font-family: inherit;
-    transition: background .15s, transform .15s;
-  }
-  .ml-btn-outline:hover { background: #fde8e0; }
-  .ml-btn-outline:disabled { opacity: .55; cursor: not-allowed; transform: none !important; }
   .ml-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
   .ml-detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
   .ml-detail-row:last-child { border-bottom: none; }
-  .ml-tag { display: inline-block; background: #fde8e0; color: #e8410a; border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 12px; }
+  .ml-tag { display: inline-block; background: #f1f5f9; color: #475569; border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 12px; }
 
   /* ══ ФОРМА СТРАНИЦА ══ */
   .mlf-hero { position: relative; height: var(--page-hero-h-desktop); overflow: hidden; }
@@ -810,28 +800,6 @@ export default function MyListingsPage() {
     setSaving(false);
   };
 
-  const handleToggle = async (l, e) => {
-    e?.stopPropagation();
-    if (listingLockedAfterDeal(l)) return;
-    if (l.active) {
-      if (!window.confirm('Удалить объявление из каталога? Его не будет видно заказчикам. Вы сможете восстановить его из архива.')) return;
-    }
-    const newActive = !l.active;
-    setListings(prev => prev.map(x => x.id === l.id ? {...x, active: newActive} : x));
-    if (detail?.id === l.id) setDetail(prev => ({...prev, active: newActive}));
-    try {
-      if (l.active) {
-        await fetch(`${API}/listings/${l.id}`, { method: 'DELETE', headers: {'X-User-Id': userId} });
-      } else {
-        await fetch(`${API}/listings/${l.id}/restore`, { method: 'POST', headers: {'X-User-Id': userId} });
-      }
-      await load();
-    } catch {
-      setListings(prev => prev.map(x => x.id === l.id ? {...x, active: l.active} : x));
-      if (detail?.id === l.id) setDetail(prev => ({...prev, active: l.active}));
-    }
-  };
-
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
   const BACKEND  = 'https://svoi-mastera-backend-mf3h.onrender.com';
   const ava      = userAvatar ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND + userAvatar) : null;
@@ -1328,10 +1296,6 @@ export default function MyListingsPage() {
                   >
                     {copyFlashId === detail.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
                   </button>
-                  <div className="ml-actions-divider" />
-                  <button type="button" className="ml-btn-outline" onClick={e => handleToggle(detail, e)}>
-                    {detail.active ? 'Снять с публикации' : 'Восстановить'}
-                  </button>
                 </>
               )}
               {showWorkerReviewForListing(detail.id) && (
@@ -1505,14 +1469,6 @@ export default function MyListingsPage() {
                     >
                       Отзыв о заказчике
                     </button>
-                  )}
-                  {!listingLockedAfterDeal(l) && (
-                    <>
-                      <div className="ml-actions-divider" />
-                      <button type="button" className="ml-btn-outline" onClick={e => handleToggle(l, e)}>
-                        {l.active ? 'Снять с публикации' : 'Восстановить'}
-                      </button>
-                    </>
                   )}
                 </div>
               </div>
