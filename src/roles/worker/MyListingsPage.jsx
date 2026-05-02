@@ -292,7 +292,7 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #fff; border: 1.5px solid #e8410a; border-radius: 10px; color: #e8410a;
+    background: #fff9f6; border: 1.5px solid #e8410a; border-radius: 10px; color: #e8410a;
     cursor: pointer; font-family: inherit;
     transition: background .15s, transform .15s;
   }

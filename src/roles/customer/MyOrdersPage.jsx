@@ -255,7 +255,7 @@ const css = `
   .ml-btn-primary:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
   .ml-btn-primary:active { transform: translateY(0); }
   .ml-btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
-  .ml-btn-outline {
+  .ml-btn-outline-neutral {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center;
@@ -263,8 +263,19 @@ const css = `
     font-family: inherit; cursor: pointer;
     transition: border-color .15s, background .15s;
   }
-  .ml-btn-outline:hover { border-color: #374151; background: #fafafa; }
-  .ml-btn-outline:disabled { opacity: .55; cursor: not-allowed; }
+  .ml-btn-outline-neutral:hover { border-color: #374151; background: #fafafa; }
+  .ml-btn-outline-neutral:disabled { opacity: .55; cursor: not-allowed; }
+  /* как «Снять с публикации» у мастера */
+  .ml-btn-outline-orange {
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
+    background: #fff9f6; border: 1.5px solid #e8410a; border-radius: 10px; color: #e8410a;
+    font-family: inherit; cursor: pointer;
+    transition: background .15s, transform .15s;
+  }
+  .ml-btn-outline-orange:hover { background: #fde8e0; }
+  .ml-btn-outline-orange:disabled { opacity: .55; cursor: not-allowed; transform: none !important; }
   .ml-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
   .ml-tag { display: inline-block; background: #fde8e0; color: #e8410a; border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 12px; }
 
@@ -1240,30 +1251,40 @@ export default function MyOrdersPage() {
               <div className="ml-detail-status-line">{STATUS_LABELS[detail.status] || detail.status}</div>
               {catNameD && <div style={{marginTop:8}}><span className="ml-tag">{catNameD}</span></div>}
             </div>
-            {(requestIsEditable(detail) || requestCanRemove(detail)) && (
+            {(requestIsEditable(detail) || requestCanRemove(detail) || detail.status === 'OPEN') && (
               <div className="ml-detail-actions-card">
                 <div className="ml-section-label" style={{ marginBottom: 4 }}>Управление</div>
                 {requestIsEditable(detail) && (
                   <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
                 )}
+                <button
+                  type="button"
+                  className={`ml-btn-copy${copyFlashId === detail.id ? ' copied' : ''}`}
+                  onClick={(e) => copyRequestLink(detail.id, e)}
+                >
+                  {copyFlashId === detail.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
+                </button>
                 {detail.status === 'OPEN' && (
                   <button
                     type="button"
-                    className="ml-btn-outline"
+                    className="ml-btn-outline-neutral"
                     onClick={() => setDetailShowResponses((v) => !v)}
                   >
                     {detailShowResponses ? 'Скрыть отклики' : 'Смотреть отклики'}
                   </button>
                 )}
                 {requestCanRemove(detail) && (
-                  <button
-                    type="button"
-                    className="ml-btn-outline"
-                    disabled={removeLoadingId === detail.id}
-                    onClick={e => handleRemoveRequest(detail, e)}
-                  >
-                    {removeLoadingId === detail.id ? 'Убираем…' : 'Убрать заявку'}
-                  </button>
+                  <>
+                    <div className="ml-actions-divider" />
+                    <button
+                      type="button"
+                      className="ml-btn-outline-orange"
+                      disabled={removeLoadingId === detail.id}
+                      onClick={e => handleRemoveRequest(detail, e)}
+                    >
+                      {removeLoadingId === detail.id ? 'Убираем…' : 'Убрать заявку'}
+                    </button>
+                  </>
                 )}
               </div>
             )}
@@ -1524,7 +1545,7 @@ export default function MyOrdersPage() {
                           <div className="ml-actions-divider" />
                           <button
                             type="button"
-                            className="ml-btn-outline"
+                            className="ml-btn-outline-orange"
                             disabled={removeLoadingId === req.id}
                             onClick={e => handleRemoveRequest(req, e)}
                           >
