@@ -1254,13 +1254,6 @@ export default function MyOrdersPage() {
                 {requestIsEditable(detail) && (
                   <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
                 )}
-                <button
-                  type="button"
-                  className={`ml-btn-copy${copyFlashId === detail.id ? ' copied' : ''}`}
-                  onClick={(e) => copyRequestLink(detail.id, e)}
-                >
-                  {copyFlashId === detail.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
-                </button>
                 {detail.status === 'OPEN' && (
                   <button
                     type="button"
