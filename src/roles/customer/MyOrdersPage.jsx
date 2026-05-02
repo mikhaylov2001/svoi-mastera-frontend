@@ -8,6 +8,7 @@ import {
   getMyJobRequests, getOffersForRequest, acceptOffer,
   getCategories, createJobRequest, updateJobRequest,
   getMyDeals,
+  cancelJobRequest,
 } from '../../api';
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
@@ -177,12 +178,12 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #334155; border: none; border-radius: 10px; color: #fff;
+    background: #e8410a; border: none; border-radius: 10px; color: #fff;
     cursor: pointer; font-family: inherit;
-    box-shadow: 0 3px 14px rgba(51,65,85,.28);
+    box-shadow: 0 3px 14px rgba(232,65,10,.28);
     transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ml-btn-edit:hover { background: #1e293b; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(30,41,59,.34); }
+  .ml-btn-edit:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.34); }
   .ml-btn-edit:active { transform: translateY(0); }
   .ml-btn-copy {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 10px;
@@ -256,12 +257,12 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #334155; border: none; border-radius: 10px; color: #fff;
+    background: #e8410a; border: none; border-radius: 10px; color: #fff;
     cursor: pointer; font-family: inherit;
-    box-shadow: 0 3px 14px rgba(51,65,85,.30);
+    box-shadow: 0 3px 14px rgba(232,65,10,.30);
     transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ml-btn-primary:hover { background: #1e293b; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(30,41,59,.36); }
+  .ml-btn-primary:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
   .ml-btn-primary:active { transform: translateY(0); }
   .ml-btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
   .ml-btn-outline-neutral {
@@ -511,6 +512,10 @@ function requestIsEditable(req) {
   return !!(req && req.status === 'OPEN');
 }
 
+function requestCanRemove(req) {
+  return !!(req && ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'].includes(req.status));
+}
+
 export default function MyOrdersPage() {
   const { userId, userName, userLastName, userAvatar } = useAuth();
   const navigate = useNavigate();
@@ -531,6 +536,7 @@ export default function MyOrdersPage() {
   const [lightbox,       setLightbox]       = useState(null);
   const [isDragging,     setIsDragging]     = useState(false);
   const [copyFlashId,    setCopyFlashId]    = useState(null);
+  const [removeLoadingId, setRemoveLoadingId] = useState(null);
 
   const [actionLoading, setActionLoading] = useState(null);
   const [detailOffers, setDetailOffers] = useState([]);
@@ -637,6 +643,29 @@ export default function MyOrdersPage() {
       done();
     }
   }, []);
+
+  const handleRemoveRequest = useCallback(async (req, e) => {
+    e?.stopPropagation?.();
+    if (!userId || !req?.id) return;
+    const withDeal = req.status === 'IN_PROGRESS';
+    const ok = window.confirm(
+      withDeal
+        ? 'Снять заявку и отменить сделку с мастером?'
+        : 'Убрать заявку с публикации? Она перейдёт в архив.',
+    );
+    if (!ok) return;
+    setRemoveLoadingId(req.id);
+    try {
+      await cancelJobRequest(userId, req.id);
+      await load();
+      setDetailShowOffersPanel(false);
+      setDetail((prev) => (prev && prev.id === req.id ? { ...prev, status: 'CANCELLED' } : prev));
+    } catch (err) {
+      window.alert(humanizeServerErrorMessage(err));
+    } finally {
+      setRemoveLoadingId(null);
+    }
+  }, [userId, load]);
 
   const handleAccept = async (requestId, offerId, e) => {
     e?.stopPropagation?.();
@@ -1208,7 +1237,7 @@ export default function MyOrdersPage() {
               <div className="ml-detail-status-line">{STATUS_LABELS[detail.status] || detail.status}</div>
               {catNameD && <div style={{marginTop:8}}><span className="ml-tag">{catNameD}</span></div>}
             </div>
-            {(requestIsEditable(detail) || detail.status === 'OPEN') && (
+            {(requestIsEditable(detail) || requestCanRemove(detail) || detail.status === 'OPEN') && (
               <div className="ml-detail-actions-card">
                 <div className="ml-section-label" style={{ marginBottom: 4 }}>Управление</div>
                 {requestIsEditable(detail) && (
@@ -1222,6 +1251,19 @@ export default function MyOrdersPage() {
                   >
                     {detailShowOffersPanel ? 'Скрыть отклики' : 'Смотреть отклики'}
                   </button>
+                )}
+                {requestCanRemove(detail) && (
+                  <>
+                    <div className="ml-actions-divider" />
+                    <button
+                      type="button"
+                      className="ml-btn-outline-neutral"
+                      disabled={removeLoadingId === detail.id}
+                      onClick={e => handleRemoveRequest(detail, e)}
+                    >
+                      {removeLoadingId === detail.id ? 'Убираем…' : 'Убрать заявку'}
+                    </button>
+                  </>
                 )}
               </div>
             )}
@@ -1497,6 +1539,19 @@ export default function MyOrdersPage() {
                       >
                         {copyFlashId === req.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
                       </button>
+                      {requestCanRemove(req) && (
+                        <>
+                          <div className="ml-actions-divider" />
+                          <button
+                            type="button"
+                            className="ml-btn-outline-neutral"
+                            disabled={removeLoadingId === req.id}
+                            onClick={e => handleRemoveRequest(req, e)}
+                          >
+                            {removeLoadingId === req.id ? 'Убираем…' : 'Убрать заявку'}
+                          </button>
+                        </>
+                      )}
                     </div>
                 </div>
               );

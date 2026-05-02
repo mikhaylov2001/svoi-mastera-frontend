@@ -220,12 +220,12 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #334155; border: none; border-radius: 10px; color: #fff;
+    background: #e8410a; border: none; border-radius: 10px; color: #fff;
     cursor: pointer; font-family: inherit;
-    box-shadow: 0 3px 14px rgba(51,65,85,.28);
+    box-shadow: 0 3px 14px rgba(232,65,10,.28);
     transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ml-btn-edit:hover { background: #1e293b; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(30,41,59,.34); }
+  .ml-btn-edit:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.34); }
   .ml-btn-edit:active { transform: translateY(0); }
   .ml-btn-copy {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 10px;
@@ -283,14 +283,24 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #334155; border: none; border-radius: 10px; color: #fff;
+    background: #e8410a; border: none; border-radius: 10px; color: #fff;
     cursor: pointer; font-family: inherit;
-    box-shadow: 0 3px 14px rgba(51,65,85,.30);
+    box-shadow: 0 3px 14px rgba(232,65,10,.30);
     transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ml-btn-primary:hover { background: #1e293b; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(30,41,59,.36); }
+  .ml-btn-primary:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
   .ml-btn-primary:active { transform: translateY(0); }
   .ml-btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none !important; box-shadow: none; }
+  .ml-btn-outline-neutral {
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center;
+    background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; color: #374151;
+    font-family: inherit; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .ml-btn-outline-neutral:hover { border-color: #374151; background: #fafafa; }
+  .ml-btn-outline-neutral:disabled { opacity: .55; cursor: not-allowed; }
   .ml-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
   .ml-detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
   .ml-detail-row:last-child { border-bottom: none; }
@@ -800,6 +810,28 @@ export default function MyListingsPage() {
     setSaving(false);
   };
 
+  const handleToggle = async (l, e) => {
+    e?.stopPropagation();
+    if (listingLockedAfterDeal(l)) return;
+    if (l.active) {
+      if (!window.confirm('Удалить объявление из каталога? Его не будет видно заказчикам. Вы сможете восстановить его из архива.')) return;
+    }
+    const newActive = !l.active;
+    setListings(prev => prev.map(x => x.id === l.id ? {...x, active: newActive} : x));
+    if (detail?.id === l.id) setDetail(prev => ({...prev, active: newActive}));
+    try {
+      if (l.active) {
+        await fetch(`${API}/listings/${l.id}`, { method: 'DELETE', headers: {'X-User-Id': userId} });
+      } else {
+        await fetch(`${API}/listings/${l.id}/restore`, { method: 'POST', headers: {'X-User-Id': userId} });
+      }
+      await load();
+    } catch {
+      setListings(prev => prev.map(x => x.id === l.id ? {...x, active: l.active} : x));
+      if (detail?.id === l.id) setDetail(prev => ({...prev, active: l.active}));
+    }
+  };
+
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
   const BACKEND  = 'https://svoi-mastera-backend-mf3h.onrender.com';
   const ava      = userAvatar ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND + userAvatar) : null;
@@ -1296,6 +1328,10 @@ export default function MyListingsPage() {
                   >
                     {copyFlashId === detail.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
                   </button>
+                  <div className="ml-actions-divider" />
+                  <button type="button" className="ml-btn-outline-neutral" onClick={e => handleToggle(detail, e)}>
+                    {detail.active ? 'Снять с публикации' : 'Восстановить'}
+                  </button>
                 </>
               )}
               {showWorkerReviewForListing(detail.id) && (
@@ -1469,6 +1505,14 @@ export default function MyListingsPage() {
                     >
                       Отзыв о заказчике
                     </button>
+                  )}
+                  {!listingLockedAfterDeal(l) && (
+                    <>
+                      <div className="ml-actions-divider" />
+                      <button type="button" className="ml-btn-outline-neutral" onClick={e => handleToggle(l, e)}>
+                        {l.active ? 'Снять с публикации' : 'Восстановить'}
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
