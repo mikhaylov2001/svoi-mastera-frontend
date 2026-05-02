@@ -8,6 +8,7 @@ import {
   getMyJobRequests, getOffersForRequest, acceptOffer,
   getCategories, createJobRequest, updateJobRequest,
   getMyDeals,
+  cancelJobRequest,
 } from '../../api';
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
@@ -184,6 +185,13 @@ const css = `
     font-weight: 700; transition: color .15s; width: 100%;
   }
   .ml-btn-restore:hover { color: #166534; }
+  .ml-btn-remove {
+    width: 100%; background: #fff; border: 1.5px solid #fecaca; border-radius: 10px;
+    padding: 10px 0; font-size: 13px; font-weight: 700; color: #dc2626;
+    cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .ml-btn-remove:hover { background: #fef2f2; border-color: #f87171; }
+  .ml-btn-remove:disabled { opacity: .55; cursor: not-allowed; }
   .ml-empty {
     text-align: center; padding: 72px 24px;
     background: rgba(255,255,255,.95); border: 1.5px solid #e8e8e8; border-radius: 16px;
@@ -478,6 +486,10 @@ function requestIsEditable(req) {
   return !!(req && req.status === 'OPEN');
 }
 
+function requestCanRemove(req) {
+  return !!(req && ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'].includes(req.status));
+}
+
 export default function MyOrdersPage() {
   const { userId, userName, userLastName, userAvatar } = useAuth();
   const navigate = useNavigate();
@@ -498,6 +510,7 @@ export default function MyOrdersPage() {
   const [lightbox,       setLightbox]       = useState(null);
   const [isDragging,     setIsDragging]     = useState(false);
   const [copyFlashId,    setCopyFlashId]    = useState(null);
+  const [removeLoadingId, setRemoveLoadingId] = useState(null);
 
   // Offers
   const [expandedId,    setExpandedId]    = useState(null);
@@ -609,6 +622,29 @@ export default function MyOrdersPage() {
     } catch { setOffers([]); }
     setOffersLoading(false);
   }, [expandedId]);
+
+  const handleRemoveRequest = useCallback(async (req, e) => {
+    e?.stopPropagation?.();
+    if (!userId || !req?.id) return;
+    const withDeal = req.status === 'IN_PROGRESS';
+    const ok = window.confirm(
+      withDeal
+        ? 'Снять заявку и отменить сделку с мастером?'
+        : 'Убрать заявку с публикации? Она перейдёт в архив.',
+    );
+    if (!ok) return;
+    setRemoveLoadingId(req.id);
+    try {
+      await cancelJobRequest(userId, req.id);
+      await load();
+      setExpandedId((cur) => (cur === req.id ? null : cur));
+      setDetail((prev) => (prev && prev.id === req.id ? { ...prev, status: 'CANCELLED' } : prev));
+    } catch (err) {
+      window.alert(humanizeServerErrorMessage(err));
+    } finally {
+      setRemoveLoadingId(null);
+    }
+  }, [userId, load]);
 
   const handleAccept = async (requestId, offerId, e) => {
     e?.stopPropagation?.();
@@ -1184,17 +1220,40 @@ export default function MyOrdersPage() {
               <div className="ml-detail-status-line">{STATUS_LABELS[detail.status] || detail.status}</div>
               {catNameD && <div style={{marginTop:8}}><span className="ml-tag">{catNameD}</span></div>}
             </div>
-            {requestIsEditable(detail) && (
+            {(requestIsEditable(detail) || requestCanRemove(detail)) && (
               <div className="ml-detail-actions-card">
                 <div className="ml-section-label" style={{ marginBottom: 4 }}>Управление</div>
-                <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
-                <button
-                  type="button"
-                  className="ml-btn-outline"
-                  onClick={(e) => { setDetail(null); setTimeout(() => toggleOffers(detail.id, e), 100); }}
-                >
-                  Смотреть отклики
-                </button>
+                {requestIsEditable(detail) && (
+                  <>
+                    <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
+                    <button
+                      type="button"
+                      className="ml-btn-outline"
+                      onClick={(e) => { setDetail(null); setTimeout(() => toggleOffers(detail.id, e), 100); }}
+                    >
+                      Смотреть отклики
+                    </button>
+                  </>
+                )}
+                {!requestIsEditable(detail) && requestCanRemove(detail) && (
+                  <button
+                    type="button"
+                    className="ml-btn-outline"
+                    onClick={(e) => { setDetail(null); setTimeout(() => toggleOffers(detail.id, e), 100); }}
+                  >
+                    Смотреть отклики
+                  </button>
+                )}
+                {requestCanRemove(detail) && (
+                  <button
+                    type="button"
+                    className="ml-btn-remove"
+                    disabled={removeLoadingId === detail.id}
+                    onClick={e => handleRemoveRequest(detail, e)}
+                  >
+                    {removeLoadingId === detail.id ? 'Убираем…' : 'Убрать заявку'}
+                  </button>
+                )}
               </div>
             )}
             {detail.status !== 'OPEN' && (
@@ -1399,6 +1458,16 @@ export default function MyOrdersPage() {
                       >
                         {isExp ? 'Скрыть отклики' : 'Смотреть отклики'}
                       </button>
+                      {requestCanRemove(req) && (
+                        <button
+                          type="button"
+                          className="ml-btn-remove"
+                          disabled={removeLoadingId === req.id}
+                          onClick={e => handleRemoveRequest(req, e)}
+                        >
+                          {removeLoadingId === req.id ? 'Убираем…' : 'Убрать заявку'}
+                        </button>
+                      )}
                     </div>
                   </div>
 

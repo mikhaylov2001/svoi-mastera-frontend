@@ -108,6 +108,14 @@ export async function updateJobRequest(userId, requestId, body) {
   });
 }
 
+/** Заказчик снимает заявку (в архив); при активной сделке она отменяется на бэкенде. */
+export async function cancelJobRequest(userId, requestId) {
+  return apiCall(`/job-requests/${requestId}/cancel`, {
+    method: 'POST',
+    headers: { 'X-User-Id': userId },
+  });
+}
+
 // ── OFFERS ──
 export async function getOffersForRequest(requestId) {
   return apiCall(`/job-requests/${requestId}/offers`);
