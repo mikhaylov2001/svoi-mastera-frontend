@@ -132,7 +132,10 @@ const css = `
   .ml-row:hover {
     box-shadow: 0 10px 32px rgba(0,0,0,.1);
     transform: translateY(-2px);
-    border-color: #e8410a;
+    border-color: #d1d5db;
+  }
+  .ml-row:focus-within {
+    border-color: #e8e8e8;
   }
   .ml-row-img { width: 132px; min-height: 108px; flex-shrink: 0; background: #f5f5f5; overflow: hidden; position: relative; }
   .ml-row-img img { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 108px; }
@@ -160,7 +163,7 @@ const css = `
     outline: none;
   }
   .ml-row-stat-offers:hover { background: rgba(232, 65, 10, 0.09); }
-  .ml-row-stat-offers:focus-visible { box-shadow: 0 0 0 2px rgba(232, 65, 10, 0.35); }
+  .ml-row-stat-offers:focus-visible { box-shadow: 0 0 0 2px rgba(55, 65, 81, 0.22); }
   .ml-row-stat { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 5px; }
   .ml-row-stat-num { font-weight: 800; color: #111827; font-variant-numeric: tabular-nums; font-size: 14px; }
   .ml-row-stat-status-active { font-size: 12px; font-weight: 700; color: #16a34a; }

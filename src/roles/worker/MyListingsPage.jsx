@@ -181,7 +181,10 @@ const css = `
   .ml-row:hover {
     box-shadow: 0 10px 32px rgba(0,0,0,.1);
     transform: translateY(-2px);
-    border-color: #e8410a;
+    border-color: #d1d5db;
+  }
+  .ml-row:focus-within {
+    border-color: #e8e8e8;
   }
   .ml-row-img { width: 132px; min-height: 108px; flex-shrink: 0; background: #f5f5f5; overflow: hidden; position: relative; }
   .ml-row-img img { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 108px; }
