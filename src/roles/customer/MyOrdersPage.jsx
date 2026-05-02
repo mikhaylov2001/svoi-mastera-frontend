@@ -185,13 +185,6 @@ const css = `
     font-weight: 700; transition: color .15s; width: 100%;
   }
   .ml-btn-restore:hover { color: #166534; }
-  .ml-btn-remove {
-    width: 100%; background: #fff; border: 1.5px solid #fecaca; border-radius: 10px;
-    padding: 10px 0; font-size: 13px; font-weight: 700; color: #dc2626;
-    cursor: pointer; font-family: inherit; transition: all .15s;
-  }
-  .ml-btn-remove:hover { background: #fef2f2; border-color: #f87171; }
-  .ml-btn-remove:disabled { opacity: .55; cursor: not-allowed; }
   .ml-empty {
     text-align: center; padding: 72px 24px;
     background: rgba(255,255,255,.95); border: 1.5px solid #e8e8e8; border-radius: 16px;
@@ -244,6 +237,7 @@ const css = `
   .ml-btn-primary:hover { background: #c73208; }
   .ml-btn-outline { background: #fff; border: 1.5px solid #e8410a; border-radius: 8px; color: #e8410a; font-size: 14px; font-weight: 700; padding: 12px; cursor: pointer; width: 100%; font-family: inherit; }
   .ml-btn-outline:hover { background: #fde8e0; }
+  .ml-btn-outline:disabled { opacity: .55; cursor: not-allowed; }
   .ml-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
   .ml-tag { display: inline-block; background: #fde8e0; color: #e8410a; border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 12px; }
 
@@ -1247,7 +1241,7 @@ export default function MyOrdersPage() {
                 {requestCanRemove(detail) && (
                   <button
                     type="button"
-                    className="ml-btn-remove"
+                    className="ml-btn-outline"
                     disabled={removeLoadingId === detail.id}
                     onClick={e => handleRemoveRequest(detail, e)}
                   >
@@ -1461,7 +1455,7 @@ export default function MyOrdersPage() {
                       {requestCanRemove(req) && (
                         <button
                           type="button"
-                          className="ml-btn-remove"
+                          className="ml-btn-outline"
                           disabled={removeLoadingId === req.id}
                           onClick={e => handleRemoveRequest(req, e)}
                         >
