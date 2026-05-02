@@ -262,6 +262,16 @@ const css = `
   .ml-btn-primary:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
   .ml-btn-primary:active { transform: translateY(0); }
   .ml-btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+  .ml-btn-outline-neutral {
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center;
+    background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; color: #374151;
+    font-family: inherit; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .ml-btn-outline-neutral:hover { border-color: #374151; background: #fafafa; }
+  .ml-btn-outline-neutral:disabled { opacity: .55; cursor: not-allowed; }
   /* как «Снять с публикации» у мастера */
   .ml-btn-outline-orange {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
@@ -539,11 +549,10 @@ export default function MyOrdersPage() {
   const [actionLoading, setActionLoading] = useState(null);
   const [detailOffers, setDetailOffers] = useState([]);
   const [detailOffersLoading, setDetailOffersLoading] = useState(false);
-  /** Прокрутить к блоку откликов после открытия заявки по клику на «N откликов» в списке */
-  const [scrollOffersIntoViewFlag, setScrollOffersIntoViewFlag] = useState(false);
+  /** Блок откликов на деталке (OPEN) только после кнопки «Смотреть отклики» */
+  const [detailShowOffersPanel, setDetailShowOffersPanel] = useState(false);
 
   const photoRef = useRef();
-  const offersSectionRef = useRef(null);
   const titleRef = useRef();
 
   /* ── helpers ── */
@@ -584,7 +593,16 @@ export default function MyOrdersPage() {
   useSameRouteRefetch('/my-requests', load);
 
   useEffect(() => {
+    setDetailShowOffersPanel(false);
+  }, [detail?.id]);
+
+  useEffect(() => {
     if (!detail?.id) {
+      setDetailOffers([]);
+      setDetailOffersLoading(false);
+      return undefined;
+    }
+    if (detail.status === 'OPEN' && !detailShowOffersPanel) {
       setDetailOffers([]);
       setDetailOffersLoading(false);
       return undefined;
@@ -602,20 +620,7 @@ export default function MyOrdersPage() {
         if (!cancelled) setDetailOffersLoading(false);
       });
     return () => { cancelled = true; };
-  }, [detail?.id, detail?.status]);
-
-  useEffect(() => {
-    if (!scrollOffersIntoViewFlag) return undefined;
-    if (!detail?.id || detail.status !== 'OPEN') {
-      setScrollOffersIntoViewFlag(false);
-      return undefined;
-    }
-    const id = window.requestAnimationFrame(() => {
-      offersSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      setScrollOffersIntoViewFlag(false);
-    });
-    return () => window.cancelAnimationFrame(id);
-  }, [detail?.id, detail?.status, scrollOffersIntoViewFlag]);
+  }, [detail?.id, detail?.status, detailShowOffersPanel]);
 
   // Lightbox keyboard
   useEffect(() => {
@@ -661,6 +666,7 @@ export default function MyOrdersPage() {
     try {
       await cancelJobRequest(userId, req.id);
       await load();
+      setDetailShowOffersPanel(false);
       setDetail((prev) => (prev && prev.id === req.id ? { ...prev, status: 'CANCELLED' } : prev));
     } catch (err) {
       window.alert(humanizeServerErrorMessage(err));
@@ -1252,6 +1258,15 @@ export default function MyOrdersPage() {
                 >
                   {copyFlashId === detail.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
                 </button>
+                {detail.status === 'OPEN' && (
+                  <button
+                    type="button"
+                    className="ml-btn-outline-neutral"
+                    onClick={() => setDetailShowOffersPanel((v) => !v)}
+                  >
+                    {detailShowOffersPanel ? 'Скрыть отклики' : 'Смотреть отклики'}
+                  </button>
+                )}
                 {requestCanRemove(detail) && (
                   <>
                     <div className="ml-actions-divider" />
@@ -1267,8 +1282,8 @@ export default function MyOrdersPage() {
                 )}
               </div>
             )}
-            {detail.status === 'OPEN' && (
-              <div ref={offersSectionRef} className="ml-detail-offers-card">
+            {detail.status === 'OPEN' && detailShowOffersPanel && (
+              <div className="ml-detail-offers-card">
                 <div className="ml-offers-title">Отклики мастеров</div>
                 {detailOffersLoading && <div className="ml-sk" style={{ height: 60, borderRadius: 12 }} />}
                 {!detailOffersLoading && detailOffers.length === 0 && (
@@ -1477,7 +1492,7 @@ export default function MyOrdersPage() {
                 <div
                   key={req.id}
                   className="ml-row"
-                  onClick={() => { setScrollOffersIntoViewFlag(false); setDetail(req); setPhotoIdx(0); }}
+                  onClick={() => { setDetailShowOffersPanel(false); setDetail(req); setPhotoIdx(0); }}
                 >
                     <div className="ml-row-img">
                       {req.photos?.length
@@ -1503,10 +1518,10 @@ export default function MyOrdersPage() {
                           className="ml-row-stat ml-row-stat-offers"
                           role="button"
                           tabIndex={0}
-                          title="Открыть отклики"
+                          title="Открыть заявку"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setScrollOffersIntoViewFlag(true);
+                            setDetailShowOffersPanel(false);
                             setDetail(req);
                             setPhotoIdx(0);
                           }}
@@ -1514,7 +1529,7 @@ export default function MyOrdersPage() {
                             if (e.key === 'Enter' || e.key === ' ') {
                               e.preventDefault();
                               e.stopPropagation();
-                              setScrollOffersIntoViewFlag(true);
+                              setDetailShowOffersPanel(false);
                               setDetail(req);
                               setPhotoIdx(0);
                             }
