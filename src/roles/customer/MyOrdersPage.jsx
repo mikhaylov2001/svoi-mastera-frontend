@@ -159,9 +159,12 @@ const css = `
     display: flex; flex-direction: column; gap: 7px; justify-content: center;
     border-left: 1px solid #f0f0f0; background: #fafafa;
   }
+  /* Единые габариты кнопок в колонке действий и в «Управление» */
   .ml-btn-edit {
-    width: 100%; background: #e8410a; border: none; border-radius: 10px;
-    padding: 10px 0; font-size: 13px; font-weight: 700; color: #fff;
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
+    background: #e8410a; border: none; border-radius: 10px; color: #fff;
     cursor: pointer; font-family: inherit;
     box-shadow: 0 3px 14px rgba(232,65,10,.28);
     transition: background .15s, transform .15s, box-shadow .15s;
@@ -169,8 +172,10 @@ const css = `
   .ml-btn-edit:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.34); }
   .ml-btn-edit:active { transform: translateY(0); }
   .ml-btn-copy {
-    width: 100%; background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px;
-    padding: 10px 0; font-size: 13px; font-weight: 600; color: #374151;
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center;
+    background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; color: #374151;
     cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s;
   }
   .ml-btn-copy:hover { border-color: #374151; background: #fafafa; }
@@ -211,9 +216,11 @@ const css = `
   .ml-offer-name { font-size: 13px; color: #555; margin-top: 4px; }
   .ml-offer-msg { font-size: 13px; color: #555; margin: 10px 0 0; line-height: 1.5; }
   .ml-accept-btn {
+    box-sizing: border-box; min-height: 40px; padding: 10px 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; line-height: 1.25;
     background: #e8410a; border: none; border-radius: 10px; color: #fff;
-    font-size: 13px; font-weight: 700; padding: 9px 18px; cursor: pointer;
-    font-family: inherit; white-space: nowrap;
+    cursor: pointer; font-family: inherit; white-space: nowrap;
     box-shadow: 0 3px 14px rgba(232,65,10,.28);
     transition: background .15s, transform .15s, box-shadow .15s;
   }
@@ -240,9 +247,11 @@ const css = `
   .ml-detail-status-line { font-size: 12px; color: #6b7280; margin-top: 10px; font-weight: 500; }
   .ml-detail-actions-card { background: #fff; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
   .ml-btn-primary {
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
     background: #e8410a; border: none; border-radius: 10px; color: #fff;
-    font-size: 15px; font-weight: 700; padding: 13px 18px; cursor: pointer;
-    width: 100%; font-family: inherit;
+    cursor: pointer; font-family: inherit;
     box-shadow: 0 3px 14px rgba(232,65,10,.30);
     transition: background .15s, transform .15s, box-shadow .15s;
   }
@@ -250,10 +259,11 @@ const css = `
   .ml-btn-primary:active { transform: translateY(0); }
   .ml-btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
   .ml-btn-outline {
-    width: 100%; padding: 13px 18px; background: #fff;
-    border: 1.5px solid #e5e7eb; border-radius: 10px;
-    color: #374151; font-size: 15px; font-weight: 600;
-    font-family: inherit; cursor: pointer; box-sizing: border-box;
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center;
+    background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; color: #374151;
+    font-family: inherit; cursor: pointer;
     transition: border-color .15s, background .15s;
   }
   .ml-btn-outline:hover { border-color: #374151; background: #fafafa; }

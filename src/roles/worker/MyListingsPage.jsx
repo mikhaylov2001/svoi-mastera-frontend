@@ -208,18 +208,26 @@ const css = `
     display: flex; flex-direction: column; gap: 7px; justify-content: center;
     border-left: 1px solid #f0f0f0; background: #fafafa;
   }
+  /* Единые габариты с «Мои заявки» */
   .ml-btn-edit {
-    width: 100%; background: #e8410a; border: none; border-radius: 10px;
-    padding: 10px 0; font-size: 13px; font-weight: 700; color: #fff;
-    cursor: pointer; font-family: inherit; transition: background .15s;
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
+    background: #e8410a; border: none; border-radius: 10px; color: #fff;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 3px 14px rgba(232,65,10,.28);
+    transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ml-btn-edit:hover { background: #c73208; }
+  .ml-btn-edit:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.34); }
+  .ml-btn-edit:active { transform: translateY(0); }
   .ml-btn-copy {
-    width: 100%; background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px;
-    padding: 9px 0; font-size: 12px; font-weight: 600; color: #475569;
-    cursor: pointer; font-family: inherit; transition: all .15s;
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center;
+    background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; color: #374151;
+    cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s;
   }
-  .ml-btn-copy:hover { border-color: #e8410a; color: #e8410a; background: #fff7ed; }
+  .ml-btn-copy:hover { border-color: #374151; background: #fafafa; }
   .ml-btn-copy.copied { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
   .ml-link-preview {
     font-size: 13px; font-weight: 600; color: #e8410a; text-align: center;
@@ -241,12 +249,16 @@ const css = `
   }
   .ml-btn-restore:hover { color: #166534; }
   .ml-btn-review-customer {
-    width: 100%; background: linear-gradient(135deg,#6366f1,#8b5cf6); border: none; border-radius: 10px;
-    padding: 10px 0; font-size: 13px; font-weight: 700; color: #fff;
-    cursor: pointer; font-family: inherit;
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
+    background: linear-gradient(135deg,#6366f1,#8b5cf6); border: none; border-radius: 10px;
+    color: #fff; cursor: pointer; font-family: inherit;
     box-shadow: 0 4px 14px rgba(99,102,241,.28);
+    transition: filter .15s, transform .15s;
   }
-  .ml-btn-review-customer:hover { filter: brightness(1.06); }
+  .ml-btn-review-customer:hover { filter: brightness(1.06); transform: translateY(-1px); }
+  .ml-btn-review-customer:active { transform: translateY(0); }
   .ml-empty {
     text-align: center; padding: 72px 24px;
     background: rgba(255,255,255,.95); border: 1.5px solid #e8e8e8; border-radius: 16px;
@@ -268,12 +280,29 @@ const css = `
   .ml-detail-price-card { background: #fff; border-radius: 12px; padding: 20px; }
   .ml-detail-price { font-size: 28px; font-weight: 900; color: #1a1a1a; }
   .ml-detail-price-unit { font-size: 13px; color: #8f8f8f; margin-top: 2px; }
-  .ml-detail-actions-card { background: #fff; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
-  .ml-btn-primary { background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700; padding: 13px; cursor: pointer; width: 100%; font-family: inherit; }
-  .ml-btn-primary:hover { background: #c73208; }
-  .ml-btn-outline { background: #fff; border: 1.5px solid #e8410a; border-radius: 8px; color: #e8410a; font-size: 14px; font-weight: 700; padding: 12px; cursor: pointer; width: 100%; font-family: inherit; }
+  .ml-detail-actions-card { background: #fff; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .ml-btn-primary {
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
+    background: #e8410a; border: none; border-radius: 10px; color: #fff;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 3px 14px rgba(232,65,10,.30);
+    transition: background .15s, transform .15s, box-shadow .15s;
+  }
+  .ml-btn-primary:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
+  .ml-btn-primary:active { transform: translateY(0); }
+  .ml-btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none !important; box-shadow: none; }
+  .ml-btn-outline {
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
+    background: #fff; border: 1.5px solid #e8410a; border-radius: 10px; color: #e8410a;
+    cursor: pointer; font-family: inherit;
+    transition: background .15s, transform .15s;
+  }
   .ml-btn-outline:hover { background: #fde8e0; }
-  .ml-btn-outline:disabled { opacity: .55; cursor: not-allowed; }
+  .ml-btn-outline:disabled { opacity: .55; cursor: not-allowed; transform: none !important; }
   .ml-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
   .ml-detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
   .ml-detail-row:last-child { border-bottom: none; }
