@@ -191,7 +191,11 @@ const css = `
   .ml-row-title { font-size: 16px; font-weight: 800; color: #111827; margin: 0 0 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .ml-row-price { font-size: 19px; font-weight: 800; margin-bottom: 6px; color: #1a1a1a; }
   .ml-row-unit { font-size: 12px; color: #8f8f8f; font-weight: 500; margin-left: 4px; }
-  .ml-row-cat { display: inline-block; font-size: 11px; color: #fff; background: #e8410a; border-radius: 6px; padding: 3px 10px; margin-bottom: 6px; font-weight: 700; }
+  .ml-row-cat {
+    display: inline-block; align-self: flex-start; max-width: 100%;
+    font-size: 12px; font-weight: 700; color: #c73208;
+    background: #fde8e0; border-radius: 20px; padding: 4px 12px; margin-bottom: 6px;
+  }
   .ml-row-desc { font-size: 13px; color: #6b7280; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; margin-bottom: 6px; line-height: 1.45; }
   .ml-row-date { font-size: 12px; color: #9ca3af; margin-bottom: 10px; }
   .ml-row-stats {
@@ -204,7 +208,7 @@ const css = `
   .ml-row-stat-status-active { font-size: 12px; font-weight: 700; color: #16a34a; }
   .ml-row-stat-status-arch { font-size: 12px; font-weight: 700; color: #ef4444; }
   .ml-row-actions {
-    width: 176px; flex-shrink: 0; padding: 14px 13px;
+    width: 198px; flex-shrink: 0; padding: 14px 13px;
     display: flex; flex-direction: column; gap: 7px; justify-content: center;
     border-left: 1px solid #f0f0f0; background: #fafafa;
   }
@@ -221,9 +225,10 @@ const css = `
   .ml-btn-edit:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.34); }
   .ml-btn-edit:active { transform: translateY(0); }
   .ml-btn-copy {
-    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
+    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 10px;
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center;
+    font-size: 12px; font-weight: 600; line-height: 1.25; text-align: center;
+    white-space: nowrap;
     background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; color: #374151;
     cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s;
   }
@@ -236,18 +241,6 @@ const css = `
   }
   .ml-link-preview:hover { background: #fff4ef; }
   .ml-actions-divider { height: 1px; background: #ebebeb; margin: 2px 0; }
-  .ml-btn-arch {
-    background: none; border: none; font-size: 12px; color: #9ca3af;
-    cursor: pointer; font-family: inherit; padding: 4px 0; text-align: center;
-    transition: color .15s; width: 100%;
-  }
-  .ml-btn-arch:hover { color: #e8410a; }
-  .ml-btn-restore {
-    background: none; border: none; font-size: 12px; color: #16a34a;
-    cursor: pointer; font-family: inherit; padding: 4px 0; text-align: center;
-    font-weight: 700; transition: color .15s; width: 100%;
-  }
-  .ml-btn-restore:hover { color: #166534; }
   .ml-btn-review-customer {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
@@ -815,6 +808,9 @@ export default function MyListingsPage() {
   const handleToggle = async (l, e) => {
     e?.stopPropagation();
     if (listingLockedAfterDeal(l)) return;
+    if (l.active) {
+      if (!window.confirm('Удалить объявление из каталога? Его не будет видно заказчикам. Вы сможете восстановить его из архива.')) return;
+    }
     const newActive = !l.active;
     setListings(prev => prev.map(x => x.id === l.id ? {...x, active: newActive} : x));
     if (detail?.id === l.id) setDetail(prev => ({...prev, active: newActive}));
@@ -1308,6 +1304,13 @@ export default function MyListingsPage() {
               {!listingLockedAfterDeal(detail) && (
                 <>
                   <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
+                  <button
+                    type="button"
+                    className={`ml-btn-copy${copyFlashId === detail.id ? ' copied' : ''}`}
+                    onClick={(e) => copyListingPublicLink(detail.id, e)}
+                  >
+                    {copyFlashId === detail.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
+                  </button>
                   <button type="button" className="ml-btn-outline" onClick={e => handleToggle(detail, e)}>
                     {detail.active ? 'Снять с публикации' : 'Восстановить'}
                   </button>
@@ -1488,7 +1491,7 @@ export default function MyListingsPage() {
                   {!listingLockedAfterDeal(l) && (
                     <>
                       <div className="ml-actions-divider" />
-                      <button type="button" className={l.active ? 'ml-btn-arch' : 'ml-btn-restore'} onClick={e => handleToggle(l, e)}>
+                      <button type="button" className="ml-btn-outline" onClick={e => handleToggle(l, e)}>
                         {l.active ? 'Снять с публикации' : 'Восстановить'}
                       </button>
                     </>
