@@ -162,15 +162,18 @@ const css = `
   .ml-btn-edit {
     width: 100%; background: #e8410a; border: none; border-radius: 10px;
     padding: 10px 0; font-size: 13px; font-weight: 700; color: #fff;
-    cursor: pointer; font-family: inherit; transition: background .15s;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 3px 14px rgba(232,65,10,.28);
+    transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ml-btn-edit:hover { background: #c73208; }
+  .ml-btn-edit:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.34); }
+  .ml-btn-edit:active { transform: translateY(0); }
   .ml-btn-copy {
     width: 100%; background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px;
-    padding: 9px 0; font-size: 12px; font-weight: 600; color: #475569;
-    cursor: pointer; font-family: inherit; transition: all .15s;
+    padding: 10px 0; font-size: 13px; font-weight: 600; color: #374151;
+    cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s;
   }
-  .ml-btn-copy:hover { border-color: #e8410a; color: #e8410a; background: #fff7ed; }
+  .ml-btn-copy:hover { border-color: #374151; background: #fafafa; }
   .ml-btn-copy.copied { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
   .ml-actions-divider { height: 1px; background: #ebebeb; margin: 2px 0; }
   .ml-btn-arch {
@@ -208,11 +211,14 @@ const css = `
   .ml-offer-name { font-size: 13px; color: #555; margin-top: 4px; }
   .ml-offer-msg { font-size: 13px; color: #555; margin: 10px 0 0; line-height: 1.5; }
   .ml-accept-btn {
-    background: #e8410a; border: none; border-radius: 8px; color: #fff;
+    background: #e8410a; border: none; border-radius: 10px; color: #fff;
     font-size: 13px; font-weight: 700; padding: 9px 18px; cursor: pointer;
-    font-family: inherit; white-space: nowrap; transition: background .15s;
+    font-family: inherit; white-space: nowrap;
+    box-shadow: 0 3px 14px rgba(232,65,10,.28);
+    transition: background .15s, transform .15s, box-shadow .15s;
   }
-  .ml-accept-btn:hover { background: #c73208; }
+  .ml-accept-btn:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.34); }
+  .ml-accept-btn:active { transform: translateY(0); }
   .ml-accept-btn:disabled { background: #fca98e; cursor: not-allowed; }
 
   /* DETAIL */
@@ -232,11 +238,25 @@ const css = `
   .ml-detail-price { font-size: 28px; font-weight: 900; color: #1a1a1a; }
   .ml-detail-price-unit { font-size: 13px; color: #9ca3af; margin-top: 4px; font-weight: 500; }
   .ml-detail-status-line { font-size: 12px; color: #6b7280; margin-top: 10px; font-weight: 500; }
-  .ml-detail-actions-card { background: #fff; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
-  .ml-btn-primary { background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700; padding: 13px; cursor: pointer; width: 100%; font-family: inherit; }
-  .ml-btn-primary:hover { background: #c73208; }
-  .ml-btn-outline { background: #fff; border: 1.5px solid #e8410a; border-radius: 8px; color: #e8410a; font-size: 14px; font-weight: 700; padding: 12px; cursor: pointer; width: 100%; font-family: inherit; }
-  .ml-btn-outline:hover { background: #fde8e0; }
+  .ml-detail-actions-card { background: #fff; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .ml-btn-primary {
+    background: #e8410a; border: none; border-radius: 10px; color: #fff;
+    font-size: 15px; font-weight: 700; padding: 13px 18px; cursor: pointer;
+    width: 100%; font-family: inherit;
+    box-shadow: 0 3px 14px rgba(232,65,10,.30);
+    transition: background .15s, transform .15s, box-shadow .15s;
+  }
+  .ml-btn-primary:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
+  .ml-btn-primary:active { transform: translateY(0); }
+  .ml-btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+  .ml-btn-outline {
+    width: 100%; padding: 13px 18px; background: #fff;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    color: #374151; font-size: 15px; font-weight: 600;
+    font-family: inherit; cursor: pointer; box-sizing: border-box;
+    transition: border-color .15s, background .15s;
+  }
+  .ml-btn-outline:hover { border-color: #374151; background: #fafafa; }
   .ml-btn-outline:disabled { opacity: .55; cursor: not-allowed; }
   .ml-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
   .ml-tag { display: inline-block; background: #fde8e0; color: #e8410a; border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 12px; }
