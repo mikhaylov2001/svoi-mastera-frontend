@@ -45,8 +45,8 @@ const css = `
   .pw-avatar-fb { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, #e8410a, #ff7043); display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; color: #fff; margin-bottom: 12px; }
 
   .pw-name { font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; }
-  .pw-review-link { display: inline-block; font-size: 14px; color: #2563eb; text-decoration: none; margin-bottom: 6px; cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; }
-  .pw-review-link:hover { text-decoration: underline; }
+  .pw-review-link { display: inline-block; font-size: 14px; color: #e8410a; text-decoration: none; margin-bottom: 6px; cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; font-weight: 600; }
+  .pw-review-link:hover { color: #c73208; text-decoration: underline; }
   .pw-meta { font-size: 13px; color: #777; line-height: 1.7; margin-bottom: 14px; }
 
   .pw-rating-row { display: flex; align-items: center; gap: 7px; padding: 12px 0; border-top: 1px solid #f2f2f2; border-bottom: 1px solid #f2f2f2; margin-bottom: 12px; }
@@ -57,8 +57,8 @@ const css = `
   .pw-rating-cnt { font-size: 13px; color: #aaa; }
 
   .pw-badges { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-  .pw-badge { display: flex; align-items: center; gap: 8px; background: #e8f4ff; border-radius: 8px; padding: 9px 12px; font-size: 13px; color: #1464b0; font-weight: 500; }
-  .pw-badge svg { flex-shrink: 0; }
+  .pw-badge { display: flex; align-items: center; gap: 8px; background: rgba(232, 65, 10, 0.09); border: 1px solid rgba(232, 65, 10, 0.18); border-radius: 10px; padding: 9px 12px; font-size: 13px; color: #9a3412; font-weight: 600; }
+  .pw-badge svg { flex-shrink: 0; color: #e8410a; }
 
   .pw-responds { font-size: 13px; color: #777; margin-bottom: 14px; }
 
@@ -353,24 +353,24 @@ export default function PublicCustomerProfilePage() {
               {customer?.verified && (
                 <div className="pw-badge">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
-                    <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1"/>
+                    <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   Документы проверены
                 </div>
               )}
               <div className="pw-badge">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1"/>
+                  <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 {customer?.city || 'Йошкар-Ола'}
               </div>
               {done >= 1 && (
                 <div className="pw-badge">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <circle cx="8" cy="8" r="7.5" stroke="#257af4" strokeWidth="1"/>
-                    <path d="M5 8l2 2 4-4" stroke="#257af4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1"/>
+                    <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   {done} {done===1?'сделка завершена':done<5?'сделки завершено':'сделок завершено'}
                 </div>

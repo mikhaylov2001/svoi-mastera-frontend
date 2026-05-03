@@ -82,28 +82,30 @@ const css = `
 
   .pw-review-link {
     display: inline-block;
-    font-size: 14px; color: #555;
+    font-size: 14px; color: #e8410a;
     text-decoration: none; margin-bottom: 6px;
     cursor: pointer; background: none; border: none;
     font-family: inherit; padding: 0;
+    font-weight: 600;
   }
-  .pw-review-link:hover { color: #333; text-decoration: underline; }
+  .pw-review-link:hover { color: #c73208; text-decoration: underline; }
 
   .pw-meta {
     font-size: 13px; color: #777;
     line-height: 1.7; margin-bottom: 14px;
   }
 
-  /* бейджи */
+  /* бейджи — фирменный оранжевый */
   .pw-badges { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
   .pw-badge {
     display: flex; align-items: center; gap: 8px;
-    background: #f0f0f0;
-    border-radius: 8px;
+    background: rgba(232, 65, 10, 0.09);
+    border: 1px solid rgba(232, 65, 10, 0.18);
+    border-radius: 10px;
     padding: 9px 12px;
-    font-size: 13px; color: #444; font-weight: 500;
+    font-size: 13px; color: #9a3412; font-weight: 600;
   }
-  .pw-badge svg { flex-shrink: 0; }
+  .pw-badge svg { flex-shrink: 0; color: #e8410a; }
 
   .pw-responds { font-size: 13px; color: #777; margin-bottom: 14px; }
 
@@ -455,19 +457,29 @@ export default function PublicWorkerProfilePage() {
               {worker?.verified && (
                 <div className="pw-badge">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <circle cx="8" cy="8" r="7.5" stroke="#666" strokeWidth="1"/>
-                    <path d="M5 8l2 2 4-4" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1"/>
+                    <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   Документы проверены
                 </div>
               )}
               <div className="pw-badge">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="#666" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1"/>
+                  <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 {worker?.city || 'Йошкар-Ола'}
               </div>
+              {completedWorks.length >= 1 && (
+                <div className="pw-badge">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1"/>
+                    <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  {completedWorks.length}{' '}
+                  {completedWorks.length === 1 ? 'сделка завершена' : completedWorks.length < 5 ? 'сделки завершено' : 'сделок завершено'}
+                </div>
+              )}
             </div>
 
             <div className="pw-responds">Отвечает в течение дня</div>
