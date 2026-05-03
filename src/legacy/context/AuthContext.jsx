@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const API_BASE = process.env.NODE_ENV === 'development'
+const API_BASE = import.meta.env.DEV
   ? 'http://localhost:8080/api/v1'
   : 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 
