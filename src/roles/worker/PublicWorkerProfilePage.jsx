@@ -80,18 +80,25 @@ const css = `
 
   .pw-review-link {
     display: inline-block;
-    font-size: 14px; color: #e8410a;
+    font-size: 14px; color: #777;
     text-decoration: none; margin-bottom: 6px;
     cursor: pointer; background: none; border: none;
     font-family: inherit; padding: 0;
-    font-weight: 600;
+    font-weight: 400;
   }
-  .pw-review-link:hover { color: #c73208; text-decoration: underline; }
+  .pw-review-link:hover { color: #333; text-decoration: underline; }
 
   .pw-meta {
     font-size: 13px; color: #777;
     line-height: 1.7; margin-bottom: 14px;
   }
+
+  .pw-rating-row { display: flex; align-items: center; gap: 7px; padding: 12px 0; border-top: 1px solid #f2f2f2; border-bottom: 1px solid #f2f2f2; margin-bottom: 12px; }
+  .pw-rating-num { font-size: 22px; font-weight: 800; color: #111; line-height: 1; }
+  .pw-stars { display: flex; gap: 2px; }
+  .pw-star-f { color: #f59e0b; font-size: 15px; }
+  .pw-star-e { color: #e5e7eb; font-size: 15px; }
+  .pw-rating-cnt { font-size: 13px; color: #aaa; }
 
   /* бейджи — фирменный оранжевый */
   .pw-badges { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
@@ -110,23 +117,23 @@ const css = `
   .pw-stats-strip {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    border: 1px solid rgba(232, 65, 10, 0.22);
+    border: 1px solid #f0f0f0;
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 14px;
-    background: rgba(232, 65, 10, 0.06);
+    background: #fff;
   }
   .pw-strip-cell {
     padding: 12px 6px;
     text-align: center;
-    border-right: 1px solid rgba(232, 65, 10, 0.14);
+    border-right: 1px solid #f0f0f0;
   }
   .pw-strip-cell:last-child { border-right: none; }
-  .pw-strip-num { font-size: 20px; font-weight: 800; color: #e8410a; line-height: 1; }
+  .pw-strip-num { font-size: 20px; font-weight: 800; color: #111; line-height: 1; }
   .pw-strip-lbl {
     font-size: 10px;
-    color: #9a3412;
-    font-weight: 700;
+    color: #aaa;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: .06em;
     margin-top: 4px;
@@ -471,6 +478,20 @@ export default function PublicWorkerProfilePage() {
               {completedWorks.length > 0 && <span>{completedWorks.length} завершённых работ<br /></span>}
               {since && <span>{since}</span>}
             </div>
+
+            {avgRating > 0 && (
+              <div className="pw-rating-row">
+                <span className="pw-rating-num">{avgRatingStr}</span>
+                <div className="pw-stars">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <span key={i} className={i < starsFilled ? 'pw-star-f' : 'pw-star-e'}>★</span>
+                  ))}
+                </div>
+                <span className="pw-rating-cnt">
+                  {reviews.length} {reviews.length === 1 ? 'отзыв' : reviews.length < 5 ? 'отзыва' : 'отзывов'}
+                </span>
+              </div>
+            )}
 
             <div className="pw-badges">
               {worker?.verified === true && (

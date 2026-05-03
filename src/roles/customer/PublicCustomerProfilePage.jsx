@@ -43,8 +43,8 @@ const css = `
   .pw-avatar-fb { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, #e8410a, #ff7043); display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; color: #fff; margin-bottom: 12px; }
 
   .pw-name { font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; }
-  .pw-review-link { display: inline-block; font-size: 14px; color: #e8410a; text-decoration: none; margin-bottom: 6px; cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; font-weight: 600; }
-  .pw-review-link:hover { color: #c73208; text-decoration: underline; }
+  .pw-review-link { display: inline-block; font-size: 14px; color: #777; text-decoration: none; margin-bottom: 6px; cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; font-weight: 400; }
+  .pw-review-link:hover { color: #333; text-decoration: underline; }
   .pw-meta { font-size: 13px; color: #777; line-height: 1.7; margin-bottom: 14px; }
 
   .pw-rating-row { display: flex; align-items: center; gap: 7px; padding: 12px 0; border-top: 1px solid #f2f2f2; border-bottom: 1px solid #f2f2f2; margin-bottom: 12px; }
@@ -63,16 +63,16 @@ const css = `
   .pw-stats-strip {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    border: 1px solid rgba(232, 65, 10, 0.22);
+    border: 1px solid #f0f0f0;
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 14px;
-    background: rgba(232, 65, 10, 0.06);
+    background: #fff;
   }
-  .pw-strip-cell { padding: 12px 6px; text-align: center; border-right: 1px solid rgba(232, 65, 10, 0.14); }
+  .pw-strip-cell { padding: 12px 6px; text-align: center; border-right: 1px solid #f0f0f0; }
   .pw-strip-cell:last-child { border-right: none; }
-  .pw-strip-num { font-size: 20px; font-weight: 800; color: #e8410a; line-height: 1; }
-  .pw-strip-lbl { font-size: 10px; color: #9a3412; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; display: block; }
+  .pw-strip-num { font-size: 20px; font-weight: 800; color: #111; line-height: 1; }
+  .pw-strip-lbl { font-size: 10px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; display: block; }
 
   .pw-btn-msg { display: block; width: 100%; background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; padding: 13px 0; cursor: pointer; font-family: inherit; text-align: center; margin-bottom: 8px; transition: background .15s; }
   .pw-btn-msg:hover { background: #d03a09; }
