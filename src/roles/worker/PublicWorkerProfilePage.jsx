@@ -107,6 +107,32 @@ const css = `
 
   .pw-responds { font-size: 13px; color: #777; margin-bottom: 14px; }
 
+  .pw-stats-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid rgba(232, 65, 10, 0.22);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    background: rgba(232, 65, 10, 0.06);
+  }
+  .pw-strip-cell {
+    padding: 12px 6px;
+    text-align: center;
+    border-right: 1px solid rgba(232, 65, 10, 0.14);
+  }
+  .pw-strip-cell:last-child { border-right: none; }
+  .pw-strip-num { font-size: 20px; font-weight: 800; color: #e8410a; line-height: 1; }
+  .pw-strip-lbl {
+    font-size: 10px;
+    color: #9a3412;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-top: 4px;
+    display: block;
+  }
+
   /* кнопки */
   .pw-btn-msg {
     display: block; width: 100%;
@@ -475,6 +501,21 @@ export default function PublicWorkerProfilePage() {
             </div>
 
             <div className="pw-responds">Отвечает в течение дня</div>
+
+            <div className="pw-stats-strip">
+              <div className="pw-strip-cell">
+                <div className="pw-strip-num">{services.length}</div>
+                <span className="pw-strip-lbl">Объявлений</span>
+              </div>
+              <div className="pw-strip-cell">
+                <div className="pw-strip-num">{completedWorks.length}</div>
+                <span className="pw-strip-lbl">Завершено</span>
+              </div>
+              <div className="pw-strip-cell">
+                <div className="pw-strip-num">{reviews.length}</div>
+                <span className="pw-strip-lbl">Отзывов</span>
+              </div>
+            </div>
 
             {userId && userId !== workerId && (
               <button className="pw-btn-msg" onClick={() => navigate(`/chat/${workerId}`)}>

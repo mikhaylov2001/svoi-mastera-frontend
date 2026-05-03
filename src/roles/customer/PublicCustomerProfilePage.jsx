@@ -60,11 +60,19 @@ const css = `
 
   .pw-responds { font-size: 13px; color: #777; margin-bottom: 14px; }
 
-  .pw-stats-strip { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
-  .pw-strip-cell { padding: 12px 6px; text-align: center; border-right: 1px solid #f0f0f0; }
+  .pw-stats-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid rgba(232, 65, 10, 0.22);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    background: rgba(232, 65, 10, 0.06);
+  }
+  .pw-strip-cell { padding: 12px 6px; text-align: center; border-right: 1px solid rgba(232, 65, 10, 0.14); }
   .pw-strip-cell:last-child { border-right: none; }
-  .pw-strip-num { font-size: 20px; font-weight: 800; color: #111; line-height: 1; }
-  .pw-strip-lbl { font-size: 10px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; display: block; }
+  .pw-strip-num { font-size: 20px; font-weight: 800; color: #e8410a; line-height: 1; }
+  .pw-strip-lbl { font-size: 10px; color: #9a3412; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; display: block; }
 
   .pw-btn-msg { display: block; width: 100%; background: #e8410a; border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: 700; padding: 13px 0; cursor: pointer; font-family: inherit; text-align: center; margin-bottom: 8px; transition: background .15s; }
   .pw-btn-msg:hover { background: #d03a09; }
