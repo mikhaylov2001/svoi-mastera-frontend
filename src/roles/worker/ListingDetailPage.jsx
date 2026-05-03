@@ -81,12 +81,13 @@ const css = `
 
   /* Карточка только с галереей */
   .ld-fw-gallery-card {
-    background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 16px;
-    border: none; box-shadow: none;
+    background: #fff;
+    overflow: hidden;
+    margin-bottom: 16px;
   }
 
-  /* CARDS BASE */
-  .ld-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+  /* CARDS BASE — обводка: unifiedListingCards.css */
+  .ld-card { background: #fff; overflow: hidden; }
 
   .ld-actions-row { display: flex; gap: 8px; flex-shrink: 0; }
   .ld-action-btn { display: inline-flex; align-items: center; gap: 6px; background: #f5f5f7; border: none; border-radius: 10px; font-size: 13px; font-weight: 500; color: #555; padding: 8px 14px; cursor: pointer; font-family: inherit; transition: background .15s, color .15s; }
@@ -257,7 +258,7 @@ const css = `
   }
 
   /* SELLER / профиль — мастер в «Мои объявления»: компактная карточка */
-  .ld-seller { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+  .ld-seller { background: #fff; overflow: hidden; }
   .ld-profile-card {
     background: #fff; border-radius: 12px; border: 1px solid #e8e8e8;
     padding: 16px 20px; box-shadow: 0 2px 12px rgba(0,0,0,.04);
@@ -289,7 +290,7 @@ const css = `
   .ld-own-profile-footer { border-top: 1px solid #f4f4f4; padding: 12px 18px; }
 
   /* SIMILAR */
-  .ld-similar { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 16px 18px; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+  .ld-similar { background: #fff; padding: 16px 18px; }
   .ld-similar-head { font-size: 14px; font-weight: 700; margin: 0 0 12px; color: #111; display: flex; align-items: center; justify-content: space-between; }
   .ld-similar-head a { font-size: 12px; color: #e8410a; text-decoration: none; font-weight: 600; }
   .ld-similar-list { display: flex; flex-direction: column; gap: 2px; }

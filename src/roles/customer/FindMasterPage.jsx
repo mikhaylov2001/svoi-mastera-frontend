@@ -114,23 +114,12 @@ const css = `
     gap: 14px;
   }
 
-  /* Карточка категории — стиль CategoriesPage */
+  /* Карточка категории — оболочка unifiedListingCards.css (.fmp-cat-card) */
   .fmp-cat-card {
-    background: #fff;
-    border-radius: 16px;
-    overflow: hidden;
     text-decoration: none;
     color: inherit;
-    display: flex;
-    flex-direction: column;
-    border: 1.5px solid #e8e8e8;
-    transition: box-shadow .22s, transform .22s, border-color .22s;
   }
-  .fmp-cat-card:hover {
-    box-shadow: 0 8px 32px rgba(0,0,0,.13);
-    transform: translateY(-4px);
-    border-color: #e8410a;
-  }
+
   .fmp-cat-img-wrap {
     position: relative;
     height: 150px;
@@ -301,9 +290,7 @@ const css = `
 
   /* Карточка категории в сайдбаре с фото */
   .fmp-sb-cat {
-    border-radius: 12px;
     overflow: hidden;
-    border: 1.5px solid #e8e8e8;
     background: #fff;
   }
   .fmp-sb-cat-photo {
@@ -351,8 +338,6 @@ const css = `
 
   .fmp-filter-card {
     background: #fff;
-    border: 1.5px solid #e8e8e8;
-    border-radius: 12px;
     overflow: hidden;
   }
   .fmp-filter-title {
@@ -464,25 +449,15 @@ const css = `
   .fmp-sort-opt.active { border-color: #e8410a; background: #e8410a; color: #fff; }
   .fmp-result-count { margin-left: auto; font-size: 13px; color: #aaa; font-weight: 500; white-space: nowrap; }
 
-  /* ══ КАРТОЧКИ ОБЪЯВЛЕНИЙ ══ */
   .fmp-list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
+
+  /* Карточка объявления: оболочка — unifiedListingCards.css (.fmp-card) */
   .fmp-card {
-    background: #fff;
-    border: 1.5px solid #e8e8e8;
-    border-radius: 16px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: box-shadow .2s, border-color .2s, transform .2s;
-  }
-  .fmp-card:hover {
-    box-shadow: 0 6px 28px rgba(0,0,0,.1);
-    border-color: #d0d0d0;
-    transform: translateY(-2px);
+    cursor: default;
   }
 
   /* Фото → объявление */
@@ -702,16 +677,18 @@ const css = `
     align-items: stretch;
     gap: 10px;
     margin-top: auto;
-    padding-top: 10px;
-    border-top: 1px solid #f5f5f5;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #e5e7eb;
+    background: #f8fafc;
   }
   .fmp-card-footer-pending {
     display: flex;
     flex-direction: column;
     gap: 8px;
     margin-top: auto;
-    padding-top: 10px;
-    border-top: 1px solid #f5f5f5;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #e5e7eb;
+    background: #f8fafc;
   }
   .fmp-card-price-block { width: 100%; flex-shrink: 0; }
   .fmp-card-price { font-size: 16px; font-weight: 900; color: #1a1a1a; letter-spacing: -.3px; line-height: 1; white-space: nowrap; }

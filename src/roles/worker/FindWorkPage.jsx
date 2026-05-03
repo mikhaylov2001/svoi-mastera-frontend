@@ -319,9 +319,7 @@ const fw2css = `
   }
   .fw2-sb-cat {
     background: #fff;
-    border-radius: 12px;
     overflow: hidden;
-    border: 1.5px solid #e8e8e8;
   }
   .fw2-sb-cat-photo {
     position: relative;
@@ -367,8 +365,6 @@ const fw2css = `
   .fw2-sb-back:hover { opacity: .75; }
   .fw2-filter-card {
     background: #fff;
-    border-radius: 12px;
-    border: 1.5px solid #e8e8e8;
     overflow: hidden;
   }
   .fw2-filter-title {
@@ -462,26 +458,14 @@ const fw2css = `
   .fw2-sort-opt.active { background: #e8410a; border-color: #e8410a; color: #fff; }
   .fw2-result-count { margin-left: auto; font-size: 13px; color: #aaa; font-weight: 500; }
 
-  /* ═══ КАРТОЧКИ ЗАЯВОК ═══ */
+  /* ═══ КАРТОЧКИ ЗАЯВОК (оболочка — unifiedListingCards.css) ═══ */
   .fw2-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
+    gap: 12px;
   }
   .fw2-card {
-    background: #fff;
-    border-radius: 16px;
-    border: 1.5px solid #e8e8e8;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: box-shadow .2s, transform .2s, border-color .2s;
     cursor: default;
-  }
-  .fw2-card:hover {
-    box-shadow: 0 8px 32px rgba(0,0,0,.1);
-    transform: translateY(-3px);
-    border-color: #e8410a;
   }
   .fw2-card-photo {
     position: relative;
@@ -501,7 +485,7 @@ const fw2css = `
     pointer-events: none;
     transition: transform .5s cubic-bezier(.25,.46,.45,.94);
   }
-  .fw2-card:hover .fw2-card-photo img { transform: scale(1.05); }
+  .fw2-card-photo:hover img { transform: scale(1.05); }
   .fw2-card-photo-ph {
     position: absolute;
     inset: 0;
@@ -737,8 +721,9 @@ const fw2css = `
     align-items: stretch;
     gap: 10px;
     margin-top: auto;
-    padding-top: 10px;
-    border-top: 1px solid #f5f5f5;
+    padding: 12px 14px 14px;
+    border-top: 1px solid #e5e7eb;
+    background: #f8fafc;
   }
   .fw2-card-price-block { width: 100%; flex-shrink: 0; }
   .fw2-card-price {

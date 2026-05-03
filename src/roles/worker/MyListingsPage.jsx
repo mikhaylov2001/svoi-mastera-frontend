@@ -169,53 +169,8 @@ const css = `
   .ml-tab-n { font-size: 11px; background: rgba(0,0,0,.06); border-radius: 8px; padding: 1px 6px; margin-left: 5px; color: #6b7280; }
   .ml-tab.on .ml-tab-n { background: rgba(255,255,255,.22); color: #fff; }
 
-  /* ── LIST (карточки) ── */
-  .ml-list { display: flex; flex-direction: column; gap: 12px; background: transparent; border: none; }
-  .ml-row {
-    display: flex; align-items: stretch;
-    background: #fff; border: 1px solid #e4e4e7; border-radius: 10px;
-    overflow: hidden; cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04);
-    transition: box-shadow .2s, transform .2s, border-color .2s;
-  }
-  .ml-row:hover {
-    box-shadow: 0 2px 6px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
-    transform: translateY(-2px);
-    border-color: #d1d5db;
-  }
-  .ml-row:focus-within {
-    border-color: #e8e8e8;
-  }
-  .ml-row-img { width: 132px; min-height: 108px; flex-shrink: 0; background: #f5f5f5; overflow: hidden; position: relative; }
-  .ml-row-img img { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 108px; }
-  .ml-row-img-ph { width: 100%; height: 100%; min-height: 108px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #d1d5db; }
-  .ml-row-img-cnt { position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,.55); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 6px; }
-  .ml-row-body { flex: 1; padding: 14px 18px 10px; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
-  .ml-row-title { font-size: 16px; font-weight: 800; color: #111827; margin: 0 0 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  .ml-row-price { font-size: 19px; font-weight: 800; margin-bottom: 6px; color: #1a1a1a; }
-  .ml-row-unit { font-size: 12px; color: #8f8f8f; font-weight: 500; margin-left: 4px; }
-  .ml-row-cat {
-    display: inline-block; align-self: flex-start; max-width: 100%;
-    font-size: 12px; font-weight: 700; color: #475569;
-    background: #f1f5f9; border-radius: 6px; padding: 3px 10px; margin-bottom: 6px;
-  }
-  .ml-row-desc { font-size: 13px; color: #6b7280; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; margin-bottom: 6px; line-height: 1.45; }
-  .ml-row-date { font-size: 12px; color: #9ca3af; margin-bottom: 10px; }
-  .ml-row-stats {
-    display: flex; flex-direction: row; gap: 18px; flex-wrap: wrap;
-    padding: 8px 12px; margin: 0 -18px -10px; border-top: 1px solid #f3f4f6;
-    background: #f9f9f9; border-radius: 0 0 0 10px;
-  }
-  .ml-row-stat { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 5px; }
-  .ml-row-stat-num { font-weight: 800; color: #111827; font-variant-numeric: tabular-nums; font-size: 14px; }
-  .ml-row-stat-status-active { font-size: 12px; font-weight: 700; color: #16a34a; }
-  .ml-row-stat-status-arch { font-size: 12px; font-weight: 700; color: #ef4444; }
-  .ml-row-actions {
-    width: 198px; flex-shrink: 0; padding: 14px 13px;
-    display: flex; flex-direction: column; gap: 7px; justify-content: center;
-    border-left: 1px solid #f0f0f0; background: #fafafa;
-  }
-  /* Единые габариты с «Мои заявки» */
+  /* .ml-list, .ml-row — unifiedListingCards.css */
+
   .ml-btn-edit {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
@@ -255,17 +210,13 @@ const css = `
   }
   .ml-btn-review-customer:hover { filter: brightness(1.06); transform: translateY(-1px); }
   .ml-btn-review-customer:active { transform: translateY(0); }
-  .ml-empty {
-    text-align: center; padding: 72px 24px;
-    background: rgba(255,255,255,.95); border: 1.5px solid #e8e8e8; border-radius: 16px;
-    color: #8f8f8f; box-shadow: 0 4px 20px rgba(0,0,0,.05);
-  }
+  /* .ml-empty — unifiedListingCards.css */
 
   /* ── DETAIL ── */
   .ml-detail { background: #f2f2f2; min-height: 100vh; }
   .ml-detail-nav { background: #fff; border-bottom: 1.5px solid #e5e7eb; padding: 12px 0; }
   .ml-detail-wrap { max-width: 1000px; margin: 0 auto; padding: 20px 20px 60px; display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: flex-start; }
-  .ml-detail-gallery { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+  .ml-detail-gallery { background: #fff; overflow: hidden; margin-bottom: 14px; }
   .ml-detail-main-img { position: relative; aspect-ratio: 16/9; overflow: hidden; cursor: pointer; background: #f5f5f5; display: flex; align-items: center; justify-content: center; }
   .ml-detail-main-img img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
   .ml-detail-thumbs { display: flex; gap: 6px; padding: 10px 12px; background: #fafafa; overflow-x: auto; }
@@ -273,12 +224,12 @@ const css = `
   .ml-detail-thumb.on { border-color: #e8410a; }
   .ml-detail-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .ml-detail-right { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 72px; }
-  .ml-detail-price-card { background: #fff; border-radius: 12px; padding: 20px; }
+  .ml-detail-price-card { background: #fff; padding: 20px; }
   .ml-detail-price-label { font-size: 12px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
   .ml-detail-price { font-size: 28px; font-weight: 900; color: #1a1a1a; }
   .ml-detail-price-unit { font-size: 13px; color: #9ca3af; margin-top: 4px; font-weight: 500; }
   .ml-detail-status-line { font-size: 12px; color: #6b7280; margin-top: 10px; font-weight: 500; }
-  .ml-detail-actions-card { background: #fff; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .ml-detail-actions-card { background: #fff; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
   .ml-btn-primary {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
@@ -304,7 +255,7 @@ const css = `
   .ml-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
   .ml-detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
   .ml-detail-row:last-child { border-bottom: none; }
-  .ml-tag { display: inline-block; background: #f1f5f9; color: #475569; border-radius: 6px; font-size: 12px; font-weight: 700; padding: 3px 10px; }
+  /* .ml-tag — unifiedListingCards.css */
 
   /* ══ ФОРМА СТРАНИЦА ══ */
   .mlf-hero { position: relative; height: var(--page-hero-h-desktop); overflow: hidden; }
@@ -480,7 +431,7 @@ const css = `
   .mlf-change-cat:hover { opacity: .8; }
 
   /* cards */
-  .mlf-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; margin-bottom: 12px; overflow: hidden; }
+  .mlf-card { background: #fff; margin-bottom: 12px; overflow: hidden; }
   .mlf-card-title { font-size: 16px; font-weight: 700; color: #111; padding: 18px 20px 0; margin-bottom: 16px; }
 
   /* photo grid */
@@ -544,7 +495,7 @@ const css = `
 
   /* sidebar */
   .mlf-sidebar { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 76px; }
-  .mlf-sb-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 18px; }
+  .mlf-sb-card { background: #fff; padding: 18px; }
   .mlf-sb-title { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
   .mlf-steps { display: flex; flex-direction: column; gap: 10px; }
   .mlf-step { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; color: #555; }

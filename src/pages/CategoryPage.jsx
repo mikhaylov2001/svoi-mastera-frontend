@@ -55,7 +55,7 @@ const css = `
   .cp-wrap { max-width: 1080px; margin: 0 auto; padding: 20px 20px 60px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: flex-start; }
 
   /* ── CARD ── */
-  .cp-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; margin-bottom: 12px; overflow: hidden; }
+  .cp-card { background: #fff; margin-bottom: 12px; overflow: hidden; }
   .cp-card-title { font-size: 16px; font-weight: 700; color: #111; padding: 18px 20px 0; margin-bottom: 16px; }
 
   /* ── ФОТО СЕТКА ── */
@@ -132,7 +132,7 @@ const css = `
 
   /* ── САЙДБАР ── */
   .cp-sidebar { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 76px; }
-  .cp-sb-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 18px; }
+  .cp-sb-card { background: #fff; padding: 18px; }
   .cp-sb-title { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
   .cp-sb-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #555; padding: 8px 0; border-bottom: 1px solid #f5f5f5; line-height: 1.5; }
   .cp-sb-item:last-child { border-bottom: none; padding-bottom: 0; }

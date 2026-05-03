@@ -34,6 +34,7 @@ import VerificationPage from './pages/VerificationPage';
 import GuaranteeTermsPage from './pages/GuaranteeTermsPage';
 import ListingDetailPage from './roles/worker/ListingDetailPage';
 import './App.css';
+import './styles/unifiedListingCards.css';
 
 function ProtectedRoute({ children, workerOnly = false }) {
   const { userId, userRole } = useAuth();

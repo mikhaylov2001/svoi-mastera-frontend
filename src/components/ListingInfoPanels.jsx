@@ -4,12 +4,16 @@ const LIP_CSS = `
   .lip-wrap { display: flex; flex-direction: column; gap: 12px; }
   .lip-wrap--merged { gap: 0; }
   .lip-section {
-    background: #fff; border: 1px solid #e6e6e6; border-radius: 14px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
     padding: 20px 22px;
   }
   .lip-section--merged {
-    border-radius: 12px; border: 1px solid #e8e8e8;
-    box-shadow: 0 2px 12px rgba(0,0,0,.04);
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
     padding: 20px 22px;
   }
   .lip-merge-divider {

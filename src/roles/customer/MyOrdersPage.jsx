@@ -82,7 +82,7 @@ function compressImage(file) {
 const EMPTY_FORM = { title: '', description: '', budget: '', address: '', city: '', categoryId: '', photos: [] };
 const MAX_DESC = 2000;
 
-/* ══ CSS (база общая с «Мои объявления»; полировка списка — только .mo-requests в этом файле) ══ */
+/* ══ CSS: список/карточки — src/styles/unifiedListingCards.css ══ */
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; }
@@ -121,59 +121,8 @@ const css = `
   .ml-tab-n { font-size: 11px; background: rgba(0,0,0,.06); border-radius: 8px; padding: 1px 6px; margin-left: 5px; color: #6b7280; }
   .ml-tab.on .ml-tab-n { background: rgba(255,255,255,.22); color: #fff; }
 
-  .ml-list { display: flex; flex-direction: column; gap: 12px; background: transparent; border: none; }
-  .ml-row {
-    display: flex; align-items: stretch;
-    background: #fff; border: 1px solid #e4e4e7; border-radius: 10px;
-    overflow: hidden; cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04);
-    transition: box-shadow .2s, transform .2s, border-color .2s;
-  }
-  .ml-row:hover {
-    box-shadow: 0 2px 6px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
-    transform: translateY(-2px);
-    border-color: #d1d5db;
-  }
-  .ml-row:focus-within {
-    border-color: #e8e8e8;
-  }
-  .ml-row-img { width: 132px; min-height: 108px; flex-shrink: 0; background: #f5f5f5; overflow: hidden; position: relative; }
-  .ml-row-img img { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 108px; }
-  .ml-row-img-ph { width: 100%; height: 100%; min-height: 108px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #d1d5db; }
-  .ml-row-img-cnt { position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,.55); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 6px; }
-  .ml-row-body { flex: 1; padding: 14px 18px 10px; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
-  .ml-row-title { font-size: 16px; font-weight: 800; color: #111827; margin: 0 0 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  .ml-row-price { font-size: 19px; font-weight: 800; margin-bottom: 6px; color: #1a1a1a; }
-  .ml-row-unit { font-size: 12px; color: #8f8f8f; font-weight: 500; margin-left: 4px; }
-  .ml-row-cat {
-    display: inline-block; align-self: flex-start; max-width: 100%;
-    font-size: 12px; font-weight: 700; color: #475569;
-    background: #f1f5f9; border-radius: 6px; padding: 3px 10px; margin-bottom: 6px;
-  }
-  .ml-row-desc { font-size: 13px; color: #6b7280; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; margin-bottom: 6px; line-height: 1.45; }
-  .ml-row-date { font-size: 12px; color: #9ca3af; margin-bottom: 10px; }
-  .ml-row-stats {
-    display: flex; flex-direction: row; gap: 18px; flex-wrap: wrap;
-    padding: 8px 12px; margin: 0 -18px -10px; border-top: 1px solid #f3f4f6;
-    background: #f9f9f9; border-radius: 0 0 0 10px;
-  }
-  .ml-row-stat-offers {
-    cursor: pointer; border-radius: 8px; padding: 2px 8px; margin: -2px -8px;
-    transition: background .15s;
-    outline: none;
-  }
-  .ml-row-stat-offers:hover { background: rgba(232, 65, 10, 0.09); }
-  .ml-row-stat-offers:focus-visible { box-shadow: 0 0 0 2px rgba(55, 65, 81, 0.22); }
-  .ml-row-stat { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 5px; }
-  .ml-row-stat-num { font-weight: 800; color: #111827; font-variant-numeric: tabular-nums; font-size: 14px; }
-  .ml-row-stat-status-active { font-size: 12px; font-weight: 700; color: #16a34a; }
-  .ml-row-stat-status-arch   { font-size: 12px; font-weight: 700; color: #ef4444; }
-  .ml-row-actions {
-    width: 198px; flex-shrink: 0; padding: 14px 13px;
-    display: flex; flex-direction: column; gap: 7px; justify-content: center;
-    border-left: 1px solid #f0f0f0; background: #fafafa;
-  }
-  /* Единые габариты кнопок в колонке действий и в «Управление» */
+  /* .ml-list, .ml-row … — см. src/styles/unifiedListingCards.css */
+
   .ml-btn-edit {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
@@ -196,25 +145,25 @@ const css = `
   .ml-btn-copy:hover { border-color: #71717a; background: #fafafa; }
   .ml-btn-copy.copied { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
   .ml-actions-divider { height: 1px; background: #ebebeb; margin: 2px 0; }
-  .ml-empty {
-    text-align: center; padding: 72px 24px;
-    background: rgba(255,255,255,.95); border: 1.5px solid #e8e8e8; border-radius: 16px;
-    color: #8f8f8f; box-shadow: 0 4px 20px rgba(0,0,0,.05);
-  }
 
-  /* offers panel */
+  /* .ml-empty, .ml-tag — unifiedListingCards.css */
   .ml-offers-panel {
-    background: #f9fafb; border: 1.5px solid #e8e8e8; border-top: none;
-    border-radius: 0 0 16px 16px; padding: 16px 18px;
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
   }
   .ml-detail-offers-card {
-    background: #fff; border: 1.5px solid #e8e8e8; border-radius: 12px;
+    background: #fff;
     padding: 16px 18px;
   }
   .ml-offers-title { font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 12px; }
   .ml-offer-card {
-    background: #fff; border: 1.5px solid #e5e7eb; border-radius: 12px;
-    padding: 14px 16px; margin-bottom: 10px;
+    background: #fff;
+    padding: 14px 16px;
+    margin-bottom: 10px;
   }
   .ml-offer-card:last-child { margin-bottom: 0; }
   .ml-offer-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
@@ -239,7 +188,7 @@ const css = `
   .ml-detail { background: #f2f2f2; min-height: 100vh; }
   .ml-detail-nav { background: #fff; border-bottom: 1.5px solid #e5e7eb; padding: 12px 0; }
   .ml-detail-wrap { max-width: 1000px; margin: 0 auto; padding: 20px 20px 60px; display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: flex-start; }
-  .ml-detail-gallery { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+  .ml-detail-gallery { background: #fff; overflow: hidden; margin-bottom: 14px; }
   .ml-detail-main-img { position: relative; aspect-ratio: 16/9; overflow: hidden; cursor: pointer; background: #f5f5f5; display: flex; align-items: center; justify-content: center; }
   .ml-detail-main-img img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
   .ml-detail-thumbs { display: flex; gap: 6px; padding: 10px 12px; background: #fafafa; overflow-x: auto; }
@@ -247,12 +196,12 @@ const css = `
   .ml-detail-thumb.on { border-color: #e8410a; }
   .ml-detail-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .ml-detail-right { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 72px; }
-  .ml-detail-price-card { background: #fff; border-radius: 12px; padding: 20px; }
+  .ml-detail-price-card { background: #fff; padding: 20px; }
   .ml-detail-price-label { font-size: 12px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
   .ml-detail-price { font-size: 28px; font-weight: 900; color: #1a1a1a; }
   .ml-detail-price-unit { font-size: 13px; color: #9ca3af; margin-top: 4px; font-weight: 500; }
   .ml-detail-status-line { font-size: 12px; color: #6b7280; margin-top: 10px; font-weight: 500; }
-  .ml-detail-actions-card { background: #fff; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .ml-detail-actions-card { background: #fff; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
   .ml-btn-primary {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
@@ -276,9 +225,8 @@ const css = `
   .ml-btn-outline-neutral:hover { border-color: #71717a; background: #fafafa; }
   .ml-btn-outline-neutral:disabled { opacity: .55; cursor: not-allowed; }
   .ml-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
-  .ml-tag { display: inline-block; background: #f1f5f9; color: #475569; border-radius: 6px; font-size: 12px; font-weight: 700; padding: 3px 10px; }
 
-  /* ФОРМА */
+  /* .ml-tag — см. unifiedListingCards.css */
   .mlf-hero { position: relative; height: var(--page-hero-h-desktop); overflow: hidden; }
   @media (max-width: 768px) { .mlf-hero { height: var(--page-hero-h-mobile); } }
   .mlf-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: ${PAGE_HERO_OBJECT_FIT}; object-position: ${PAGE_HERO_OBJECT_POSITION}; filter: ${PAGE_HERO_IMG_FILTER}; }
@@ -383,7 +331,7 @@ const css = `
   .mlf-change-cat { border: none; background: none; color: #e8410a; font-size: 12px; font-weight: 700; cursor: pointer; padding: 0; font-family: inherit; }
   .mlf-change-cat:hover { opacity: .8; }
 
-  .mlf-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; margin-bottom: 12px; overflow: hidden; }
+  .mlf-card { background: #fff; margin-bottom: 12px; overflow: hidden; }
   .mlf-card-title { font-size: 16px; font-weight: 700; color: #111; padding: 18px 20px 0; margin-bottom: 16px; }
 
   .mlf-photos { padding: 18px 20px 20px; }
@@ -434,7 +382,7 @@ const css = `
   .mlf-error { background: #fff5f5; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #dc2626; margin-bottom: 12px; }
 
   .mlf-sidebar { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 76px; }
-  .mlf-sb-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 18px; }
+  .mlf-sb-card { background: #fff; padding: 18px; }
   .mlf-sb-title { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
   .mlf-steps { display: flex; flex-direction: column; gap: 10px; }
   .mlf-step { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; color: #555; }
@@ -456,228 +404,11 @@ const css = `
   @keyframes mlsk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
   .ml-sk { background: linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%); background-size: 200% 100%; animation: mlsk 1.4s infinite; border-radius: 6px; }
 
-  /* ── «Мои заявки»: вкладки — как в базовых .ml-tabs; карточки — радиус 5px, чёткость + лёгкий scale ── */
-  .mo-requests.ml-list-shell {
-    background: #f2f2f2;
-  }
-  .mo-requests.ml-list-shell .ml-wrap {
-    padding-bottom: 48px;
-  }
-  .mo-requests .ml-list {
-    gap: 10px;
-    padding: 2px 1px 6px;
-    overflow: visible;
-  }
-  .mo-requests .ml-row {
-    border-radius: 5px;
-    border: 1px solid #c5cdd6;
-    background: #fff;
-    box-shadow:
-      0 1px 2px rgba(15, 23, 42, 0.06),
-      0 2px 8px rgba(15, 23, 42, 0.04);
-    transition:
-      box-shadow 0.22s ease,
-      transform 0.22s cubic-bezier(0.34, 1.15, 0.64, 1),
-      border-color 0.2s ease;
-    transform-origin: center center;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .mo-requests .ml-row:hover {
-    transform: scale(1.015);
-    border-color: #94a3b8;
-    box-shadow:
-      0 4px 6px -1px rgba(15, 23, 42, 0.09),
-      0 12px 28px -6px rgba(15, 23, 42, 0.12);
-  }
-  .mo-requests .ml-row:active {
-    transform: scale(1.018);
-    box-shadow:
-      0 2px 4px rgba(15, 23, 42, 0.07),
-      0 6px 16px -4px rgba(15, 23, 42, 0.1);
-  }
-  .mo-requests .ml-row:focus-within {
-    border-color: #94a3b8;
-    outline: none;
-  }
-  .mo-requests .ml-row-img {
-    width: 152px;
-    min-height: 120px;
-    align-self: stretch;
-    background: #e8ecf0;
-  }
-  .mo-requests .ml-row-img img,
-  .mo-requests .ml-row-img-ph {
-    min-height: 120px;
-  }
-  .mo-requests .ml-row-img-cnt {
-    border-radius: 3px;
-    padding: 2px 6px;
-    font-size: 10px;
-  }
-  .mo-requests .ml-row-body {
-    padding: 14px 18px 12px;
-    justify-content: flex-start;
-  }
-  .mo-requests .ml-row-title {
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: #111827;
-    margin-bottom: 8px;
-    line-height: 1.38;
-    white-space: normal;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
-  .mo-requests .ml-row-price {
-    font-size: 18px;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    margin-bottom: 8px;
-    color: #0f172a;
-    letter-spacing: -0.02em;
-  }
-  .mo-requests .ml-row-cat {
-    margin-bottom: 8px;
-    font-weight: 700;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    padding: 4px 9px;
-    border-radius: 3px;
-    background: #f1f5f9;
-    color: #334155;
-    border: 1px solid #e2e8f0;
-  }
-  .mo-requests .ml-row-desc {
-    font-size: 13px;
-    color: #64748b;
-    margin-bottom: 6px;
-    line-height: 1.45;
-    -webkit-line-clamp: 2;
-  }
-  .mo-requests .ml-row-date {
-    font-size: 12px;
-    color: #64748b;
-    font-weight: 500;
-    margin-bottom: 12px;
-  }
-  .mo-requests .ml-row-stats {
-    margin: 0 -18px -12px;
-    padding: 10px 14px;
-    border-top: 1px solid #e5e7eb;
-    background: #f8fafc;
-    border-radius: 0;
-    gap: 14px;
-  }
-  .mo-requests .ml-row-stat-offers {
-    border-radius: 4px;
-  }
-  .mo-requests .ml-row-stat-offers:hover {
-    background: rgba(15, 23, 42, 0.06);
-  }
-  .mo-requests .ml-row-stat,
-  .mo-requests .ml-row-stat-status-active,
-  .mo-requests .ml-row-stat-status-arch {
-    font-size: 12px;
-    font-weight: 600;
-  }
-  .mo-requests .ml-row-stat-num {
-    font-size: 14px;
-    font-weight: 800;
-  }
-  .mo-requests .ml-row-actions {
-    width: 176px;
-    padding: 12px 12px;
-    background: #fafafa;
-    border-left: 1px solid #e5e7eb;
-    gap: 8px;
-  }
-  .mo-requests .ml-btn-edit,
-  .mo-requests .ml-btn-copy,
-  .mo-requests .ml-btn-outline-neutral {
-    border-radius: 5px;
-    min-height: 40px;
-    font-size: 13px;
-  }
-  .mo-requests .ml-btn-copy {
-    font-size: 12px;
-  }
-  .mo-requests .ml-btn-edit {
-    font-weight: 700;
-    box-shadow: 0 2px 10px rgba(232, 65, 10, 0.22);
-  }
-  .mo-requests .ml-btn-edit:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(232, 65, 10, 0.3);
-  }
-  .mo-requests .ml-btn-copy:hover {
-    border-color: #64748b;
-    background: #fff;
-  }
-  .mo-requests .ml-empty {
-    border-radius: 5px;
-    border: 1px solid #d1d5db;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
-    background: #fff;
-    padding: 72px 24px;
-  }
+  .ml-detail-nav { border-bottom: 1px solid #e5e7eb; background: #fff; }
+  .ml-detail-thumb { border-radius: 4px; }
+  .ml-btn-primary,
+  .ml-accept-btn { border-radius: 5px; }
 
-  .mo-requests.ml-detail {
-    background: #f2f2f2;
-  }
-  .mo-requests .ml-detail-gallery {
-    border-radius: 6px;
-    border: 1px solid #d1d5db;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
-  }
-  .mo-requests .ml-detail-price-card,
-  .mo-requests .ml-detail-actions-card,
-  .mo-requests .ml-detail-offers-card {
-    border-radius: 6px;
-    border: 1px solid #d1d5db;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
-  }
-  .mo-requests .ml-offer-card {
-    border-radius: 5px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  }
-  .mo-requests .ml-btn-primary,
-  .mo-requests .ml-accept-btn {
-    border-radius: 5px;
-  }
-  .mo-requests .ml-btn-primary:hover {
-    transform: translateY(-1px);
-  }
-  .mo-requests .ml-accept-btn:hover {
-    transform: translateY(-1px);
-  }
-  .mo-requests .ml-detail-nav {
-    border-bottom: 1px solid #e5e7eb;
-    background: #fff;
-  }
-  .mo-requests .ml-detail-thumb {
-    border-radius: 4px;
-  }
-  .mo-requests .ml-tag {
-    border-radius: 3px;
-    padding: 4px 10px;
-    font-weight: 700;
-    background: #f1f5f9;
-    color: #334155;
-    border: 1px solid #e2e8f0;
-  }
-  @media (hover: none) {
-    .mo-requests .ml-row:hover {
-      transform: none;
-      border-color: #c5cdd6;
-      box-shadow:
-        0 1px 2px rgba(15, 23, 42, 0.06),
-        0 2px 8px rgba(15, 23, 42, 0.04);
-    }
-  }
   @media(max-width: 900px) {
     .mlf-wrap { grid-template-columns: 1fr; }
     .mlf-sidebar { position: static; }
@@ -694,13 +425,6 @@ const css = `
     .ml-row-actions { display: none; }
     .mlf-photo-grid { grid-template-columns: repeat(3, 1fr); }
     .mlf-photo-cell.main-photo { grid-column: span 1; grid-row: span 1; }
-  }
-  @media(max-width: 560px) {
-    .mo-requests .ml-row-img { width: 108px; min-height: 108px; }
-    .mo-requests .ml-row-img img,
-    .mo-requests .ml-row-img-ph { min-height: 108px; }
-    .mo-requests .ml-row-body { padding-left: 12px; padding-right: 12px; }
-    .mo-requests .ml-row-stats { margin: 0 -12px -11px; }
   }
   @media(max-width: 520px) {
     .mlf-sec-grid { grid-template-columns: 1fr; grid-auto-rows: 160px; gap: 8px; }
@@ -1392,7 +1116,7 @@ export default function MyOrdersPage() {
     const catNameD = getCategoryName(detail.categoryId);
     const budget   = detail.budgetTo || detail.budgetFrom;
     return (
-      <div className="ml-detail mo-requests">
+      <div className="ml-detail">
         <style>{css}</style>
         <div className="ml-detail-nav">
           <div style={{maxWidth:1000, margin:'0 auto', padding:'0 20px'}}>
@@ -1645,7 +1369,7 @@ export default function MyOrdersPage() {
 
   // ══ СПИСОК ══
   return (
-    <div className="ml-page ml-list-shell mo-requests">
+    <div className="ml-page ml-list-shell">
       <style>{css}</style>
 
       {/* Hero-баннер */}
