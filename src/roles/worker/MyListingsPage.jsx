@@ -173,13 +173,13 @@ const css = `
   .ml-list { display: flex; flex-direction: column; gap: 12px; background: transparent; border: none; }
   .ml-row {
     display: flex; align-items: stretch;
-    background: #fff; border: 1.5px solid #e8e8e8; border-radius: 16px;
+    background: #fff; border: 1px solid #e4e4e7; border-radius: 10px;
     overflow: hidden; cursor: pointer;
-    box-shadow: 0 2px 12px rgba(0,0,0,.04);
+    box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04);
     transition: box-shadow .2s, transform .2s, border-color .2s;
   }
   .ml-row:hover {
-    box-shadow: 0 10px 32px rgba(0,0,0,.1);
+    box-shadow: 0 2px 6px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
     transform: translateY(-2px);
     border-color: #d1d5db;
   }
@@ -197,14 +197,14 @@ const css = `
   .ml-row-cat {
     display: inline-block; align-self: flex-start; max-width: 100%;
     font-size: 12px; font-weight: 700; color: #475569;
-    background: #f1f5f9; border-radius: 20px; padding: 4px 12px; margin-bottom: 6px;
+    background: #f1f5f9; border-radius: 6px; padding: 3px 10px; margin-bottom: 6px;
   }
   .ml-row-desc { font-size: 13px; color: #6b7280; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; margin-bottom: 6px; line-height: 1.45; }
   .ml-row-date { font-size: 12px; color: #9ca3af; margin-bottom: 10px; }
   .ml-row-stats {
     display: flex; flex-direction: row; gap: 18px; flex-wrap: wrap;
     padding: 8px 12px; margin: 0 -18px -10px; border-top: 1px solid #f3f4f6;
-    background: #f9f9f9; border-radius: 0 0 0 12px;
+    background: #f9f9f9; border-radius: 0 0 0 10px;
   }
   .ml-row-stat { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 5px; }
   .ml-row-stat-num { font-weight: 800; color: #111827; font-variant-numeric: tabular-nums; font-size: 14px; }
@@ -220,7 +220,7 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #e8410a; border: none; border-radius: 10px; color: #fff;
+    background: #e8410a; border: none; border-radius: 8px; color: #fff;
     cursor: pointer; font-family: inherit;
     box-shadow: 0 3px 14px rgba(232,65,10,.28);
     transition: background .15s, transform .15s, box-shadow .15s;
@@ -232,15 +232,15 @@ const css = `
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 12px; font-weight: 600; line-height: 1.25; text-align: center;
     white-space: nowrap;
-    background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; color: #374151;
+    background: #fff; border: 1px solid #d4d4d8; border-radius: 8px; color: #374151;
     cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s;
   }
-  .ml-btn-copy:hover { border-color: #374151; background: #fafafa; }
+  .ml-btn-copy:hover { border-color: #71717a; background: #fafafa; }
   .ml-btn-copy.copied { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
   .ml-link-preview {
     font-size: 13px; font-weight: 600; color: #e8410a; text-align: center;
     text-decoration: none; padding: 7px 0;
-    display: block; border-radius: 10px; transition: background .15s;
+    display: block; border-radius: 8px; transition: background .15s;
   }
   .ml-link-preview:hover { background: #fff4ef; }
   .ml-actions-divider { height: 1px; background: #ebebeb; margin: 2px 0; }
@@ -248,7 +248,7 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: linear-gradient(135deg,#6366f1,#8b5cf6); border: none; border-radius: 10px;
+    background: linear-gradient(135deg,#6366f1,#8b5cf6); border: none; border-radius: 8px;
     color: #fff; cursor: pointer; font-family: inherit;
     box-shadow: 0 4px 14px rgba(99,102,241,.28);
     transition: filter .15s, transform .15s;
@@ -283,7 +283,7 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #e8410a; border: none; border-radius: 10px; color: #fff;
+    background: #e8410a; border: none; border-radius: 8px; color: #fff;
     cursor: pointer; font-family: inherit;
     box-shadow: 0 3px 14px rgba(232,65,10,.30);
     transition: background .15s, transform .15s, box-shadow .15s;
@@ -295,16 +295,16 @@ const css = `
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center;
-    background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; color: #374151;
+    background: #fff; border: 1px solid #d4d4d8; border-radius: 8px; color: #374151;
     font-family: inherit; cursor: pointer;
     transition: border-color .15s, background .15s;
   }
-  .ml-btn-outline-neutral:hover { border-color: #374151; background: #fafafa; }
+  .ml-btn-outline-neutral:hover { border-color: #71717a; background: #fafafa; }
   .ml-btn-outline-neutral:disabled { opacity: .55; cursor: not-allowed; }
   .ml-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
   .ml-detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
   .ml-detail-row:last-child { border-bottom: none; }
-  .ml-tag { display: inline-block; background: #f1f5f9; color: #475569; border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 12px; }
+  .ml-tag { display: inline-block; background: #f1f5f9; color: #475569; border-radius: 6px; font-size: 12px; font-weight: 700; padding: 3px 10px; }
 
   /* ══ ФОРМА СТРАНИЦА ══ */
   .mlf-hero { position: relative; height: var(--page-hero-h-desktop); overflow: hidden; }

@@ -85,12 +85,12 @@ export const dealsWdCss = `
   /* ── CARD ── */
   .wd-card {
     display: flex; align-items: stretch;
-    background: #fff; border: 1.5px solid #e8e8e8; border-radius: 16px;
+    background: #fff; border: 1px solid #e4e4e7; border-radius: 10px;
     overflow: hidden; cursor: pointer;
-    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+    box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04);
     transition: box-shadow .2s, transform .2s, border-color .2s;
   }
-  .wd-card:hover { box-shadow: 0 10px 32px rgba(0,0,0,.09); transform: translateY(-2px); border-color: #d1d5db; }
+  .wd-card:hover { box-shadow: 0 2px 6px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06); transform: translateY(-2px); border-color: #d1d5db; }
   .wd-card:focus-within { border-color: #e8e8e8; }
   .wd-card.new  { border-left: 3px solid #f59e0b; background: #fffdf7; }
   .wd-card.prog { border-left: 3px solid #3b82f6; }
@@ -109,12 +109,12 @@ export const dealsWdCss = `
   .wd-card-body { flex: 1; padding: 13px 16px 9px; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
   .wd-card-title { font-size: 15px; font-weight: 800; color: #111827; margin: 0 0 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .wd-card-price { font-size: 18px; font-weight: 800; color: #1a1a1a; margin-bottom: 5px; }
-  .wd-card-cat { display: inline-block; font-size: 11px; color: #fff; background: #e8410a; border-radius: 6px; padding: 2px 9px; margin-bottom: 5px; font-weight: 700; }
+  .wd-card-cat { display: inline-block; font-size: 11px; color: #475569; background: #f1f5f9; border-radius: 6px; padding: 3px 9px; margin-bottom: 5px; font-weight: 700; }
   .wd-card-meta { font-size: 12px; color: #9ca3af; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
   .wd-card-stats {
     display: flex; flex-direction: row; gap: 14px; flex-wrap: wrap;
     padding: 7px 10px; margin: 0 -16px -9px; border-top: 1px solid #f3f4f6;
-    background: #f9f9f9; border-radius: 0 0 0 12px; align-items: center;
+    background: #f9f9f9; border-radius: 0 0 0 10px; align-items: center;
   }
   .wd-card-stat { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 4px; }
   .wd-status-badge {
@@ -136,14 +136,14 @@ export const dealsWdCss = `
     border-left: 1px solid #f0f0f0; background: #fafafa;
   }
   .wd-btn-primary {
-    width: 100%; background: #e8410a; border: none; border-radius: 10px;
+    width: 100%; background: #e8410a; border: none; border-radius: 8px;
     padding: 10px 0; font-size: 13px; font-weight: 700; color: #fff;
     cursor: pointer; font-family: inherit; transition: background .15s;
   }
   .wd-btn-primary:hover:not(:disabled) { background: #c73208; }
   .wd-btn-primary:disabled { background: #fca98e; cursor: not-allowed; }
   .wd-btn-outline {
-    width: 100%; background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px;
+    width: 100%; background: #fff; border: 1px solid #d4d4d8; border-radius: 8px;
     padding: 9px 0; font-size: 12px; font-weight: 600; color: #475569;
     cursor: pointer; font-family: inherit; transition: all .15s; text-align: center; text-decoration: none; display: block;
   }
@@ -155,7 +155,7 @@ export const dealsWdCss = `
   }
   .wd-btn-danger:hover { color: #dc2626; }
   .wd-btn-green {
-    width: 100%; background: #16a34a; border: none; border-radius: 10px;
+    width: 100%; background: #16a34a; border: none; border-radius: 8px;
     padding: 10px 0; font-size: 13px; font-weight: 700; color: #fff;
     cursor: pointer; font-family: inherit; transition: background .15s;
   }
@@ -185,13 +185,13 @@ export const dealsWdCss = `
   /* ── LISTINGS TAB ── */
   .wd-lst-card {
     display: flex; align-items: center; gap: 12px;
-    background: #fff; border: 1.5px solid #e8e8e8; border-radius: 14px;
+    background: #fff; border: 1px solid #e4e4e7; border-radius: 10px;
     padding: 14px 16px; cursor: pointer;
     text-decoration: none; color: inherit;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04);
     transition: box-shadow .2s, transform .2s, border-color .2s;
   }
-  .wd-lst-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.09); transform: translateY(-2px); border-color: #d1d5db; }
+  .wd-lst-card:hover { box-shadow: 0 2px 6px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06); transform: translateY(-2px); border-color: #d1d5db; }
   .wd-lst-card:focus-within { border-color: #e8e8e8; }
   .wd-lst-img {
     width: 64px; height: 64px; border-radius: 10px; overflow: hidden;
