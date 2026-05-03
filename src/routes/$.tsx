@@ -10,19 +10,14 @@ function LegacyApp() {
 
   useEffect(() => {
     let mounted = true;
-    // Lazy-load on client only — legacy app uses BrowserRouter, localStorage, etc.
     Promise.all([
-      // @ts-expect-error legacy JS module
+      // @ts-expect-error legacy JS without types
       import("@/legacy/App.js"),
-      // @ts-expect-error css
       import("@/legacy/index.css"),
-      // @ts-expect-error css
       import("@/legacy/App.css"),
-      // @ts-expect-error css
       import("@/legacy/mobile.css"),
-      // @ts-expect-error css
       import("@/legacy/styles/unifiedListingCards.css"),
-    ]).then(([mod]: any) => {
+    ]).then(([mod]: any[]) => {
       if (mounted) setApp(() => mod.default);
     });
     return () => {
