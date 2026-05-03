@@ -30,19 +30,25 @@ const css = `
     color: #1a1a1a;
   }
 
-  /* ── breadcrumb ── */
+  /* ── breadcrumb (как публичный профиль заказчика) ── */
   .pw-breadcrumb {
     background: #f6f6f6;
     border-bottom: 1px solid #e8e8e8;
-    padding: 8px 0;
+  }
+  .pw-breadcrumb .pw-wrap {
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
   .pw-breadcrumb-btn {
     background: none; border: none; cursor: pointer;
-    font-size: 13px; color: #555; font-family: inherit;
-    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 13px; font-weight: 500;
+    color: #e8410a; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 8px;
     padding: 0;
   }
-  .pw-breadcrumb-btn:hover { color: #333; text-decoration: underline; }
+  .pw-breadcrumb-btn svg { flex-shrink: 0; color: #e8410a; }
+  .pw-breadcrumb-btn:hover { color: #c73208; text-decoration: underline; }
+  .pw-breadcrumb-btn:hover svg { color: #c73208; }
 
   /* ── wrap & layout ── */
   .pw-wrap { max-width: 1176px; margin: 0 auto; padding: 0 20px; }
@@ -445,9 +451,12 @@ export default function PublicWorkerProfilePage() {
 
       {/* Хлебная крошка */}
       <div className="pw-breadcrumb">
-        <div className="pw-wrap" style={{ padding:'8px 20px' }}>
-          <button className="pw-breadcrumb-btn" onClick={() => navigate('/find-master')}>
-            ← Назад
+        <div className="pw-wrap">
+          <button type="button" className="pw-breadcrumb-btn" onClick={() => navigate('/find-master')}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+              <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Назад
           </button>
         </div>
       </div>
