@@ -308,7 +308,7 @@ export default function DealsPage() {
                 </div>
                 {!myOk ? (
                   <button type="button" className="wd-btn-full-green" style={{ marginTop: 10 }} disabled={actionId === detail.id} onClick={e => handleComplete(detail.id, e)}>
-                    {actionId === detail.id ? 'Подтверждаем…' : '✅ Подтвердить выполнение'}
+                    {actionId === detail.id ? 'Подтверждаем…' : 'Подтвердить выполнение'}
                   </button>
                 ) : (
                   <div style={{ marginTop: 10, textAlign: 'center', fontSize: 13, color: '#16a34a', fontWeight: 700, padding: '10px', background: 'rgba(34,197,94,.07)', borderRadius: 8 }}>
