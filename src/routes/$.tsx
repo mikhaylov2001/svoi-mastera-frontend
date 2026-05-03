@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
-export const Route = createFileRoute("/")({
-  component: LegacyAppIndex,
+export const Route = createFileRoute("/$")({
+  component: LegacyApp,
 });
 
-function LegacyAppIndex() {
+function LegacyApp() {
   const [App, setApp] = useState<React.ComponentType | null>(null);
 
   useEffect(() => {
@@ -25,6 +25,13 @@ function LegacyAppIndex() {
     };
   }, []);
 
-  if (!App) return <div style={{ minHeight: "100vh" }} />;
+  if (!App) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        Загрузка…
+      </div>
+    );
+  }
+
   return <App />;
 }
