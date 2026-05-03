@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
-import { categoryChipToneClass } from '../../utils/categoryChipTone';
-
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 
 function timeAgo(d) {
@@ -84,7 +82,6 @@ const css = `
   .pw-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .pw-card-heart { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.85); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; border: none; }
   .pw-card-pill { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,.48); color: #fff; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
-  .pw-card-cat { position: absolute; top: 8px; left: 8px; font-size: 11px; font-weight: 700; color: #fff; }
   .pw-card-title { font-size: 14px; font-weight: 400; line-height: 1.4; color: #1a1a1a; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .pw-card-price { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 3px; }
   .pw-card-loc { font-size: 12px; color: #999; display: flex; align-items: center; gap: 3px; margin-bottom: 2px; }
@@ -256,14 +253,12 @@ export default function PublicCustomerProfilePage() {
 
   const renderCard = (item, isDeal) => {
     const hasPhoto = item.photos && item.photos.length > 0;
-    const cat = item.categoryName || item.category || null;
     const stLabel = isDeal ? 'Завершена' : (STATUS_LABEL[item.status] || item.status);
     return (
       <div key={`${isDeal?'d':'r'}-${item.id}`} className="pw-card"
         onClick={hasPhoto ? () => setLightbox({ photos: item.photos, index: 0 }) : undefined}>
         <div className="pw-card-img-wrap">
           {hasPhoto ? <img src={item.photos[0]} alt={item.title} /> : (isDeal ? '🤝' : '📋')}
-          {cat && <div className={`pw-card-cat ${categoryChipToneClass(cat)}`}>{cat}</div>}
           <div className="pw-card-pill">{stLabel}</div>
           <button className="pw-card-heart" onClick={e => e.stopPropagation()}>♡</button>
         </div>
@@ -350,7 +345,7 @@ export default function PublicCustomerProfilePage() {
             )}
 
             <div className="pw-badges">
-              {customer?.verified && (
+              {customer?.verified === true && (
                 <div className="pw-badge">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1"/>

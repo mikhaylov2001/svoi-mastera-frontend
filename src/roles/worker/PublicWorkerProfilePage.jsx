@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { categoryChipToneClass } from '../../utils/categoryChipTone';
-
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 
 function timeAgo(d) {
@@ -186,11 +184,6 @@ const css = `
     display: flex; align-items: center; justify-content: center;
     font-size: 16px; cursor: pointer;
     border: none;
-  }
-  .pw-card-cat {
-    position: absolute; top: 8px; left: 8px;
-    font-size: 11px;
-    color: #fff;
   }
   .pw-card-done {
     position: absolute; bottom: 8px; left: 8px;
@@ -454,7 +447,7 @@ export default function PublicWorkerProfilePage() {
             </div>
 
             <div className="pw-badges">
-              {worker?.verified && (
+              {worker?.verified === true && (
                 <div className="pw-badge">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1"/>
@@ -524,7 +517,6 @@ export default function PublicWorkerProfilePage() {
                     {pageItems.map(item => {
                       const hasPhoto = item.photos && item.photos.length > 0;
                       const price    = item.price || item.priceFrom || null;
-                      const cat      = item.category || item.categoryName || null;
                       return (
                         <div
                           key={item.id}
@@ -542,7 +534,6 @@ export default function PublicWorkerProfilePage() {
                               ? <img src={item.photos[0]} alt={item.title} />
                               : (tab === 'active' ? '🔧' : '🔨')
                             }
-                            {cat && <div className={`pw-card-cat ${categoryChipToneClass(cat)}`}>{cat}</div>}
                             {tab === 'works' && <div className="pw-card-done">Завершена</div>}
                             <button className="pw-card-heart" onClick={e => e.stopPropagation()}>♡</button>
                           </div>
