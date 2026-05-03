@@ -273,7 +273,7 @@ export default function DealsPage() {
                 </p>
                 {detail.workerId && (
                   <button type="button" className="wd-btn-full-outline" onClick={() => navigate(`/chat/${detail.workerId}`)}>
-                    💬 Написать мастеру
+                    Написать мастеру
                   </button>
                 )}
                 <button
@@ -367,7 +367,7 @@ export default function DealsPage() {
               </div>
               {detail.workerId && (
                 <button type="button" onClick={() => navigate(`/chat/${detail.workerId}`)} className="wd-btn-full-outline" style={{ marginTop: 12 }}>
-                  💬 Написать мастеру
+                  Написать мастеру
                 </button>
               )}
             </div>
@@ -598,7 +598,7 @@ export default function DealsPage() {
                   <div className="wd-card-actions" onClick={e => e.stopPropagation()}>
                     {isNew && (<>
                       {d.workerId && (
-                        <button type="button" className="wd-btn-outline" onClick={() => navigate(`/chat/${d.workerId}`)}>💬 Написать</button>
+                        <button type="button" className="wd-btn-outline" onClick={() => navigate(`/chat/${d.workerId}`)}>Написать</button>
                       )}
                       {d.workerId && <div className="wd-actions-divider" />}
                       <button
@@ -622,7 +622,7 @@ export default function DealsPage() {
                         <div className="wd-done-label">✓ Вы подтвердили</div>
                       )}
                       {d.workerId && (
-                        <button type="button" className="wd-btn-outline" onClick={() => navigate(`/chat/${d.workerId}`)}>💬 Написать</button>
+                        <button type="button" className="wd-btn-outline" onClick={() => navigate(`/chat/${d.workerId}`)}>Написать</button>
                       )}
                     </>)}
                     {isDone && (<>
@@ -635,7 +635,7 @@ export default function DealsPage() {
                       )}
                       {d.hasReview && <div className="wd-done-label">✓ Отзыв оставлен</div>}
                       {d.workerId && (
-                        <button type="button" className="wd-btn-outline" onClick={() => navigate(`/chat/${d.workerId}`)}>💬 Написать</button>
+                        <button type="button" className="wd-btn-outline" onClick={() => navigate(`/chat/${d.workerId}`)}>Написать</button>
                       )}
                     </>)}
                     {d.status === 'CANCELLED' && (

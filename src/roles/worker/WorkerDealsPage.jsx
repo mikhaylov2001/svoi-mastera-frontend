@@ -281,7 +281,7 @@ export default function WorkerDealsPage() {
                   {actionId === detail.id ? '⏳ Принимаем…' : '✅ Принять заказ'}
                 </button>
                 <button className="wd-btn-full-outline" onClick={() => navigate(`/chat/${detail.customerId}`)}>
-                  💬 Уточнить детали
+                  Уточнить детали
                 </button>
                 <button className="wd-btn-full-red" onClick={() => { setCancelNewErr(''); setCancelNewNote(''); setCancelNewOpen(true); }}>
                   Отказаться от заказа
@@ -374,7 +374,7 @@ export default function WorkerDealsPage() {
                 onClick={() => navigate(`/chat/${detail.customerId}`)}
                 className="wd-btn-full-outline"
                 style={{ marginTop:12 }}
-              >💬 Написать заказчику</button>
+              >Написать заказчику</button>
             </div>
 
             {/* My profile */}
@@ -630,7 +630,7 @@ export default function WorkerDealsPage() {
                           type="button"
                           className="wd-btn-outline"
                           onClick={() => navigate(`/chat/${d.customerId}`)}
-                        >💬 Написать</button>
+                        >Написать</button>
                         <div className="wd-actions-divider" />
                         <button
                           type="button"
@@ -659,7 +659,7 @@ export default function WorkerDealsPage() {
                           type="button"
                           className="wd-btn-outline"
                           onClick={() => navigate(`/chat/${d.customerId}`)}
-                        >💬 Написать</button>
+                        >Написать</button>
                       </>)}
                       {isDone && (<>
                         {!d.hasWorkerReview && d.customerId && dealEligibleForReviews(d) && (
@@ -674,7 +674,7 @@ export default function WorkerDealsPage() {
                           type="button"
                           className="wd-btn-outline"
                           onClick={() => navigate(`/chat/${d.customerId}`)}
-                        >💬 Написать</button>
+                        >Написать</button>
                       </>)}
                       {d.status === 'CANCELLED' && (
                         <button
