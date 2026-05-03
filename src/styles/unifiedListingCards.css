@@ -127,10 +127,10 @@
   margin-left: 4px;
 }
 .ml-row-cat {
-  display: block;
-  align-self: stretch;
-  max-width: none;
-  width: 100%;
+  display: inline-block;
+  align-self: flex-start;
+  max-width: 100%;
+  width: auto;
   box-sizing: border-box;
   margin-bottom: 5px;
   font-weight: 700;
@@ -142,6 +142,7 @@
   background: #f1f5f9;
   color: #334155;
   border: 1px solid #e2e8f0;
+  line-height: 1.25;
 }
 .ml-row-desc {
   font-size: 12px;
@@ -210,7 +211,7 @@
   color: #ef4444;
 }
 .ml-row-actions {
-  width: 158px;
+  width: 182px;
   flex-shrink: 0;
   padding: 10px 10px;
   display: flex;
@@ -227,11 +228,20 @@
   border-radius: 5px;
   min-height: 34px;
   font-size: 12px;
-  padding-top: 7px;
-  padding-bottom: 7px;
+  padding: 7px 8px;
+  white-space: nowrap;
 }
-.ml-row-actions .ml-btn-copy {
+.ml-row-actions .ml-btn-copy,
+.ml-row-actions .ml-btn-outline-neutral {
   font-size: 11px;
+  letter-spacing: -0.01em;
+}
+.ml-row-actions .ml-btn-review-customer {
+  white-space: nowrap;
+  font-size: 11px;
+  min-height: 34px;
+  padding: 7px 8px;
+  letter-spacing: -0.01em;
 }
 .ml-row-actions .ml-btn-edit {
   font-weight: 700;
@@ -377,8 +387,10 @@
   letter-spacing: -0.02em;
 }
 .wd-card-cat {
-  display: block;
-  width: 100%;
+  display: inline-block;
+  align-self: flex-start;
+  max-width: 100%;
+  width: auto;
   box-sizing: border-box;
   font-size: 10px;
   font-weight: 700;
@@ -390,6 +402,7 @@
   border-radius: 3px;
   padding: 4px 8px;
   margin-bottom: 5px;
+  line-height: 1.25;
 }
 .wd-card-meta {
   font-size: 11px;
@@ -423,7 +436,7 @@
 }
 
 .wd-card-actions {
-  width: 158px;
+  width: 182px;
   flex-shrink: 0;
   padding: 10px 10px;
   display: flex;
@@ -439,6 +452,22 @@
 .wd-btn-green {
   border-radius: 5px;
   min-height: 34px;
+}
+
+.wd-card-actions .wd-btn-primary,
+.wd-card-actions .wd-btn-outline,
+.wd-card-actions .wd-btn-green,
+.wd-card-actions .wd-btn-danger {
+  white-space: nowrap;
+  padding-left: 8px;
+  padding-right: 8px;
+  font-size: 11px;
+  letter-spacing: -0.01em;
+}
+
+.wd-card-actions .wd-btn-primary,
+.wd-card-actions .wd-btn-green {
+  font-size: 12px;
 }
 
 .wd-empty {

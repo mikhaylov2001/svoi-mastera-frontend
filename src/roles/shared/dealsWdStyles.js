@@ -102,9 +102,11 @@ export const dealsWdCss = `
   .wd-btn-primary:disabled { background: #fca98e; cursor: not-allowed; }
   .wd-card-actions .wd-btn-primary {
     min-height: 34px;
-    padding: 7px 0;
+    padding: 7px 8px;
     font-size: 12px;
     border-radius: 5px;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
   }
   .wd-btn-outline {
     width: 100%; background: #fff; border: 1px solid #d4d4d8; border-radius: 8px;
@@ -114,9 +116,11 @@ export const dealsWdCss = `
   .wd-btn-outline:hover { border-color: #0ea5e9; color: #0ea5e9; background: #f0f9ff; }
   .wd-card-actions .wd-btn-outline {
     min-height: 34px;
-    padding: 6px 0;
+    padding: 6px 8px;
     font-size: 11px;
     border-radius: 5px;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
   }
   .wd-btn-danger {
     width: 100%; background: none; border: none; font-size: 12px;
@@ -133,9 +137,11 @@ export const dealsWdCss = `
   .wd-btn-green:disabled { background: #86efac; cursor: not-allowed; }
   .wd-card-actions .wd-btn-green {
     min-height: 34px;
-    padding: 7px 0;
+    padding: 7px 8px;
     font-size: 12px;
     border-radius: 5px;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
   }
   .wd-actions-divider { height: 1px; background: #ebebeb; margin: 2px 0; }
   .wd-done-label {
