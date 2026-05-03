@@ -366,7 +366,13 @@ export default function WorkerDealsPage() {
                   <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>
                     {[detail.customerName, detail.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
                   </div>
-                  <div style={{ fontSize:12, color:'#22c55e', fontWeight:600 }}>● Активный заказчик</div>
+                  <div style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: detail.status === 'NEW' || detail.status === 'IN_PROGRESS' ? '#22c55e' : '#64748b',
+                  }}>
+                    {detail.status === 'NEW' || detail.status === 'IN_PROGRESS' ? '● Активный заказчик' : '● Заказчик'}
+                  </div>
                 </div>
                 <div style={{ color:'#d1d5db', fontSize:20 }}>›</div>
               </div>
@@ -546,19 +552,38 @@ export default function WorkerDealsPage() {
               ))
             ) : filtered.length === 0 ? (
               <div className="wd-empty">
-                <div style={{ fontSize:52, marginBottom:16 }}>🤝</div>
-                <h3 style={{ fontSize:17, fontWeight:700, color:'#1a1a1a', margin:'0 0 8px' }}>Заказов пока нет</h3>
-                <p style={{ fontSize:14, margin:'0 0 20px' }}>Откликайтесь на заявки — заказы появятся здесь</p>
-                <div style={{ display:'flex', flexWrap:'wrap', gap:10, justifyContent:'center', alignItems:'center' }}>
-                  <Link to="/find-work" className="wd-find-btn" style={{ display:'inline-block' }}>Найти работу</Link>
-                  <Link
-                    to="/my-listings"
-                    className="wd-btn-outline"
-                    style={{ width:'auto', padding:'11px 20px', display:'inline-block', textDecoration:'none' }}
-                  >
-                    Мои объявления
-                  </Link>
-                </div>
+                <div style={{ fontSize:52, marginBottom:16 }}>{filter === 'COMPLETED' ? '✅' : '🤝'}</div>
+                {filter === 'COMPLETED' ? (
+                  <>
+                    <h3 style={{ fontSize:17, fontWeight:700, color:'#1a1a1a', margin:'0 0 8px' }}>Нет завершённых сделок</h3>
+                    <p style={{ fontSize:14, margin:'0 0 20px', color:'#64748b', maxWidth:440 }}>
+                      Завершённые заказы появятся здесь после подтверждения вами и заказчиком.
+                    </p>
+                    <button
+                      type="button"
+                      className="wd-find-btn"
+                      style={{ display:'inline-block', border:'none', cursor:'pointer', fontFamily:'inherit' }}
+                      onClick={() => setFilter('ALL')}
+                    >
+                      Все сделки
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h3 style={{ fontSize:17, fontWeight:700, color:'#1a1a1a', margin:'0 0 8px' }}>Заказов пока нет</h3>
+                    <p style={{ fontSize:14, margin:'0 0 20px' }}>Откликайтесь на заявки — заказы появятся здесь</p>
+                    <div style={{ display:'flex', flexWrap:'wrap', gap:10, justifyContent:'center', alignItems:'center' }}>
+                      <Link to="/find-work" className="wd-find-btn" style={{ display:'inline-block' }}>Найти работу</Link>
+                      <Link
+                        to="/my-listings"
+                        className="wd-btn-outline"
+                        style={{ width:'auto', padding:'11px 20px', display:'inline-block', textDecoration:'none' }}
+                      >
+                        Мои объявления
+                      </Link>
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               filtered.map(d => {

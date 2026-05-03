@@ -532,15 +532,34 @@ export default function DealsPage() {
             ))
           ) : filtered.length === 0 ? (
             <div className="wd-empty">
-              <div style={{ fontSize: 52, marginBottom: 16 }}>🤝</div>
-              <h3 style={{ fontSize: 17, fontWeight: 700, color: '#1a1a1a', margin: '0 0 8px' }}>Заказов пока нет</h3>
-              <p style={{ fontSize: 14, margin: '0 0 20px' }}>Примите отклик мастера или найдите мастера в каталоге — сделки появятся здесь</p>
-              {openRequestsHint > 0 && (
-                <div style={{ fontSize: 13, color: '#64748b', margin: '0 0 16px', maxWidth: 420 }}>
-                  У вас <b>{openRequestsHint}</b> заявок без активной сделки — отклики и выбор мастера в разделе «<Link to="/my-requests" style={{ color: '#e8410a', fontWeight: 700 }}>Мои заявки</Link>»
-                </div>
+              <div style={{ fontSize: 52, marginBottom: 16 }}>{filter === 'COMPLETED' ? '✅' : '🤝'}</div>
+              {filter === 'COMPLETED' ? (
+                <>
+                  <h3 style={{ fontSize: 17, fontWeight: 700, color: '#1a1a1a', margin: '0 0 8px' }}>Нет завершённых сделок</h3>
+                  <p style={{ fontSize: 14, margin: '0 0 20px', color: '#64748b', maxWidth: 440 }}>
+                    Завершённые заказы появятся здесь после того, как вы и мастер подтвердите выполнение работы.
+                  </p>
+                  <button
+                    type="button"
+                    className="wd-find-btn"
+                    style={{ display: 'inline-block', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                    onClick={() => setFilter('ALL')}
+                  >
+                    Все сделки
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h3 style={{ fontSize: 17, fontWeight: 700, color: '#1a1a1a', margin: '0 0 8px' }}>Заказов пока нет</h3>
+                  <p style={{ fontSize: 14, margin: '0 0 20px' }}>Примите отклик мастера или найдите мастера в каталоге — сделки появятся здесь</p>
+                  {openRequestsHint > 0 && (
+                    <div style={{ fontSize: 13, color: '#64748b', margin: '0 0 16px', maxWidth: 420 }}>
+                      У вас <b>{openRequestsHint}</b> заявок без активной сделки — отклики и выбор мастера в разделе «<Link to="/my-requests" style={{ color: '#e8410a', fontWeight: 700 }}>Мои заявки</Link>»
+                    </div>
+                  )}
+                  <Link to="/find-master" className="wd-find-btn" style={{ display: 'inline-block' }}>Найти мастера</Link>
+                </>
               )}
-              <Link to="/find-master" className="wd-find-btn" style={{ display: 'inline-block' }}>Найти мастера</Link>
             </div>
           ) : (
             filtered.map(d => {
