@@ -12,7 +12,7 @@ function LegacyApp() {
     let mounted = true;
     Promise.all([
       // @ts-expect-error legacy JS without types
-      import("@/legacy/App.js"),
+      import("@/legacy/App.jsx"),
       import("@/legacy/index.css"),
       import("@/legacy/App.css"),
       import("@/legacy/mobile.css"),
