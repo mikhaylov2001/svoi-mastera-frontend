@@ -12,12 +12,17 @@ function LegacyApp() {
     let mounted = true;
     // Lazy-load on client only — legacy app uses BrowserRouter, localStorage, etc.
     Promise.all([
-      import("@/legacy/App.jsx"),
+      // @ts-expect-error legacy JS module
+      import("@/legacy/App.js"),
+      // @ts-expect-error css
       import("@/legacy/index.css"),
+      // @ts-expect-error css
       import("@/legacy/App.css"),
+      // @ts-expect-error css
       import("@/legacy/mobile.css"),
+      // @ts-expect-error css
       import("@/legacy/styles/unifiedListingCards.css"),
-    ]).then(([mod]) => {
+    ]).then(([mod]: any) => {
       if (mounted) setApp(() => mod.default);
     });
     return () => {
