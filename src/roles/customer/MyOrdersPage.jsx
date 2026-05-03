@@ -14,6 +14,7 @@ import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
+import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -1188,7 +1189,7 @@ export default function MyOrdersPage() {
               </div>
               <div className="ml-detail-price-unit">за работу</div>
               <div className="ml-detail-status-line">{STATUS_LABELS[detail.status] || detail.status}</div>
-              {catNameD && <div style={{marginTop:8}}><span className="ml-tag">{catNameD}</span></div>}
+              {catNameD && <div style={{marginTop:8}}><span className={`ml-tag ${categoryChipToneClass(catNameD)}`}>{catNameD}</span></div>}
             </div>
             {(requestIsEditable(detail) || requestCanRemove(detail) || detail.status === 'OPEN') && (
               <div className="ml-detail-actions-card">
@@ -1446,7 +1447,7 @@ export default function MyOrdersPage() {
                           : <span style={{fontSize:14, fontWeight:600, color:'#64748b'}}>Договорной</span>
                         }
                       </div>
-                      {catName && <span className="ml-row-cat">{catName}</span>}
+                      {catName && <span className={`ml-row-cat ${categoryChipToneClass(catName)}`}>{catName}</span>}
                       {req.description && req.description !== 'Без описания' && (
                         <div className="ml-row-desc">{formatListingOriginDescription('CUSTOMER', req.description)}</div>
                       )}

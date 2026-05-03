@@ -6,6 +6,7 @@ import ReviewForm from '../../components/ReviewForm';
 import DashboardReviewsSection from '../../components/DashboardReviewsSection';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import '../../styles/profileDashboard.css';
+import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
 const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
 
@@ -322,7 +323,7 @@ export default function CustomerProfilePage() {
                                 <span className="pp-dc-m">📅 {fmtCard(deal.createdAt)}</span>
                               )}
                               {deal.category && (
-                                <span className="pp-dc-m">📂 {deal.category}</span>
+                                <span className={`ml-row-cat ${categoryChipToneClass(deal.category)}`}>{deal.category}</span>
                               )}
                             </div>
                             {deal.agreedPrice && (

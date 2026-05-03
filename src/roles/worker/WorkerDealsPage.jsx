@@ -11,6 +11,7 @@ import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
+import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
 const DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 const BACKEND    = 'https://svoi-mastera-backend-mf3h.onrender.com';
@@ -523,7 +524,6 @@ export default function WorkerDealsPage() {
                 key={key}
                 type="button"
                 className={`wd-filter${filter === key ? ' on' : ''}`}
-                style={key === 'NEW' && cnt > 0 && filter !== 'NEW' ? { borderColor:'#f59e0b', color:'#92400e' } : {}}
                 onClick={() => setFilter(key)}
               >
                 {label}
@@ -588,7 +588,7 @@ export default function WorkerDealsPage() {
                       {d.agreedPrice && (
                         <div className="wd-card-price">{Number(d.agreedPrice).toLocaleString('ru-RU')} ₽</div>
                       )}
-                      {d.category && <span className="wd-card-cat">{d.category}</span>}
+                      {d.category && <span className={`wd-card-cat ${categoryChipToneClass(d.category)}`}>{d.category}</span>}
                       <div className="wd-card-meta">
                         <span>{d.customerName || 'Заказчик'}</span>
                         <span>{timeAgo(d.createdAt)}</span>

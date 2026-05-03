@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 
@@ -186,9 +187,8 @@ const css = `
   }
   .pw-card-cat {
     position: absolute; top: 8px; left: 8px;
-    background: rgba(0,0,0,.48); color: #fff;
-    font-size: 11px; font-weight: 600;
-    padding: 2px 8px; border-radius: 4px;
+    font-size: 11px;
+    color: #fff;
   }
   .pw-card-done {
     position: absolute; bottom: 8px; left: 8px;
@@ -530,7 +530,7 @@ export default function PublicWorkerProfilePage() {
                               ? <img src={item.photos[0]} alt={item.title} />
                               : (tab === 'active' ? '🔧' : '🔨')
                             }
-                            {cat && <div className="pw-card-cat">{cat}</div>}
+                            {cat && <div className={`pw-card-cat ${categoryChipToneClass(cat)}`}>{cat}</div>}
                             {tab === 'works' && <div className="pw-card-done">Завершена</div>}
                             <button className="pw-card-heart" onClick={e => e.stopPropagation()}>♡</button>
                           </div>

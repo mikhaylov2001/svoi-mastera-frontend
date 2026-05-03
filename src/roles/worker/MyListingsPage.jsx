@@ -11,6 +11,7 @@ import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { LISTING_ARCHIVED_AFTER_DEAL } from '../../utils/listingArchiveEvents';
+import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
 const API = API_BASE;
 
@@ -1264,7 +1265,7 @@ export default function MyListingsPage() {
                     ? 'В каталоге'
                     : 'Снято с публикации'}
               </div>
-              {detail.category && <div style={{ marginTop: 8 }}><span className="ml-tag">{detail.category}</span></div>}
+              {detail.category && <div style={{ marginTop: 8 }}><span className={`ml-tag ${categoryChipToneClass(detail.category)}`}>{detail.category}</span></div>}
             </div>
             {(showWorkerReviewForListing(detail.id) || !listingLockedAfterDeal(detail)) && (
             <div className="ml-detail-actions-card">
@@ -1429,7 +1430,7 @@ export default function MyListingsPage() {
                       <>{Number(l.price).toLocaleString('ru-RU')} ₽<span className="ml-row-unit">{l.priceUnit}</span></>
                     )}
                   </div>
-                  {l.category && <span className="ml-row-cat">{l.category}</span>}
+                  {l.category && <span className={`ml-row-cat ${categoryChipToneClass(l.category)}`}>{l.category}</span>}
                   {l.description && <div className="ml-row-desc">{l.description}</div>}
                   <div className="ml-row-date">{l.createdAt ? new Date(l.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) : '—'}</div>
                 </div>

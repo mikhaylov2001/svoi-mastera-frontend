@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { acceptListingDeal, recordListingView, getMyDeals, workerStartDeal } from '../../api';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
 import { dealsWdCss } from '../shared/dealsWdStyles';
+import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 
@@ -621,7 +622,9 @@ export default function ListingDetailPage() {
               </div>
             </div>
             <div className="ld-fw-meta">
-              {listing.category && <span>🏷 {listing.category}</span>}
+              {listing.category && (
+                <span className={`ml-row-cat ${categoryChipToneClass(listing.category)}`}>{listing.category}</span>
+              )}
               <span>📍 {listing.address || 'Йошкар-Ола · выезд по договорённости'}</span>
               {listing.createdAt && (
                 <span>

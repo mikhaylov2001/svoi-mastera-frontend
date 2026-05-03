@@ -6,6 +6,7 @@ import ReviewForm from '../../components/ReviewForm';
 import DashboardReviewsSection from '../../components/DashboardReviewsSection';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import '../../styles/profileDashboard.css';
+import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
 const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
 
@@ -370,7 +371,7 @@ export default function WorkerProfilePage() {
                               <div className="pp-dc-title" style={{ fontSize: 16 }}>{l.title}</div>
                               <div className="pp-dc-meta">
                                 <span className="pp-dc-m" style={{ color: '#5b21b6', fontWeight: 700 }}>📢 Объявление в каталоге</span>
-                                {l.category && <span className="pp-dc-m">📂 <strong>{l.category}</strong></span>}
+                                {l.category && <span className={`ml-row-cat ${categoryChipToneClass(l.category)}`}>{l.category}</span>}
                                 {l.createdAt && <span className="pp-dc-m">📅 {fmtCard(l.createdAt)}</span>}
                               </div>
                               {l.price != null && (
@@ -417,7 +418,7 @@ export default function WorkerProfilePage() {
                               <div className="pp-dc-meta">
                                 {custName && <span className="pp-dc-m">👤 <strong>{custName}</strong></span>}
                                 {deal.createdAt && <span className="pp-dc-m">📅 {fmtCard(deal.createdAt)}</span>}
-                                {deal.category && <span className="pp-dc-m">📂 {deal.category}</span>}
+                                {deal.category && <span className={`ml-row-cat ${categoryChipToneClass(deal.category)}`}>{deal.category}</span>}
                           </div>
                               {deal.agreedPrice && (
                                 <div className="pp-dc-price">{Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</div>
@@ -494,7 +495,7 @@ export default function WorkerProfilePage() {
                                 <span className="pp-dc-m">📅 {fmtCard(deal.createdAt)}</span>
                               )}
                               {deal.category && (
-                                <span className="pp-dc-m">📂 {deal.category}</span>
+                                <span className={`ml-row-cat ${categoryChipToneClass(deal.category)}`}>{deal.category}</span>
                               )}
                             </div>
                             {deal.agreedPrice && (

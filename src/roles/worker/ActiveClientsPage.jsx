@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getMyDeals } from '../../api';
 import './ActiveClientsPage.css';
+import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
 const STATUS_MAP = {
   IN_PROGRESS: { label: 'В работе',  emoji: '⚙️',  color: '#f59e0b', bg: '#fef3c7' },
@@ -61,7 +62,7 @@ function DealCard({ deal, navigate }) {
         {/* ── Мета ── */}
         <div className="ac-deal-meta">
           {deal.category && (
-            <span className="ac-meta-chip">
+            <span className={`ac-meta-chip ac-meta-chip-cat ${categoryChipToneClass(deal.category)}`}>
               {CATEGORY_STYLES[deal.category]?.emoji || '📂'} {deal.category}
             </span>
           )}
