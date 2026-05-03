@@ -82,7 +82,7 @@ function compressImage(file) {
 const EMPTY_FORM = { title: '', description: '', budget: '', address: '', city: '', categoryId: '', photos: [] };
 const MAX_DESC = 2000;
 
-/* ══ CSS (identical to MyListingsPage) ══ */
+/* ══ CSS (база общая с «Мои объявления»; полировка списка — только .mo-requests в этом файле) ══ */
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; }
@@ -456,6 +456,163 @@ const css = `
   @keyframes mlsk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
   .ml-sk { background: linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%); background-size: 200% 100%; animation: mlsk 1.4s infinite; border-radius: 6px; }
 
+  /* ── Только «Мои заявки»: доска в духе классифайдов ── */
+  .mo-requests.ml-list-shell {
+    background: #ebebeb;
+  }
+  .mo-requests.ml-list-shell .ml-wrap {
+    padding-bottom: 48px;
+  }
+  .mo-requests .ml-tabs {
+    background: #fff;
+    border: 1px solid #dfe3e8;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 4px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  .mo-requests .ml-tab {
+    border-radius: 6px;
+    padding: 9px 16px;
+    font-size: 13px;
+  }
+  .mo-requests .ml-tab.on {
+    box-shadow: none;
+  }
+  .mo-requests .ml-list {
+    gap: 10px;
+  }
+  .mo-requests .ml-row {
+    border-radius: 8px;
+    border-color: #d8dce3;
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+  }
+  .mo-requests .ml-row:hover {
+    transform: none;
+    border-color: #c5cbd6;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+  }
+  .mo-requests .ml-row:focus-within {
+    border-color: #d8dce3;
+  }
+  .mo-requests .ml-row-img {
+    width: 148px;
+    min-height: 118px;
+    align-self: stretch;
+    background: #e8eaee;
+  }
+  .mo-requests .ml-row-img img,
+  .mo-requests .ml-row-img-ph {
+    min-height: 118px;
+  }
+  .mo-requests .ml-row-body {
+    padding: 14px 18px 12px;
+    justify-content: flex-start;
+  }
+  .mo-requests .ml-row-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+    margin-bottom: 8px;
+    line-height: 1.35;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .mo-requests .ml-row-price {
+    font-size: 17px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 8px;
+    color: #0f172a;
+  }
+  .mo-requests .ml-row-cat {
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: #eef1f5;
+    color: #64748b;
+  }
+  .mo-requests .ml-row-desc {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 6px;
+    -webkit-line-clamp: 2;
+  }
+  .mo-requests .ml-row-date {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+  }
+  .mo-requests .ml-row-stats {
+    margin: 0 -18px -12px;
+    padding: 10px 14px;
+    border-top: 1px solid #eceef1;
+    background: #f4f5f7;
+    border-radius: 0;
+    gap: 14px;
+  }
+  .mo-requests .ml-row-stat-offers:hover {
+    background: rgba(15, 23, 42, 0.06);
+  }
+  .mo-requests .ml-row-actions {
+    width: 172px;
+    padding: 12px 12px;
+    background: #fff;
+    border-left: 1px solid #eceef1;
+    gap: 8px;
+  }
+  .mo-requests .ml-btn-edit {
+    box-shadow: none;
+    font-weight: 600;
+  }
+  .mo-requests .ml-btn-edit:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(232, 65, 10, 0.22);
+  }
+  .mo-requests .ml-btn-copy:hover {
+    border-color: #94a3b8;
+  }
+  .mo-requests .ml-empty {
+    border-radius: 10px;
+    border: 1px solid #dfe3e8;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    background: #fff;
+  }
+
+  .mo-requests.ml-detail {
+    background: #ebebeb;
+  }
+  .mo-requests .ml-detail-gallery {
+    border-radius: 10px;
+    border: 1px solid #dfe3e8;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  .mo-requests .ml-detail-price-card,
+  .mo-requests .ml-detail-actions-card,
+  .mo-requests .ml-detail-offers-card {
+    border-radius: 10px;
+    border: 1px solid #dfe3e8;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  .mo-requests .ml-offer-card {
+    border-radius: 8px;
+    border-color: #e8eaee;
+  }
+  .mo-requests .ml-btn-primary:hover {
+    transform: none;
+  }
+  .mo-requests .ml-detail-nav {
+    border-bottom-color: #e8eaee;
+  }
+
   @media(max-width: 900px) {
     .mlf-wrap { grid-template-columns: 1fr; }
     .mlf-sidebar { position: static; }
@@ -472,6 +629,12 @@ const css = `
     .ml-row-actions { display: none; }
     .mlf-photo-grid { grid-template-columns: repeat(3, 1fr); }
     .mlf-photo-cell.main-photo { grid-column: span 1; grid-row: span 1; }
+  }
+  @media(max-width: 560px) {
+    .mo-requests .ml-row-img { width: 112px; min-height: 104px; }
+    .mo-requests .ml-row-img img,
+    .mo-requests .ml-row-img-ph { min-height: 104px; }
+    .mo-requests .ml-row-body { padding-left: 14px; padding-right: 14px; }
   }
   @media(max-width: 520px) {
     .mlf-sec-grid { grid-template-columns: 1fr; grid-auto-rows: 160px; gap: 8px; }
@@ -1163,7 +1326,7 @@ export default function MyOrdersPage() {
     const catNameD = getCategoryName(detail.categoryId);
     const budget   = detail.budgetTo || detail.budgetFrom;
     return (
-      <div className="ml-detail">
+      <div className="ml-detail mo-requests">
         <style>{css}</style>
         <div className="ml-detail-nav">
           <div style={{maxWidth:1000, margin:'0 auto', padding:'0 20px'}}>
@@ -1416,7 +1579,7 @@ export default function MyOrdersPage() {
 
   // ══ СПИСОК ══
   return (
-    <div className="ml-page ml-list-shell">
+    <div className="ml-page ml-list-shell mo-requests">
       <style>{css}</style>
 
       {/* Hero-баннер */}
