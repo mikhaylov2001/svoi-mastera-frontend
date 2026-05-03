@@ -457,17 +457,16 @@ export default function PublicWorkerProfilePage() {
                 </div>
               )}
               <div className="pw-badge">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1"/>
-                  <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <path d="M8 1.75a3.25 3.25 0 0 0-3.25 3.25c0 2.44 3.25 6 3.25 6s3.25-3.56 3.25-6A3.25 3.25 0 0 0 8 1.75z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+                  <circle cx="8" cy="5" r="1" fill="currentColor"/>
                 </svg>
                 {worker?.city || 'Йошкар-Ола'}
               </div>
               {completedWorks.length >= 1 && (
                 <div className="pw-badge">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1"/>
-                    <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                    <path d="M5 6V4.5A1.5 1.5 0 0 1 6.5 3h3A1.5 1.5 0 0 1 11 4.5V6M3.5 6h9a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
                   </svg>
                   {completedWorks.length}{' '}
                   {completedWorks.length === 1 ? 'сделка завершена' : completedWorks.length < 5 ? 'сделки завершено' : 'сделок завершено'}
