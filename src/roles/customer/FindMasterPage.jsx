@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getCategories, getListings, acceptListingDeal, getMyDeals, cancelPendingDeal } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
@@ -100,6 +100,130 @@ const css = `
     margin: 0 auto;
     padding: 28px 24px 60px;
   }
+  /* ══ Глобальный поиск (?q=) на главной каталога ══ */
+  .fmp-global-search {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 8px 24px 8px;
+  }
+  .fmp-global-search-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .fmp-global-search-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin: 0;
+    flex: 1;
+    min-width: 200px;
+    letter-spacing: -.02em;
+  }
+  .fmp-global-search-clear {
+    border: 1px solid #e8e8e8;
+    background: #fff;
+    border-radius: 10px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #555;
+    font-family: inherit;
+    transition: border-color .15s, color .15s;
+  }
+  .fmp-global-search-clear:hover {
+    border-color: #e8410a;
+    color: #e8410a;
+  }
+  .fmp-global-empty {
+    text-align: center;
+    padding: 36px 22px;
+    color: #777;
+    font-size: 14px;
+    line-height: 1.5;
+    background: #fff;
+    border-radius: 16px;
+    border: 1.5px solid #e8e8e8;
+    margin-bottom: 8px;
+  }
+  .fmp-global-list { margin-bottom: 8px; }
+  .fmp-gcard {
+    background: #fff;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 16px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .fmp-gcard:hover {
+    border-color: rgba(232, 65, 10, 0.35);
+    box-shadow: 0 10px 32px rgba(0,0,0,.08);
+  }
+  .fmp-gcard-photo {
+    aspect-ratio: 4/3;
+    background: #f0f0f0;
+    position: relative;
+    overflow: hidden;
+  }
+  .fmp-gcard-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .fmp-gcard-ph {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #bbb;
+  }
+  .fmp-gcard-body {
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+  }
+  .fmp-gcard-cat {
+    font-size: 11px;
+    font-weight: 700;
+    color: #e8410a;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .fmp-gcard-title {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.25;
+    color: #111;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .fmp-gcard-worker {
+    font-size: 13px;
+    color: #666;
+    font-weight: 600;
+  }
+  .fmp-gcard-price {
+    font-size: 16px;
+    font-weight: 900;
+    color: #1a1a1a;
+    margin-top: auto;
+    padding-top: 4px;
+  }
+
   .fmp-cats-label {
     font-size: 12px;
     font-weight: 700;
@@ -970,11 +1094,47 @@ export default function FindMasterPage() {
 
   useSameRouteRefetch('/find-master', reloadCatalog);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlQ = (searchParams.get('q') || '').trim();
+
+  useEffect(() => {
+    const q = (searchParams.get('q') || '').trim();
+    setSearchInput(q);
+    setSearchTerm(q);
+  }, [searchParams]);
+
+  const globalMatches = useMemo(() => {
+    if (!urlQ) return [];
+    const q = urlQ.toLowerCase();
+    return services
+      .filter(s => {
+        if (s.active === false) return false;
+        return (
+          (s.title || '').toLowerCase().includes(q) ||
+          (s.description || '').toLowerCase().includes(q) ||
+          (s.workerName || '').toLowerCase().includes(q) ||
+          (s.category || '').toLowerCase().includes(q)
+        );
+      })
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  }, [services, urlQ]);
+
   const resetFilters = useCallback(() => {
-    setSearchTerm(''); setSearchInput('');
-    setShowActive(true); setOnlyVerified(false); setOnlyWithPhoto(false);
-    setSortBy('recency'); setPriceMin(''); setPriceMax(''); setRatingMin(0);
-  }, []);
+    setSearchTerm('');
+    setSearchInput('');
+    setShowActive(true);
+    setOnlyVerified(false);
+    setOnlyWithPhoto(false);
+    setSortBy('recency');
+    setPriceMin('');
+    setPriceMax('');
+    setRatingMin(0);
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.delete('q');
+      return next;
+    });
+  }, [setSearchParams]);
 
   const selectedCategory = categories.find(c => c.slug === categorySlug);
 
@@ -1017,6 +1177,72 @@ export default function FindMasterPage() {
           </div>
           </div>
 
+        {urlQ && (
+          <div className="fmp-global-search">
+            <div className="fmp-global-search-bar">
+              <h2 className="fmp-global-search-title">
+                Результаты поиска: «{urlQ}»
+                {!loading && (
+                  <span style={{ fontWeight: 600, fontSize: 14, color: '#888', marginLeft: 10 }}>
+                    · {globalMatches.length}{' '}
+                    {globalMatches.length === 1 ? 'объявление' : globalMatches.length < 5 ? 'объявления' : 'объявлений'}
+                  </span>
+                )}
+              </h2>
+              <button type="button" className="fmp-global-search-clear" onClick={() => setSearchParams({})}>
+                Очистить поиск
+              </button>
+            </div>
+            {loading ? (
+              <div className="fmp-list fmp-global-list">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="fmp-gcard" style={{ pointerEvents: 'none' }}>
+                    <div className="fmp-gcard-photo">
+                      <div className="sk" style={{ height: '100%', minHeight: 160 }} />
+                    </div>
+                    <div className="fmp-gcard-body">
+                      <div className="sk" style={{ height: 12, width: '35%' }} />
+                      <div className="sk" style={{ height: 18, width: '88%', marginTop: 8 }} />
+                      <div className="sk" style={{ height: 14, width: '55%', marginTop: 8 }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : globalMatches.length === 0 ? (
+              <div className="fmp-global-empty">
+                По запросу «{urlQ}» активных объявлений не найдено. Попробуйте другие слова или выберите категорию ниже.
+              </div>
+            ) : (
+              <div className="fmp-list fmp-global-list">
+                {globalMatches.map(s => {
+                  const photos = s.photos || [];
+                  const mainPhoto = photos[0];
+                  return (
+                    <Link key={s.id} to={`/listings/${s.id}`} className="fmp-gcard">
+                      <div className="fmp-gcard-photo">
+                        {mainPhoto ? (
+                          <img src={mainPhoto} alt="" />
+                        ) : (
+                          <div className="fmp-gcard-ph">Нет фото</div>
+                        )}
+                      </div>
+                      <div className="fmp-gcard-body">
+                        {s.category && <span className="fmp-gcard-cat">{s.category}</span>}
+                        <div className="fmp-gcard-title">{s.title || 'Объявление'}</div>
+                        <div className="fmp-gcard-worker">{s.workerName}</div>
+                        <div className="fmp-gcard-price">
+                          {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
+                          {s.priceUnit ? ` ${s.priceUnit}` : ''}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Сетка категорий */}
         <div className="fmp-cats-wrap">
           <div className="fmp-cats-label">Все категории услуг</div>
@@ -1049,7 +1275,7 @@ export default function FindMasterPage() {
                 return (
                   <Link
                     key={cat.id}
-                    to={`/find-master/${cat.slug}`}
+                    to={urlQ ? `/find-master/${cat.slug}?q=${encodeURIComponent(urlQ)}` : `/find-master/${cat.slug}`}
                     className="fmp-cat-card"
                     onMouseEnter={() => setHeroCatSlug(cat.slug)}
                   >

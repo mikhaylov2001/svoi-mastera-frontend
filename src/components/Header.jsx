@@ -157,7 +157,7 @@ function Header() {
     e.preventDefault();
     const q = searchTerm.trim();
     if (!q) return;
-    navigate(`/services?q=${encodeURIComponent(q)}`);
+    navigate(`/find-master?q=${encodeURIComponent(q)}`);
     setSearchTerm('');
     setMobileMenuOpen(false);
   };
