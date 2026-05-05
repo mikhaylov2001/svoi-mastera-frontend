@@ -556,24 +556,20 @@
 
 .pp-right { display: grid; gap: 12px; align-content: start; }
 
-/* Блок «Совет» — как 2-й референс: бронза сверху справа → #121212 снизу слева, зерно, ореол */
+/* Блок «Совет» — та же палитра и приёмы, что у hero на главной (HomePage: --dark + glow #e8410a + noise) */
 .pp-pcard {
-  border-radius: 30px;
-  padding: 28px 28px 30px 30px;
+  border-radius: 20px;
+  padding: 24px 24px 26px;
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  color: #ffffff;
-  border: 1px solid rgba(255, 140, 90, 0.55);
-  background: linear-gradient(to bottom left, #2b1b15 0%, #1c1512 38%, #121212 100%);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0d0d0d;
   box-shadow:
-    0 0 0 1px rgba(255, 160, 100, 0.22),
-    14px 20px 48px rgba(120, 55, 30, 0.28),
-    8px 12px 32px rgba(255, 127, 80, 0.14),
-    0 6px 20px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 195, 150, 0.12),
-    inset -28px -18px 40px rgba(251, 146, 80, 0.09),
-    inset 18px 14px 36px rgba(0, 0, 0, 0.15);
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 0 48px rgba(232, 65, 10, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 .pp-pcard::before {
   content: '';
@@ -581,41 +577,38 @@
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.42;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.065) 0.45px, transparent 0.45px);
-  background-size: 3px 3px;
   border-radius: inherit;
+  opacity: 0.4;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
 }
 .pp-pcard::after {
   content: '';
   position: absolute;
-  inset: 0;
+  top: -35%;
+  right: -25%;
+  width: min(120%, 420px);
+  height: min(120%, 420px);
   pointer-events: none;
   z-index: 0;
-  border-radius: inherit;
-  background: radial-gradient(
-    120% 90% at 100% 0%,
-    rgba(245, 160, 100, 0.14) 0%,
-    transparent 55%
-  );
-  mix-blend-mode: soft-light;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(232, 65, 10, 0.38) 0%, transparent 68%);
 }
 .pp-pcard-tag {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: #fdbb84;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #ff8055;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   position: relative;
   z-index: 2;
-  text-shadow: 0 0 20px rgba(253, 186, 116, 0.38);
+  text-shadow: 0 0 28px rgba(232, 65, 10, 0.55);
 }
 .pp-pcard-q {
   font-size: 14px;
   font-weight: 500;
-  color: #ffffff;
-  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.55;
   margin-bottom: 20px;
   position: relative;
   z-index: 2;
@@ -626,24 +619,20 @@
   gap: 8px;
   position: relative;
   z-index: 2;
-  border-radius: 19px;
-  padding: 12px 24px;
-  font-size: 13px;
-  font-weight: 700;
+  border-radius: 12px;
+  padding: 13px 26px;
+  font-size: 14px;
+  font-weight: 800;
   color: #fff;
   text-decoration: none;
-  border: 1px solid rgba(230, 130, 90, 0.45);
-  background: #d36b46;
-  box-shadow:
-    0 3px 10px rgba(0, 0, 0, 0.35),
-    0 1px 0 rgba(255, 255, 255, 0.12) inset;
-  transition: filter 0.15s, box-shadow 0.15s, transform 0.15s;
+  border: none;
+  background: #e8410a;
+  box-shadow: 0 8px 24px rgba(232, 65, 10, 0.35);
+  transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 .pp-pcard-btn:hover {
-  filter: brightness(1.06);
-  box-shadow:
-    0 5px 16px rgba(0, 0, 0, 0.38),
-    0 0 24px rgba(211, 107, 70, 0.35);
+  background: #d03a09;
+  box-shadow: 0 12px 32px rgba(232, 65, 10, 0.45);
   transform: translateY(-1px);
 }
 
