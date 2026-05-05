@@ -216,8 +216,8 @@ export default function WorkerProfilePage() {
           </div>
 
           <div className="pp-hero-txt">
-            <div className="pp-hero-name">{fullName}</div>
             <div className="pp-hero-role">Личный кабинет мастера</div>
+            <div className="pp-hero-name">{fullName}</div>
             <div className="pp-hero-meta">
               <div className="pp-hero-meta-badges">
                 <span className="pp-hero-badge pp-hero-badge--role">Мастер</span>
