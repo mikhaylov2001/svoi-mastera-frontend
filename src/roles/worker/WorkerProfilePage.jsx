@@ -292,10 +292,6 @@ export default function WorkerProfilePage() {
               </Link>
             </div>
 
-            <p className="pp-act-catalog-link">
-              <Link to="/my-listings">Объявления в каталоге — редактировать и публиковать</Link>
-            </p>
-
             <DashboardReviewsSection reviews={reviews} aboutTarget="worker" />
 
             <div className="pp-deals">

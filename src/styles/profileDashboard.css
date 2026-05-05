@@ -153,22 +153,6 @@ button.pp-pill-link:hover {
 .pp-act-sub { font-size: 12px; opacity: .65; line-height: 1.4; margin-top: auto; }
 .pp-act.accent .pp-act-sub { opacity: .88; }
 
-.pp-act-catalog-link {
-  margin: -4px 0 18px;
-  font-size: 13px;
-  font-weight: 600;
-}
-.pp-act-catalog-link a {
-  color: #64748b;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(100, 116, 139, 0.35);
-  transition: color .15s, border-color .15s;
-}
-.pp-act-catalog-link a:hover {
-  color: #e8410a;
-  border-bottom-color: rgba(232, 65, 10, 0.45);
-}
-
 .pp-deals {
   background: #fff; border: 1.5px solid #dde5f6; border-radius: 22px;
   box-shadow: 0 2px 14px rgba(10,15,30,.05); overflow: hidden;
