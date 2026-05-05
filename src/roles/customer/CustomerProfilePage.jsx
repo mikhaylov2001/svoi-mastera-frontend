@@ -336,7 +336,7 @@ export default function CustomerProfilePage() {
                           <div className="pp-rv">
                             {reviewFor === deal.id
                               ? <ReviewForm dealId={deal.id} onSuccess={() => { setReviewFor(null); reloadDeals(); }} />
-                              : <button className="pp-rv-btn" onClick={() => setReviewFor(deal.id)}>⭐ Оставить отзыв о мастере</button>
+                              : <button className="pp-rv-btn" onClick={() => setReviewFor(deal.id)}>Оставить отзыв о мастере</button>
                             }
                           </div>
                         )}

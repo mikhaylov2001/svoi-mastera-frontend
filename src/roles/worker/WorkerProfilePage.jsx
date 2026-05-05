@@ -235,10 +235,10 @@ export default function WorkerProfilePage() {
               {profile && !profile.verified && profile.verificationStatus === 'REJECTED' && (
                 <span className="pp-pill" style={{ background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' }}>Верификация отклонена</span>
               )}
-              {cityLabel && <span className="pp-pill pp-pill-w">📍 {cityLabel}</span>}
+              {cityLabel && <span className="pp-pill pp-pill-w">{cityLabel}</span>}
               {since && <span className="pp-pill pp-pill-w">С {since}</span>}
               <button type="button" className="pp-pill pp-pill-w pp-pill-link" onClick={scrollToDashboardReviews}>
-                ⭐ {avgRatingDisplay} · {reviewsCountLabel}
+                Рейтинг {avgRatingDisplay} · {reviewsCountLabel}
               </button>
             </div>
           </div>
@@ -433,7 +433,7 @@ export default function WorkerProfilePage() {
                                 />
                               ) : (
                                 <button type="button" className="pp-rv-btn" onClick={() => setReviewFor(deal.id)}>
-                                  ⭐ Оставить отзыв о заказчике
+                                  Оставить отзыв о заказчике
                                 </button>
                               )}
                             </div>
@@ -513,7 +513,7 @@ export default function WorkerProfilePage() {
                               />
                             ) : (
                               <button type="button" className="pp-rv-btn" onClick={() => setReviewFor(deal.id)}>
-                                ⭐ Оставить отзыв о заказчике
+                                Оставить отзыв о заказчике
                               </button>
                             )}
                         </div>
