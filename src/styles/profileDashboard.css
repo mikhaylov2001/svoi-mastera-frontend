@@ -556,26 +556,24 @@
 
 .pp-right { display: grid; gap: 12px; align-content: start; }
 
-/* Блок «Совет» — тёмная карточка с оранжевым неоном (как референс) */
+/* Блок «Совет» — как 2-й референс: бронза сверху справа → #121212 снизу слева, зерно, ореол */
 .pp-pcard {
-  border-radius: 18px;
-  padding: 22px 22px 24px 24px;
+  border-radius: 30px;
+  padding: 28px 28px 30px 30px;
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  color: #fafaf9;
-  border: 1px solid rgba(253, 186, 116, 0.4);
-  background:
-    linear-gradient(90deg, rgba(253, 186, 116, 0.2) 0%, rgba(251, 146, 60, 0.05) 8px, transparent 22px),
-    radial-gradient(ellipse 100% 85% at 92% -20%, rgba(230, 93, 46, 0.45) 0%, transparent 58%),
-    radial-gradient(ellipse 60% 55% at -8% 105%, rgba(120, 53, 15, 0.35) 0%, transparent 52%),
-    linear-gradient(152deg, #0d0c0b 0%, #141210 28%, #1c1814 55%, #251c16 78%, #2f2318 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 140, 90, 0.55);
+  background: linear-gradient(to bottom left, #2b1b15 0%, #1c1512 38%, #121212 100%);
   box-shadow:
-    0 0 0 1px rgba(251, 146, 60, 0.18),
-    0 0 32px rgba(251, 146, 60, 0.32),
-    0 0 56px rgba(234, 88, 12, 0.12),
-    0 14px 42px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 220, 190, 0.14);
+    0 0 0 1px rgba(255, 160, 100, 0.22),
+    14px 20px 48px rgba(120, 55, 30, 0.28),
+    8px 12px 32px rgba(255, 127, 80, 0.14),
+    0 6px 20px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 195, 150, 0.12),
+    inset -28px -18px 40px rgba(251, 146, 80, 0.09),
+    inset 18px 14px 36px rgba(0, 0, 0, 0.15);
 }
 .pp-pcard::before {
   content: '';
@@ -583,9 +581,9 @@
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.5;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 0.55px, transparent 0.55px);
-  background-size: 4px 4px;
+  opacity: 0.42;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.065) 0.45px, transparent 0.45px);
+  background-size: 3px 3px;
   border-radius: inherit;
 }
 .pp-pcard::after {
@@ -595,26 +593,30 @@
   pointer-events: none;
   z-index: 0;
   border-radius: inherit;
-  background: linear-gradient(185deg, rgba(251, 180, 90, 0.1) 0%, transparent 42%);
+  background: radial-gradient(
+    120% 90% at 100% 0%,
+    rgba(245, 160, 100, 0.14) 0%,
+    transparent 55%
+  );
   mix-blend-mode: soft-light;
 }
 .pp-pcard-tag {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  color: #fdbb84;
+  letter-spacing: 0.11em;
+  color: #f5c2a3;
   text-transform: uppercase;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   position: relative;
   z-index: 2;
-  text-shadow: 0 0 20px rgba(253, 186, 116, 0.35);
+  text-shadow: 0 0 18px rgba(245, 194, 163, 0.25);
 }
 .pp-pcard-q {
   font-size: 14px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.94);
-  line-height: 1.6;
-  margin-bottom: 18px;
+  color: #ffffff;
+  line-height: 1.5;
+  margin-bottom: 20px;
   position: relative;
   z-index: 2;
 }
@@ -624,24 +626,24 @@
   gap: 8px;
   position: relative;
   z-index: 2;
-  border-radius: 14px;
-  padding: 12px 22px;
+  border-radius: 19px;
+  padding: 12px 24px;
   font-size: 13px;
   font-weight: 700;
   color: #fff;
   text-decoration: none;
-  border: 1px solid rgba(255, 210, 190, 0.4);
-  background: linear-gradient(180deg, #f07848 0%, #e65d2e 42%, #d54a20 100%);
+  border: 1px solid rgba(230, 130, 90, 0.45);
+  background: #d36b46;
   box-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.28),
-    0 0 28px rgba(230, 93, 46, 0.45);
+    0 3px 10px rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.12) inset;
   transition: filter 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 .pp-pcard-btn:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.06);
   box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.3),
-    0 0 36px rgba(230, 93, 46, 0.55);
+    0 5px 16px rgba(0, 0, 0, 0.38),
+    0 0 24px rgba(211, 107, 70, 0.35);
   transform: translateY(-1px);
 }
 
