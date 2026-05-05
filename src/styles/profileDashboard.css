@@ -556,70 +556,93 @@
 
 .pp-right { display: grid; gap: 12px; align-content: start; }
 
-/* Совет — насыщенный фон в стиле бренда: тёмный слой + оранжевое свечение */
+/* Блок «Совет» — тёмная карточка с оранжевым неоном (как референс) */
 .pp-pcard {
-  border-radius: 10px;
-  padding: 18px 18px 18px 20px;
+  border-radius: 18px;
+  padding: 22px 22px 24px 24px;
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(251, 146, 60, 0.5);
-  border-left: 4px solid #fb923c;
-  box-shadow: 0 10px 36px rgba(124, 45, 18, 0.18);
+  isolation: isolate;
+  color: #fafaf9;
+  border: 1px solid rgba(253, 186, 116, 0.4);
   background:
-    radial-gradient(ellipse 90% 100% at 100% -40%, rgba(251, 146, 60, 0.55) 0%, transparent 58%),
-    radial-gradient(ellipse 55% 70% at -15% 100%, rgba(185, 28, 28, 0.22) 0%, transparent 48%),
-    linear-gradient(152deg, #0c0a09 0%, #1c1917 38%, #292524 72%, #431407 100%);
-  color: #e7e5e4;
+    linear-gradient(90deg, rgba(253, 186, 116, 0.2) 0%, rgba(251, 146, 60, 0.05) 8px, transparent 22px),
+    radial-gradient(ellipse 100% 85% at 92% -20%, rgba(230, 93, 46, 0.45) 0%, transparent 58%),
+    radial-gradient(ellipse 60% 55% at -8% 105%, rgba(120, 53, 15, 0.35) 0%, transparent 52%),
+    linear-gradient(152deg, #0d0c0b 0%, #141210 28%, #1c1814 55%, #251c16 78%, #2f2318 100%);
+  box-shadow:
+    0 0 0 1px rgba(251, 146, 60, 0.18),
+    0 0 32px rgba(251, 146, 60, 0.32),
+    0 0 56px rgba(234, 88, 12, 0.12),
+    0 14px 42px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 220, 190, 0.14);
 }
 .pp-pcard::before {
-  display: block;
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.2;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
-  background-size: 18px 18px;
+  z-index: 0;
+  opacity: 0.5;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 0.55px, transparent 0.55px);
+  background-size: 4px 4px;
+  border-radius: inherit;
+}
+.pp-pcard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(185deg, rgba(251, 180, 90, 0.1) 0%, transparent 42%);
+  mix-blend-mode: soft-light;
 }
 .pp-pcard-tag {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: #fdba74;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #fdbb84;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  text-shadow: 0 0 20px rgba(253, 186, 116, 0.35);
 }
 .pp-pcard-q {
-  font-size: 13px;
-  color: #d6d3d1;
-  line-height: 1.55;
-  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.94);
+  line-height: 1.6;
+  margin-bottom: 18px;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 .pp-pcard-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   position: relative;
-  z-index: 1;
-  background: linear-gradient(135deg, #ff5a1f, #e8410a);
+  z-index: 2;
+  border-radius: 14px;
+  padding: 12px 22px;
+  font-size: 13px;
+  font-weight: 700;
   color: #fff;
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 12px;
-  font-weight: 600;
   text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 16px rgba(232, 65, 10, 0.4);
-  transition: filter 0.12s, box-shadow 0.12s;
+  border: 1px solid rgba(255, 210, 190, 0.4);
+  background: linear-gradient(180deg, #f07848 0%, #e65d2e 42%, #d54a20 100%);
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.28),
+    0 0 28px rgba(230, 93, 46, 0.45);
+  transition: filter 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 .pp-pcard-btn:hover {
-  filter: brightness(1.06);
-  box-shadow: 0 6px 20px rgba(232, 65, 10, 0.5);
-  transform: none;
+  filter: brightness(1.08);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.3),
+    0 0 36px rgba(230, 93, 46, 0.55);
+  transform: translateY(-1px);
 }
 
 .pp-set {
