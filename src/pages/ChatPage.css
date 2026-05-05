@@ -566,7 +566,7 @@
   .cbg-grid   { grid-template-columns: repeat(4,1fr); gap: 6px; }
 
   .cvp { min-width: 160px; }
-  .cimg-wrap, .cimg { max-width: 200px; }
+  .cimg-wrap, .cimg { max-width: min(88vw, 280px); width: auto; height: auto; }
   .cloc { min-width: 180px; max-width: 210px; }
   .cloc-map { height: 110px; }
 }

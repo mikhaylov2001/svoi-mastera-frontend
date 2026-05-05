@@ -73,6 +73,14 @@ const css = `
   }
   .ver-opt:hover { border-color: #fdba74; background: #fffbeb; }
   .ver-opt.ver-opt-on { border-color: #e8410a; background: #fff7ed; box-shadow: 0 0 0 1px rgba(232,65,10,.15); }
+  @media (max-width: 768px) {
+    .ver-page { padding: 14px max(12px, env(safe-area-inset-left)) 56px max(12px, env(safe-area-inset-right)); }
+    .ver-card { padding: 18px 16px 20px; border-radius: 14px; }
+    .ver-h1 { font-size: 20px; }
+    .ver-input { font-size: 16px; padding: 12px 14px; }
+    .ver-btn { min-height: 48px; padding: 12px 18px; font-size: 15px; }
+    .ver-opt { padding: 14px 16px; min-height: 48px; font-size: 15px; }
+  }
 `;
 
 function isReasonableBirthDate(iso) {

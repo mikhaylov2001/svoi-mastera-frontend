@@ -622,6 +622,11 @@
   }
 }
 
+@keyframes headerDropdownInMobile {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ══════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════ */
@@ -629,6 +634,17 @@
   .header-search-wrap { display: none; }
   .header-burger { display: flex; }
   .header-nav    { display: none; }
+  .header-dropdown {
+    left: auto;
+    right: max(10px, env(safe-area-inset-right));
+    transform: none;
+    margin-top: 8px;
+    max-width: min(300px, calc(100vw - 20px));
+    animation: headerDropdownInMobile 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .header-dropdown-profile {
+    padding: 16px 14px 14px;
+  }
 }
 
 @media (max-width: 640px) {

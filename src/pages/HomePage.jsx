@@ -204,9 +204,58 @@ const css = `
   .hp-empty-link { display: inline-flex; align-items: center; gap: 6px; padding: 10px 22px; background: var(--orange); color: #fff; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 800; transition: background .15s; }
   .hp-empty-link:hover { background: #d03a09; }
 
+  /* ══ Главная (гость) — hero: было только inline grid, ломало узкие экраны ══ */
+  .hp-guest-hero-inner {
+    position: relative; z-index: 1; max-width: 1200px; margin: 0 auto;
+    padding: 72px 24px 64px; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center;
+  }
+  .hp-guest-hero-lead { font-size: 16px; color: rgba(255,255,255,.55); line-height: 1.7; margin: 0 0 32px; max-width: 400px; }
+  .hp-guest-hero-actions { display: flex; gap: 12px; align-items: center; margin-bottom: 40px; flex-wrap: wrap; }
+  .hp-guest-hero-stats { display: flex; gap: 28px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,.08); flex-wrap: wrap; }
+  .hp-guest-stat-num { font-size: 22px; font-weight: 900; color: #fff; line-height: 1; }
+  .hp-guest-stat-lbl { font-size: 10px; color: rgba(255,255,255,.38); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+  .hp-guest-photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+
   /* ══ АДАПТИВ ══ */
-  @media(max-width:960px) { .hp-body,.hp-worker-body { grid-template-columns: 1fr; } .hp-side,.hp-worker-side { position:static; } .hp-hero-inner { grid-template-columns: 1fr; } .hp-hero-card { display:none; } }
-  @media(max-width:640px) { .hp-cats-masonry { grid-template-columns: repeat(2,1fr); grid-template-rows: 140px 140px 140px; } .hp-listings-grid { grid-template-columns: 1fr; } .hp-kpi-row { grid-template-columns: repeat(2,1fr); } .hp-actions-grid { grid-template-columns: repeat(2,1fr); } .hp-hero-h1 { font-size: 34px; } .hp-worker-hero-inner { flex-direction: column; align-items: flex-start; } }
+  @media(max-width:960px) {
+    .hp-body,.hp-worker-body { grid-template-columns: 1fr; }
+    .hp-side,.hp-worker-side { position:static; }
+    .hp-hero-inner { grid-template-columns: 1fr; }
+    .hp-hero-card { display:none; }
+    .hp-guest-hero-inner { grid-template-columns: 1fr; gap: 36px; padding: 48px 22px 44px; }
+    .hp-guest-photo-grid { max-width: 440px; justify-self: center; }
+    .hp-search-inner { flex-wrap: wrap; padding: 0 max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left)); }
+    .hp-loc { white-space: normal; }
+  }
+  @media(max-width:768px) {
+    .hp-hero-inner { padding: 40px 18px 36px; }
+    .hp-hero-h1 { font-size: clamp(28px, 7vw, 42px); letter-spacing: -1px; }
+    .hp-hero-actions { flex-direction: column; align-items: stretch; }
+    .hp-hero-actions .hp-hero-btn, .hp-hero-actions .hp-hero-btn-ghost { width: 100%; justify-content: center; min-height: 48px; }
+    .hp-hero-stats { flex-wrap: wrap; gap: 16px 24px; }
+    .hp-body, .hp-worker-body { padding: 20px 16px 56px; gap: 18px; }
+    .hp-cats-masonry { grid-template-columns: repeat(2, 1fr); grid-template-rows: auto; min-height: 0; }
+    .hp-cats-masonry .hp-cat-big { grid-row: span 1; }
+    .hp-worker-hero-btns { flex-wrap: wrap; width: 100%; }
+    .hp-worker-btn-fill, .hp-worker-btn-line { flex: 1; min-width: 140px; justify-content: center; }
+  }
+  @media(max-width:640px) {
+    .hp-cats-masonry { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, minmax(120px, 28vw)); }
+    .hp-listings-grid { grid-template-columns: 1fr; }
+    .hp-kpi-row { grid-template-columns: 1fr; }
+    .hp-actions-grid { grid-template-columns: 1fr; }
+    .hp-hero-h1 { font-size: clamp(26px, 8vw, 34px); }
+    .hp-worker-hero-inner { flex-direction: column; align-items: flex-start; }
+    .hp-guest-hero-inner { padding: 32px max(14px, env(safe-area-inset-left)) 28px max(14px, env(safe-area-inset-right)); gap: 24px; }
+    .hp-guest-hero-lead { max-width: none; }
+    .hp-guest-hero-actions { flex-direction: column; width: 100%; }
+    .hp-guest-hero-actions .hp-hero-btn, .hp-guest-hero-actions .hp-hero-btn-ghost { width: 100%; justify-content: center; min-height: 48px; }
+    .hp-guest-photo-grid { max-width: none; gap: 6px; }
+  }
+  @media(max-width:400px) {
+    .hp-cats-masonry { grid-template-columns: 1fr; grid-template-rows: none; }
+    .hp-cats-masonry .hp-cat-big { grid-column: span 1; min-height: 140px; }
+  }
 `;
 
 function CustomerHome({ userId, userName }) {
@@ -561,7 +610,23 @@ function GuestHome() {
     .g-cta-sub { font-size: 15px; color: rgba(255,255,255,.65); margin: 0; }
     .g-cta-btn { background: #fff; border: none; border-radius: 10px; color: #e8410a; font-size: 15px; font-weight: 800; padding: 14px 32px; cursor: pointer; white-space: nowrap; font-family: Manrope,Arial,sans-serif; transition: background .15s; flex-shrink: 0; }
     .g-cta-btn:hover { background: #fff3f0; }
-    @media(max-width:768px) { .g-how-grid,.g-benefits-grid,.g-reviews-grid { grid-template-columns: 1fr; } .g-cta { flex-direction: column; } }
+    .g-cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+    @media(max-width:768px) {
+      .g-how-grid,.g-benefits-grid,.g-reviews-grid { grid-template-columns: 1fr; }
+      .g-cta { flex-direction: column; align-items: stretch; text-align: center; }
+      .g-cta-btn { width: 100%; white-space: normal; }
+      .g-wrap { padding: 0 max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right)); }
+      .g-section { padding: 44px 0; }
+      .g-title { font-size: 26px; }
+      .g-cat-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+    }
+    @media(max-width:480px) {
+      .g-section { padding: 32px 0; }
+      .g-title { font-size: 22px; }
+      .g-sub { font-size: 14px; margin-bottom: 28px; }
+      .g-cat-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .g-cta { padding: 28px 18px !important; border-radius: 16px; }
+    }
   `;
 
   return (
@@ -574,34 +639,34 @@ function GuestHome() {
         <div className="hp-hero-noise"/><div className="hp-hero-glow"/>
         <div style={{position:'absolute',top:'-80px',left:'-80px',width:400,height:400,borderRadius:'50%',border:'1px solid rgba(232,65,10,.1)',pointerEvents:'none'}}/>
 
-        <div style={{position:'relative',zIndex:1,maxWidth:1200,margin:'0 auto',padding:'72px 24px 64px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:56,alignItems:'center'}}>
+        <div className="hp-guest-hero-inner">
           {/* Левая — текст */}
           <div>
             <div className="hp-hero-eyebrow" style={{marginBottom:24}}><span className="hp-hero-dot"/>Йошкар-Ола · Проверенные мастера рядом</div>
-            <h1 className="hp-hero-h1" style={{fontSize:52,marginBottom:20,lineHeight:1.06}}>
+            <h1 className="hp-hero-h1" style={{marginBottom:20,lineHeight:1.06}}>
               Найдите мастера<br/>
               в <em>Йошкар-Оле</em><br/>
               рядом с вами
             </h1>
-            <p style={{fontSize:16,color:'rgba(255,255,255,.55)',lineHeight:1.7,margin:'0 0 32px',maxWidth:400}}>
+            <p className="hp-guest-hero-lead">
               Опишите задачу — мастера откликнутся сами. Выбирайте по рейтингу, договаривайтесь внутри сервиса.
             </p>
-            <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:40}}>
+            <div className="hp-guest-hero-actions">
               <Link to="/register" className="hp-hero-btn">🔍 Найти мастера</Link>
               <Link to="/register?role=WORKER" className="hp-hero-btn-ghost">Стать мастером →</Link>
             </div>
-            <div style={{display:'flex',gap:28,paddingTop:28,borderTop:'1px solid rgba(255,255,255,.08)'}}>
+            <div className="hp-guest-hero-stats">
               {[['24/7','Приём заявок'],['9','Категорий'],['5.0★','Рейтинг']].map(([n,l])=>(
                 <div key={l}>
-                  <div style={{fontSize:22,fontWeight:900,color:'#fff',lineHeight:1}}>{n}</div>
-                  <div style={{fontSize:10,color:'rgba(255,255,255,.38)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.05em',marginTop:4}}>{l}</div>
+                  <div className="hp-guest-stat-num">{n}</div>
+                  <div className="hp-guest-stat-lbl">{l}</div>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Правая — сетка 3×3 с реальными фото */}
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+          <div className="hp-guest-photo-grid">
             {ALL_CATS.slice(0,9).map(cat=>(
               <Link key={cat.slug} to="/register"
                 style={{borderRadius:12,overflow:'hidden',textDecoration:'none',color:'#fff',position:'relative',aspectRatio:'1',display:'flex',alignItems:'flex-end',transition:'transform .2s,box-shadow .2s'}}
@@ -653,7 +718,7 @@ function GuestHome() {
             </div>
             <Link to="/register" style={{fontSize:13,color:'#e8410a',fontWeight:700,textDecoration:'none'}}>Все категории →</Link>
           </div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:12}}>
+          <div className="g-cat-grid">
             {ALL_CATS.map(cat=>(
               <Link key={cat.slug} to="/register"
                 style={{borderRadius:12,overflow:'hidden',textDecoration:'none',color:'#fff',position:'relative',aspectRatio:'4/3',display:'flex',flexDirection:'column',justifyContent:'flex-end',transition:'transform .18s, box-shadow .18s'}}

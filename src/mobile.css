@@ -274,3 +274,46 @@ input, textarea, select {
   .ac-filters::-webkit-scrollbar,
   .dpage-filters::-webkit-scrollbar { display: none; }
 }
+
+/* ═══════════════════════════════════════════════
+   Планшет 769–1024: ЛК, контейнер (десктоп не меняем)
+═══════════════════════════════════════════════ */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .pp-layout {
+    grid-template-columns: 1fr !important;
+    gap: 18px;
+  }
+  .pp-right {
+    grid-template-columns: repeat(2, 1fr);
+    align-items: start;
+  }
+  .container {
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   Универсально (мобила): без горизонтального скролла, фото в пределах экрана
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .app-main {
+    overflow-x: clip;
+    max-width: 100%;
+  }
+  .app-main img {
+    max-width: 100%;
+  }
+  .pp-wrap {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+  .pw-page {
+    box-sizing: border-box;
+  }
+  .pw-wrap {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+  }
+}
