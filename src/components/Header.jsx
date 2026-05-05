@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUnreadCount, getListings } from '../api';
+import { rankItemsBySmartMatch, listingHaystack } from '../utils/smartSearch';
 import { dispatchSameRouteRefetch, isSameNavDest } from '../utils/sameRouteRefetch';
 import './Header.css';
 
@@ -186,17 +187,8 @@ function Header() {
 
   const headerSearchMatches = useMemo(() => {
     if (!debouncedQ || debouncedQ.length < 2) return [];
-    const q = debouncedQ.toLowerCase();
-    return searchListings
-      .filter(s => s.active !== false)
-      .filter(s =>
-        (s.title || '').toLowerCase().includes(q) ||
-        (s.description || '').toLowerCase().includes(q) ||
-        (s.workerName || '').toLowerCase().includes(q) ||
-        (s.category || '').toLowerCase().includes(q)
-      )
-      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
-      .slice(0, 8);
+    const pool = searchListings.filter((s) => s.active !== false);
+    return rankItemsBySmartMatch(pool, debouncedQ, listingHaystack, { limit: 8 });
   }, [searchListings, debouncedQ]);
 
   const showSearchDropdown = searchFocused && debouncedQ.length >= 2;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -8,6 +8,7 @@ import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
 import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
+import { smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
@@ -274,6 +275,102 @@ const fw2css = `
     flex-shrink: 0;
   }
   .fw2-topbar-btn:hover { background: #c73208; }
+
+  .fw2-search-dd-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+  .fw2-search-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    box-shadow: 0 16px 48px rgba(15, 23, 42, 0.12);
+    max-height: min(400px, 65vh);
+    overflow-y: auto;
+    z-index: 100;
+  }
+  .fw2-search-hint {
+    padding: 14px;
+    font-size: 13px;
+    color: #777;
+    line-height: 1.45;
+  }
+  .fw2-search-hit {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px;
+    text-align: left;
+    width: 100%;
+    border: none;
+    background: #fff;
+    cursor: pointer;
+    font-family: Inter, sans-serif;
+    color: inherit;
+    border-top: 1px solid #f0f0f0;
+    transition: background 0.12s;
+  }
+  .fw2-search-hit:first-of-type { border-top: none; }
+  .fw2-search-hit:hover { background: #fafafa; }
+  .fw2-search-hit-ph {
+    width: 46px;
+    height: 46px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f0f0f0;
+    flex-shrink: 0;
+  }
+  .fw2-search-hit-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fw2-search-hit-ph span {
+    font-size: 9px;
+    font-weight: 600;
+    color: #bbb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 2px;
+  }
+  .fw2-search-hit-body { flex: 1; min-width: 0; text-align: left; }
+  .fw2-search-hit-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .fw2-search-hit-meta {
+    font-size: 11px;
+    color: #888;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fw2-search-footer {
+    display: block;
+    width: 100%;
+    padding: 11px 12px;
+    border: none;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #e8410a;
+    cursor: pointer;
+    text-align: center;
+  }
+  .fw2-search-footer:hover { background: #fff5f0; }
 
   /* Хлебные крошки */
   .fw2-breadcrumb {
@@ -945,6 +1042,43 @@ export default function FindWorkPage() {
   const [ratingMin,     setRatingMin]     = useState(0);
   const [customerStats, setCustomerStats] = useState({});
 
+  const [debouncedFwSearch, setDebouncedFwSearch] = useState('');
+  const [fwSearchFocused, setFwSearchFocused] = useState(false);
+  const fwSearchDdRef = useRef(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedFwSearch(searchInput.trim()), 220);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  useEffect(() => {
+    if (!fwSearchFocused) return;
+    const onDoc = (e) => {
+      if (fwSearchDdRef.current && !fwSearchDdRef.current.contains(e.target)) {
+        setFwSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [fwSearchFocused]);
+
+  useEffect(() => {
+    if (!fwSearchFocused) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setFwSearchFocused(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [fwSearchFocused]);
+
+  const fwDdMatches = useMemo(() => {
+    if (!selectedCategory || !debouncedFwSearch || debouncedFwSearch.length < 2) return [];
+    const pool = requests.filter((r) => r.categoryId === selectedCategory.id);
+    return rankItemsBySmartMatch(pool, debouncedFwSearch, jobRequestHaystack, { limit: 8 });
+  }, [requests, selectedCategory, debouncedFwSearch]);
+
+  const showFwSearchDd = fwSearchFocused && debouncedFwSearch.length >= 2;
+
   React.useEffect(() => {
     if (!lightbox) return;
     const handler = (e) => {
@@ -1289,7 +1423,9 @@ export default function FindWorkPage() {
     const catMeta = CAT_ALL[selectedCategory.slug] || {};
     const allCatRequests = getRequestsForCategory(selectedCategory);
 
-    const filtered = allCatRequests
+    const qFw = searchTerm.trim();
+
+    const filteredRaw = allCatRequests
       .filter(req => {
         if (onlyWithPhoto && !(req.photos?.length > 0)) return false;
         if (priceMin) {
@@ -1300,12 +1436,9 @@ export default function FindWorkPage() {
           const p = jobRequestListPrice(req);
           if (p == null || p > Number(priceMax)) return false;
         }
-        if (searchTerm.trim()) {
-          const q = searchTerm.trim().toLowerCase();
-          if (
-            !(req.title || '').toLowerCase().includes(q) &&
-            !(req.description || '').toLowerCase().includes(q)
-          ) return false;
+        if (qFw) {
+          const sc = smartTextMatchScore(jobRequestHaystack(req), qFw);
+          if (sc === null || sc === 0) return false;
         }
         if (ratingMin > 0) {
           const cid = req.customerId;
@@ -1314,8 +1447,11 @@ export default function FindWorkPage() {
           if (avg < ratingMin) return false;
         }
         return true;
-      })
-      .sort((a, b) => {
+      });
+
+    const filtered = qFw
+      ? rankItemsBySmartMatch(filteredRaw, qFw, jobRequestHaystack)
+      : filteredRaw.sort((a, b) => {
         if (sortBy === 'priceAsc') {
           const pa = jobRequestListPrice(a) ?? Infinity;
           const pb = jobRequestListPrice(b) ?? Infinity;
@@ -1343,24 +1479,78 @@ export default function FindWorkPage() {
         {/* Топ-бар поиска */}
         <div className="fw2-topbar">
           <div className="fw2-topbar-inner">
-            <div className="fw2-search-wrap">
-              <svg width="15" height="15" fill="none" stroke="#bbb" strokeWidth="2" viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-              </svg>
-              <input
-                value={searchInput}
-                onChange={e => setSearchInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') setSearchTerm(searchInput); }}
-                placeholder={`Поиск в «${selectedCategory.name}»`}
-              />
-              {searchInput && (
-                <button onClick={() => { setSearchInput(''); setSearchTerm(''); }}
-                  style={{ border:'none', background:'none', cursor:'pointer', color:'#bbb', fontSize:18, lineHeight:1, padding:0 }}>
-                  ×
-                </button>
+            <div className="fw2-search-dd-wrap" ref={fwSearchDdRef}>
+              <div className="fw2-search-wrap">
+                <svg width="15" height="15" fill="none" stroke="#bbb" strokeWidth="2" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input
+                  value={searchInput}
+                  onChange={e => setSearchInput(e.target.value)}
+                  onFocus={() => setFwSearchFocused(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setFwSearchFocused(false);
+                      setSearchTerm(searchInput);
+                    }
+                  }}
+                  placeholder={`Поиск в «${selectedCategory.name}»`}
+                  autoComplete="off"
+                  aria-expanded={showFwSearchDd}
+                  aria-controls="fw2-search-dropdown-list"
+                />
+                {searchInput && (
+                  <button type="button" onClick={() => { setSearchInput(''); setSearchTerm(''); }}
+                    style={{ border:'none', background:'none', cursor:'pointer', color:'#bbb', fontSize:18, lineHeight:1, padding:0 }}>
+                    ×
+                  </button>
+                )}
+              </div>
+              {showFwSearchDd && (
+                <div id="fw2-search-dropdown-list" className="fw2-search-dropdown" role="listbox" aria-label="Подсказки поиска">
+                  {fwDdMatches.length === 0 ? (
+                    <div className="fw2-search-hint">Подходящих заявок не нашлось. Нажмите «Найти», чтобы применить запрос к списку.</div>
+                  ) : (
+                    <>
+                      {fwDdMatches.map((req) => {
+                        const ph = (req.photos || [])[0];
+                        const custLabel = [req.customerName, req.customerLastName].filter(Boolean).join(' ');
+                        return (
+                          <button
+                            key={req.id}
+                            type="button"
+                            className="fw2-search-hit"
+                            onClick={() => {
+                              setFwSearchFocused(false);
+                              openRequestDetail(req);
+                            }}
+                          >
+                            <div className="fw2-search-hit-ph">
+                              {ph ? <img src={ph} alt="" /> : <span>нет фото</span>}
+                            </div>
+                            <div className="fw2-search-hit-body">
+                              <div className="fw2-search-hit-title">{req.title || 'Заявка'}</div>
+                              <div className="fw2-search-hit-meta">{custLabel || 'Заказчик'}</div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        className="fw2-search-footer"
+                        onClick={() => {
+                          setSearchTerm(debouncedFwSearch);
+                          setFwSearchFocused(false);
+                        }}
+                      >
+                        Показать все совпадения в списке →
+                      </button>
+                    </>
+                  )}
+                </div>
               )}
             </div>
-            <button className="fw2-topbar-btn" onClick={() => setSearchTerm(searchInput)}>Найти</button>
+            <button type="button" className="fw2-topbar-btn" onClick={() => { setFwSearchFocused(false); setSearchTerm(searchInput); }}>Найти</button>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getCategories, getListings, acceptListingDeal, getMyDeals, cancelPendingDeal } from '../../api';
 import { useAuth } from '../../context/AuthContext';
@@ -375,6 +375,98 @@ const css = `
     flex-shrink: 0;
   }
   .fmp-topbar-btn:hover { background: #c73208; }
+
+  .fmp-search-dd-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+  .fmp-search-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    box-shadow: 0 16px 48px rgba(15, 23, 42, 0.12);
+    max-height: min(400px, 65vh);
+    overflow-y: auto;
+    z-index: 100;
+  }
+  .fmp-search-hint {
+    padding: 14px;
+    font-size: 13px;
+    color: #777;
+    line-height: 1.45;
+  }
+  .fmp-search-hit {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px;
+    text-decoration: none;
+    color: inherit;
+    border-top: 1px solid #f0f0f0;
+    transition: background 0.12s;
+  }
+  .fmp-search-hit:first-of-type { border-top: none; }
+  .fmp-search-hit:hover { background: #fafafa; }
+  .fmp-search-hit-ph {
+    width: 46px;
+    height: 46px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f0f0f0;
+    flex-shrink: 0;
+  }
+  .fmp-search-hit-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fmp-search-hit-ph span {
+    font-size: 9px;
+    font-weight: 600;
+    color: #bbb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 2px;
+  }
+  .fmp-search-hit-body { flex: 1; min-width: 0; }
+  .fmp-search-hit-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .fmp-search-hit-meta {
+    font-size: 11px;
+    color: #888;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fmp-search-hit-price { font-size: 12px; font-weight: 800; color: #1a1a1a; margin-top: 3px; }
+  .fmp-search-footer {
+    display: block;
+    width: 100%;
+    padding: 11px 12px;
+    border: none;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #e8410a;
+    cursor: pointer;
+    text-align: center;
+  }
+  .fmp-search-footer:hover { background: #fff5f0; }
 
   /* Хлебные крошки */
   .fmp-breadcrumb {
@@ -1004,6 +1096,10 @@ export default function FindMasterPage() {
   /** Подсветка фона hero при наведении на карточку категории (как на «Найти работу») */
   const [heroCatSlug, setHeroCatSlug] = useState(null);
 
+  const [fmpSearchFocused, setFmpSearchFocused] = useState(false);
+  const [debouncedSearchInput, setDebouncedSearchInput] = useState('');
+  const fmpSearchDdRef = useRef(null);
+
   // Строим pendingDeals из реальных сделок бэкенда (listingId → dealId)
   const buildPendingFromDeals = useCallback((deals) => {
     const map = {};
@@ -1056,6 +1152,31 @@ export default function FindMasterPage() {
     }
   }, [userId, pendingDeals, buildPendingFromDeals]);
 
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearchInput(searchInput.trim()), 220);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  useEffect(() => {
+    if (!fmpSearchFocused) return;
+    const onDoc = (e) => {
+      if (fmpSearchDdRef.current && !fmpSearchDdRef.current.contains(e.target)) {
+        setFmpSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [fmpSearchFocused]);
+
+  useEffect(() => {
+    if (!fmpSearchFocused) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setFmpSearchFocused(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [fmpSearchFocused]);
+
   const reloadCatalog = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -1103,20 +1224,26 @@ export default function FindMasterPage() {
     setSearchTerm(q);
   }, [searchParams]);
 
+  const selectedCategory = categories.find(c => c.slug === categorySlug);
+
+  const fmpDdMatches = useMemo(() => {
+    if (!selectedCategory || !debouncedSearchInput || debouncedSearchInput.length < 2) return [];
+    const pool = services.filter((s) => {
+      const catOk =
+        s.category === selectedCategory.name ||
+        s.categoryId === selectedCategory.id ||
+        String(s.categoryId) === String(selectedCategory.id);
+      return catOk && s.active !== false;
+    });
+    return rankItemsBySmartMatch(pool, debouncedSearchInput, listingHaystack, { limit: 8 });
+  }, [services, selectedCategory, debouncedSearchInput]);
+
+  const showFmpSearchDd = fmpSearchFocused && debouncedSearchInput.length >= 2;
+
   const globalMatches = useMemo(() => {
     if (!urlQ) return [];
-    const q = urlQ.toLowerCase();
-    return services
-      .filter(s => {
-        if (s.active === false) return false;
-        return (
-          (s.title || '').toLowerCase().includes(q) ||
-          (s.description || '').toLowerCase().includes(q) ||
-          (s.workerName || '').toLowerCase().includes(q) ||
-          (s.category || '').toLowerCase().includes(q)
-        );
-      })
-      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    const active = services.filter((s) => s.active !== false);
+    return rankItemsBySmartMatch(active, urlQ, listingHaystack);
   }, [services, urlQ]);
 
   const resetFilters = useCallback(() => {
@@ -1135,8 +1262,6 @@ export default function FindMasterPage() {
       return next;
     });
   }, [setSearchParams]);
-
-  const selectedCategory = categories.find(c => c.slug === categorySlug);
 
   /* ══════════════════════════════
      ГЛАВНАЯ — список категорий
@@ -1326,8 +1451,9 @@ export default function FindMasterPage() {
 
   const catMeta = CAT_ALL[categorySlug] || {};
 
-  const visible = services
-    .filter(s => {
+  const qSearch = searchTerm.trim();
+
+  const visibleFiltered = services.filter((s) => {
       const catOk = s.category === selectedCategory?.name || s.categoryId === selectedCategory?.id || String(s.categoryId) === String(selectedCategory?.id);
       if (!catOk) return false;
       if (showActive && !s.active) return false;
@@ -1339,17 +1465,16 @@ export default function FindMasterPage() {
         const st = workerStats[s.workerId];
         if (!st || (st.averageRating || 0) < ratingMin) return false;
       }
-      if (searchTerm.trim()) {
-      const q = searchTerm.trim().toLowerCase();
-        if (
-          !(s.title || '').toLowerCase().includes(q) &&
-          !(s.description || '').toLowerCase().includes(q) &&
-          !(s.workerName || '').toLowerCase().includes(q)
-        ) return false;
+      if (qSearch) {
+        const sc = smartTextMatchScore(listingHaystack(s), qSearch);
+        if (sc === null || sc === 0) return false;
       }
       return true;
-    })
-    .sort((a, b) => {
+    });
+
+  const visible = qSearch
+    ? rankItemsBySmartMatch(visibleFiltered, qSearch, listingHaystack)
+    : [...visibleFiltered].sort((a, b) => {
       if (sortBy === 'priceAsc')  return (a.priceFrom || 0) - (b.priceFrom || 0);
       if (sortBy === 'priceDesc') return (b.priceFrom || 0) - (a.priceFrom || 0);
       if (sortBy === 'rating') {
@@ -1369,24 +1494,78 @@ export default function FindMasterPage() {
       {/* Топ-бар поиска */}
       <div className="fmp-topbar">
         <div className="fmp-topbar-inner">
-          <div className="fmp-search-wrap">
-            <svg width="15" height="15" fill="none" stroke="#bbb" strokeWidth="2" viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-            <input
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') setSearchTerm(searchInput); }}
-              placeholder={`Поиск в «${selectedCategory?.name || '...'}»`}
-            />
-            {searchInput && (
-              <button onClick={() => { setSearchInput(''); setSearchTerm(''); }}
-                style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#bbb', fontSize: 18, lineHeight: 1, padding: 0 }}>
-                ×
-              </button>
+          <div className="fmp-search-dd-wrap" ref={fmpSearchDdRef}>
+            <div className="fmp-search-wrap">
+              <svg width="15" height="15" fill="none" stroke="#bbb" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+                onFocus={() => setFmpSearchFocused(true)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setFmpSearchFocused(false);
+                    setSearchTerm(searchInput);
+                  }
+                }}
+                placeholder={`Поиск в «${selectedCategory?.name || '...'}»`}
+                autoComplete="off"
+                aria-expanded={showFmpSearchDd}
+                aria-controls="fmp-search-dropdown-list"
+              />
+              {searchInput && (
+                <button type="button" onClick={() => { setSearchInput(''); setSearchTerm(''); }}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#bbb', fontSize: 18, lineHeight: 1, padding: 0 }}>
+                  ×
+                </button>
+              )}
+            </div>
+            {showFmpSearchDd && (
+              <div id="fmp-search-dropdown-list" className="fmp-search-dropdown" role="listbox" aria-label="Подсказки поиска">
+                {fmpDdMatches.length === 0 ? (
+                  <div className="fmp-search-hint">В этой категории похожих объявлений не нашлось. Нажмите «Поиск», чтобы применить запрос к списку.</div>
+                ) : (
+                  <>
+                    {fmpDdMatches.map((s) => {
+                      const mainPhoto = (s.photos || [])[0];
+                      return (
+                        <Link
+                          key={s.id}
+                          to={`/listings/${s.id}`}
+                          className="fmp-search-hit"
+                          onClick={() => setFmpSearchFocused(false)}
+                        >
+                          <div className="fmp-search-hit-ph">
+                            {mainPhoto ? <img src={mainPhoto} alt="" /> : <span>нет фото</span>}
+                          </div>
+                          <div className="fmp-search-hit-body">
+                            <div className="fmp-search-hit-title">{s.title || 'Объявление'}</div>
+                            <div className="fmp-search-hit-meta">{s.workerName || ''}</div>
+                            <div className="fmp-search-hit-price">
+                              {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
+                              {s.priceUnit ? ` ${s.priceUnit}` : ''}
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      className="fmp-search-footer"
+                      onClick={() => {
+                        setSearchTerm(debouncedSearchInput);
+                        setFmpSearchFocused(false);
+                      }}
+                    >
+                      Показать все совпадения в списке →
+                    </button>
+                  </>
+                )}
+              </div>
             )}
           </div>
-          <button className="fmp-topbar-btn" onClick={() => setSearchTerm(searchInput)}>Поиск</button>
+          <button type="button" className="fmp-topbar-btn" onClick={() => { setFmpSearchFocused(false); setSearchTerm(searchInput); }}>Поиск</button>
         </div>
       </div>
 
