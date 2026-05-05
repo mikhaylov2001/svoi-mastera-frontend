@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
+import { smartTextMatchScore, listingHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 
 const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
 
