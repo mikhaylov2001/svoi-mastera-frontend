@@ -562,7 +562,17 @@ export default function WorkerProfilePage() {
                   </div>
                   <div className="pp-si-right">
                     <span className="pp-si-badge">
-                      <span className="pp-si-badge-mark" aria-hidden>✓</span>
+                      <span className="pp-si-badge-mark" aria-hidden>
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                          <path
+                            d="M2.75 6.1 5.35 8.7 9.45 3.15"
+                            stroke="currentColor"
+                            strokeWidth="1.9"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
                       Готово
                     </span>
                   </div>
@@ -587,7 +597,17 @@ export default function WorkerProfilePage() {
                     </div>
                     <div className="pp-si-right">
                       <span className="pp-si-badge">
-                        <span className="pp-si-badge-mark" aria-hidden>✓</span>
+                        <span className="pp-si-badge-mark" aria-hidden>
+                          <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                            <path
+                              d="M2.75 6.1 5.35 8.7 9.45 3.15"
+                              stroke="currentColor"
+                              strokeWidth="1.9"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </span>
                         Принято
                       </span>
                     </div>
