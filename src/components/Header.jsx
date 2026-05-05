@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getUnreadCount } from '../api';
+import { getUnreadCount, getListings } from '../api';
 import { dispatchSameRouteRefetch, isSameNavDest } from '../utils/sameRouteRefetch';
 import './Header.css';
 
@@ -41,6 +41,12 @@ function Header() {
   const [menuOpen,       setMenuOpen]       = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm,     setSearchTerm]     = useState('');
+  const [debouncedQ,     setDebouncedQ]     = useState('');
+  const [searchFocused,  setSearchFocused]  = useState(false);
+  const [searchListings, setSearchListings] = useState([]);
+  const [searchCatalogLoaded, setSearchCatalogLoaded] = useState(false);
+  const [searchCatalogLoading, setSearchCatalogLoading] = useState(false);
+  const searchWrapRef = useRef(null);
   const [unread,         setUnread]         = useState(0);
   const [notifCount,     setNotifCount]     = useState(0);
   const [notifOpen,      setNotifOpen]      = useState(false);
@@ -153,16 +159,89 @@ function Header() {
     return `${Math.floor(h / 24)} дн`;
   }
 
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(searchTerm.trim()), 220);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
+
+  const loadSearchCatalog = useCallback(async () => {
+    if (searchCatalogLoaded || searchCatalogLoading) return;
+    setSearchCatalogLoading(true);
+    try {
+      const listings = await getListings();
+      const processed = (listings || []).map(item => ({
+        ...item,
+        workerName: [item.workerName, item.workerLastName].filter(Boolean).join(' ') || 'Мастер',
+        priceFrom: item.price || 0,
+      }));
+      setSearchListings(processed);
+      setSearchCatalogLoaded(true);
+    } catch {
+      setSearchListings([]);
+      setSearchCatalogLoaded(true);
+    } finally {
+      setSearchCatalogLoading(false);
+    }
+  }, [searchCatalogLoaded, searchCatalogLoading]);
+
+  const headerSearchMatches = useMemo(() => {
+    if (!debouncedQ || debouncedQ.length < 2) return [];
+    const q = debouncedQ.toLowerCase();
+    return searchListings
+      .filter(s => s.active !== false)
+      .filter(s =>
+        (s.title || '').toLowerCase().includes(q) ||
+        (s.description || '').toLowerCase().includes(q) ||
+        (s.workerName || '').toLowerCase().includes(q) ||
+        (s.category || '').toLowerCase().includes(q)
+      )
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+      .slice(0, 8);
+  }, [searchListings, debouncedQ]);
+
+  const showSearchDropdown = searchFocused && debouncedQ.length >= 2;
+
+  const listingThumb = (url) => {
+    if (!url) return null;
+    if (url.startsWith('data:') || url.startsWith('http')) return url;
+    const path = url.startsWith('/') ? url : `/${url}`;
+    return `${BACKEND}${path}`;
+  };
+
+  useEffect(() => {
+    if (!searchFocused) return;
+    const onDoc = (e) => {
+      if (searchWrapRef.current && !searchWrapRef.current.contains(e.target)) {
+        setSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [searchFocused]);
+
+  useEffect(() => {
+    if (!searchFocused) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setSearchFocused(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [searchFocused]);
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     const q = searchTerm.trim();
     if (!q) return;
+    setSearchFocused(false);
     navigate(`/find-master?q=${encodeURIComponent(q)}`);
     setSearchTerm('');
     setMobileMenuOpen(false);
   };
 
-  // Закрывать дропдаун при клике вне — через ref
+  const closeSearchUi = () => {
+    setSearchFocused(false);
+    setSearchTerm('');
+  };
 
   const handleLogout = () => {
     logout();
@@ -204,16 +283,98 @@ function Header() {
             <span /><span /><span />
           </button>
 
-          {/* ── SEARCH ── */}
-          <form onSubmit={handleSearchSubmit} className="header-search">
-            <span className="header-search-icon"><SearchIcon /></span>
-            <input
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Найти мастера или услугу…"
-              aria-label="Поиск"
-            />
-          </form>
+          {/* ── SEARCH (подсказки без ухода со страницы) ── */}
+          <div className="header-search-wrap" ref={searchWrapRef}>
+            <form onSubmit={handleSearchSubmit} className="header-search">
+              <span className="header-search-icon"><SearchIcon /></span>
+              <input
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                onFocus={() => {
+                  setSearchFocused(true);
+                  loadSearchCatalog();
+                }}
+                placeholder="Найти мастера или услугу…"
+                aria-label="Поиск"
+                aria-expanded={showSearchDropdown}
+                aria-autocomplete="list"
+                aria-controls="header-search-results"
+                autoComplete="off"
+              />
+            </form>
+            {showSearchDropdown && (
+              <div
+                id="header-search-results"
+                className="header-search-dropdown"
+                role="listbox"
+                aria-label="Результаты поиска"
+              >
+                {!searchCatalogLoaded && searchCatalogLoading ? (
+                  <div className="header-search-hint">Загрузка объявлений…</div>
+                ) : headerSearchMatches.length === 0 ? (
+                  <div className="header-search-hint">
+                    Ничего не найдено.
+                    <button
+                      type="button"
+                      className="header-search-linkish"
+                      onClick={() => {
+                        navigate(`/find-master?q=${encodeURIComponent(debouncedQ)}`);
+                        closeSearchUi();
+                      }}
+                    >
+                      Открыть полный каталог
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {headerSearchMatches.map(s => {
+                      const ph = (s.photos || [])[0];
+                      const src = listingThumb(ph);
+                      return (
+                        <Link
+                          key={s.id}
+                          role="option"
+                          to={`/listings/${s.id}`}
+                          className="header-search-hit"
+                          onClick={() => closeSearchUi()}
+                        >
+                          <div className="header-search-hit-ph">
+                            {src ? (
+                              <img src={src} alt="" />
+                            ) : (
+                              <span className="header-search-hit-ph-empty">нет фото</span>
+                            )}
+                          </div>
+                          <div className="header-search-hit-body">
+                            <div className="header-search-hit-title">{s.title || 'Объявление'}</div>
+                            <div className="header-search-hit-meta">
+                              {[s.workerName, s.category].filter(Boolean).join(' · ')}
+                            </div>
+                            <div className="header-search-hit-price">
+                              {s.priceFrom
+                                ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽`
+                                : 'Договорная'}
+                              {s.priceUnit ? ` ${s.priceUnit}` : ''}
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      className="header-search-footer"
+                      onClick={() => {
+                        navigate(`/find-master?q=${encodeURIComponent(debouncedQ)}`);
+                        closeSearchUi();
+                      }}
+                    >
+                      Все результаты в каталоге →
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* ── NAV ── */}
           <nav className="header-nav">
