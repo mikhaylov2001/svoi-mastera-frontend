@@ -393,10 +393,11 @@ function Header() {
                   tabIndex={0}
                 >
                   <div className="header-avatar">
-                    {fullAvatarUrl
-                      ? <img src={fullAvatarUrl} alt="" style={{width:'100%',height:'100%',borderRadius:'50%',objectFit:'cover'}}/>
-                      : initials
-                    }
+                    {fullAvatarUrl ? (
+                      <img src={fullAvatarUrl} alt="" className="header-avatar-img" />
+                    ) : (
+                      initials
+                    )}
                   </div>
 
                   {menuOpen && (
@@ -409,7 +410,7 @@ function Header() {
                       </div>
                       <div className="header-dropdown-divider" />
                       <Link
-                        to="/profile"
+                        to={userRole === 'WORKER' ? '/worker-profile' : '/profile'}
                         className="header-dropdown-item"
                         onClick={() => setMenuOpen(false)}
                       >
