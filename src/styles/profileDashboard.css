@@ -3,7 +3,9 @@
 .pp {
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #171717;
-  background: #f4f4f5;
+  background:
+    radial-gradient(ellipse 100% 80% at 50% -30%, rgba(251, 146, 60, 0.12) 0%, transparent 55%),
+    linear-gradient(180deg, #fff7ed 0%, #f4f4f5 28%, #f4f4f5 100%);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
@@ -11,13 +13,29 @@
   box-sizing: border-box;
 }
 
-/* Профиль: плотная карточка, границы вместо «облака» теней */
+/* Карточка профиля — светлый фирменный градиент (оранжевый крем как на сайте) */
 .pp-profile-card {
-  background: #ffffff;
+  position: relative;
+  overflow: hidden;
   border-radius: 10px;
-  border: 1px solid #e4e4e7;
-  box-shadow: none;
+  border: 1px solid rgba(234, 88, 12, 0.28);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 12px 40px rgba(234, 88, 12, 0.08);
   margin-bottom: 20px;
+  background:
+    radial-gradient(ellipse 85% 120% at 100% -25%, rgba(255, 138, 76, 0.42) 0%, transparent 58%),
+    radial-gradient(ellipse 65% 90% at -8% 105%, rgba(253, 186, 116, 0.35) 0%, transparent 52%),
+    linear-gradient(168deg, #fffefb 0%, #fff7ed 42%, #ffedd5 100%);
+}
+.pp-profile-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: radial-gradient(rgba(234, 88, 12, 0.09) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
 .pp-hero-atm,
@@ -44,9 +62,12 @@
   height: 72px;
   border-radius: 10px;
   flex-shrink: 0;
-  border: 1px solid #e4e4e7;
-  background: #fafafa;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  background: linear-gradient(145deg, #fed7aa, #fdba74);
   display: flex;
+  box-shadow:
+    0 0 0 1px rgba(234, 88, 12, 0.2),
+    0 6px 20px rgba(234, 88, 12, 0.15);
   align-items: center;
   justify-content: center;
   font-size: 24px;
@@ -59,8 +80,10 @@
   box-shadow: none;
 }
 .pp-ava:hover {
-  border-color: #d4d4d8;
-  background: #f4f4f5;
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow:
+    0 0 0 1px rgba(234, 88, 12, 0.35),
+    0 8px 24px rgba(234, 88, 12, 0.22);
 }
 .pp-ava img {
   position: absolute;
@@ -216,22 +239,22 @@
   font-weight: 600;
   padding: 8px 12px;
   cursor: pointer;
-  border: 1px solid #d4d4d8;
-  background: #ffffff;
-  color: #3f3f46;
+  border: 1px solid rgba(234, 88, 12, 0.35);
+  background: rgba(255, 255, 255, 0.92);
+  color: #431407;
   font-family: inherit;
   text-decoration: none;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 .pp-hbtn:hover {
-  background: #fafafa;
-  border-color: #a1a1aa;
-  color: #18181b;
+  background: #ffffff;
+  border-color: #ea580c;
+  color: #9a3412;
 }
 .pp-hbtn-logout {
-  border-color: #fecaca;
+  border-color: rgba(248, 113, 113, 0.55);
   color: #b91c1c;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.92);
 }
 .pp-hbtn-logout:hover {
   background: #fef2f2;
@@ -517,55 +540,70 @@
 
 .pp-right { display: grid; gap: 12px; align-content: start; }
 
+/* Совет — насыщенный фон в стиле бренда: тёмный слой + оранжевое свечение */
 .pp-pcard {
-  background: #ffffff;
   border-radius: 10px;
-  padding: 18px;
-  color: #3f3f46;
-  border: 1px solid #e4e4e7;
-  border-left: 3px solid #ea580c;
-  box-shadow: none;
-  overflow: visible;
+  padding: 18px 18px 18px 20px;
   position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(251, 146, 60, 0.5);
+  border-left: 4px solid #fb923c;
+  box-shadow: 0 10px 36px rgba(124, 45, 18, 0.18);
+  background:
+    radial-gradient(ellipse 90% 100% at 100% -40%, rgba(251, 146, 60, 0.55) 0%, transparent 58%),
+    radial-gradient(ellipse 55% 70% at -15% 100%, rgba(185, 28, 28, 0.22) 0%, transparent 48%),
+    linear-gradient(152deg, #0c0a09 0%, #1c1917 38%, #292524 72%, #431407 100%);
+  color: #e7e5e4;
 }
 .pp-pcard::before {
-  display: none;
+  display: block;
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.2;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+  background-size: 18px 18px;
 }
 .pp-pcard-tag {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.07em;
-  color: #71717a;
+  letter-spacing: 0.08em;
+  color: #fdba74;
   text-transform: uppercase;
   margin-bottom: 8px;
   position: relative;
+  z-index: 1;
 }
 .pp-pcard-q {
   font-size: 13px;
-  color: #52525b;
-  line-height: 1.5;
+  color: #d6d3d1;
+  line-height: 1.55;
   margin-bottom: 14px;
   position: relative;
+  z-index: 1;
 }
 .pp-pcard-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   position: relative;
-  background: #18181b;
+  z-index: 1;
+  background: linear-gradient(135deg, #ff5a1f, #e8410a);
   color: #fff;
   border-radius: 8px;
   padding: 8px 14px;
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
-  box-shadow: none;
-  transition: background 0.12s;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 16px rgba(232, 65, 10, 0.4);
+  transition: filter 0.12s, box-shadow 0.12s;
 }
 .pp-pcard-btn:hover {
-  background: #27272a;
+  filter: brightness(1.06);
+  box-shadow: 0 6px 20px rgba(232, 65, 10, 0.5);
   transform: none;
-  box-shadow: none;
 }
 
 .pp-set {
