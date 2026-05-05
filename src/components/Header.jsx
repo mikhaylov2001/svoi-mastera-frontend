@@ -401,7 +401,7 @@ function Header() {
                   </div>
 
                   {menuOpen && (
-                    <div className="header-dropdown" style={{top:'100%', marginTop:0, paddingTop:8}}>
+                    <div className="header-dropdown">
                       <div className="header-dropdown-name">
                         {[userName, userLastName].filter(Boolean).join(' ') || 'Профиль'}
                       </div>

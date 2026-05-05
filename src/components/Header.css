@@ -209,18 +209,20 @@
   position: absolute;
   left: 50%;
   right: auto;
-  transform: translateX(-50%);
+  transform: translate(-50%, 0);
   top: 100%;
+  margin-top: 6px;
   background: #fff;
   border: 1px solid var(--gray-200);
   border-radius: var(--r-lg);
   box-shadow: 0 16px 48px rgba(0,0,0,.14);
-  padding: 8px;
-  padding-top: 12px;
-  min-width: 210px;
+  padding: 10px 12px 8px;
+  min-width: 220px;
   max-width: 280px;
-  text-align: center;
-  animation: fadeUp .15s ease both;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: headerDropdownIn .18s ease both;
   z-index: 10;
 }
 
@@ -228,12 +230,14 @@
   font-size: 14px;
   font-weight: 700;
   color: var(--gray-800);
-  padding: 8px 12px 2px;
+  padding: 6px 8px 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  width: 100%;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .header-dropdown-role {
@@ -244,17 +248,21 @@
   color: #c2410c;
   background: rgba(232, 65, 10, 0.12);
   border: 1px solid rgba(232, 65, 10, 0.22);
-  padding: 5px 12px;
-  margin: 0 10px 10px;
+  padding: 6px 14px;
+  margin: 0 0 10px;
   border-radius: 999px;
   text-align: center;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header-dropdown-divider {
   height: 1px;
   background: var(--gray-100);
-  margin: 4px 0;
+  margin: 2px 0 6px;
+  width: 100%;
+  align-self: stretch;
 }
 
 .header-dropdown-item {
@@ -262,6 +270,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  align-self: stretch;
   padding: 9px 12px;
   border-radius: var(--r-sm);
   font-size: 14px;
@@ -367,6 +376,17 @@
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes headerDropdownIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 /* ══════════════════════════════════════
