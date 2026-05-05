@@ -561,7 +561,10 @@ export default function WorkerProfilePage() {
                     <div className="pp-si-d">Профиль проверен — раздел проходить снова не нужно</div>
                   </div>
                   <div className="pp-si-right">
-                    <span className="pp-si-badge">✓ Готово</span>
+                    <span className="pp-si-badge">
+                      <span className="pp-si-badge-mark" aria-hidden>✓</span>
+                      Готово
+                    </span>
                   </div>
                 </div>
               ) : (
@@ -583,7 +586,10 @@ export default function WorkerProfilePage() {
                       <div className="pp-si-d">Заявление о гарантии и ответственности принято</div>
                     </div>
                     <div className="pp-si-right">
-                      <span className="pp-si-badge">✓ Принято</span>
+                      <span className="pp-si-badge">
+                        <span className="pp-si-badge-mark" aria-hidden>✓</span>
+                        Принято
+                      </span>
                     </div>
                   </div>
                 ) : (
