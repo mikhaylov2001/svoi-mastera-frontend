@@ -205,12 +205,9 @@ export default function WorkerProfilePage() {
 
   return (
     <div className="pp">
-      <div className="pp-hero">
-        <div className="pp-hero-ring" />
-        <div className="pp-hero-atm" />
-        <div className="pp-hero-grid" />
-
-        <div className="pp-hero-inner">
+      <div className="pp-wrap">
+        <div className="pp-profile-card">
+          <div className="pp-hero-inner">
           <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onAvatar} />
 
           <div className="pp-ava" onClick={() => fileRef.current?.click()}>
@@ -255,11 +252,8 @@ export default function WorkerProfilePage() {
             </button>
           </div>
         </div>
-      </div>
+        </div>
 
-      <div className="pp-hero-curve" />
-
-      <div className="pp-wrap">
         <div className="pp-layout">
 
           <div>

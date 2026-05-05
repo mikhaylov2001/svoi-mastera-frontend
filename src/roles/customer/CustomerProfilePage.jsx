@@ -159,14 +159,9 @@ export default function CustomerProfilePage() {
 
   return (
     <div className="pp">
-      {/* ══════ HERO ══════ */}
-      <div className="pp-hero">
-        <div className="pp-hero-ring" />
-        <div className="pp-hero-atm" />
-        <div className="pp-hero-grid" />
-
-        {/* Profile row */}
-        <div className="pp-hero-inner">
+      <div className="pp-wrap">
+        <div className="pp-profile-card">
+          <div className="pp-hero-inner">
           <input ref={fileRef} type="file" accept="image/*" style={{ display:'none' }} onChange={onAvatar} />
 
           <div className="pp-ava" onClick={() => fileRef.current?.click()}>
@@ -215,13 +210,8 @@ export default function CustomerProfilePage() {
             </button>
           </div>
         </div>
-      </div>
+        </div>
 
-      {/* curved separator */}
-      <div className="pp-hero-curve" />
-
-      {/* ══════ CONTENT ══════ */}
-      <div className="pp-wrap">
         <div className="pp-layout">
 
           {/* ── LEFT ── */}
