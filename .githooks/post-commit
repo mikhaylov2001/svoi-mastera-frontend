@@ -1,9 +1,7 @@
 #!/bin/sh
-# After each commit: push to tracked upstream (if set). New branches: git push -u origin <branch> once.
-if ! git rev-parse --verify "@{u}" >/dev/null 2>&1; then
-  printf "post-commit: нет upstream для ветки %s — один раз: git push -u origin %s\n" \
-    "$(git rev-parse --abbrev-ref HEAD)" \
-    "$(git rev-parse --abbrev-ref HEAD)"
-  exit 0
+# После каждого коммита — автоматический push (ветка с upstream или первый push -u).
+branch=$(git rev-parse --abbrev-ref HEAD)
+if git rev-parse --verify "@{u}" >/dev/null 2>&1; then
+  exec git push
 fi
-exec git push
+exec git push -u origin "$branch"
