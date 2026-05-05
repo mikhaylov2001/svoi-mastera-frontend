@@ -7,6 +7,7 @@ import DashboardReviewsSection from '../../components/DashboardReviewsSection';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import '../../styles/profileDashboard.css';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
+import { formatMemberSinceRu } from '../../utils/memberSinceRu';
 
 const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
 
@@ -14,10 +15,6 @@ function resolveUrl(url) {
   if (!url) return null;
   if (url.startsWith('data:') || url.startsWith('http')) return url;
   return BACKEND + url;
-}
-function fmtSince(d) {
-  if (!d) return '';
-  return new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
 }
 function fmtCard(d) {
   if (!d) return '';
@@ -137,7 +134,7 @@ export default function WorkerProfilePage() {
     return (first + last).toUpperCase().slice(0, 2);
   }, [userName, lastNameLive]);
   const fullName = [userName, lastNameLive.trim()].filter(Boolean).join(' ') || 'Мастер';
-  const since = fmtSince(profile?.registeredAt || profile?.createdAt);
+  const since = formatMemberSinceRu(profile?.registeredAt || profile?.createdAt);
   const cityLabel = (profile?.city || '').trim();
 
   const avgRatingDisplay = reviews.length > 0
@@ -224,22 +221,28 @@ export default function WorkerProfilePage() {
           <div className="pp-hero-txt">
             <div className="pp-hero-name">{fullName}</div>
             <div className="pp-hero-role">Личный кабинет мастера</div>
-            <div className="pp-hero-pills">
-              <span className="pp-pill pp-pill-o">Мастер</span>
-              {profile?.verified && (
-                <span className="pp-pill pp-pill-g">Проверенный мастер</span>
-              )}
-              {profile && !profile.verified && profile.verificationStatus === 'PENDING' && (
-                <span className="pp-pill" style={{ background: '#fff7ed', color: '#c2410c', border: '1px solid #fdba74' }}>Документы на проверке</span>
-              )}
-              {profile && !profile.verified && profile.verificationStatus === 'REJECTED' && (
-                <span className="pp-pill" style={{ background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' }}>Верификация отклонена</span>
-              )}
-              {cityLabel && <span className="pp-pill pp-pill-w">{cityLabel}</span>}
-              {since && <span className="pp-pill pp-pill-w">С {since}</span>}
-              <button type="button" className="pp-pill pp-pill-w pp-pill-link" onClick={scrollToDashboardReviews}>
-                Рейтинг {avgRatingDisplay} · {reviewsCountLabel}
-              </button>
+            <div className="pp-hero-meta">
+              <div className="pp-hero-meta-badges">
+                <span className="pp-hero-badge pp-hero-badge--role">Мастер</span>
+                {profile?.verified && (
+                  <span className="pp-hero-badge pp-hero-badge--ok">Проверенный мастер</span>
+                )}
+                {profile && !profile.verified && profile.verificationStatus === 'PENDING' && (
+                  <span className="pp-hero-badge pp-hero-badge--pending">Документы на проверке</span>
+                )}
+                {profile && !profile.verified && profile.verificationStatus === 'REJECTED' && (
+                  <span className="pp-hero-badge pp-hero-badge--bad">Верификация отклонена</span>
+                )}
+              </div>
+              <div className="pp-hero-meta-row">
+                {cityLabel && <span className="pp-hero-meta-text">{cityLabel}</span>}
+                {cityLabel && since && <span className="pp-hero-meta-sep" aria-hidden>·</span>}
+                {since && <span className="pp-hero-meta-text">С {since}</span>}
+                {(cityLabel || since) && <span className="pp-hero-meta-sep" aria-hidden>·</span>}
+                <button type="button" className="pp-hero-meta-rating" onClick={scrollToDashboardReviews}>
+                  Рейтинг {avgRatingDisplay} · {reviewsCountLabel}
+                </button>
+              </div>
             </div>
           </div>
 
