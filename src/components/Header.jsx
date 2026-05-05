@@ -555,26 +555,48 @@ function Header() {
 
                   {menuOpen && (
                     <div className="header-dropdown">
-                      <div className="header-dropdown-name">
-                        {[userName, userLastName].filter(Boolean).join(' ') || 'Профиль'}
+                      <div className="header-dropdown-profile">
+                        <div className="header-dropdown-name">
+                          {[userName, userLastName].filter(Boolean).join(' ') || 'Профиль'}
+                        </div>
+                        <span
+                          className={
+                            userRole === 'WORKER'
+                              ? 'header-dropdown-role header-dropdown-role--worker'
+                              : 'header-dropdown-role header-dropdown-role--customer'
+                          }
+                        >
+                          {userRole === 'WORKER' ? 'Мастер' : 'Заказчик'}
+                        </span>
                       </div>
-                      <div className="header-dropdown-role">
-                        {userRole === 'WORKER' ? 'Мастер' : 'Заказчик'}
+                      <div className="header-dropdown-actions">
+                        <Link
+                          to={userRole === 'WORKER' ? '/worker-profile' : '/profile'}
+                          className="header-dropdown-item"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          <span className="header-dropdown-item-icon" aria-hidden>
+                            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeLinecap="round" />
+                              <circle cx="12" cy="7" r="4" />
+                            </svg>
+                          </span>
+                          Мой профиль
+                        </Link>
+                        <button
+                          type="button"
+                          className="header-dropdown-item header-dropdown-logout"
+                          onClick={handleLogout}
+                        >
+                          <span className="header-dropdown-item-icon" aria-hidden>
+                            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+                              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" />
+                              <path d="M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </span>
+                          Выйти
+                        </button>
                       </div>
-                      <div className="header-dropdown-divider" />
-                      <Link
-                        to={userRole === 'WORKER' ? '/worker-profile' : '/profile'}
-                        className="header-dropdown-item"
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        Мой профиль
-                      </Link>
-                      <button
-                        className="header-dropdown-item header-dropdown-logout"
-                        onClick={handleLogout}
-                      >
-                        Выйти
-                      </button>
                     </div>
                   )}
                 </div>
