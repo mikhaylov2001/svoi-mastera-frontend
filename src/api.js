@@ -23,6 +23,7 @@ function getFriendlyMessage(status, endpoint, serverMessage) {
   }
   if (status === 400) return 'Проверьте правильность заполнения.';
   if (status === 401) return 'Войдите в аккаунт.';
+  if (status === 403) return 'Нет доступа: объект занят другим пользователем, закрыт или удалён.';
   if (status === 404) return 'Данные не найдены.';
   if (status >= 500) return 'Ошибка сервера. Попробуйте позже.';
   return 'Что-то пошло не так.';
