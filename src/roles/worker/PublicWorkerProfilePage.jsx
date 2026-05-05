@@ -345,6 +345,10 @@ const css = `
     .pw-layout { grid-template-columns: 1fr; }
     .pw-grid { grid-template-columns: repeat(2, 1fr); }
   }
+  @media(max-width: 768px) {
+    .pw-lb-prev { left: max(8px, env(safe-area-inset-left)); }
+    .pw-lb-next { right: max(8px, env(safe-area-inset-right)); }
+  }
   @media(max-width: 520px) {
     .pw-grid { grid-template-columns: 1fr; }
     .pw-tab { font-size: 14px; margin-right: 18px; }

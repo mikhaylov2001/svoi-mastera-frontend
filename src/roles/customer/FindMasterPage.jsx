@@ -1051,6 +1051,33 @@ const css = `
     .fmp-sidebar { position: static; }
     .fmp-list { grid-template-columns: 1fr 1fr; }
   }
+  @media(max-width: 768px) {
+    .fmp-hero-body {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+      padding-bottom: 28px;
+    }
+    .fmp-cats-wrap {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
+    .fmp-list { grid-template-columns: 1fr; }
+    .fmp-card-actions {
+      flex-direction: column;
+      flex-wrap: nowrap;
+      gap: 8px;
+    }
+    .fmp-btn-accept,
+    .fmp-btn-msg {
+      flex: none;
+      width: 100%;
+      min-height: 46px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
   @media(max-width: 620px) {
     .fmp-list { grid-template-columns: 1fr; }
     .fmp-cats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }

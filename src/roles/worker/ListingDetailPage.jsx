@@ -328,6 +328,25 @@ const css = `
 
   @media(max-width:900px) { .ld-page { grid-template-columns: 1fr; } .ld-right { position: static; } .ld-info-grid { grid-template-columns: 1fr; } .ld-info-row { border-right: none; } .ld-info-row:nth-last-child(-n+2) { border-bottom: 1px solid #ececec; } .ld-info-row:last-child { border-bottom: none; } }
   @media(max-width:580px) { .ld-page { padding: 12px 12px 48px; } .ld-fw-title { font-size: 18px; } .ld-price-big { font-size: 26px; } }
+  @media(max-width:768px) {
+    .ld-bread-inner {
+      padding: 10px max(12px, env(safe-area-inset-left)) 10px max(12px, env(safe-area-inset-right));
+    }
+    .ld-page {
+      padding: 14px max(12px, env(safe-area-inset-left)) 44px max(12px, env(safe-area-inset-right));
+      gap: 14px;
+    }
+    .ld-gallery-main { aspect-ratio: 4/3; }
+    .ld-price-btns .ld-btn-msg,
+    .ld-price-btns .ld-btn-contact,
+    .ld-price-btns .ld-deals-link {
+      width: 100%;
+      justify-content: center;
+      min-height: 46px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+  }
 `;
 
 const TERMINAL_DEAL_STATUSES = ['CANCELLED', 'REFUNDED'];

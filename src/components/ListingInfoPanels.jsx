@@ -59,6 +59,25 @@ const LIP_CSS = `
   .lip-wrap--job .lip-row dt { font-weight: 500; color: #9ca3af; min-width: 90px; }
   .lip-wrap--job .lip-row:last-child { border-bottom: none; }
   .lip-wrap--job .lip-section--job + .lip-section--job .lip-h { margin-bottom: 16px; }
+
+  @media (max-width: 640px) {
+    .lip-section, .lip-section--merged, .lip-section--job {
+      padding: 16px 14px;
+    }
+    .lip-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 12px 0;
+    }
+    .lip-row dt { min-width: 0; }
+    .lip-row dd {
+      text-align: left;
+      max-width: 100%;
+      width: 100%;
+    }
+    .lip-wrap--job .lip-h { font-size: 17px; }
+  }
 `;
 
 /** Убирает из текста блок «⏰ Срочность: …», добавленный при создании заявки */

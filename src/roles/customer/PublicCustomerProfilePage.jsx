@@ -158,6 +158,16 @@ const css = `
   .pw-lb-next { right: -56px; }
 
   @media(max-width:960px) { .pw-layout { grid-template-columns: 1fr; } .pw-grid { grid-template-columns: repeat(2,1fr); } }
+  @media(max-width:768px) {
+    .pw-lb-prev { left: max(8px, env(safe-area-inset-left)); }
+    .pw-lb-next { right: max(8px, env(safe-area-inset-right)); }
+    .pw-modal-overlay { align-items: flex-end; padding: 0; }
+    .pw-modal {
+      max-width: 100%;
+      border-radius: 16px 16px 0 0;
+      padding-bottom: max(28px, env(safe-area-inset-bottom));
+    }
+  }
   @media(max-width:520px) { .pw-grid { grid-template-columns: 1fr; } .pw-tab { font-size: 14px; margin-right: 18px; } }
 `;
 

@@ -283,10 +283,86 @@ export const dealsWdCss = `
     .wd-detail-wrap { grid-template-columns: 1fr; }
     .wd-right { position: static; }
   }
+  @media(max-width:768px) {
+    .wd-hero-body {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 0 max(14px, env(safe-area-inset-left)) 22px max(14px, env(safe-area-inset-right));
+    }
+    .wd-find-btn {
+      white-space: normal;
+      width: 100%;
+      text-align: center;
+      box-sizing: border-box;
+      min-height: 46px;
+      padding: 12px 16px;
+    }
+    .wd-wrap {
+      padding: 0 max(12px, env(safe-area-inset-left)) 48px max(12px, env(safe-area-inset-right));
+    }
+    .wd-page-tabs {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      flex-wrap: wrap;
+    }
+    .wd-page-tab {
+      flex: 1;
+      justify-content: center;
+      min-width: 0;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+    .wd-filters {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 6px;
+      gap: 8px;
+    }
+    .wd-filters::-webkit-scrollbar { display: none; }
+    .wd-filter { flex-shrink: 0; }
+    .wd-modal-bg {
+      align-items: flex-end;
+      padding: 0;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .wd-modal {
+      max-width: 100%;
+      border-radius: 20px 20px 0 0;
+      max-height: min(92vh, 900px);
+      overflow-y: auto;
+      padding: 22px 18px max(22px, env(safe-area-inset-bottom));
+      box-sizing: border-box;
+    }
+    .wd-modal-textarea { font-size: 16px; }
+    .wd-modal-btns { flex-direction: column; gap: 10px; }
+    .wd-modal-cancel, .wd-modal-confirm {
+      flex: none !important;
+      width: 100%;
+      min-height: 48px;
+    }
+    .wd-detail-wrap {
+      padding: 14px max(12px, env(safe-area-inset-left)) 48px max(12px, env(safe-area-inset-right));
+      gap: 14px;
+    }
+    .wd-detail-main { aspect-ratio: 4/3; }
+    .wd-detail-thumb { width: 64px; height: 48px; }
+    .wd-info-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+    .wd-info-row dd { text-align: left; width: 100%; }
+    .wd-btn-full-primary, .wd-btn-full-outline, .wd-btn-full-red, .wd-btn-full-green { min-height: 48px; }
+    .wd-detail-nav .wd-detail-wrap { padding-top: 10px; padding-bottom: 10px; }
+  }
   @media(max-width:720px) {
     .wd-card-actions { display: none; }
   }
   @media(max-width:540px) {
     .wd-page-tabs { flex-wrap: wrap; }
+    .wd-h1 { font-size: 20px; }
   }
 `;

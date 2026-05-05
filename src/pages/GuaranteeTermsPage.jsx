@@ -55,6 +55,15 @@ const css = `
   .gt-err { font-size: 13px; color: #dc2626; font-weight: 600; margin-top: 8px; }
   .gt-ok { font-size: 13px; color: #15803d; font-weight: 600; margin-top: 12px; }
   .gt-muted { font-size: 12px; color: #9ca3af; margin-top: 8px; }
+  @media (max-width: 768px) {
+    .gt-page {
+      padding: 14px max(12px, env(safe-area-inset-left)) 56px max(12px, env(safe-area-inset-right));
+    }
+    .gt-card { padding: 18px 16px 20px; border-radius: 14px; }
+    .gt-h1 { font-size: 19px; }
+    .gt-btn { width: 100%; min-height: 48px; justify-content: center; font-size: 15px; }
+    .gt-section p { font-size: 14px; }
+  }
 `;
 
 const INITIAL_CLAUSES = {

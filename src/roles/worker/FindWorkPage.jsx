@@ -920,6 +920,31 @@ const fw2css = `
     .fw2-sidebar { position: static; }
     .fw2-list { grid-template-columns: 1fr 1fr; }
   }
+  @media(max-width: 768px) {
+    .fw2-hero-body {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+      padding-bottom: 28px;
+    }
+    .fw2-cats-wrap {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
+    .fw2-list { grid-template-columns: 1fr; }
+    .fw2-card-actions {
+      flex-direction: column;
+      gap: 8px;
+    }
+    .fw2-btn-respond,
+    .fw2-btn-msg {
+      width: 100%;
+      min-height: 46px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
   @media(max-width: 620px) {
     .fw2-list { grid-template-columns: 1fr; }
     .fw2-cats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
