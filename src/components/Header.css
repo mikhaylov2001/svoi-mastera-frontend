@@ -318,6 +318,19 @@
   outline: none;
 }
 
+/* «Мостик» под аватаром: пока меню открыто, зазор до дропдауна остаётся в зоне hover */
+.header-user--menu-open::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(300px, calc(100vw - 32px));
+  top: 100%;
+  height: 20px;
+  z-index: 40;
+  pointer-events: auto;
+}
+
 .header-avatar {
   width: 36px;
   height: 36px;
@@ -360,7 +373,7 @@
   right: auto;
   transform: translate(-50%, 0);
   top: 100%;
-  margin-top: 10px;
+  margin-top: 4px;
   background: #fff;
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 16px;

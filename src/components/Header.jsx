@@ -540,7 +540,7 @@ function Header() {
 
             {userId ? (
                 <div
-                  className="header-user"
+                  className={`header-user${menuOpen ? ' header-user--menu-open' : ''}`}
                   onMouseEnter={() => setMenuOpen(true)}
                   onMouseLeave={() => setMenuOpen(false)}
                   tabIndex={0}
