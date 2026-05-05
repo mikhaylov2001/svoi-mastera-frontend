@@ -174,34 +174,34 @@ export default function CustomerProfilePage() {
 
           <div className="pp-ava" onClick={() => fileRef.current?.click()}>
             {avatarUrl ? <img src={avatarUrl} alt="" /> : initials}
-            <div className="pp-ava-ov">{avatarLoading ? '⏳' : '📷'}</div>
-              </div>
+            <div className="pp-ava-ov">{avatarLoading ? 'Загрузка…' : 'Изменить фото'}</div>
+          </div>
 
           <div className="pp-hero-txt">
             <div className="pp-hero-name">{fullName}</div>
             <div className="pp-hero-role">Личный кабинет заказчика</div>
             <div className="pp-hero-pills">
-              <span className="pp-pill pp-pill-o">👤 Заказчик</span>
+              <span className="pp-pill pp-pill-o">Заказчик</span>
               {profile?.verified && (
-                <span className="pp-pill pp-pill-g">✓ Проверенный профиль</span>
+                <span className="pp-pill pp-pill-g">Проверенный профиль</span>
               )}
               {profile && !profile.verified && profile.verificationStatus === 'PENDING' && (
-                <span className="pp-pill" style={{ background: '#fff7ed', color: '#c2410c', border: '1px solid #fdba74' }}>⏳ Документы на проверке</span>
+                <span className="pp-pill" style={{ background: '#fff7ed', color: '#c2410c', border: '1px solid #fdba74' }}>Документы на проверке</span>
               )}
               {profile && !profile.verified && profile.verificationStatus === 'REJECTED' && (
                 <span className="pp-pill" style={{ background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' }}>Верификация отклонена</span>
               )}
-              <span className="pp-pill pp-pill-w">📍 Йошкар-Ола</span>
+              <span className="pp-pill pp-pill-w">Йошкар-Ола</span>
               {since && <span className="pp-pill pp-pill-w">С {since}</span>}
               <button type="button" className="pp-pill pp-pill-w pp-pill-link" onClick={scrollToDashboardReviews}>
-                ⭐ {avgRatingDisplay} · {reviewsCountLabel}
+                Рейтинг {avgRatingDisplay} · {reviewsCountLabel}
               </button>
             </div>
           </div>
 
           <div className="pp-hero-btns">
             <button className="pp-hbtn" onClick={() => fileRef.current?.click()}>
-              {avatarLoading ? '⏳' : avatarUrl ? '📷 Сменить' : '📷 Добавить фото'}
+              {avatarLoading ? 'Загрузка…' : avatarUrl ? 'Изменить фото' : 'Добавить фото'}
             </button>
             <button className="pp-hbtn pp-hbtn-logout" onClick={() => { logout(); navigate('/login'); }}>
               Выйти
@@ -222,36 +222,27 @@ export default function CustomerProfilePage() {
             {/* Quick actions */}
             <div className="pp-acts">
               <Link to="/categories" className="pp-act accent">
-                <div className="pp-act-top">
-                  <div className="pp-act-ico">🚀</div>
-                  <span className="pp-act-arr">↗</span>
-                </div>
-                <div>
+                <div className="pp-act-head">
                   <div className="pp-act-title">Найти мастера</div>
-                  <div className="pp-act-sub">Каталог специалистов по всем категориям</div>
+                  <span className="pp-act-chevron" aria-hidden>›</span>
                 </div>
+                <div className="pp-act-sub">Каталог исполнителей по услугам и отзывам</div>
               </Link>
               <Link to="/deals" className="pp-act">
-                <div className="pp-act-top">
-                  <div className="pp-act-ico">🤝</div>
-                  <span className="pp-act-arr" style={{color:'#cbd5e1'}}>↗</span>
-                </div>
-                <div>
+                <div className="pp-act-head">
                   <div className="pp-act-title">Мои сделки</div>
-                  <div className="pp-act-sub" style={{color:'#64748b'}}>
-                    Активных: <b style={{color:'#e8410a',fontWeight:900}}>{activeDealsCount}</b>
-                  </div>
+                  <span className="pp-act-chevron" aria-hidden>›</span>
+                </div>
+                <div className="pp-act-sub" style={{ color: '#64748b' }}>
+                  Активных сделок: <b style={{ color: '#e8410a', fontWeight: 900 }}>{activeDealsCount}</b>
                 </div>
               </Link>
               <Link to="/chat" className="pp-act">
-                <div className="pp-act-top">
-                  <div className="pp-act-ico">💬</div>
-                  <span className="pp-act-arr" style={{color:'#cbd5e1'}}>↗</span>
-                </div>
-                <div>
+                <div className="pp-act-head">
                   <div className="pp-act-title">Сообщения</div>
-                  <div className="pp-act-sub" style={{color:'#64748b'}}>Чат с мастерами</div>
+                  <span className="pp-act-chevron" aria-hidden>›</span>
                 </div>
+                <div className="pp-act-sub" style={{ color: '#64748b' }}>Диалоги с мастерами по текущим заказам</div>
               </Link>
             </div>
 
@@ -272,17 +263,17 @@ export default function CustomerProfilePage() {
               <div className="pp-dl-body">
                 {loading ? (
                   <div className="pp-empty">
-                    <div className="pp-empty-ico">⏳</div>
-                    <div className="pp-empty-text">Загружаем сделки...</div>
+                    <div className="pp-empty-visual" aria-hidden />
+                    <div className="pp-empty-text">Загружаем сделки…</div>
                   </div>
                 ) : visible.length === 0 ? (
                   <div className="pp-empty">
-                    <div className="pp-empty-ico">{deals.length === 0 ? '🔍' : '🗂'}</div>
+                    <div className="pp-empty-visual" aria-hidden />
                     <div className="pp-empty-text">{deals.length === 0 ? 'Сделок пока нет' : 'В этой категории пусто'}</div>
-                    <div className="pp-empty-sub">{deals.length === 0 ? 'Найдите первого мастера и начните работу' : 'Попробуйте другой фильтр'}</div>
+                    <div className="pp-empty-sub">{deals.length === 0 ? 'Выберите мастера в каталоге и начните совместную сделку' : 'Попробуйте другой фильтр или вкладку «Все»'}</div>
                     {deals.length === 0 && (
                       <Link to="/categories" style={{display:'inline-flex',alignItems:'center',gap:6,marginTop:18,background:'linear-gradient(135deg,#ff5a1f,#e8410a)',color:'#fff',textDecoration:'none',borderRadius:12,padding:'12px 22px',fontWeight:800,fontSize:14,boxShadow:'0 8px 24px rgba(232,65,10,.36)'}}>
-                        🚀 Найти мастера
+                        Перейти в каталог
                       </Link>
                     )}
                   </div>
@@ -362,23 +353,6 @@ export default function CustomerProfilePage() {
 
           {/* ── RIGHT ── */}
           <div className="pp-right">
-            {/* Nav — clean text links, no icon boxes */}
-            <div className="pp-nav">
-              <nav>
-                {[
-                  { to:'/categories', lbl:'Найти мастера' },
-                  { to:'/deals',      lbl:'Мои сделки' },
-                  { to:'/chat',       lbl:'Сообщения' },
-                ].map(n => (
-                  <Link key={n.to} to={n.to} className="pp-ni">
-                    {n.lbl}
-                    <span className="pp-ni-arr">›</span>
-                  </Link>
-                ))}
-              </nav>
-            </div>
-
-            {/* Dark CTA card */}
             <div className="pp-pcard">
               <div className="pp-pcard-tag">Совет</div>
               <div className="pp-pcard-q">Оставляйте отзывы — мастерам это помогает расти, а вам легче выбирать проверенных специалистов.</div>

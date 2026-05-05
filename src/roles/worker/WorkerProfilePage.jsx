@@ -218,19 +218,19 @@ export default function WorkerProfilePage() {
 
           <div className="pp-ava" onClick={() => fileRef.current?.click()}>
             {avatarUrl ? <img src={avatarUrl} alt="" /> : initials}
-            <div className="pp-ava-ov">{avatarLoading ? '⏳' : '📷'}</div>
-              </div>
+            <div className="pp-ava-ov">{avatarLoading ? 'Загрузка…' : 'Изменить фото'}</div>
+          </div>
 
           <div className="pp-hero-txt">
             <div className="pp-hero-name">{fullName}</div>
             <div className="pp-hero-role">Личный кабинет мастера</div>
             <div className="pp-hero-pills">
-              <span className="pp-pill pp-pill-o">🔧 Мастер</span>
+              <span className="pp-pill pp-pill-o">Мастер</span>
               {profile?.verified && (
-                <span className="pp-pill pp-pill-g">✓ Проверенный мастер</span>
+                <span className="pp-pill pp-pill-g">Проверенный мастер</span>
               )}
               {profile && !profile.verified && profile.verificationStatus === 'PENDING' && (
-                <span className="pp-pill" style={{ background: '#fff7ed', color: '#c2410c', border: '1px solid #fdba74' }}>⏳ Документы на проверке</span>
+                <span className="pp-pill" style={{ background: '#fff7ed', color: '#c2410c', border: '1px solid #fdba74' }}>Документы на проверке</span>
               )}
               {profile && !profile.verified && profile.verificationStatus === 'REJECTED' && (
                 <span className="pp-pill" style={{ background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' }}>Верификация отклонена</span>
@@ -245,7 +245,7 @@ export default function WorkerProfilePage() {
 
           <div className="pp-hero-btns">
             <button type="button" className="pp-hbtn" onClick={() => fileRef.current?.click()}>
-              {avatarLoading ? '⏳' : avatarUrl ? '📷 Сменить' : '📷 Добавить фото'}
+              {avatarLoading ? 'Загрузка…' : avatarUrl ? 'Изменить фото' : 'Добавить фото'}
             </button>
             <button type="button" className="pp-hbtn pp-hbtn-logout" onClick={() => { logout(); navigate('/login'); }}>
               Выйти
@@ -262,44 +262,39 @@ export default function WorkerProfilePage() {
           <div>
             <div className="pp-acts">
               <Link to="/find-work" className="pp-act accent">
-                <div className="pp-act-top">
-                  <div className="pp-act-ico">🔍</div>
-                  <span className="pp-act-arr">↗</span>
-                </div>
-                <div>
+                <div className="pp-act-head">
                   <div className="pp-act-title">Найти работу</div>
-                  <div className="pp-act-sub">Заявки и объявления заказчиков</div>
+                  <span className="pp-act-chevron" aria-hidden>›</span>
                 </div>
+                <div className="pp-act-sub">Отклики на заявки и объявления заказчиков в вашем городе</div>
               </Link>
               <Link to="/deals" className="pp-act">
-                <div className="pp-act-top">
-                  <div className="pp-act-ico">🤝</div>
-                  <span className="pp-act-arr" style={{ color: '#cbd5e1' }}>↗</span>
-                </div>
-                <div>
+                <div className="pp-act-head">
                   <div className="pp-act-title">Мои сделки</div>
-                  <div className="pp-act-sub" style={{ color: '#64748b' }}>
-                    Заказов (активн.): <b style={{ color: '#e8410a', fontWeight: 900 }}>{activeDealsCount}</b>
-                    {activeListings.length > 0 && (
-                      <>
-                        {' · '}
-                        Объявл.: <b style={{ color: '#7c3aed', fontWeight: 900 }}>{activeListings.length}</b>
-                      </>
-                    )}
-                  </div>
+                  <span className="pp-act-chevron" aria-hidden>›</span>
+                </div>
+                <div className="pp-act-sub" style={{ color: '#64748b' }}>
+                  Активных заказов: <b style={{ color: '#e8410a', fontWeight: 900 }}>{activeDealsCount}</b>
+                  {activeListings.length > 0 && (
+                    <>
+                      {' · '}
+                      Объявлений в каталоге: <b style={{ color: '#7c3aed', fontWeight: 900 }}>{activeListings.length}</b>
+                    </>
+                  )}
                 </div>
               </Link>
               <Link to="/chat" className="pp-act">
-                <div className="pp-act-top">
-                  <div className="pp-act-ico">💬</div>
-                  <span className="pp-act-arr" style={{ color: '#cbd5e1' }}>↗</span>
-                </div>
-                <div>
+                <div className="pp-act-head">
                   <div className="pp-act-title">Сообщения</div>
-                  <div className="pp-act-sub" style={{ color: '#64748b' }}>Чат с заказчиками</div>
+                  <span className="pp-act-chevron" aria-hidden>›</span>
                 </div>
+                <div className="pp-act-sub" style={{ color: '#64748b' }}>Переписка с заказчиками по сделкам</div>
               </Link>
             </div>
+
+            <p className="pp-act-catalog-link">
+              <Link to="/my-listings">Объявления в каталоге — редактировать и публиковать</Link>
+            </p>
 
             <DashboardReviewsSection reviews={reviews} aboutTarget="worker" />
 
@@ -317,15 +312,15 @@ export default function WorkerProfilePage() {
               <div className="pp-dl-body">
                 {loading ? (
                   <div className="pp-empty">
-                    <div className="pp-empty-ico">⏳</div>
-                    <div className="pp-empty-text">Загружаем сделки...</div>
+                    <div className="pp-empty-visual" aria-hidden />
+                    <div className="pp-empty-text">Загружаем сделки…</div>
                   </div>
                 ) : tab === 'ALL' ? (
                   mergedAllTab.length === 0 ? (
                     <div className="pp-empty">
-                      <div className="pp-empty-ico">🔍</div>
+                      <div className="pp-empty-visual" aria-hidden />
                       <div className="pp-empty-text">Пока пусто</div>
-                      <div className="pp-empty-sub">Разместите объявление или откликнитесь на заявку</div>
+                      <div className="pp-empty-sub">Разместите объявление в каталоге или откликнитесь на заявку заказчика</div>
                       <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 18 }}>
                         <Link
                           to="/my-listings"
@@ -336,7 +331,7 @@ export default function WorkerProfilePage() {
                             border: '2px solid rgba(124,58,237,.35)',
                           }}
                         >
-                          📢 Объявление
+                          Новое объявление
                         </Link>
                         <Link
                           to="/find-work"
@@ -347,7 +342,7 @@ export default function WorkerProfilePage() {
                             boxShadow: '0 8px 24px rgba(232,65,10,.36)',
                           }}
                         >
-                          🔍 Найти работу
+                          Найти работу
                         </Link>
                       </div>
                   </div>
@@ -456,9 +451,9 @@ export default function WorkerProfilePage() {
                   )
                 ) : visibleDeals.length === 0 ? (
                   <div className="pp-empty">
-                    <div className="pp-empty-ico">🗂</div>
+                    <div className="pp-empty-visual" aria-hidden />
                     <div className="pp-empty-text">В этой категории пусто</div>
-                    <div className="pp-empty-sub">Попробуйте вкладку «Все»</div>
+                    <div className="pp-empty-sub">Откройте вкладку «Все», чтобы увидеть всю ленту</div>
                   </div>
                 ) : (
                   visibleDeals.map(deal => {
@@ -539,22 +534,6 @@ export default function WorkerProfilePage() {
                     </div>
 
           <div className="pp-right">
-            <div className="pp-nav">
-              <nav>
-                {[
-                  { to: '/find-work', lbl: 'Найти работу' },
-                  { to: '/my-listings', lbl: 'Мои объявления' },
-                  { to: '/deals', lbl: 'Мои сделки' },
-                  { to: '/chat', lbl: 'Сообщения' },
-                ].map(n => (
-                  <Link key={n.to} to={n.to} className="pp-ni">
-                    {n.lbl}
-                    <span className="pp-ni-arr">›</span>
-                  </Link>
-                ))}
-              </nav>
-            </div>
-
             <div className="pp-pcard">
               <div className="pp-pcard-tag">Совет</div>
               <div className="pp-pcard-q">

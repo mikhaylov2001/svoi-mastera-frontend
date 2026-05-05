@@ -56,9 +56,12 @@
 .pp-ava:hover { transform: scale(1.06); box-shadow: 0 16px 52px rgba(255,90,31,.58); }
 .pp-ava img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .pp-ava-ov {
-  position: absolute; inset: 0; background: rgba(0,0,0,.5);
+  position: absolute; inset: 0; background: rgba(0,0,0,.58);
   display: flex; align-items: center; justify-content: center;
-  font-size: 28px; opacity: 0; transition: opacity .18s; border-radius: 28px;
+  font-size: 11px; font-weight: 800; letter-spacing: .04em;
+  text-transform: uppercase; text-align: center; line-height: 1.35;
+  padding: 10px; color: rgba(255,255,255,.95);
+  opacity: 0; transition: opacity .18s; border-radius: 28px;
 }
 .pp-ava:hover .pp-ava-ov { opacity: 1; }
 
@@ -120,7 +123,8 @@ button.pp-pill-link:hover {
 .pp-acts { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
 .pp-act {
   display: flex; flex-direction: column; justify-content: space-between;
-  min-height: 138px; border-radius: 20px; padding: 20px;
+  gap: 10px;
+  min-height: 118px; border-radius: 20px; padding: 18px 20px;
   text-decoration: none; color: inherit;
   border: 1.5px solid #dde5f6; background: #fff;
   transition: all .22s; position: relative; overflow: hidden;
@@ -135,11 +139,35 @@ button.pp-pill-link:hover {
 }
 .pp-act.accent::before { background: radial-gradient(circle at 80% 10%, rgba(255,255,255,.18), transparent 65%); opacity:1; }
 .pp-act.accent:hover { box-shadow: 0 20px 48px rgba(210,53,0,.52); }
-.pp-act-top { display:flex; justify-content:space-between; align-items:flex-start; }
-.pp-act-ico { font-size: 30px; }
-.pp-act-arr { font-size: 20px; opacity: .4; }
-.pp-act-title { font-size: 17px; font-weight: 900; letter-spacing: -.02em; margin-bottom: 3px; }
-.pp-act-sub { font-size: 12px; opacity: .65; line-height: 1.35; }
+.pp-act-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 12px;
+}
+.pp-act-chevron {
+  flex-shrink: 0;
+  font-size: 22px; font-weight: 300; line-height: 1;
+  color: #94a3b8; opacity: .55;
+}
+.pp-act.accent .pp-act-chevron { color: rgba(255,255,255,.72); }
+.pp-act-title { font-size: 17px; font-weight: 900; letter-spacing: -.02em; line-height: 1.2; }
+.pp-act-sub { font-size: 12px; opacity: .65; line-height: 1.4; margin-top: auto; }
+.pp-act.accent .pp-act-sub { opacity: .88; }
+
+.pp-act-catalog-link {
+  margin: -4px 0 18px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.pp-act-catalog-link a {
+  color: #64748b;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.35);
+  transition: color .15s, border-color .15s;
+}
+.pp-act-catalog-link a:hover {
+  color: #e8410a;
+  border-bottom-color: rgba(232, 65, 10, 0.45);
+}
 
 .pp-deals {
   background: #fff; border: 1.5px solid #dde5f6; border-radius: 22px;
@@ -180,6 +208,10 @@ button.pp-pill-link:hover {
 
 .pp-dl-body { padding: 14px 16px 16px; }
 .pp-empty { padding: 60px 20px; text-align: center; color: #94a3b8; }
+.pp-empty-visual {
+  width: 44px; height: 44px; margin: 0 auto 14px;
+  border-radius: 50%; background: linear-gradient(145deg, #f1f5f9, #e2e8f0);
+}
 .pp-empty-ico { font-size: 56px; margin-bottom: 12px; }
 .pp-empty-text { font-size: 15px; font-weight: 700; color: #64748b; margin-bottom: 6px; }
 .pp-empty-sub { font-size: 13px; color: #94a3b8; }
@@ -249,19 +281,6 @@ button.pp-pill-link:hover {
 .pp-rv-ok { padding:10px; font-size:13px; font-weight:700; color:#16a34a; }
 
 .pp-right { display: grid; gap: 14px; align-content: start; }
-
-.pp-nav { background: #fff; border: 1px solid #e8edf6; border-radius: 16px; padding: 6px; }
-.pp-ni {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 14px; border-radius: 10px;
-  font-size: 14px; font-weight: 600; color: #334155;
-  text-decoration: none; background: none; border: none;
-  cursor: pointer; font-family: inherit; width: 100%; transition: all .15s;
-  letter-spacing: -.01em;
-}
-.pp-ni:hover { background: #f8faff; color: #0a0f1e; }
-.pp-ni-arr { font-size: 16px; color: #cbd5e1; transition: transform .15s; }
-.pp-ni:hover .pp-ni-arr { transform: translateX(3px); color: #94a3b8; }
 
 .pp-pcard {
   background: linear-gradient(145deg,#06080f,#141d34);
