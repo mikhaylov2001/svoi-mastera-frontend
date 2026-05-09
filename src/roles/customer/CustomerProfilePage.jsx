@@ -6,7 +6,10 @@ import {
   FaIdCard, FaCreditCard, FaChevronRight, FaCalendarAlt, FaBriefcase, FaCommentDots, FaFileAlt,
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import { getUserProfile, getMyDeals, createReview, uploadAvatar, getReviewsByCustomer, getCustomerStats } from '../../api';
+import {
+  getUserProfile, getMyDeals, createReview, uploadAvatar, getReviewsByCustomer, getCustomerStats,
+  getCustomerProfile, getCustomerPublicProfile,
+} from '../../api';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 import '../../styles/modernProfile.css';
@@ -16,7 +19,16 @@ const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
 const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND + u);
 const fmtCard = (d) => !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 const fmtSince = (d) => !d ? '' : new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
-const pick = (...values) => values.find((v) => typeof v === 'string' && v.trim()) || '';
+/** Город с бэка может прийти строкой, числом или объектом вида { name } */
+const pick = (...values) => {
+  for (const v of values) {
+    if (v == null || v === '') continue;
+    if (typeof v === 'string' && v.trim()) return v.trim();
+    if (typeof v === 'number' && Number.isFinite(v)) return String(v);
+    if (typeof v === 'object' && typeof v.name === 'string' && v.name.trim()) return v.name.trim();
+  }
+  return '';
+};
 
 const STATUS = {
   NEW:         { label: 'Ждёт мастера', cls: 'bg-amber-100 text-amber-700', dot: '#f59e0b' },
@@ -34,6 +46,9 @@ export default function CustomerProfilePage() {
 
   const [profile, setProfile] = useState(null);
   const [customerStats, setCustomerStats] = useState(null);
+  /** Запись заказчика с /customer-profiles/me — там часто лежит город */
+  const [customerRecord, setCustomerRecord] = useState(null);
+  const [customerPublic, setCustomerPublic] = useState(null);
   const [deals, setDeals] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,12 +72,21 @@ export default function CustomerProfilePage() {
   useEffect(() => {
     if (!userId || userRole === 'WORKER') return;
     setLoading(true);
-    Promise.allSettled([getUserProfile(userId), getMyDeals(userId), getReviewsByCustomer(userId), getCustomerStats(userId)])
-      .then(([p, d, r, s]) => {
+    Promise.allSettled([
+      getUserProfile(userId),
+      getMyDeals(userId),
+      getReviewsByCustomer(userId),
+      getCustomerStats(userId),
+      getCustomerProfile(userId),
+      getCustomerPublicProfile(userId),
+    ])
+      .then(([p, d, r, s, cp, pub]) => {
         if (p.status === 'fulfilled') setProfile(p.value);
         if (d.status === 'fulfilled') setDeals(d.value || []);
         if (r.status === 'fulfilled') setReviews(Array.isArray(r.value) ? r.value : []);
         if (s.status === 'fulfilled') setCustomerStats(s.value || null);
+        if (cp.status === 'fulfilled') setCustomerRecord(cp.value || null);
+        if (pub.status === 'fulfilled') setCustomerPublic(pub.value || null);
       })
       .finally(() => setLoading(false));
   }, [userId, userRole, navigate]);
@@ -103,6 +127,13 @@ export default function CustomerProfilePage() {
   const fullName = profile?.displayName || userName || 'Заказчик';
   const since = fmtSince(profile?.registeredAt || profile?.createdAt);
   const cityLabel = pick(
+    customerRecord?.city,
+    customerRecord?.cityName,
+    customerRecord?.locationCity,
+    customerPublic?.city,
+    customerPublic?.cityName,
+    customerPublic?.locationCity,
+    customerPublic?.location?.city,
     customerStats?.city,
     customerStats?.locationCity,
     customerStats?.addressCity,
@@ -188,7 +219,7 @@ export default function CustomerProfilePage() {
               {profile?.verified && (<span className="mp-badge mp-badge-ok"><FaShieldAlt /> Проверен</span>)}
               {profile && !profile.verified && profile.verificationStatus === 'PENDING' && (<span className="mp-badge mp-badge-pending"><FaClock /> На проверке</span>)}
               {profile && !profile.verified && profile.verificationStatus === 'REJECTED' && (<span className="mp-badge mp-badge-bad"><FaExclamationCircle /> Отклонена</span>)}
-              <span className="mp-badge mp-badge-outline"><FaMapMarkerAlt /> {cityLabel || 'Йошкар-Ола'}</span>
+              <span className="mp-badge mp-badge-outline"><FaMapMarkerAlt /> {cityLabel || 'Не указан'}</span>
             </div>
           </div>
           <div className="mp-head-btns">

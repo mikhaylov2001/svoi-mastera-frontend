@@ -14,7 +14,15 @@ import '../../styles/modernProfile.css';
 const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
 const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND + u);
 const fmtCard = (d) => !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-const pick = (...values) => values.find((v) => typeof v === 'string' && v.trim()) || '';
+const pick = (...values) => {
+  for (const v of values) {
+    if (v == null || v === '') continue;
+    if (typeof v === 'string' && v.trim()) return v.trim();
+    if (typeof v === 'number' && Number.isFinite(v)) return String(v);
+    if (typeof v === 'object' && typeof v.name === 'string' && v.name.trim()) return v.name.trim();
+  }
+  return '';
+};
 
 const STATUS = {
   NEW: { label: 'Ждут подтверждения', cls: 'bg-amber-100 text-amber-700', dot: '#f59e0b' },
@@ -181,7 +189,7 @@ export default function WorkerProfilePage() {
               {profile?.verified && <span className="mp-badge mp-badge-ok"><FaShieldAlt /> Проверенный мастер</span>}
               {profile && !profile.verified && profile.verificationStatus === 'PENDING' && <span className="mp-badge mp-badge-pending"><FaClock /> Документы на проверке</span>}
               {profile && !profile.verified && profile.verificationStatus === 'REJECTED' && <span className="mp-badge mp-badge-bad"><FaExclamationCircle /> Верификация отклонена</span>}
-              <span className="mp-badge mp-badge-outline"><FaMapMarkerAlt /> {cityLabel || 'Йошкар-Ола'}</span>
+              <span className="mp-badge mp-badge-outline"><FaMapMarkerAlt /> {cityLabel || 'Не указан'}</span>
             </div>
           </div>
           <div className="mp-head-btns">

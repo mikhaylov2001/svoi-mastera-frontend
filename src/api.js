@@ -181,6 +181,11 @@ export async function getCustomerProfile(userId) {
   return apiCall('/customer-profiles/me', { headers: { 'X-User-Id': userId } });
 }
 
+/** Публичная карточка заказчика (часто содержит город, если отличается от /users/.../profile). */
+export async function getCustomerPublicProfile(customerUserId) {
+  return apiCall(`/customers/${customerUserId}/profile`);
+}
+
 // ── REVIEWS ──
 export async function createReview(userId, dealId, data) {
   return apiCall(`/deals/${dealId}/reviews`, {
