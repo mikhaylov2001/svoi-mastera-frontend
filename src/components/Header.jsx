@@ -18,7 +18,13 @@ function SearchIcon() {
 }
 
 function LogoIcon() {
-  return <span style={{ fontSize: 28 }}>🔨</span>;
+  return (
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5.2 6.1 8.4 2.9a1.2 1.2 0 0 1 1.7 0l2.8 2.8a1.2 1.2 0 0 1 0 1.7L9.7 10.6" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="m9.5 10.8 8.9 8.9" stroke="#0f172a" strokeWidth="1.8" strokeLinecap="round"/>
+      <path d="m7.9 12.4-1.6 1.6" stroke="#0f172a" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  );
 }
 
 function Header() {
@@ -243,6 +249,10 @@ function Header() {
   const initials = userName
     ? userName.trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2)
     : 'SM';
+  const isProfileRoute = ['/profile', '/worker-profile', '/settings', '/verification', '/guarantee']
+    .some((p) => location.pathname.startsWith(p));
+  const navClass = (isActive, makeActiveOnProfile = false) =>
+    `header-nav-link${(isActive || (makeActiveOnProfile && isProfileRoute)) ? ' active' : ''}`;
 
   return (
     <>
@@ -262,7 +272,7 @@ function Header() {
             }}
           >
             <LogoIcon />
-            <span className="header-logo-text">СвоиМастера</span>
+            <span className="header-logo-text"><b>Свои</b><b className="header-logo-text-accent">Мастера</b></span>
           </Link>
 
           {/* ── BURGER ── */}
@@ -408,7 +418,7 @@ function Header() {
                 </NavLink>
                 <NavLink
                   to="/deals"
-                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                  className={({ isActive }) => navClass(isActive, true)}
                   onClick={onRepeatNavClick('/deals')}
                 >
                   Мои сделки
@@ -443,7 +453,7 @@ function Header() {
                 </NavLink>
                 <NavLink
                   to="/deals"
-                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                  className={({ isActive }) => navClass(isActive, true)}
                   onClick={onRepeatNavClick('/deals')}
                 >
                   Мои сделки

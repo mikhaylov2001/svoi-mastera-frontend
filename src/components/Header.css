@@ -69,13 +69,20 @@
 .header-logo-text {
   font-size: 19px;
   font-weight: 900;
-  color: var(--primary);
+  color: #0f172a;
   letter-spacing: -0.3px;
   transition: color .15s;
+  display: inline-flex;
+  gap: 0;
+  align-items: baseline;
 }
 
 .header-logo:hover .header-logo-text {
-  color: #c73a08;
+  color: #0b1324;
+}
+
+.header-logo-text-accent {
+  color: var(--primary);
 }
 
 /* ══════════════════════════════════════

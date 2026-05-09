@@ -8,6 +8,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { getUserProfile, getMyDeals, createReview, uploadAvatar, getReviewsByCustomer } from '../../api';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
+import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 import '../../styles/modernProfile.css';
 
 const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
@@ -15,6 +16,7 @@ const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
 const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND + u);
 const fmtCard = (d) => !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 const fmtSince = (d) => !d ? '' : new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+const pick = (...values) => values.find((v) => typeof v === 'string' && v.trim()) || '';
 
 const STATUS = {
   NEW:         { label: 'Ждёт мастера', cls: 'bg-amber-100 text-amber-700', dot: '#f59e0b' },
@@ -22,21 +24,6 @@ const STATUS = {
   COMPLETED:   { label: 'Завершена', cls: 'bg-emerald-100 text-emerald-700', dot: '#10b981' },
   CANCELLED:   { label: 'Отменена', cls: 'bg-rose-100 text-rose-700', dot: '#f43f5e' },
 };
-
-function dealEmoji(t = '') {
-  const s = t.toLowerCase();
-  if (s.includes('розетк') || s.includes('электр')) return '⚡';
-  if (s.includes('сантех') || s.includes('труб'))   return '🚿';
-  if (s.includes('ремонт') || s.includes('отдел'))  return '🏗';
-  if (s.includes('мебел')  || s.includes('сборк'))  return '🪑';
-  if (s.includes('уборк')  || s.includes('клин'))   return '🧹';
-  if (s.includes('груз')   || s.includes('перевоз'))return '🚚';
-  if (s.includes('компьют')|| s.includes('ноутб'))  return '💻';
-  if (s.includes('замок')  || s.includes('дверь'))  return '🔐';
-  if (s.includes('сад')    || s.includes('дача'))   return '🌿';
-  if (s.includes('маляр')  || s.includes('краск'))  return '🎨';
-  return '🔧';
-}
 
 export default function CustomerProfilePage() {
   const { userId, userName, userRole, userAvatar, updateAvatar, logout } = useAuth();
@@ -113,7 +100,14 @@ export default function CustomerProfilePage() {
   }, [profile, userName]);
   const fullName = profile?.displayName || userName || 'Заказчик';
   const since = fmtSince(profile?.registeredAt || profile?.createdAt);
-  const cityLabel = (profile?.city || '').trim();
+  const cityLabel = pick(
+    profile?.city,
+    profile?.cityName,
+    profile?.locationCity,
+    profile?.addressCity,
+    profile?.location?.city,
+    profile?.profile?.city,
+  );
 
   const active = useMemo(() => deals.filter((d) => ['IN_PROGRESS', 'NEW'].includes(d.status)).length, [deals]);
   const completed = useMemo(() => deals.filter((d) => d.status === 'COMPLETED').length, [deals]);
@@ -167,6 +161,7 @@ export default function CustomerProfilePage() {
       <div className="mp-cover">
         {cover ? <div className="mp-cover-img" style={{ backgroundImage: `url(${cover})` }} /> : (
           <>
+            <div className="mp-cover-img" style={{ backgroundImage: `url(${PAGE_HERO_DEFAULT_PHOTO})` }} />
             <div className="mp-cover-grad" />
             <div className="mp-cover-blob1" />
             <div className="mp-cover-blob2" />
@@ -257,7 +252,7 @@ export default function CustomerProfilePage() {
                       return (
                         <div key={deal.id}>
                           <Link to={`/deals?dealId=${deal.id}`} className="mp-deal">
-                            <div className="mp-deal-img">{deal.photos?.[0] ? <img src={resolveUrl(deal.photos[0])} alt="" /> : <span>{dealEmoji(deal.title)}</span>}</div>
+                            <div className="mp-deal-img">{deal.photos?.[0] ? <img src={resolveUrl(deal.photos[0])} alt="" /> : <div className="mp-deal-img-ph" />}</div>
                             <div className="mp-deal-body">
                               <div style={{ display:'flex', justifyContent:'space-between', gap: 8 }}>
                                 <div className="mp-deal-title">{deal.title || 'Сделка'}</div>
@@ -309,14 +304,24 @@ export default function CustomerProfilePage() {
                     {reviews.length === 0 ? (
                       <div className="mp-empty"><div className="mp-empty-ico"><FaCommentDots /></div><div className="mp-empty-title">Отзывов пока нет</div><div className="mp-empty-sub">После завершённых сделок мастера смогут оставить о вас отзыв.</div></div>
                     ) : reviews.map((r) => (
-                      <div key={r.id} className="mp-rev-row">
-                        <div className="mp-rev-ava">{r.authorName?.[0] || 'U'}</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display:'flex', justifyContent:'space-between' }}><div className="mp-rev-name">{[r.authorName, r.authorLastName].filter(Boolean).join(' ')}</div><div className="mp-rev-date">{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div></div>
-                          <div style={{ marginTop: 4 }} className="mp-stars">{[1,2,3,4,5].map((i) => <FaStar key={i} className={i <= (r.rating || 0) ? '' : 'off'} />)}</div>
-                          {(r.text || r.comment) && <div className="mp-rev-text">{r.text || r.comment}</div>}
-                        </div>
-                      </div>
+                      (() => {
+                        const firstName = pick(r.authorName, r.workerName, r.reviewerName, r.displayName);
+                        const lastName = pick(r.authorLastName, r.workerLastName, r.reviewerLastName);
+                        const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'Пользователь';
+                        const avatar = pick(r.authorAvatarUrl, r.workerAvatar, r.reviewerAvatarUrl, r.avatarUrl);
+                        return (
+                          <div key={r.id} className="mp-rev-row">
+                            <div className="mp-rev-ava">
+                              {avatar ? <img src={resolveUrl(avatar)} alt={fullName} /> : (firstName[0] || 'U').toUpperCase()}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display:'flex', justifyContent:'space-between' }}><div className="mp-rev-name">{fullName}</div><div className="mp-rev-date">{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div></div>
+                              <div style={{ marginTop: 4 }} className="mp-stars">{[1,2,3,4,5].map((i) => <FaStar key={i} className={i <= (r.rating || 0) ? '' : 'off'} />)}</div>
+                              {(r.text || r.comment) && <div className="mp-rev-text">{r.text || r.comment}</div>}
+                            </div>
+                          </div>
+                        );
+                      })()
                     ))}
                   </div>
                 )}
