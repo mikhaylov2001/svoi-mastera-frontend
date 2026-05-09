@@ -9,7 +9,6 @@ import { useAuth } from '../../context/AuthContext';
 import { getMyDeals, getListingsByWorker, getReviewsByWorker, uploadAvatar, getUserProfile, getWorkerStats } from '../../api';
 import { formatMemberSinceRu } from '../../utils/memberSinceRu';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
-import { compressCoverToDataUrl } from '../../utils/compressCoverImage';
 import '../../styles/modernProfile.css';
 
 const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
@@ -106,22 +105,15 @@ export default function WorkerProfilePage() {
     e.target.value = '';
   };
 
-  const onCover = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const url = await compressCoverToDataUrl(file);
+  const onCover = (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const r = new FileReader();
+    r.onload = (ev) => {
+      const url = ev.target.result;
       setCover(url);
       try { localStorage.setItem('worker:cover', url); } catch {}
-    } catch {
-      const r = new FileReader();
-      r.onload = (ev) => {
-        const url = ev.target.result;
-        setCover(url);
-        try { localStorage.setItem('worker:cover', url); } catch {}
-      };
-      r.readAsDataURL(file);
-    }
+    };
+    r.readAsDataURL(file);
     e.target.value = '';
   };
 
@@ -175,13 +167,7 @@ export default function WorkerProfilePage() {
   return (
     <div className="mp">
       <div className="mp-cover">
-        <img
-          className="mp-cover-img"
-          src={cover || PAGE_HERO_DEFAULT_PHOTO}
-          alt=""
-          decoding="async"
-          fetchPriority="high"
-        />
+        <div className="mp-cover-img" style={{ backgroundImage: `url(${cover || PAGE_HERO_DEFAULT_PHOTO})` }} />
         <input ref={coverRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onCover} />
         <button type="button" className="mp-cover-btn" onClick={() => coverRef.current?.click()}>
           <FaImage /> {cover ? 'Сменить обложку' : 'Обложка'}
