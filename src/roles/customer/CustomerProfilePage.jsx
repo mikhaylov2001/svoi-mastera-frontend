@@ -12,6 +12,7 @@ import {
 } from '../../api';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
+import { compressCoverToDataUrl } from '../../utils/compressCoverImage';
 import '../../styles/modernProfile.css';
 
 const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
@@ -173,15 +174,22 @@ export default function CustomerProfilePage() {
     }
   };
 
-  const onCover = (e) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const r = new FileReader();
-    r.onload = (ev) => {
-      const url = ev.target.result;
+  const onCover = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await compressCoverToDataUrl(file);
       setCover(url);
       try { localStorage.setItem('customer:cover', url); } catch {}
-    };
-    r.readAsDataURL(file);
+    } catch {
+      const r = new FileReader();
+      r.onload = (ev) => {
+        const url = ev.target.result;
+        setCover(url);
+        try { localStorage.setItem('customer:cover', url); } catch {}
+      };
+      r.readAsDataURL(file);
+    }
     e.target.value = '';
   };
 
@@ -198,7 +206,13 @@ export default function CustomerProfilePage() {
   return (
     <div className="mp">
       <div className="mp-cover">
-        <div className="mp-cover-img" style={{ backgroundImage: `url(${cover || PAGE_HERO_DEFAULT_PHOTO})` }} />
+        <img
+          className="mp-cover-img"
+          src={cover || PAGE_HERO_DEFAULT_PHOTO}
+          alt=""
+          decoding="async"
+          fetchPriority="high"
+        />
         <input ref={coverRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onCover} />
         <button type="button" className="mp-cover-btn" onClick={() => coverRef.current?.click()}>
           <FaImage /> {cover ? 'Сменить обложку' : 'Обложка'}
