@@ -157,10 +157,6 @@ export default function WorkerProfilePage() {
             <div className="mp-cover-grad" />
             <div className="mp-cover-blob1" />
             <div className="mp-cover-blob2" />
-            <div className="mp-cover-default" />
-            <div className="mp-cover-default-hint">
-              <FaImage /> Добавьте свою обложку
-            </div>
           </>
         )}
         <input ref={coverRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onCover} />
