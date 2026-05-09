@@ -125,18 +125,19 @@ export default function WorkerProfilePage() {
   }, [userName, lastNameLive]);
   const fullName = [userName, lastNameLive.trim()].filter(Boolean).join(' ') || 'Мастер';
   const since = formatMemberSinceRu(profile?.registeredAt || profile?.createdAt);
-  const cityLabel = pick(
-    workerStats?.city,
-    workerStats?.locationCity,
-    workerStats?.addressCity,
-    workerStats?.location?.city,
+  const cityLabel = useMemo(() => pick(
     profile?.city,
     profile?.cityName,
+    profile?.homeCity,
     profile?.locationCity,
     profile?.addressCity,
     profile?.location?.city,
     profile?.profile?.city,
-  );
+    workerStats?.city,
+    workerStats?.locationCity,
+    workerStats?.addressCity,
+    workerStats?.location?.city,
+  ), [profile, workerStats]);
 
   const avgRating = reviews.length ? (reviews.reduce((s, x) => s + (x.rating || 0), 0) / reviews.length) : 0;
   const roundedAvg = Math.round(avgRating);

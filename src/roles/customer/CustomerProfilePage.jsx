@@ -126,7 +126,15 @@ export default function CustomerProfilePage() {
   }, [profile, userName]);
   const fullName = profile?.displayName || userName || 'Заказчик';
   const since = fmtSince(profile?.registeredAt || profile?.createdAt);
-  const cityLabel = pick(
+  // Приоритет как в PersonalSettingsPage: город из GET /users/:id/profile (поле city и др.)
+  const cityLabel = useMemo(() => pick(
+    profile?.city,
+    profile?.cityName,
+    profile?.homeCity,
+    profile?.locationCity,
+    profile?.addressCity,
+    profile?.location?.city,
+    profile?.profile?.city,
     customerRecord?.city,
     customerRecord?.cityName,
     customerRecord?.locationCity,
@@ -138,13 +146,7 @@ export default function CustomerProfilePage() {
     customerStats?.locationCity,
     customerStats?.addressCity,
     customerStats?.location?.city,
-    profile?.city,
-    profile?.cityName,
-    profile?.locationCity,
-    profile?.addressCity,
-    profile?.location?.city,
-    profile?.profile?.city,
-  );
+  ), [profile, customerRecord, customerPublic, customerStats]);
 
   const active = useMemo(() => deals.filter((d) => ['IN_PROGRESS', 'NEW'].includes(d.status)).length, [deals]);
   const completed = useMemo(() => deals.filter((d) => d.status === 'COMPLETED').length, [deals]);
