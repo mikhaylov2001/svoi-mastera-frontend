@@ -159,14 +159,7 @@ export default function CustomerProfilePage() {
   return (
     <div className="mp">
       <div className="mp-cover">
-        {cover ? <div className="mp-cover-img" style={{ backgroundImage: `url(${cover})` }} /> : (
-          <>
-            <div className="mp-cover-img" style={{ backgroundImage: `url(${PAGE_HERO_DEFAULT_PHOTO})` }} />
-            <div className="mp-cover-grad" />
-            <div className="mp-cover-blob1" />
-            <div className="mp-cover-blob2" />
-          </>
-        )}
+        <div className="mp-cover-img" style={{ backgroundImage: `url(${cover || PAGE_HERO_DEFAULT_PHOTO})` }} />
         <input ref={coverRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onCover} />
         <button type="button" className="mp-cover-btn" onClick={() => coverRef.current?.click()}>
           <FaImage /> {cover ? 'Сменить обложку' : 'Обложка'}
