@@ -1,8 +1,7 @@
+/* Палитра как у страниц «Мои сделки» (.wd-page, .wd-card — см. dealsWdStyles / unifiedListingCards) */
 .mp { width: 100%; min-height: 100vh; overflow-x: hidden;
-  background:
-    radial-gradient(1200px 600px at 80% -10%, rgba(232,65,10,0.08), transparent 60%),
-    radial-gradient(900px 500px at -10% 10%, rgba(232,65,10,0.05), transparent 55%),
-    #fafafa;
+  background: #f2f2f2;
+  color: #1a1a1a;
   padding-bottom: 48px;
 }
 .mp-shell { width: min(100% - 48px, 1200px); margin: 0 auto; }
@@ -19,7 +18,11 @@
 
 .mp-head { position: relative; margin-top: -56px; display: flex; flex-direction: column; gap: 16px;
   padding: 18px 22px; border-radius: 22px; background: #fff;
-  border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 18px 50px -34px rgba(232,65,10,0.25); }
+  border: 1px solid #c5cdd6;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 2px 8px rgba(15, 23, 42, 0.04);
+}
 @media (min-width: 640px) { .mp-head { flex-direction: row; align-items: center; gap: 24px; margin-top: -64px; } }
 .mp-avatar { position: relative; width: 96px; height: 96px; border-radius: 9999px; overflow: hidden;
   background: linear-gradient(135deg, #e8410a, #ff8f00); color: #fff;
@@ -34,14 +37,18 @@
 .mp-name { font-size: 26px; font-weight: 700; color: #0f172a; line-height: 1.15; letter-spacing: -0.02em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (min-width: 640px) { .mp-name { font-size: 30px; } }
-.mp-role { font-size: 14px; color: #64748b; margin-top: 4px; }
+.mp-role { font-size: 14px; color: #6b7280; margin-top: 4px; }
 .mp-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .mp-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 9999px;
   font-size: 11px; font-weight: 500; border: 1px solid; }
 .mp-badge-ok { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
 .mp-badge-pending { background: #fffbeb; color: #b45309; border-color: #fde68a; }
 .mp-badge-bad { background: #fff1f2; color: #be123c; border-color: #fecdd3; }
-.mp-badge-outline { background: #fff; color: #475569; border-color: #e2e8f0; }
+.mp-badge-outline {
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #e2e8f0;
+}
 
 .mp-head-btns { display: flex; gap: 8px; flex-shrink: 0; }
 .mp-btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 16px; border-radius: 9999px;
@@ -59,52 +66,78 @@
 
 .mp-stats { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
 @media (min-width: 640px) { .mp-stats { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; } }
-.mp-stat { padding: 12px 14px; border-radius: 16px; background: #fff; border: 1px solid rgba(0,0,0,0.06);
+.mp-stat { padding: 12px 14px; border-radius: 16px; background: #fff; border: 1px solid #c5cdd6;
   text-decoration: none; color: inherit; cursor: pointer; transition: transform .2s, box-shadow .2s, border-color .2s;
-  display: flex; flex-direction: column; min-height: 86px; justify-content: center; }
-.mp-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -10px rgba(0,0,0,0.1); border-color: rgba(0,0,0,0.12); }
+  display: flex; flex-direction: column; min-height: 86px; justify-content: center;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 2px 8px rgba(15, 23, 42, 0.04);
+}
+.mp-stat:hover { transform: translateY(-2px); border-color: #94a3b8;
+  box-shadow:
+    0 4px 6px -1px rgba(15, 23, 42, 0.09),
+    0 12px 28px -6px rgba(15, 23, 42, 0.12);
+}
 .mp-stat-ico { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5); }
 .mp-stat-ico.blue { color: #2563eb; background: linear-gradient(135deg, #eff6ff, #dbeafe); }
 .mp-stat-ico.green { color: #059669; background: linear-gradient(135deg, #ecfdf5, #d1fae5); }
 .mp-stat-ico.violet { color: #7c3aed; background: linear-gradient(135deg, #f5f3ff, #ede9fe); }
 .mp-stat-ico.amber { color: #d97706; background: linear-gradient(135deg, #fffbeb, #fef3c7); }
-.mp-stat-num { margin-top: 8px; font-size: 36px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; color: #1e293b; }
-.mp-stat-lbl { margin-top: 4px; font-size: 13px; color: #64748b; font-weight: 500; }
+.mp-stat-num { margin-top: 8px; font-size: 36px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; color: #111827; }
+.mp-stat-lbl { margin-top: 4px; font-size: 13px; color: #6b7280; font-weight: 500; }
 .mp-stat-blue { border-color: rgba(37,99,235,0.14); }
 .mp-stat-green { border-color: rgba(5,150,105,0.14); }
 .mp-stat-violet { border-color: rgba(124,58,237,0.14); }
 .mp-stat-amber { border-color: rgba(217,119,6,0.14); }
 
-.mp-card { background: #fff; border-radius: 20px; border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 18px 44px -34px rgba(232,65,10,0.2); padding: 20px; }
+.mp-card { background: #fff; border-radius: 20px; border: 1px solid #c5cdd6;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 2px 8px rgba(15, 23, 42, 0.04);
+  padding: 20px; }
 @media (min-width: 640px) { .mp-card { padding: 24px; } }
 .mp-card-title { font-size: 18px; font-weight: 600; color: #0f172a; margin-bottom: 16px; }
 
-.mp-tabs-wrap { padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.06); }
-.mp-tabs-list { display: inline-flex; align-items: center; gap: 6px; border-radius: 9999px;
-  background: rgba(15,23,42,0.04); border: 1px solid rgba(0,0,0,0.06); padding: 5px; }
+.mp-tabs-wrap { padding-top: 8px; border-top: 1px solid #e5e7eb; }
+.mp-tabs-list { display: inline-flex; align-items: center; gap: 6px; border-radius: 12px;
+  background: rgba(255,255,255,0.9); border: 1px solid #e8e8e8; padding: 4px; }
 .mp-tab { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;
-  border: 0; border-radius: 9999px; background: transparent; color: rgba(15,23,42,0.6);
-  font-size: 14px; font-weight: 600; padding: 8px 18px; cursor: pointer; transition: all .2s; }
-.mp-tab:hover { color: #0f172a; }
-.mp-tab.on { background: #fff; color: #0f172a; font-weight: 700;
-  box-shadow: 0 6px 16px -6px rgba(232,65,10,0.35), inset 0 0 0 1px rgba(232,65,10,0.25); }
+  border: 0; border-radius: 9px; background: transparent; color: #6b7280;
+  font-size: 14px; font-weight: 600; padding: 9px 18px; cursor: pointer; transition: all .2s; }
+.mp-tab:hover { color: #374151; }
+.mp-tab.on { background: #e8410a; color: #fff; font-weight: 700;
+  box-shadow: 0 2px 8px rgba(232,65,10,0.25); }
 @media (max-width: 640px) {
   .mp-tabs-list { width: 100%; justify-content: space-between; }
   .mp-tab { flex: 1; padding: 8px 10px; }
 }
 
 .mp-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-.mp-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 9999px;
-  font-size: 12px; font-weight: 500; border: 0; cursor: pointer; background: rgba(15,23,42,0.05); color: #64748b; transition: all .15s; }
-.mp-chip:hover { background: rgba(15,23,42,0.08); }
-.mp-chip.on { background: #e8410a; color: #fff; }
-.mp-chip-n { padding: 0 6px; border-radius: 9999px; font-size: 10px; font-weight: 700; background: rgba(0,0,0,0.06); }
-.mp-chip.on .mp-chip-n { background: rgba(255,255,255,0.25); }
+.mp-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 10px;
+  font-size: 13px; font-weight: 600; cursor: pointer; background: #fff; color: #6b7280;
+  border: 1.5px solid #e5e7eb; transition: all .15s; }
+.mp-chip:hover { border-color: #d1d5db; color: #374151; }
+.mp-chip.on { border-color: #e8410a; color: #e8410a; background: #fff4ef; }
+.mp-chip-n { font-size: 11px; border-radius: 6px; padding: 1px 5px; font-weight: 700; background: #f3f4f6; color: #9ca3af; }
+.mp-chip.on .mp-chip-n { background: rgba(232,65,10,0.12); color: #e8410a; }
 
-.mp-deal { display: flex; gap: 10px; padding: 10px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.06); background: #fff; text-decoration: none; color: inherit; transition: box-shadow .15s; margin-bottom: 8px; }
-.mp-deal:hover { box-shadow: 0 6px 16px -8px rgba(0,0,0,0.12); }
-.mp-deal-img { width: 68px; height: 68px; border-radius: 10px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0; overflow: hidden; }
+.mp-deal {
+  display: flex; gap: 10px; padding: 10px; border-radius: 5px; border: 1px solid #c5cdd6; background: #fff;
+  text-decoration: none; color: inherit;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 2px 8px rgba(15, 23, 42, 0.04);
+  transition: box-shadow .22s ease, transform .22s ease, border-color .2s ease;
+  margin-bottom: 8px;
+}
+.mp-deal:hover {
+  transform: scale(1.015);
+  border-color: #94a3b8;
+  box-shadow:
+    0 4px 6px -1px rgba(15, 23, 42, 0.09),
+    0 12px 28px -6px rgba(15, 23, 42, 0.12);
+}
+.mp-deal-img { width: 68px; height: 68px; border-radius: 5px; background: #eef1f5; display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0; overflow: hidden; }
 .mp-deal-img img { width: 100%; height: 100%; object-fit: cover; }
 .mp-deal-img-ph {
   width: 100%;
@@ -112,24 +145,29 @@
   background: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 100%);
 }
 .mp-deal-body { flex: 1; min-width: 0; }
-.mp-deal-title { font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
-.mp-deal-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 11px; color: #64748b; }
-.mp-deal-status { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 9999px; font-size: 11px; font-weight: 500; flex-shrink: 0; }
+.mp-deal-title { font-weight: 800; letter-spacing: -0.02em; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+.mp-deal-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 11px; color: #6b7280; font-weight: 500; }
+.mp-deal-status { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; flex-shrink: 0; border: 0; }
+/* Цвета статусов как в DealsPage (объект ST) */
+.mp-deal-status.bg-amber-100.text-amber-700 { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+.mp-deal-status.bg-blue-100.text-blue-700 { background: rgba(37, 99, 235, 0.11); color: #2563eb; }
+.mp-deal-status.bg-emerald-100.text-emerald-700 { background: rgba(34, 197, 94, 0.11); color: #16a34a; }
+.mp-deal-status.bg-rose-100.text-rose-700 { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
 .mp-deal-dot { width: 6px; height: 6px; border-radius: 9999px; }
 .mp-deal-price { font-weight: 700; color: #0f172a; margin-top: 6px; font-size: 14px; }
 
 .mp-empty { padding: 56px 16px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.mp-empty-ico { width: 80px; height: 80px; border-radius: 24px; background: linear-gradient(135deg, rgba(232,65,10,0.15), rgba(232,65,10,0.05));
-  display: flex; align-items: center; justify-content: center; font-size: 32px; color: #e8410a; margin-bottom: 16px; box-shadow: inset 0 0 0 1px rgba(232,65,10,0.15); }
+.mp-empty-ico { width: 80px; height: 80px; border-radius: 24px; background: #eef1f5;
+  display: flex; align-items: center; justify-content: center; font-size: 32px; color: #94a3b8; margin-bottom: 16px; border: 1px solid #e5e7eb; }
 .mp-empty-title { font-size: 16px; font-weight: 600; color: #0f172a; }
-.mp-empty-sub { font-size: 14px; color: #64748b; margin-top: 6px; max-width: 320px; }
+.mp-empty-sub { font-size: 14px; color: #6b7280; margin-top: 6px; max-width: 320px; }
 
 .mp-rev-row { display: flex; gap: 12px; padding: 16px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.06); background: #fff; margin-bottom: 12px; }
 .mp-rev-ava { width: 44px; height: 44px; border-radius: 9999px; background: linear-gradient(135deg, rgba(232,65,10,0.2), rgba(232,65,10,0.05));
   color: #e8410a; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .mp-rev-ava img { width: 100%; height: 100%; border-radius: 9999px; object-fit: cover; }
 .mp-rev-name { font-weight: 600; font-size: 14px; color: #0f172a; }
-.mp-rev-date { font-size: 12px; color: #64748b; }
+.mp-rev-date { font-size: 12px; color: #6b7280; }
 .mp-rev-text { margin-top: 8px; font-size: 14px; color: #1e293b; line-height: 1.55; }
 .mp-stars { display: inline-flex; gap: 2px; color: #f59e0b; }
 .mp-stars .off { color: #e2e8f0; }
@@ -151,7 +189,7 @@
   color: #111827;
   margin-bottom: 8px;
 }
-.mp-rev-summary-sub { margin-top: 8px; font-size: 13px; color: #64748b; }
+.mp-rev-summary-sub { margin-top: 8px; font-size: 13px; color: #6b7280; }
 .mp-rev-bars { display: flex; flex-direction: column; gap: 8px; }
 .mp-rev-bar-row {
   display: grid;
@@ -161,12 +199,12 @@
 }
 .mp-rev-bar-label, .mp-rev-bar-count { font-size: 13px; color: #475569; }
 .mp-rev-bar-track { height: 9px; border-radius: 9999px; background: #f3f4f6; overflow: hidden; }
-.mp-rev-bar-fill { height: 100%; border-radius: 9999px; background: #fbbf24; }
+.mp-rev-bar-fill { height: 100%; border-radius: 9999px; background: #f59e0b; }
 
 .mp-about-list { display: flex; flex-direction: column; gap: 14px; }
 .mp-about-row { display: flex; gap: 12px; align-items: flex-start; }
 .mp-about-ico { margin-top: 4px; color: #64748b; }
-.mp-about-label { color: #64748b; font-size: 14px; }
+.mp-about-label { color: #6b7280; font-size: 14px; }
 .mp-about-value { font-size: 16px; font-weight: 600; color: #0f172a; line-height: 1.25; }
 
 .mp-sets-title { padding: 16px 16px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #64748b; }
@@ -181,7 +219,7 @@
 .mp-sets-ico.file { background: #fffbeb; color: #d97706; }
 .mp-sets-ico.card { background: #fff1f2; color: #e11d48; }
 .mp-sets-name { font-size: 15px; font-weight: 600; color: #0f172a; line-height: 1.2; }
-.mp-sets-desc { font-size: 12px; color: #64748b; margin-top: 2px; }
+.mp-sets-desc { font-size: 12px; color: #6b7280; margin-top: 2px; }
 .mp-sets-pill { padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
 .mp-sets-pill.ok { background: #d1fae5; color: #047857; }
 .mp-sets-pill.soon { background: rgba(15,23,42,0.06); color: #64748b; }
