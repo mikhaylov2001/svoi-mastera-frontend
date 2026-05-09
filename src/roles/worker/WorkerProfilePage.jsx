@@ -2,12 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   FaCamera, FaSignOutAlt, FaImage, FaMapMarkerAlt, FaShieldAlt, FaClock,
-  FaExclamationCircle, FaStar, FaCheckCircle, FaInbox, FaUser, FaBell,
-  FaIdCard, FaChevronRight, FaCalendarAlt, FaBriefcase, FaListAlt,
+  FaExclamationCircle, FaStar, FaCheckCircle, FaInbox, FaUser, FaBell, FaCommentDots,
+  FaIdCard, FaChevronRight, FaCalendarAlt, FaBriefcase, FaListAlt, FaFileAlt,
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { getMyDeals, getListingsByWorker, getReviewsByWorker, uploadAvatar, getUserProfile } from '../../api';
-import DashboardReviewsSection from '../../components/DashboardReviewsSection';
 import { formatMemberSinceRu } from '../../utils/memberSinceRu';
 import '../../styles/modernProfile.css';
 
@@ -128,6 +127,9 @@ export default function WorkerProfilePage() {
   const cityLabel = (profile?.city || '').trim();
 
   const avgRating = reviews.length ? (reviews.reduce((s, x) => s + (x.rating || 0), 0) / reviews.length) : 0;
+  const roundedAvg = Math.round(avgRating);
+  const starCounts = useMemo(() => [5, 4, 3, 2, 1].map((s) => reviews.filter((r) => (r.rating || 0) === s).length), [reviews]);
+  const maxStarCount = Math.max(...starCounts, 1);
   const activeDealsCount = useMemo(() => deals.filter((d) => ['IN_PROGRESS', 'NEW'].includes(d.status)).length, [deals]);
   const completedCount = useMemo(() => deals.filter((d) => d.status === 'COMPLETED').length, [deals]);
   const activeListings = useMemo(() => listings.filter((l) => l.active), [listings]);
@@ -157,6 +159,10 @@ export default function WorkerProfilePage() {
             <div className="mp-cover-grad" />
             <div className="mp-cover-blob1" />
             <div className="mp-cover-blob2" />
+            <div className="mp-cover-default" />
+            <div className="mp-cover-default-hint">
+              <FaImage /> Добавьте свою обложку
+            </div>
           </>
         )}
         <input ref={coverRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onCover} />
@@ -182,7 +188,6 @@ export default function WorkerProfilePage() {
               {profile && !profile.verified && profile.verificationStatus === 'PENDING' && <span className="mp-badge mp-badge-pending"><FaClock /> Документы на проверке</span>}
               {profile && !profile.verified && profile.verificationStatus === 'REJECTED' && <span className="mp-badge mp-badge-bad"><FaExclamationCircle /> Верификация отклонена</span>}
               <span className="mp-badge mp-badge-outline"><FaMapMarkerAlt /> {cityLabel || 'Йошкар-Ола'}</span>
-              {since && <span className="mp-badge mp-badge-outline"><FaCalendarAlt /> С {since}</span>}
             </div>
           </div>
           <div className="mp-head-btns">
@@ -262,19 +267,49 @@ export default function WorkerProfilePage() {
                 )}
 
                 {tab === 'reviews' && (
-                  <div ref={reviewsAnchor} id="reviews">
-                    <DashboardReviewsSection reviews={reviews} aboutTarget="worker" />
+                  <div className="mp-card" ref={reviewsAnchor} id="reviews">
+                    <h3 className="mp-card-title">Отзывы о вас от заказчиков</h3>
+                    <div className="mp-rev-summary">
+                      <div>
+                        <div className="mp-rev-summary-num">{avgRating > 0 ? avgRating.toFixed(1) : '0.0'}</div>
+                        <div className="mp-stars">{[1,2,3,4,5].map((i) => <FaStar key={i} className={i <= roundedAvg ? '' : 'off'} />)}</div>
+                        <div className="mp-rev-summary-sub">{reviews.length === 0 ? 'Отзывов пока нет' : `на основе ${reviews.length} отзывов`}</div>
+                      </div>
+                      <div className="mp-rev-bars">
+                        {[5,4,3,2,1].map((s, idx) => (
+                          <div key={s} className="mp-rev-bar-row">
+                            <div className="mp-rev-bar-label">{s}★</div>
+                            <div className="mp-rev-bar-track">
+                              <div className="mp-rev-bar-fill" style={{ width: `${(starCounts[idx] / maxStarCount) * 100}%` }} />
+                            </div>
+                            <div className="mp-rev-bar-count">{starCounts[idx]}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {reviews.length === 0 ? (
+                      <div className="mp-empty"><div className="mp-empty-ico"><FaCommentDots /></div><div className="mp-empty-title">Отзывов пока нет</div><div className="mp-empty-sub">После завершённых сделок заказчики смогут оставить о вас отзыв.</div></div>
+                    ) : reviews.map((r) => (
+                      <div key={r.id} className="mp-rev-row">
+                        <div className="mp-rev-ava">{r.authorName?.[0] || 'U'}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display:'flex', justifyContent:'space-between' }}><div className="mp-rev-name">{[r.authorName, r.authorLastName].filter(Boolean).join(' ')}</div><div className="mp-rev-date">{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div></div>
+                          <div style={{ marginTop: 4 }} className="mp-stars">{[1,2,3,4,5].map((i) => <FaStar key={i} className={i <= (r.rating || 0) ? '' : 'off'} />)}</div>
+                          {(r.text || r.comment) && <div className="mp-rev-text">{r.text || r.comment}</div>}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
 
                 {tab === 'about' && (
                   <div className="mp-card">
                     <h3 className="mp-card-title">О профиле</h3>
-                    <dl style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14 }}>
-                      <div style={{ display: 'flex', gap: 12 }}><FaMapMarkerAlt style={{ marginTop: 4, color: '#64748b' }} /><div><dt style={{ color: '#64748b' }}>Город</dt><dd style={{ fontWeight: 500 }}>{cityLabel || 'Не указан'}</dd></div></div>
-                      {since && <div style={{ display: 'flex', gap: 12 }}><FaCalendarAlt style={{ marginTop: 4, color: '#64748b' }} /><div><dt style={{ color: '#64748b' }}>На платформе</dt><dd style={{ fontWeight: 500 }}>с {since}</dd></div></div>}
-                      <div style={{ display: 'flex', gap: 12 }}><FaShieldAlt style={{ marginTop: 4, color: '#64748b' }} /><div><dt style={{ color: '#64748b' }}>Статус</dt><dd style={{ fontWeight: 500 }}>{profile?.verified ? 'Проверенный мастер' : 'Не верифицирован'}</dd></div></div>
-                      <div style={{ display: 'flex', gap: 12 }}><FaListAlt style={{ marginTop: 4, color: '#64748b' }} /><div><dt style={{ color: '#64748b' }}>Объявлений в каталоге</dt><dd style={{ fontWeight: 500 }}>{activeListings.length}</dd></div></div>
+                    <dl className="mp-about-list">
+                      <div className="mp-about-row"><FaMapMarkerAlt className="mp-about-ico" /><div><dt className="mp-about-label">Город</dt><dd className="mp-about-value">{cityLabel || 'Не указан'}</dd></div></div>
+                      {since && <div className="mp-about-row"><FaCalendarAlt className="mp-about-ico" /><div><dt className="mp-about-label">На платформе</dt><dd className="mp-about-value">с {since}</dd></div></div>}
+                      <div className="mp-about-row"><FaShieldAlt className="mp-about-ico" /><div><dt className="mp-about-label">Статус</dt><dd className="mp-about-value">{profile?.verified ? 'Проверенный мастер' : 'Не верифицирован'}</dd></div></div>
+                      <div className="mp-about-row"><FaListAlt className="mp-about-ico" /><div><dt className="mp-about-label">Объявлений в каталоге</dt><dd className="mp-about-value">{activeListings.length}</dd></div></div>
                     </dl>
                   </div>
                 )}
@@ -291,6 +326,36 @@ export default function WorkerProfilePage() {
                 <div className="mp-sets-row"><div className="mp-sets-ico shield"><FaShieldAlt /></div><div style={{ flex: 1, minWidth: 0 }}><div className="mp-sets-name">Верификация</div><div className="mp-sets-desc">Профиль проверен</div></div><span className="mp-sets-pill ok">✓ Готово</span></div>
               ) : (
                 <Link to="/verification" className="mp-sets-row"><div className="mp-sets-ico shield"><FaIdCard /></div><div style={{ flex: 1, minWidth: 0 }}><div className="mp-sets-name">Верификация</div><div className="mp-sets-desc">Тест и правила платформы</div></div><FaChevronRight style={{ color: '#94a3b8' }} /></Link>
+              )}
+              {profile?.verified ? (
+                profile?.guaranteeTermsAccepted ? (
+                  <div className="mp-sets-row">
+                    <div className="mp-sets-ico file"><FaFileAlt /></div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="mp-sets-name">Гарантия и ответственность</div>
+                      <div className="mp-sets-desc">Заявление подтверждено</div>
+                    </div>
+                    <span className="mp-sets-pill ok">✓ Готово</span>
+                  </div>
+                ) : (
+                  <Link to="/guarantee" className="mp-sets-row">
+                    <div className="mp-sets-ico file"><FaFileAlt /></div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="mp-sets-name">Гарантия и ответственность</div>
+                      <div className="mp-sets-desc">Прочитайте и подтвердите</div>
+                    </div>
+                    <FaChevronRight style={{ color: '#94a3b8' }} />
+                  </Link>
+                )
+              ) : (
+                <div className="mp-sets-row disabled">
+                  <div className="mp-sets-ico file"><FaFileAlt /></div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="mp-sets-name">Гарантия и ответственность</div>
+                    <div className="mp-sets-desc">Доступно после верификации</div>
+                  </div>
+                  <span className="mp-sets-pill soon">Позже</span>
+                </div>
               )}
               <Link to="/my-listings" className="mp-sets-row"><div className="mp-sets-ico file"><FaListAlt /></div><div style={{ flex: 1, minWidth: 0 }}><div className="mp-sets-name">Мои объявления</div><div className="mp-sets-desc">Активных: {activeListings.length}</div></div><FaChevronRight style={{ color: '#94a3b8' }} /></Link>
             </div>

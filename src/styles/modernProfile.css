@@ -12,6 +12,28 @@
 .mp-cover-grad { position: absolute; inset: 0; background: linear-gradient(135deg, #f1f0ee 0%, #f7f5f2 60%, #fafafa 100%); }
 .mp-cover-blob1 { position: absolute; top: -80px; right: -64px; width: 256px; height: 256px; border-radius: 9999px; background: rgba(232,65,10,0.07); filter: blur(60px); }
 .mp-cover-blob2 { position: absolute; bottom: -96px; left: -48px; width: 256px; height: 256px; border-radius: 9999px; background: rgba(15,23,42,0.04); filter: blur(60px); }
+.mp-cover-default {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(120deg, rgba(232,65,10,0.10), rgba(232,65,10,0.02)),
+    repeating-linear-gradient(-35deg, rgba(255,255,255,0.35) 0 18px, rgba(255,255,255,0.15) 18px 36px);
+}
+.mp-cover-default-hint {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.82);
+  border: 1px solid rgba(255,255,255,0.8);
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
 .mp-cover-btn { position: absolute; right: 12px; top: 12px; display: inline-flex; align-items: center; gap: 6px;
   padding: 6px 12px; border-radius: 9999px; background: #fff; border: 1px solid rgba(0,0,0,0.08);
   font-size: 12px; font-weight: 500; color: #0f172a; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; transition: background .15s; }
@@ -60,9 +82,10 @@
 .mp-stats { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
 @media (min-width: 640px) { .mp-stats { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; } }
 .mp-stat { padding: 14px 16px; border-radius: 18px; background: #fff; border: 1px solid rgba(0,0,0,0.06);
-  text-decoration: none; color: inherit; cursor: pointer; transition: transform .2s, box-shadow .2s, border-color .2s; display: block; }
+  text-decoration: none; color: inherit; cursor: pointer; transition: transform .2s, box-shadow .2s, border-color .2s;
+  display: flex; flex-direction: column; min-height: 118px; }
 .mp-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -10px rgba(0,0,0,0.1); border-color: rgba(0,0,0,0.12); }
-.mp-stat-ico { width: 36px; height: 36px; border-radius: 12px; background: rgba(15,23,42,0.05); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.mp-stat-ico { width: 38px; height: 38px; border-radius: 13px; background: rgba(15,23,42,0.04); display: flex; align-items: center; justify-content: center; font-size: 16px; }
 .mp-stat-ico.blue { color: #2563eb; }
 .mp-stat-ico.green { color: #059669; }
 .mp-stat-ico.violet { color: #7c3aed; }
@@ -123,6 +146,41 @@
 .mp-rev-text { margin-top: 8px; font-size: 14px; color: #1e293b; line-height: 1.55; }
 .mp-stars { display: inline-flex; gap: 2px; color: #f59e0b; }
 .mp-stars .off { color: #e2e8f0; }
+.mp-rev-summary {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+@media (max-width: 768px) {
+  .mp-rev-summary { grid-template-columns: 1fr; }
+}
+.mp-rev-summary-num {
+  font-size: 56px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #111827;
+  margin-bottom: 8px;
+}
+.mp-rev-summary-sub { margin-top: 8px; font-size: 13px; color: #64748b; }
+.mp-rev-bars { display: flex; flex-direction: column; gap: 8px; }
+.mp-rev-bar-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 8px;
+}
+.mp-rev-bar-label, .mp-rev-bar-count { font-size: 13px; color: #475569; }
+.mp-rev-bar-track { height: 9px; border-radius: 9999px; background: #f3f4f6; overflow: hidden; }
+.mp-rev-bar-fill { height: 100%; border-radius: 9999px; background: #fbbf24; }
+
+.mp-about-list { display: flex; flex-direction: column; gap: 14px; }
+.mp-about-row { display: flex; gap: 12px; align-items: flex-start; }
+.mp-about-ico { margin-top: 4px; color: #64748b; }
+.mp-about-label { color: #64748b; font-size: 14px; }
+.mp-about-value { font-size: 16px; font-weight: 600; color: #0f172a; line-height: 1.25; }
 
 .mp-sets-title { padding: 16px 16px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #64748b; }
 .mp-sets-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; text-decoration: none; color: inherit;

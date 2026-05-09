@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   FaCamera, FaSignOutAlt, FaImage, FaMapMarkerAlt, FaShieldAlt, FaClock,
   FaExclamationCircle, FaStar, FaCheckCircle, FaInbox, FaUser, FaBell,
-  FaIdCard, FaCreditCard, FaChevronRight, FaCalendarAlt, FaBriefcase, FaCommentDots,
+  FaIdCard, FaCreditCard, FaChevronRight, FaCalendarAlt, FaBriefcase, FaCommentDots, FaFileAlt,
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { getUserProfile, getMyDeals, createReview, uploadAvatar, getReviewsByCustomer } from '../../api';
@@ -118,6 +118,9 @@ export default function CustomerProfilePage() {
   const active = useMemo(() => deals.filter((d) => ['IN_PROGRESS', 'NEW'].includes(d.status)).length, [deals]);
   const completed = useMemo(() => deals.filter((d) => d.status === 'COMPLETED').length, [deals]);
   const avgRating = reviews.length ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length) : 0;
+  const roundedAvg = Math.round(avgRating);
+  const starCounts = useMemo(() => [5, 4, 3, 2, 1].map((s) => reviews.filter((r) => (r.rating || 0) === s).length), [reviews]);
+  const maxStarCount = Math.max(...starCounts, 1);
 
   const tabCounts = useMemo(() => {
     const c = { ALL: deals.length, NEW: 0, IN_PROGRESS: 0, COMPLETED: 0, CANCELLED: 0 };
@@ -167,6 +170,10 @@ export default function CustomerProfilePage() {
             <div className="mp-cover-grad" />
             <div className="mp-cover-blob1" />
             <div className="mp-cover-blob2" />
+            <div className="mp-cover-default" />
+            <div className="mp-cover-default-hint">
+              <FaImage /> Добавьте свою обложку
+            </div>
           </>
         )}
         <input ref={coverRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onCover} />
@@ -192,7 +199,6 @@ export default function CustomerProfilePage() {
               {profile && !profile.verified && profile.verificationStatus === 'PENDING' && (<span className="mp-badge mp-badge-pending"><FaClock /> На проверке</span>)}
               {profile && !profile.verified && profile.verificationStatus === 'REJECTED' && (<span className="mp-badge mp-badge-bad"><FaExclamationCircle /> Отклонена</span>)}
               <span className="mp-badge mp-badge-outline"><FaMapMarkerAlt /> {cityLabel || 'Йошкар-Ола'}</span>
-              {since && <span className="mp-badge mp-badge-outline"><FaCalendarAlt /> с {since}</span>}
             </div>
           </div>
           <div className="mp-head-btns">
@@ -282,11 +288,22 @@ export default function CustomerProfilePage() {
                 {tab === 'reviews' && (
                   <div className="mp-card" ref={reviewsAnchor} id="reviews">
                     <h3 className="mp-card-title">Отзывы о вас от мастеров</h3>
-                    <div style={{ display:'flex', alignItems:'center', gap: 24, marginBottom: 24 }}>
+                    <div className="mp-rev-summary">
                       <div>
-                        <div style={{ fontSize: 48, fontWeight: 800, letterSpacing:'-0.02em' }}>{avgRating > 0 ? avgRating.toFixed(1) : '0.0'}</div>
-                        <div className="mp-stars">{[1,2,3,4,5].map((i) => <FaStar key={i} className={i <= Math.round(avgRating) ? '' : 'off'} />)}</div>
-                        <div style={{ fontSize: 12, color:'#64748b', marginTop: 4 }}>{reviews.length === 0 ? 'Отзывов пока нет' : `${reviews.length} отзывов`}</div>
+                        <div className="mp-rev-summary-num">{avgRating > 0 ? avgRating.toFixed(1) : '0.0'}</div>
+                        <div className="mp-stars">{[1,2,3,4,5].map((i) => <FaStar key={i} className={i <= roundedAvg ? '' : 'off'} />)}</div>
+                        <div className="mp-rev-summary-sub">{reviews.length === 0 ? 'Отзывов пока нет' : `на основе ${reviews.length} отзывов`}</div>
+                      </div>
+                      <div className="mp-rev-bars">
+                        {[5,4,3,2,1].map((s, idx) => (
+                          <div key={s} className="mp-rev-bar-row">
+                            <div className="mp-rev-bar-label">{s}★</div>
+                            <div className="mp-rev-bar-track">
+                              <div className="mp-rev-bar-fill" style={{ width: `${(starCounts[idx] / maxStarCount) * 100}%` }} />
+                            </div>
+                            <div className="mp-rev-bar-count">{starCounts[idx]}</div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                     {reviews.length === 0 ? (
@@ -307,10 +324,10 @@ export default function CustomerProfilePage() {
                 {tab === 'about' && (
                   <div className="mp-card">
                     <h3 className="mp-card-title">О профиле</h3>
-                    <dl style={{ display:'flex', flexDirection:'column', gap: 12, fontSize: 14 }}>
-                      <div style={{ display:'flex', gap: 12 }}><FaMapMarkerAlt style={{ marginTop: 4, color:'#64748b' }} /><div><dt style={{ color:'#64748b' }}>Город</dt><dd style={{ fontWeight: 500 }}>{cityLabel || 'Не указан'}</dd></div></div>
-                      {since && <div style={{ display:'flex', gap: 12 }}><FaCalendarAlt style={{ marginTop: 4, color:'#64748b' }} /><div><dt style={{ color:'#64748b' }}>На платформе</dt><dd style={{ fontWeight: 500 }}>с {since}</dd></div></div>}
-                      <div style={{ display:'flex', gap: 12 }}><FaShieldAlt style={{ marginTop: 4, color:'#64748b' }} /><div><dt style={{ color:'#64748b' }}>Статус</dt><dd style={{ fontWeight: 500 }}>{profile?.verified ? 'Проверенный профиль' : 'Не верифицирован'}</dd></div></div>
+                    <dl className="mp-about-list">
+                      <div className="mp-about-row"><FaMapMarkerAlt className="mp-about-ico" /><div><dt className="mp-about-label">Город</dt><dd className="mp-about-value">{cityLabel || 'Не указан'}</dd></div></div>
+                      {since && <div className="mp-about-row"><FaCalendarAlt className="mp-about-ico" /><div><dt className="mp-about-label">На платформе</dt><dd className="mp-about-value">с {since}</dd></div></div>}
+                      <div className="mp-about-row"><FaShieldAlt className="mp-about-ico" /><div><dt className="mp-about-label">Статус</dt><dd className="mp-about-value">{profile?.verified ? 'Проверенный профиль' : 'Не верифицирован'}</dd></div></div>
                     </dl>
                   </div>
                 )}
@@ -327,6 +344,36 @@ export default function CustomerProfilePage() {
                 <div className="mp-sets-row"><div className="mp-sets-ico shield"><FaShieldAlt /></div><div style={{ flex:1, minWidth: 0 }}><div className="mp-sets-name">Верификация</div><div className="mp-sets-desc">Профиль проверен</div></div><span className="mp-sets-pill ok">✓ Готово</span></div>
               ) : (
                 <Link to="/verification" className="mp-sets-row"><div className="mp-sets-ico shield"><FaIdCard /></div><div style={{ flex:1, minWidth: 0 }}><div className="mp-sets-name">Верификация</div><div className="mp-sets-desc">Тест и правила платформы</div></div><FaChevronRight style={{ color:'#94a3b8' }} /></Link>
+              )}
+              {profile?.verified ? (
+                profile?.guaranteeTermsAccepted ? (
+                  <div className="mp-sets-row">
+                    <div className="mp-sets-ico file"><FaFileAlt /></div>
+                    <div style={{ flex:1, minWidth: 0 }}>
+                      <div className="mp-sets-name">Гарантия и ответственность</div>
+                      <div className="mp-sets-desc">Заявление подтверждено</div>
+                    </div>
+                    <span className="mp-sets-pill ok">✓ Готово</span>
+                  </div>
+                ) : (
+                  <Link to="/guarantee" className="mp-sets-row">
+                    <div className="mp-sets-ico file"><FaFileAlt /></div>
+                    <div style={{ flex:1, minWidth: 0 }}>
+                      <div className="mp-sets-name">Гарантия и ответственность</div>
+                      <div className="mp-sets-desc">Прочитайте и подтвердите</div>
+                    </div>
+                    <FaChevronRight style={{ color:'#94a3b8' }} />
+                  </Link>
+                )
+              ) : (
+                <div className="mp-sets-row disabled">
+                  <div className="mp-sets-ico file"><FaFileAlt /></div>
+                  <div style={{ flex:1, minWidth: 0 }}>
+                    <div className="mp-sets-name">Гарантия и ответственность</div>
+                    <div className="mp-sets-desc">Доступно после верификации</div>
+                  </div>
+                  <span className="mp-sets-pill soon">Позже</span>
+                </div>
               )}
               <div className="mp-sets-row disabled"><div className="mp-sets-ico card"><FaCreditCard /></div><div style={{ flex:1, minWidth: 0 }}><div className="mp-sets-name">Платёжные данные</div><div className="mp-sets-desc">Скоро появится</div></div><span className="mp-sets-pill soon">Скоро</span></div>
             </div>
