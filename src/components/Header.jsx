@@ -243,11 +243,6 @@ function Header() {
   const initials = userName
     ? userName.trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2)
     : 'SM';
-  const isProfileRoute = ['/profile', '/worker-profile', '/settings', '/verification', '/guarantee']
-    .some((p) => location.pathname.startsWith(p));
-  const navClass = (isActive, makeActiveOnProfile = false) =>
-    `header-nav-link${(isActive || (makeActiveOnProfile && isProfileRoute)) ? ' active' : ''}`;
-
   return (
     <>
     <header className="header">
@@ -412,7 +407,7 @@ function Header() {
                 </NavLink>
                 <NavLink
                   to="/deals"
-                  className={({ isActive }) => navClass(isActive, true)}
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
                   onClick={onRepeatNavClick('/deals')}
                 >
                   Мои сделки
@@ -447,7 +442,7 @@ function Header() {
                 </NavLink>
                 <NavLink
                   to="/deals"
-                  className={({ isActive }) => navClass(isActive, true)}
+                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
                   onClick={onRepeatNavClick('/deals')}
                 >
                   Мои сделки
