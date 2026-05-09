@@ -6,7 +6,7 @@ import {
   FaIdCard, FaChevronRight, FaCalendarAlt, FaBriefcase, FaListAlt, FaFileAlt,
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import { getMyDeals, getListingsByWorker, getReviewsByWorker, uploadAvatar, getUserProfile } from '../../api';
+import { getMyDeals, getListingsByWorker, getReviewsByWorker, uploadAvatar, getUserProfile, getWorkerStats } from '../../api';
 import { formatMemberSinceRu } from '../../utils/memberSinceRu';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 import '../../styles/modernProfile.css';
@@ -31,6 +31,7 @@ export default function WorkerProfilePage() {
   const reviewsAnchor = useRef(null);
 
   const [profile, setProfile] = useState(null);
+  const [workerStats, setWorkerStats] = useState(null);
   const [deals, setDeals] = useState([]);
   const [listings, setListings] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -55,13 +56,15 @@ export default function WorkerProfilePage() {
       getListingsByWorker(userId).catch(() => []),
       getReviewsByWorker(userId),
       getUserProfile(userId),
-    ]).then(([d, lst, r, p]) => {
+      getWorkerStats(userId).catch(() => null),
+    ]).then(([d, lst, r, p, stats]) => {
       const uid = String(userId || '');
       setDeals((d || []).filter((x) => String(x.workerId || '') === uid));
       setListings(Array.isArray(lst) ? lst : []);
       setReviews((r || []).filter((x) => x.status === 'APPROVED'));
       const prof = p || {};
       setProfile(prof);
+      setWorkerStats(stats || null);
       if (prof.lastName != null) updateLastName(String(prof.lastName));
     }).catch(() => {}).finally(() => setLoading(false));
   }, [userId, userRole, updateLastName]);
@@ -115,6 +118,10 @@ export default function WorkerProfilePage() {
   const fullName = [userName, lastNameLive.trim()].filter(Boolean).join(' ') || 'Мастер';
   const since = formatMemberSinceRu(profile?.registeredAt || profile?.createdAt);
   const cityLabel = pick(
+    workerStats?.city,
+    workerStats?.locationCity,
+    workerStats?.addressCity,
+    workerStats?.location?.city,
     profile?.city,
     profile?.cityName,
     profile?.locationCity,

@@ -203,6 +203,10 @@ export async function getReviewsByWorker(workerId) {
   return apiCall(`/workers/${workerId}/reviews`);
 }
 
+export async function getWorkerStats(workerId) {
+  return apiCall(`/workers/${workerId}/stats`);
+}
+
 export async function getReviewsByCustomer(customerUserId) {
   return apiCall(`/customers/${customerUserId}/reviews`);
 }
