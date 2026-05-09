@@ -6,7 +6,7 @@ import {
   FaIdCard, FaCreditCard, FaChevronRight, FaCalendarAlt, FaBriefcase, FaCommentDots, FaFileAlt,
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import { getUserProfile, getMyDeals, createReview, uploadAvatar, getReviewsByCustomer } from '../../api';
+import { getUserProfile, getMyDeals, createReview, uploadAvatar, getReviewsByCustomer, getCustomerStats } from '../../api';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 import '../../styles/modernProfile.css';
@@ -33,6 +33,7 @@ export default function CustomerProfilePage() {
   const reviewsAnchor = useRef(null);
 
   const [profile, setProfile] = useState(null);
+  const [customerStats, setCustomerStats] = useState(null);
   const [deals, setDeals] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,11 +57,12 @@ export default function CustomerProfilePage() {
   useEffect(() => {
     if (!userId || userRole === 'WORKER') return;
     setLoading(true);
-    Promise.allSettled([getUserProfile(userId), getMyDeals(userId), getReviewsByCustomer(userId)])
-      .then(([p, d, r]) => {
+    Promise.allSettled([getUserProfile(userId), getMyDeals(userId), getReviewsByCustomer(userId), getCustomerStats(userId)])
+      .then(([p, d, r, s]) => {
         if (p.status === 'fulfilled') setProfile(p.value);
         if (d.status === 'fulfilled') setDeals(d.value || []);
         if (r.status === 'fulfilled') setReviews(Array.isArray(r.value) ? r.value : []);
+        if (s.status === 'fulfilled') setCustomerStats(s.value || null);
       })
       .finally(() => setLoading(false));
   }, [userId, userRole, navigate]);
@@ -101,6 +103,10 @@ export default function CustomerProfilePage() {
   const fullName = profile?.displayName || userName || 'Заказчик';
   const since = fmtSince(profile?.registeredAt || profile?.createdAt);
   const cityLabel = pick(
+    customerStats?.city,
+    customerStats?.locationCity,
+    customerStats?.addressCity,
+    customerStats?.location?.city,
     profile?.city,
     profile?.cityName,
     profile?.locationCity,
