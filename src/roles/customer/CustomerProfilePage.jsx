@@ -38,7 +38,7 @@ const STATUS = {
 };
 
 export default function CustomerProfilePage() {
-  const { userId, userName, userRole, userAvatar, updateAvatar, logout } = useAuth();
+  const { userId, userName, userLastName, userRole, userAvatar, updateAvatar, updateLastName, logout } = useAuth();
   const navigate = useNavigate();
   const fileRef = useRef(null);
   const coverRef = useRef(null);
@@ -81,7 +81,11 @@ export default function CustomerProfilePage() {
       getCustomerPublicProfile(userId),
     ])
       .then(([p, d, r, s, cp, pub]) => {
-        if (p.status === 'fulfilled') setProfile(p.value);
+        if (p.status === 'fulfilled') {
+          const pr = p.value;
+          setProfile(pr);
+          if (pr?.lastName != null) updateLastName(String(pr.lastName));
+        }
         if (d.status === 'fulfilled') setDeals(d.value || []);
         if (r.status === 'fulfilled') setReviews(Array.isArray(r.value) ? r.value : []);
         if (s.status === 'fulfilled') setCustomerStats(s.value || null);
@@ -89,7 +93,7 @@ export default function CustomerProfilePage() {
         if (pub.status === 'fulfilled') setCustomerPublic(pub.value || null);
       })
       .finally(() => setLoading(false));
-  }, [userId, userRole, navigate]);
+  }, [userId, userRole, navigate, updateLastName]);
 
   const compress = (file) => new Promise((res) => {
     const r = new FileReader();
@@ -120,11 +124,17 @@ export default function CustomerProfilePage() {
     e.target.value = '';
   };
 
+  const lastNameLive = profile?.lastName != null ? String(profile.lastName).trim() : (userLastName || '').trim();
+  const firstNameLive = (profile?.displayName || userName || '').trim();
+  const fullName = useMemo(
+    () => [firstNameLive, lastNameLive].filter(Boolean).join(' ') || 'Заказчик',
+    [firstNameLive, lastNameLive],
+  );
   const initials = useMemo(() => {
-    const n = (profile?.displayName || userName || 'Гость').trim();
-    return n.split(/\s+/).map((p) => p[0]).join('').toUpperCase().slice(0, 2);
-  }, [profile, userName]);
-  const fullName = profile?.displayName || userName || 'Заказчик';
+    const f = firstNameLive.split(/\s+/)[0]?.[0] || (userName || 'Г').trim()[0] || 'Г';
+    const l = lastNameLive[0] || '';
+    return (f + l).toUpperCase().slice(0, 2);
+  }, [firstNameLive, lastNameLive, userName]);
   const since = fmtSince(profile?.registeredAt || profile?.createdAt);
   // Приоритет как в PersonalSettingsPage: город из GET /users/:id/profile (поле city и др.)
   const cityLabel = useMemo(() => pick(
