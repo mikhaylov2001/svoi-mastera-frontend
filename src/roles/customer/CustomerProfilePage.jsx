@@ -198,10 +198,10 @@ export default function CustomerProfilePage() {
         <div className="mp-body">
           <div className="mp-main">
             <div className="mp-stats">
-              <Link to="/deals" className="mp-stat"><div className="mp-stat-ico blue"><FaBriefcase /></div><div className="mp-stat-num">{active}</div><div className="mp-stat-lbl">В работе</div></Link>
-              <Link to="/deals" className="mp-stat"><div className="mp-stat-ico green"><FaCheckCircle /></div><div className="mp-stat-num">{completed}</div><div className="mp-stat-lbl">Завершено</div></Link>
-              <a href="#reviews" className="mp-stat" onClick={(e) => { e.preventDefault(); setTab('reviews'); reviewsAnchor.current?.scrollIntoView({ behavior:'smooth' }); }}><div className="mp-stat-ico violet"><FaCommentDots /></div><div className="mp-stat-num">{reviews.length}</div><div className="mp-stat-lbl">Отзывы</div></a>
-              <a href="#reviews" className="mp-stat" onClick={(e) => { e.preventDefault(); setTab('reviews'); reviewsAnchor.current?.scrollIntoView({ behavior:'smooth' }); }}><div className="mp-stat-ico amber"><FaStar /></div><div className="mp-stat-num">{avgRating > 0 ? avgRating.toFixed(1) : '0.0'}</div><div className="mp-stat-lbl">Рейтинг</div></a>
+              <Link to="/deals" className="mp-stat mp-stat-blue"><div className="mp-stat-ico blue"><FaBriefcase /></div><div className="mp-stat-num">{active}</div><div className="mp-stat-lbl">В работе</div></Link>
+              <Link to="/deals" className="mp-stat mp-stat-green"><div className="mp-stat-ico green"><FaCheckCircle /></div><div className="mp-stat-num">{completed}</div><div className="mp-stat-lbl">Завершено</div></Link>
+              <a href="#reviews" className="mp-stat mp-stat-violet" onClick={(e) => { e.preventDefault(); setTab('reviews'); reviewsAnchor.current?.scrollIntoView({ behavior:'smooth' }); }}><div className="mp-stat-ico violet"><FaCommentDots /></div><div className="mp-stat-num">{reviews.length}</div><div className="mp-stat-lbl">Отзывы</div></a>
+              <a href="#reviews" className="mp-stat mp-stat-amber" onClick={(e) => { e.preventDefault(); setTab('reviews'); reviewsAnchor.current?.scrollIntoView({ behavior:'smooth' }); }}><div className="mp-stat-ico amber"><FaStar /></div><div className="mp-stat-num">{avgRating > 0 ? avgRating.toFixed(1) : '0.0'}</div><div className="mp-stat-lbl">Рейтинг</div></a>
             </div>
 
             <div className="mp-tabs-wrap">
