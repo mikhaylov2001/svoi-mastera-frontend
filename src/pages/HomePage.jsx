@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaBolt, FaImage, FaMapMarkerAlt, FaRegClock } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
 import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
+import '../roles/worker/jobListings.css';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 const BACKEND_ORIGIN = 'https://svoi-mastera-backend.onrender.com';
@@ -403,12 +405,22 @@ function cityInLocative(nominative) {
   return c || 'Йошкар-Оле';
 }
 
+function pluralRequestsLabel(n) {
+  if (n % 10 === 1 && n % 100 !== 11) return `${n} заявка`;
+  if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return `${n} заявки`;
+  return `${n} заявок`;
+}
+
+const jlFmtDateShort = (d) =>
+  !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+
 function WorkerHome({ userId, userName }) {
   const navigate = useNavigate();
   const [openRequests, setOpenRequests] = useState([]);
   const [categories, setCategories] = useState([]);
   const [city, setCity] = useState('Йошкар-Ола');
   const [loading, setLoading] = useState(true);
+  const [homeListCat, setHomeListCat] = useState('ALL');
 
   const reloadWorkerHome = useCallback(async () => {
     if (!userId) return;
@@ -438,6 +450,23 @@ function WorkerHome({ userId, userName }) {
   );
 
   const catName = (categoryId) => categories.find(c => String(c.id) === String(categoryId))?.name || 'Заявка';
+
+  const homeListingCats = useMemo(() => {
+    const s = new Map();
+    sortedOpenRequests.forEach((i) => {
+      const name = i.categoryName || catName(i.categoryId);
+      if (name) s.set(name, (s.get(name) || 0) + 1);
+    });
+    return Array.from(s, ([name, n]) => ({ name, n }));
+  }, [sortedOpenRequests, categories]);
+
+  const homeVisibleRequests = useMemo(() => {
+    if (homeListCat === 'ALL') return sortedOpenRequests;
+    return sortedOpenRequests.filter((i) => {
+      const name = i.categoryName || catName(i.categoryId);
+      return name === homeListCat;
+    });
+  }, [sortedOpenRequests, homeListCat, categories]);
 
   const firstName = (userName || 'Мастер').trim().split(/\s+/)[0] || 'Мастер';
   const cityPrep = cityInLocative(city);
@@ -500,60 +529,131 @@ function WorkerHome({ userId, userName }) {
             </div>
           </div>
 
-          <div className="av-recs-hdr av-recs-hdr--solo">
-            <h2 className="av-recs-title">Актуальные заявки</h2>
-          </div>
-
-          {loading ? (
-            <div className="av-empty">
-              <div className="av-empty-ico">⏳</div>
-              <h3>Загружаем заявки…</h3>
-            </div>
-          ) : sortedOpenRequests.length === 0 ? (
-            <div className="av-empty">
-              <div className="av-empty-ico">📋</div>
-              <h3>Пока нет открытых заявок</h3>
-              <p>Когда заказчики опубликуют задачи, они появятся здесь и в «Найти работу»</p>
-            </div>
-          ) : (
-            <div className="av-cards-grid">
-              {sortedOpenRequests.map(req => {
-                const img0 = req.photos?.[0];
-                const src = workerListingPhotoUrl(img0);
-                const budget = formatJobRequestBudgetLabel(req);
-                const custName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
-                const loc = req.addressText || req.city || city;
-                const cname = catName(req.categoryId);
-                return (
-                  <Link
-                    key={req.id}
-                    to={`/find-work?request=${encodeURIComponent(req.id)}`}
-                    className="av-card"
+          <div className="jl-page jl-home-embed">
+            <div className="jl-wrap">
+              <div className="jl-head">
+                <div>
+                  <h2 className="jl-title">Актуальные заявки</h2>
+                  <div className="jl-sub">
+                    {loading
+                      ? 'Загрузка…'
+                      : `${pluralRequestsLabel(openRequests.length)} ждут отклика`}
+                  </div>
+                </div>
+                <div className="jl-filters">
+                  <button
+                    type="button"
+                    className={`jl-chip${homeListCat === 'ALL' ? ' is-active' : ''}`}
+                    onClick={() => setHomeListCat('ALL')}
                   >
-                    <div className="av-card-img">
-                      {src ? <img src={src} alt="" /> : '👤'}
-                      <span className="av-card-cat">{cname}</span>
-                    </div>
-                    <div className="av-card-body">
-                      <div className="av-card-price">{budget}</div>
-                      <div className="av-card-title">{req.title}</div>
-                      <div className="av-card-footer">
-                        <div className="av-card-ava">
-                          {req.customerAvatar ? (
-                            <img src={workerListingPhotoUrl(req.customerAvatar)} alt="" />
+                    Все
+                  </button>
+                  {homeListingCats.slice(0, 6).map((c) => (
+                    <button
+                      key={c.name}
+                      type="button"
+                      className={`jl-chip${homeListCat === c.name ? ' is-active' : ''}`}
+                      onClick={() => setHomeListCat(c.name)}
+                    >
+                      {c.name} · {c.n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {loading ? (
+                <div className="jl-empty">Загружаем заявки…</div>
+              ) : homeVisibleRequests.length === 0 ? (
+                <div className="jl-empty">
+                  {homeListCat === 'ALL' ? (
+                    'Пока нет открытых заявок. Когда заказчики опубликуют задачи, они появятся здесь и в «Найти работу».'
+                  ) : (
+                    'В этой категории пока нет заявок.'
+                  )}
+                </div>
+              ) : (
+                <div className="jl-grid">
+                  {homeVisibleRequests.map((item) => {
+                    const photoSrc = workerListingPhotoUrl(item.photos?.[0] || item.photo);
+                    const budgetLabel = formatJobRequestBudgetLabel(item);
+                    const hasPrice = budgetLabel !== 'Не указана';
+                    const catLabel = item.categoryName || catName(item.categoryId);
+                    const locLine = (item.cityName || item.address || item.addressText || '').trim();
+                    const custName =
+                      [item.customerName, item.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
+                    const showUrgent = !!(
+                      item.urgent ||
+                      item.isUrgent ||
+                      (item.urgency && String(item.urgency).trim())
+                    );
+                    return (
+                      <Link
+                        key={item.id}
+                        to={`/find-work?request=${encodeURIComponent(item.id)}`}
+                        className="jl-card"
+                      >
+                        <div className="jl-card-media">
+                          {photoSrc ? (
+                            <img src={photoSrc} alt={item.title || ''} loading="lazy" />
                           ) : (
-                            (custName || 'З')[0]
+                            <div className="jl-card-media-empty">
+                              <FaImage />
+                            </div>
+                          )}
+                          {catLabel && <span className="jl-cat-badge">{catLabel}</span>}
+                          {showUrgent && (
+                            <span className="jl-urgent">
+                              <FaBolt aria-hidden /> Срочно
+                            </span>
                           )}
                         </div>
-                        <span className="av-card-wname">{custName}</span>
-                        <span className="av-card-city">📍 {loc}</span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+                        <div className="jl-card-body">
+                          <div className="jl-price">
+                            {hasPrice ? (
+                              budgetLabel
+                            ) : (
+                              <span className="jl-price-muted">Договорная</span>
+                            )}
+                          </div>
+                          <div className="jl-card-title">{item.title}</div>
+                          <div className="jl-meta">
+                            {locLine && (
+                              <span>
+                                <FaMapMarkerAlt aria-hidden />
+                                {locLine}
+                              </span>
+                            )}
+                            {item.createdAt && (
+                              <span>
+                                <FaRegClock aria-hidden />
+                                {jlFmtDateShort(item.createdAt)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="jl-card-foot">
+                            <div className="jl-author-ava">
+                              {item.customerAvatar ? (
+                                <img src={workerListingPhotoUrl(item.customerAvatar)} alt="" />
+                              ) : (
+                                (custName[0] || '?').toUpperCase()
+                              )}
+                            </div>
+                            <div className="jl-author-name">{custName}</div>
+                            {(item.cityName || locLine) && (
+                              <span className="jl-author-loc">
+                                <FaMapMarkerAlt aria-hidden />
+                                {item.cityName || locLine}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         <div className="av-side">

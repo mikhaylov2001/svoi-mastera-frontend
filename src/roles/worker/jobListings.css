@@ -1,9 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
-/* Встроенный блок на FindWorkPage (не на всю высоту экрана) */
-.jl-page.jl-findwork-embed {
+/* Блок заявок на главной (мастер): jl-page без полной высоты экрана */
+.jl-page.jl-home-embed {
   min-height: 0;
-  padding: 24px 0 8px;
+  padding: 8px 0 28px;
+  margin-top: 8px;
 }
 
 /* ===== Общая страница ===== */
