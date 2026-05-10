@@ -56,18 +56,19 @@
 
 .ml-row-img {
   width: 132px;
-  height: 106px;
+  height: auto;
+  min-height: 100%;
   flex-shrink: 0;
   background: #eef1f5;
   overflow: hidden;
   position: relative;
-  align-self: center;
-  border-radius: 6px;
-  margin: 10px 0 10px 12px;
+  align-self: stretch;
+  border-radius: 0;
+  margin: 0;
 }
 .ml-row-img img,
 .ml-row-img-ph {
-  min-height: 106px;
+  min-height: 100%;
 }
 .ml-row-img img {
   width: 100%;
@@ -791,9 +792,9 @@
 @media (max-width: 560px) {
   .ml-row-img {
     width: 112px;
-    min-height: 92px;
-    height: 92px;
-    margin-left: 10px;
+    min-height: 100%;
+    height: auto;
+    margin-left: 0;
   }
   .ml-row-img img,
   .ml-row-img-ph {
