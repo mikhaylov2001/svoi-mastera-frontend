@@ -292,31 +292,33 @@
 
 .wd-card {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   background: #fff;
-  border-radius: 5px;
-  border: 1px solid #c5cdd6;
+  border-radius: 14px;
+  border: 1px solid #dfe6ee;
   overflow: hidden;
   cursor: pointer;
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.06),
-    0 2px 8px rgba(15, 23, 42, 0.04);
+    0 2px 10px rgba(15, 23, 42, 0.06),
+    0 8px 24px rgba(15, 23, 42, 0.04);
   transition:
     box-shadow 0.22s ease,
     transform 0.22s cubic-bezier(0.34, 1.15, 0.64, 1),
     border-color 0.2s ease;
   transform-origin: center center;
   -webkit-tap-highlight-color: transparent;
+  position: relative;
+  padding-right: 30px;
 }
 .wd-card:hover {
-  transform: scale(1.015);
+  transform: translateY(-1px);
   border-color: #94a3b8;
   box-shadow:
-    0 4px 6px -1px rgba(15, 23, 42, 0.09),
-    0 12px 28px -6px rgba(15, 23, 42, 0.12);
+    0 4px 14px rgba(15, 23, 42, 0.08),
+    0 12px 28px rgba(15, 23, 42, 0.08);
 }
 .wd-card:active {
-  transform: scale(1.018);
+  transform: translateY(0);
   box-shadow:
     0 2px 4px rgba(15, 23, 42, 0.07),
     0 6px 16px -4px rgba(15, 23, 42, 0.1);
@@ -326,36 +328,36 @@
   outline: none;
 }
 .wd-card.new {
-  border-left: 3px solid #f59e0b;
-  background: #fffdf7;
+  border-left: 0;
+  background: #fff;
 }
 .wd-card.prog {
-  border-left: 3px solid #3b82f6;
+  border-left: 0;
 }
 .wd-card.done {
-  border-left: 3px solid #22c55e;
+  border-left: 0;
 }
 
 .wd-card-img {
-  width: 126px;
-  min-height: 108px;
+  width: 82px;
+  height: 82px;
   flex-shrink: 0;
   background: #eef1f5;
   overflow: hidden;
   position: relative;
-  align-self: stretch;
+  align-self: center;
+  border-radius: 10px;
+  margin: 10px 0 10px 12px;
 }
 .wd-card-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  min-height: 108px;
 }
 .wd-card-img-ph {
   width: 100%;
   height: 100%;
-  min-height: 108px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -365,11 +367,11 @@
 
 .wd-card-body {
   flex: 1;
-  padding: 10px 14px 8px;
+  padding: 10px 14px 10px;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
 }
 .wd-card-title {
   font-size: 14px;
@@ -386,7 +388,7 @@
   font-size: 16px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   color: #0f172a;
   letter-spacing: -0.02em;
 }
@@ -396,16 +398,16 @@
   max-width: 100%;
   width: auto;
   box-sizing: border-box;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #334155;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 5px 10px;
-  margin-bottom: 5px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  margin-bottom: 4px;
   line-height: 1.25;
 }
 
@@ -527,7 +529,7 @@
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.22);
 }
 .wd-card-meta {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: #64748b;
   display: flex;
@@ -539,12 +541,12 @@
 .wd-card-stats {
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  padding: 6px 10px;
-  margin: 0 -14px -8px;
-  border-top: 1px solid #e5e7eb;
-  background: #f8fafc;
+  padding: 0;
+  margin: 0;
+  border-top: 0;
+  background: transparent;
   border-radius: 0;
   align-items: center;
 }
@@ -558,15 +560,20 @@
 }
 
 .wd-card-actions {
-  width: 182px;
-  flex-shrink: 0;
-  padding: 10px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  justify-content: center;
-  border-left: 1px solid #e5e7eb;
-  background: #fafafa;
+  display: none;
+}
+
+.wd-card::after {
+  content: '›';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0afc5;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .wd-btn-primary,
