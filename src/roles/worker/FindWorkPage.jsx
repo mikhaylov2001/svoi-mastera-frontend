@@ -1430,66 +1430,52 @@ export default function FindWorkPage() {
               </div>
 
               {(req.customerName || req.customerId) && (
-                <div className="jd-card">
-                  <h3 style={{ fontSize: 13, color: '#999', textTransform: 'uppercase', letterSpacing: '.6px' }}>Заказчик</h3>
+                <div className="jd-person-card">
+                  <div className="jd-person-label">Заказчик</div>
                   {req.customerId ? (
                     <Link
                       to={`/customers/${req.customerId}?name=${encodeURIComponent(custNameFull)}`}
-                      style={{ textDecoration: 'none', color: 'inherit' }}
+                      className="jd-person-link"
                     >
-                      <div className="jd-author">
-                        <div className="jd-author-ava">
-                          {req.customerAvatar ? (
-                            <img src={jdPhotoUrl(req.customerAvatar)} alt="" />
-                          ) : (
-                            <div
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: 800,
-                                color: '#888',
-                              }}
-                            >
-                              {(custNameFull[0] || '?').toUpperCase()}
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="jd-author-name">{custNameFull}</div>
-                          <div className="jd-author-status">Активный заказчик</div>
-                        </div>
-                      </div>
-                      <div className="jd-author-rating">
-                        <span className="stars">
-                          {'★'.repeat(custStars)}
-                          {'☆'.repeat(5 - custStars)}
-                        </span>{' '}
-                        {custAvg.toFixed(1)} ({reviewsCountLabel(custCnt)})
-                      </div>
-                    </Link>
-                  ) : (
-                    <div className="jd-author">
-                      <div className="jd-author-ava">
-                        <div
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: 800,
-                            color: '#888',
-                          }}
-                        >
+                      {req.customerAvatar ? (
+                        <img className="jd-person-ava" src={jdPhotoUrl(req.customerAvatar)} alt="" />
+                      ) : (
+                        <div className="jd-person-ava jd-person-ava--ph" aria-hidden>
                           {(custNameFull[0] || '?').toUpperCase()}
                         </div>
-                      </div>
-                      <div>
-                        <div className="jd-author-name">{custNameFull}</div>
+                      )}
+                      <div className="jd-person-text">
+                        <div className="jd-person-name">{custNameFull}</div>
                         <div className="jd-author-status">Активный заказчик</div>
+                        <div className="jd-author-rating">
+                          <span className="stars">
+                            {'★'.repeat(custStars)}
+                            {'☆'.repeat(5 - custStars)}
+                          </span>
+                          <span className="jd-rating-val">{custAvg.toFixed(1)}</span>
+                          <span>({reviewsCountLabel(custCnt)})</span>
+                        </div>
+                      </div>
+                      <span className="jd-person-chevron" aria-hidden>
+                        ›
+                      </span>
+                    </Link>
+                  ) : (
+                    <div className="jd-person-link" style={{ cursor: 'default', pointerEvents: 'none' }}>
+                      <div className="jd-person-ava jd-person-ava--ph" aria-hidden>
+                        {(custNameFull[0] || '?').toUpperCase()}
+                      </div>
+                      <div className="jd-person-text">
+                        <div className="jd-person-name">{custNameFull}</div>
+                        <div className="jd-author-status">Активный заказчик</div>
+                        <div className="jd-author-rating">
+                          <span className="stars">
+                            {'★'.repeat(custStars)}
+                            {'☆'.repeat(5 - custStars)}
+                          </span>
+                          <span className="jd-rating-val">{custAvg.toFixed(1)}</span>
+                          <span>({reviewsCountLabel(custCnt)})</span>
+                        </div>
                       </div>
                     </div>
                   )}
