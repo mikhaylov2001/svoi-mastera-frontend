@@ -4,6 +4,10 @@ import {
   FaArrowLeft,
   FaChevronLeft,
   FaChevronRight,
+  FaFolder,
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaRegClock,
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -1276,13 +1280,22 @@ export default function FindWorkPage() {
             <h1 className="jd-title">{req.title}</h1>
             <div className="jd-meta-row">
               {categoryLabel && (
-                <span>📂 {categoryLabel}</span>
+                <span>
+                  <FaFolder className="jd-meta-ico" aria-hidden />
+                  {categoryLabel}
+                </span>
               )}
               {addressLine && (
-                <span>📍 {addressLine}</span>
+                <span>
+                  <FaMapMarkerAlt className="jd-meta-ico" aria-hidden />
+                  {addressLine}
+                </span>
               )}
               {req.createdAt && (
-                <span>📅 {jdFmtDateLong(req.createdAt)}</span>
+                <span>
+                  <FaCalendarAlt className="jd-meta-ico" aria-hidden />
+                  {jdFmtDateLong(req.createdAt)}
+                </span>
               )}
             </div>
           </div>
@@ -1356,12 +1369,15 @@ export default function FindWorkPage() {
               {req.description && req.description !== 'Без описания' && (
                 <div className="jd-card" style={{ marginTop: 16 }}>
                   <h3>Описание</h3>
-                  <div style={{ whiteSpace: 'pre-wrap', color: '#333', lineHeight: 1.6 }}>
+                  <div className="jd-desc-body">
                     {formatListingOriginDescription('WORKER', req.description)}
                   </div>
                   {req.urgency && (
-                    <div style={{ marginTop: 14, color: '#555' }}>
-                      ⏰ <b>Срочность:</b> {req.urgency}
+                    <div className="jd-urgency">
+                      <FaRegClock className="jd-meta-ico" aria-hidden />
+                      <span>
+                        <b>Срочность:</b> {req.urgency}
+                      </span>
                     </div>
                   )}
                 </div>

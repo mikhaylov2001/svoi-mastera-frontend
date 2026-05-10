@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
 /* Встроенный блок на FindWorkPage (не на всю высоту экрана) */
 .jl-page.jl-findwork-embed {
   min-height: 0;
@@ -137,8 +139,8 @@
 /* ===== Страница объявления ===== */
 .jd-page {
   min-height: 100vh;
-  background: #fff;
-  padding: 14px 0 64px;
+  background: #f6f6f4;
+  padding: 24px 0 64px;
 }
 .jd-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 
@@ -148,12 +150,34 @@
   text-decoration: none; margin-bottom: 16px;
 }
 .jd-back:hover { color: #e8410a; }
+.jd-back svg { flex-shrink: 0; width: 14px; height: 14px; opacity: 0.85; }
 
 .jd-header { margin-bottom: 18px; }
-.jd-title { font-size: 44px; font-weight: 900; letter-spacing: -.9px; color: #111; margin: 0 0 10px; line-height: 1.05; }
-.jd-meta-row { display: flex; flex-wrap: wrap; gap: 14px; font-size: 24px; color: #7d7d7d; font-weight: 600; }
-.jd-meta-row span { display: inline-flex; align-items: center; gap: 6px; }
-.jd-meta-row svg { color: #e8410a; }
+.jd-title {
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: #111;
+  margin: 0 0 12px;
+  line-height: 1.15;
+}
+.jd-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  font-size: 13px;
+  color: #6e6e6e;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.jd-meta-row span { display: inline-flex; align-items: center; gap: 8px; }
+.jd-meta-row .jd-meta-ico {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  color: #9ca3af;
+  opacity: 0.95;
+}
 
 .jd-grid {
   display: grid; grid-template-columns: minmax(0,1fr) 360px; gap: 24px;
@@ -166,23 +190,25 @@
   box-shadow: 0 2px 10px rgba(0,0,0,.03);
 }
 .jd-main-photo {
-  position: relative; aspect-ratio: 16/10; background: #0d0d0d;
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: #efece8;
 }
 .jd-main-photo img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
   display: block;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
 }
 .jd-nav-btn {
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 40px; height: 40px; border-radius: 50%;
-  background: rgba(255,255,255,.9); border: 0; cursor: pointer;
+  background: rgba(255,255,255,.92); border: 0; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 16px rgba(0,0,0,.15); color: #333;
+  box-shadow: 0 6px 16px rgba(0,0,0,.12); color: #374151;
 }
+.jd-nav-btn svg { width: 16px; height: 16px; }
 .jd-nav-btn:hover { background: #fff; color: #e8410a; }
 .jd-nav-btn.prev { left: 14px; } .jd-nav-btn.next { right: 14px; }
 
@@ -198,15 +224,37 @@
 .jd-card + .jd-card { margin-top: 16px; }
 .jd-card h3 { font-size: 18px; font-weight: 800; margin: 0 0 12px; color: #111; }
 
+.jd-desc-body {
+  font-size: 15px;
+  color: #333;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+.jd-urgency {
+  margin-top: 14px;
+  font-size: 14px;
+  color: #555;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.jd-urgency .jd-meta-ico { margin-top: 3px; }
+
 .jd-row { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid #f1f1f1; font-size: 14px; }
 .jd-row:last-child { border-bottom: 0; }
-.jd-row .k { color: #888; }
-.jd-row .v { color: #111; font-weight: 600; text-align: right; }
+.jd-row .k { color: #888; font-weight: 400; }
+.jd-row .v { color: #111; font-weight: 700; text-align: right; }
 
 .jd-side { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 16px; }
 
 .jd-price-card { background: #fff; border: 1px solid #ececec; border-radius: 18px; padding: 22px; box-shadow: 0 8px 30px -16px rgba(232,65,10,.18); }
-.jd-price-label { font-size: 11px; color: #999; letter-spacing: .8px; text-transform: uppercase; font-weight: 700; }
+.jd-price-label {
+  font-size: 12px;
+  color: #9ca3af;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  font-weight: 600;
+}
 .jd-price-value { font-size: 32px; font-weight: 900; color: #111; margin: 6px 0 2px; letter-spacing: -.6px; }
 .jd-price-hint { font-size: 13px; color: #888; margin-bottom: 16px; }
 .jd-btn { width: 100%; border: 0; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 800; cursor: pointer; transition: all .15s; font-family: inherit; }
