@@ -1281,19 +1281,19 @@ export default function FindWorkPage() {
             <div className="jd-meta-row">
               {categoryLabel && (
                 <span>
-                  <FaFolder className="jd-meta-ico" aria-hidden />
+                  <FaFolder aria-hidden />
                   {categoryLabel}
                 </span>
               )}
               {addressLine && (
                 <span>
-                  <FaMapMarkerAlt className="jd-meta-ico" aria-hidden />
+                  <FaMapMarkerAlt aria-hidden />
                   {addressLine}
                 </span>
               )}
               {req.createdAt && (
                 <span>
-                  <FaCalendarAlt className="jd-meta-ico" aria-hidden />
+                  <FaCalendarAlt aria-hidden />
                   {jdFmtDateLong(req.createdAt)}
                 </span>
               )}
@@ -1374,7 +1374,7 @@ export default function FindWorkPage() {
                   </div>
                   {req.urgency && (
                     <div className="jd-urgency">
-                      <FaRegClock className="jd-meta-ico" aria-hidden />
+                      <FaRegClock aria-hidden />
                       <span>
                         <b>Срочность:</b> {req.urgency}
                       </span>
