@@ -639,12 +639,6 @@ function WorkerHome({ userId, userName }) {
                               )}
                             </div>
                             <div className="jl-author-name">{custName}</div>
-                            {(item.cityName || locLine) && (
-                              <span className="jl-author-loc">
-                                <FaMapMarkerAlt aria-hidden />
-                                {item.cityName || locLine}
-                              </span>
-                            )}
                           </div>
                         </div>
                       </Link>
