@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
+import {
+  getUserProfile,
+  getOpenJobRequestsForWorker,
+  getCategories,
+  getMyJobRequests,
+} from '../api';
 import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
@@ -259,19 +264,87 @@ const css = `
   }
 `;
 
+const CUSTOMER_ACTIVE_REQ_STATUSES = ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'];
+
 function CustomerHome({ userId, userName }) {
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [shown, setShown] = useState(8);
+
+  const [myRequests, setMyRequests] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [city, setCity] = useState('Йошкар-Ола');
+  const [customerProf, setCustomerProf] = useState(null);
+  const [loadingRequests, setLoadingRequests] = useState(true);
+  const [homeListCat, setHomeListCat] = useState('ALL');
 
   const reloadListings = useCallback(() => {
     fetch(`${API}/listings`).then(r => r.ok ? r.json() : [])
       .then(d => setListings(Array.isArray(d) ? d.filter(l => l.active) : [])).catch(() => {});
   }, []);
 
-  useEffect(() => { reloadListings(); }, [reloadListings]);
+  const reloadMyRequests = useCallback(async () => {
+    if (!userId) return;
+    setLoadingRequests(true);
+    try {
+      const [reqs, prof, cats] = await Promise.all([
+        getMyJobRequests(userId).catch(() => []),
+        getUserProfile(userId).catch(() => null),
+        getCategories().catch(() => []),
+      ]);
+      const raw = Array.isArray(reqs) ? reqs : [];
+      const active = raw.filter((r) =>
+        !r.status || CUSTOMER_ACTIVE_REQ_STATUSES.includes(String(r.status)),
+      );
+      setMyRequests(active);
+      setCustomerProf(prof);
+      setCategories(Array.isArray(cats) ? cats : []);
+      const c = prof?.city && String(prof.city).trim();
+      if (c) setCity(c);
+    } finally {
+      setLoadingRequests(false);
+    }
+  }, [userId]);
 
-  useSameRouteRefetch('/', reloadListings);
+  useEffect(() => {
+    reloadListings();
+  }, [reloadListings]);
+
+  useEffect(() => {
+    reloadMyRequests();
+  }, [reloadMyRequests]);
+
+  useSameRouteRefetch('/', () => {
+    reloadListings();
+    reloadMyRequests();
+  });
+
+  const catNameReq = (categoryId) =>
+    categories.find((c) => String(c.id) === String(categoryId))?.name || '';
+
+  const sortedMyRequests = useMemo(
+    () => [...myRequests].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
+    [myRequests],
+  );
+
+  const homeListingCats = useMemo(() => {
+    const s = new Map();
+    sortedMyRequests.forEach((i) => {
+      const name = i.categoryName || catNameReq(i.categoryId);
+      if (name) s.set(name, (s.get(name) || 0) + 1);
+    });
+    return Array.from(s, ([name, n]) => ({ name, n }));
+  }, [sortedMyRequests, categories]);
+
+  const homeVisibleMyRequests = useMemo(() => {
+    if (homeListCat === 'ALL') return sortedMyRequests;
+    return sortedMyRequests.filter((i) => {
+      const name = i.categoryName || catNameReq(i.categoryId);
+      return name === homeListCat;
+    });
+  }, [sortedMyRequests, homeListCat, categories]);
+
+  const displayCustomerName = (userName || '').trim() || 'Вы';
 
   return (
     <div className="av-page">
@@ -330,6 +403,121 @@ function CustomerHome({ userId, userName }) {
                 </Link>
               ))}
             </div>
+          </div>
+
+          <div className="av-customer-requests-block">
+            <div className="av-recs-hdr av-recs-hdr--customer-requests">
+              <div>
+                <h2 className="av-recs-title">Актуальные заявки</h2>
+                <p className="av-recs-sub">
+                  {loadingRequests
+                    ? 'Загрузка…'
+                    : pluralRequestsAwaitingSubtitle(sortedMyRequests.length)}
+                </p>
+              </div>
+              <Link to="/my-requests" className="av-recs-link">
+                Мои заявки →
+              </Link>
+            </div>
+            <div className="av-recs-chips">
+              <button
+                type="button"
+                className={`jl-chip${homeListCat === 'ALL' ? ' is-active' : ''}`}
+                onClick={() => setHomeListCat('ALL')}
+              >
+                Все
+              </button>
+              {homeListingCats.slice(0, 6).map((c) => (
+                <button
+                  key={c.name}
+                  type="button"
+                  className={`jl-chip${homeListCat === c.name ? ' is-active' : ''}`}
+                  onClick={() => setHomeListCat(c.name)}
+                >
+                  {c.name} · {c.n}
+                </button>
+              ))}
+            </div>
+
+            {loadingRequests ? (
+                <div className="av-empty">
+                  <div className="av-empty-ico">⏳</div>
+                  <h3>Загружаем заявки…</h3>
+                </div>
+              ) : homeVisibleMyRequests.length === 0 ? (
+                <div className="av-empty">
+                  <div className="av-empty-ico">📋</div>
+                  <h3>
+                    {homeListCat === 'ALL'
+                      ? 'У вас пока нет активных заявок'
+                      : 'В этой категории нет активных заявок'}
+                  </h3>
+                  {homeListCat === 'ALL' ? (
+                    <p>
+                      Разместите заявку — мастера предложат цену в разделе{' '}
+                      <Link to="/categories" style={{ color: '#e8410a', fontWeight: 700 }}>
+                        категорий
+                      </Link>{' '}
+                      или в «Мои заявки»
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="av-cards-grid">
+                  {homeVisibleMyRequests.map((item) => {
+                    const photoSrc = workerListingPhotoUrl(item.photos?.[0] || item.photo);
+                    const budgetLabel = formatJobRequestBudgetLabel(item);
+                    const hasPrice = budgetLabel !== 'Не указана';
+                    const catLabel = item.categoryName || catNameReq(item.categoryId);
+                    const locLine = (item.cityName || item.address || item.addressText || '').trim();
+                    const cityShort =
+                      item.cityName ||
+                      (locLine ? locLine.split(',')[0].trim() : '') ||
+                      city;
+                    const custName =
+                      [item.customerName, item.customerLastName].filter(Boolean).join(' ') ||
+                      (customerProf?.displayName && String(customerProf.displayName).trim()) ||
+                      displayCustomerName;
+                    const avSrc = workerListingPhotoUrl(
+                      item.customerAvatar || customerProf?.avatarUrl,
+                    );
+                    return (
+                      <Link
+                        key={item.id}
+                        to={`/my-requests?request=${encodeURIComponent(item.id)}`}
+                        className="av-card"
+                      >
+                        <div className="av-card-img">
+                          {photoSrc ? (
+                            <img src={photoSrc} alt={item.title || ''} loading="lazy" />
+                          ) : (
+                            '📋'
+                          )}
+                          {catLabel ? <span className="av-card-cat">{catLabel}</span> : null}
+                        </div>
+                        <div className="av-card-body">
+                          <div className="av-card-price">
+                            {hasPrice ? budgetLabel : '— ₽'}
+                            {hasPrice ? <span className="av-card-price-unit">за работу</span> : null}
+                          </div>
+                          <div className="av-card-title">{item.title}</div>
+                          <div className="av-card-footer">
+                            <div className="av-card-ava">
+                              {avSrc ? (
+                                <img src={avSrc} alt="" />
+                              ) : (
+                                (custName[0] || '?').toUpperCase()
+                              )}
+                            </div>
+                            <span className="av-card-wname">{custName}</span>
+                            <span className="av-card-city">📍 {cityShort}</span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
           </div>
 
           {/* ── ОБЪЯВЛЕНИЯ ── */}
@@ -408,6 +596,13 @@ function pluralRequestsLabel(n) {
   if (n % 10 === 1 && n % 100 !== 11) return `${n} заявка`;
   if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return `${n} заявки`;
   return `${n} заявок`;
+}
+
+function pluralRequestsAwaitingSubtitle(n) {
+  if (n <= 0) return 'Нет активных заявок';
+  const noun = pluralRequestsLabel(n);
+  const verb = n % 10 === 1 && n % 100 !== 11 ? 'ждёт' : 'ждут';
+  return `${noun} ${verb} отклика`;
 }
 
 function WorkerHome({ userId, userName }) {

@@ -39,9 +39,13 @@ export const HOME_MARKET_CSS = `
     /* ── ОБЪЯВЛЕНИЯ ── */
     .av-recs-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
     .av-recs-hdr--solo { justify-content: flex-start; }
+    .av-recs-hdr--customer-requests { align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
     .av-recs-title { font-size: 18px; font-weight: 800; color: #1a1a1a; margin: 0; }
-    .av-recs-link { font-size: 13px; color: #e8410a; text-decoration: none; font-weight: 600; }
+    .av-recs-sub { font-size: 13px; color: #888; margin: 4px 0 0; line-height: 1.4; font-weight: 500; }
+    .av-recs-link { font-size: 13px; color: #e8410a; text-decoration: none; font-weight: 600; white-space: nowrap; flex-shrink: 0; padding-top: 2px; }
     .av-recs-link:hover { text-decoration: underline; }
+    .av-recs-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; width: 100%; }
+    .av-customer-requests-block { margin-top: 8px; margin-bottom: 6px; }
     .av-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
     .av-card { background: #fff; border-radius: 10px; overflow: hidden; text-decoration: none; color: #1a1a1a; display: flex; flex-direction: column; transition: box-shadow .18s, transform .18s; border: 1px solid #e8e8e8; }
     .av-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.1); transform: translateY(-2px); }
