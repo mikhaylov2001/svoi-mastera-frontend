@@ -8,7 +8,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import {
   getUserProfile, getMyDeals, createReview, uploadAvatar, getReviewsByCustomer, getCustomerStats,
-  getCustomerProfile, getCustomerPublicProfile,
+  getCustomerProfile,
 } from '../../api';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
@@ -46,9 +46,8 @@ export default function CustomerProfilePage() {
 
   const [profile, setProfile] = useState(null);
   const [customerStats, setCustomerStats] = useState(null);
-  /** Запись заказчика с /customer-profiles/me — там часто лежит город */
+  /** Доп. поля заказчика (город и т.д.) с /customers/:id/profile */
   const [customerRecord, setCustomerRecord] = useState(null);
-  const [customerPublic, setCustomerPublic] = useState(null);
   const [deals, setDeals] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -78,9 +77,8 @@ export default function CustomerProfilePage() {
       getReviewsByCustomer(userId),
       getCustomerStats(userId),
       getCustomerProfile(userId),
-      getCustomerPublicProfile(userId),
     ])
-      .then(([p, d, r, s, cp, pub]) => {
+      .then(([p, d, r, s, cp]) => {
         if (p.status === 'fulfilled') {
           const pr = p.value;
           setProfile(pr);
@@ -90,7 +88,6 @@ export default function CustomerProfilePage() {
         if (r.status === 'fulfilled') setReviews(Array.isArray(r.value) ? r.value : []);
         if (s.status === 'fulfilled') setCustomerStats(s.value || null);
         if (cp.status === 'fulfilled') setCustomerRecord(cp.value || null);
-        if (pub.status === 'fulfilled') setCustomerPublic(pub.value || null);
       })
       .finally(() => setLoading(false));
   }, [userId, userRole, navigate, updateLastName]);
@@ -148,15 +145,11 @@ export default function CustomerProfilePage() {
     customerRecord?.city,
     customerRecord?.cityName,
     customerRecord?.locationCity,
-    customerPublic?.city,
-    customerPublic?.cityName,
-    customerPublic?.locationCity,
-    customerPublic?.location?.city,
     customerStats?.city,
     customerStats?.locationCity,
     customerStats?.addressCity,
     customerStats?.location?.city,
-  ), [profile, customerRecord, customerPublic, customerStats]);
+  ), [profile, customerRecord, customerStats]);
 
   const active = useMemo(() => deals.filter((d) => ['IN_PROGRESS', 'NEW'].includes(d.status)).length, [deals]);
   const completed = useMemo(() => deals.filter((d) => d.status === 'COMPLETED').length, [deals]);

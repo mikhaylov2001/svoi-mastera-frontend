@@ -185,8 +185,9 @@ export async function completeDeal(userId, dealId) {
 
 
 // ── PROFILE ──
+/** Данные заказчика для «своего» профиля. /customer-profiles/me на бэке падает (LazyInitialization). */
 export async function getCustomerProfile(userId) {
-  return apiCall('/customer-profiles/me', { headers: { 'X-User-Id': userId } });
+  return apiCall(`/customers/${userId}/profile`);
 }
 
 /** Публичная карточка заказчика (часто содержит город, если отличается от /users/.../profile). */

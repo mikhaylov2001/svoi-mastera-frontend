@@ -176,8 +176,9 @@ export async function completeDeal(userId, dealId) {
 
 
 // ── PROFILE ──
+/** См. src/api.js — /customer-profiles/me нестабилен на бэке. */
 export async function getCustomerProfile(userId) {
-  return apiCall('/customer-profiles/me', { headers: { 'X-User-Id': userId } });
+  return apiCall(`/customers/${userId}/profile`);
 }
 
 // ── REVIEWS ──
