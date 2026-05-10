@@ -1,17 +1,33 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  FaArrowLeft,
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaChevronLeft,
+  FaChevronRight,
+  FaFolder,
+} from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats } from '../../api';
 import { formatJobRequestBudgetLabel } from '../../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
+import './jobListings.css';
 import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
+
+const JD_BACKEND = 'https://svoi-mastera-backend.onrender.com';
+const jdPhotoUrl = (u) =>
+  !u ? null : u.startsWith('http') || u.startsWith('data:') ? u : JD_BACKEND + u;
+
+const jdFmtDateLong = (d) =>
+  !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 
 const CAT_ALL = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
@@ -1231,165 +1247,250 @@ export default function FindWorkPage() {
     setOnlyWithPhoto(false); setSortBy('recency'); setRatingMin(0);
   }, []);
 
-  // ═══ ЭКРАН 3: детальная заявка ═══
+  // ═══ ЭКРАН 3: детальная заявка (вёрстка jd-* из jobListings.css) ═══
   if (selectedRequest) {
     const req = selectedRequest;
-    const hasPhoto = req.photos && req.photos.length > 0;
     const catStyle = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '📋', color: '#f3f4f6' };
+    const jdPhotos = (req.photos || []).map(jdPhotoUrl).filter(Boolean);
+    const mainSrc = jdPhotos[activePhotoIdx] || null;
     const budget = formatJobRequestBudgetLabel(req);
+    const priceIsNegotiable = budget === 'Не указана';
+    const addressLine = (req.addressText || req.address || req.cityName || '').trim();
     const custRatingStats = req.customerId ? customerStats[String(req.customerId)] : null;
     const custAvg = custRatingStats?.averageRating ?? 0;
     const custCnt = custRatingStats?.reviewsCount ?? 0;
     const custStars = Math.min(5, Math.max(0, Math.round(Number(custAvg) || 0)));
+    const custNameFull = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
+    const categoryLabel = selectedCategory?.name || req.categoryName;
 
     return (
       <>
-      <div style={{ background:'#fff', minHeight:'100vh' }}>
-        <div className="container" style={{ paddingTop:16, paddingBottom:60 }}>
+      <div className="jd-page">
+        <div className="jd-wrap">
           <button
             type="button"
+            className="jd-back"
             onClick={() => { setSelectedRequest(null); setActivePhotoIdx(0); }}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: 0,
-              border: 'none',
-              background: 'none',
-              color: '#666',
-              fontSize: 20,
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              marginBottom: 12,
-            }}
           >
-            ← Назад к заявкам
+            <FaArrowLeft /> Назад к заявкам
           </button>
-          <div style={{ marginBottom:16 }}>
-            <h1 style={{ fontSize:24, fontWeight:800, color:'#111827', margin:'0 0 6px' }}>{req.title}</h1>
-            <div style={{ display:'flex', gap:12, alignItems:'center', flexWrap:'wrap', fontSize:13, color:'#9ca3af' }}>
-              {selectedCategory && <span>🏷 {selectedCategory.name}</span>}
-              {req.addressText && <span>📍 {req.addressText}</span>}
-              {req.createdAt && <span>📅 {new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</span>}
+
+          <div className="jd-header">
+            <h1 className="jd-title">{req.title}</h1>
+            <div className="jd-meta-row">
+              {categoryLabel && (
+                <span>
+                  <FaFolder /> {categoryLabel}
+                </span>
+              )}
+              {addressLine && (
+                <span>
+                  <FaMapMarkerAlt />
+                  {addressLine}
+                </span>
+              )}
+              {req.createdAt && (
+                <span>
+                  <FaCalendarAlt />
+                  {jdFmtDateLong(req.createdAt)}
+                </span>
+              )}
             </div>
           </div>
 
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 320px', gap:20, alignItems:'flex-start' }}>
+          <div className="jd-grid">
             <div>
-              <div style={{ background:'#fff', borderRadius:12, overflow:'hidden', marginBottom:16 }}>
-                {hasPhoto ? (
-                  <>
-                    <div style={{ position:'relative', width:'100%', aspectRatio:'4/3', overflow:'hidden', cursor:'pointer', background:'#f3f4f6' }}
-                      onClick={() => setLightbox({ photos: req.photos, index: activePhotoIdx })}
-                    >
-                      <img src={req.photos[activePhotoIdx]} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none', display:'block' }} />
-                      {req.photos.length > 1 && (
-                        <>
-                          <button onClick={e => { e.stopPropagation(); setActivePhotoIdx(i => i > 0 ? i-1 : req.photos.length-1); }}
-                            style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.85)', border:'none', color:'#111827', fontSize:22, cursor:'pointer', boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }}>‹</button>
-                          <button onClick={e => { e.stopPropagation(); setActivePhotoIdx(i => i < req.photos.length-1 ? i+1 : 0); }}
-                            style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.85)', border:'none', color:'#111827', fontSize:22, cursor:'pointer', boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }}>›</button>
-                        </>
-                      )}
+              <div className="jd-gallery">
+                <div
+                  className="jd-main-photo"
+                  role="presentation"
+                  onClick={() => mainSrc && setLightbox({ photos: jdPhotos, index: activePhotoIdx })}
+                  style={{ cursor: mainSrc ? 'pointer' : 'default' }}
+                >
+                  {mainSrc ? (
+                    <img src={mainSrc} alt={req.title || ''} />
+                  ) : (
+                    <div className="jl-card-media-empty" style={{ height: '100%', minHeight: 200 }}>
+                      {catStyle.emoji}
                     </div>
-                    {req.photos.length > 1 && (
-                      <div style={{ display:'flex', gap:6, padding:'10px 12px', overflowX:'auto', background:'#fafafa', borderTop:'1px solid #f0f0f0' }}>
-                        {req.photos.map((p, i) => (
-                          <div key={i} onClick={() => setActivePhotoIdx(i)}
-                            style={{ width:80, height:60, flexShrink:0, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === activePhotoIdx ? '2px solid #e8410a' : '2px solid transparent', opacity: i === activePhotoIdx ? 1 : 0.65, transition:'all .15s' }}>
-                            <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
-                          </div>
-                        ))}
+                  )}
+                  {jdPhotos.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        className="jd-nav-btn prev"
+                        aria-label="Предыдущее фото"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActivePhotoIdx((i) => (i > 0 ? i - 1 : jdPhotos.length - 1));
+                        }}
+                      >
+                        <FaChevronLeft />
+                      </button>
+                      <button
+                        type="button"
+                        className="jd-nav-btn next"
+                        aria-label="Следующее фото"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActivePhotoIdx((i) => (i < jdPhotos.length - 1 ? i + 1 : 0));
+                        }}
+                      >
+                        <FaChevronRight />
+                      </button>
+                    </>
+                  )}
+                </div>
+                {jdPhotos.length > 1 && (
+                  <div className="jd-thumbs">
+                    {jdPhotos.map((p, i) => (
+                      <div
+                        key={i}
+                        role="button"
+                        tabIndex={0}
+                        className={`jd-thumb ${i === activePhotoIdx ? 'is-active' : ''}`}
+                        onClick={() => setActivePhotoIdx(i)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setActivePhotoIdx(i);
+                          }
+                        }}
+                      >
+                        <img src={p} alt="" />
                       </div>
-                    )}
-                  </>
-                ) : (
-                  <div style={{ aspectRatio:'4/3', display:'flex', alignItems:'center', justifyContent:'center', fontSize:64, color:'#d1d5db', background:'#f9fafb' }}>
-                    {catStyle.emoji}
+                    ))}
                   </div>
                 )}
               </div>
 
               {req.description && req.description !== 'Без описания' && (
-                <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
-                  <h2 style={{ fontSize:18, fontWeight:800, color:'#111827', margin:'0 0 12px' }}>Описание</h2>
-                  <p style={{ fontSize:15, color:'#374151', lineHeight:1.7, margin:0, whiteSpace:'pre-wrap' }}>{formatListingOriginDescription('WORKER', req.description)}</p>
+                <div className="jd-card" style={{ marginTop: 16 }}>
+                  <h3>Описание</h3>
+                  <div style={{ whiteSpace: 'pre-wrap', color: '#333', lineHeight: 1.6 }}>
+                    {formatListingOriginDescription('WORKER', req.description)}
+                  </div>
+                  {req.urgency && (
+                    <div style={{ marginTop: 14, color: '#555' }}>
+                      ⏰ <b>Срочность:</b> {req.urgency}
+                    </div>
+                  )}
                 </div>
               )}
 
-              <div style={{ background:'#fff', borderRadius:12, padding:'20px 24px', marginBottom:16 }}>
-                <h2 style={{ fontSize:18, fontWeight:800, color:'#111827', margin:'0 0 16px' }}>Подробности</h2>
-                <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
-                  {[
-                    selectedCategory && ['Категория', selectedCategory.name],
-                    req.addressText  && ['Адрес',     req.addressText],
-                    ['Стоимость', budget],
-                    req.createdAt    && ['Опубликована', new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })],
-                  ].filter(Boolean).map(([label, value]) => (
-                    <div key={label} style={{ display:'flex', justifyContent:'space-between', padding:'12px 0', borderBottom:'1px solid #f3f4f6', fontSize:14 }}>
-                      <span style={{ color:'#9ca3af', fontWeight:500 }}>{label}</span>
-                      <span style={{ color:'#111827', fontWeight:600, textAlign:'right', maxWidth:'60%' }}>{value}</span>
-                    </div>
-                  ))}
+              <div className="jd-card">
+                <h3>Подробности</h3>
+                {categoryLabel && (
+                  <div className="jd-row">
+                    <span className="k">Категория</span>
+                    <span className="v">{categoryLabel}</span>
+                  </div>
+                )}
+                {addressLine && (
+                  <div className="jd-row">
+                    <span className="k">Адрес</span>
+                    <span className="v">{addressLine}</span>
+                  </div>
+                )}
+                <div className="jd-row">
+                  <span className="k">Стоимость</span>
+                  <span className="v">{priceIsNegotiable ? 'Договорная' : budget}</span>
                 </div>
+                {req.createdAt && (
+                  <div className="jd-row">
+                    <span className="k">Опубликована</span>
+                    <span className="v">{jdFmtDateLong(req.createdAt)}</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div style={{ position:'sticky', top:72, display:'flex', flexDirection:'column', gap:12 }}>
-              <div style={{ background:'#fff', borderRadius:12, padding:'20px' }}>
-                <div style={{ marginBottom:14 }}>
-                  <div style={{ fontSize:12, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Стоимость</div>
-                  <div style={{ fontSize:28, fontWeight:900, color:'#111827' }}>{budget}</div>
-                  <div style={{ fontSize:13, color:'#9ca3af', marginTop:4, fontWeight:500 }}>за работу</div>
-                </div>
-                <button
-                  onClick={() => handleOpenOfferModal(req)}
-                  style={{ width:'100%', padding:'14px', background:'#e8410a', border:'none', borderRadius:8, color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:10, transition:'background .15s' }}
-                  onMouseEnter={e => e.currentTarget.style.background='#c73208'}
-                  onMouseLeave={e => e.currentTarget.style.background='#e8410a'}
-                >
+            <aside className="jd-side">
+              <div className="jd-price-card">
+                <div className="jd-price-label">Стоимость</div>
+                <div className="jd-price-value">{priceIsNegotiable ? 'Договорная' : budget}</div>
+                <div className="jd-price-hint">за работу</div>
+
+                <button type="button" className="jd-btn jd-btn-primary" onClick={() => handleOpenOfferModal(req)}>
                   Откликнуться
                 </button>
                 {req.customerId && (
-                  <a href={`/chat/${req.customerId}?jobRequestId=${req.id}`}
-                    style={{ display:'block', width:'100%', padding:'13px', background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:8, color:'#374151', fontSize:15, fontWeight:600, textAlign:'center', textDecoration:'none', transition:'all .15s', boxSizing:'border-box' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor='#374151'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor='#e5e7eb'; }}
+                  <Link
+                    to={`/chat/${req.customerId}?jobRequestId=${req.id}`}
+                    className="jd-btn jd-btn-ghost"
                   >
                     Написать сообщение
-                  </a>
+                  </Link>
                 )}
               </div>
 
               {(req.customerName || req.customerId) && (
-                <div style={{ background:'#fff', borderRadius:12, padding:'16px 20px' }}>
-                  <div style={{ fontSize:13, color:'#9ca3af', fontWeight:600, marginBottom:12, textTransform:'uppercase', letterSpacing:'.5px' }}>Заказчик</div>
-                  <a href={req.customerId ? `/customers/${req.customerId}?name=${encodeURIComponent(req.customerName||'')}` : undefined}
-                    style={{ display:'flex', alignItems:'center', gap:12, textDecoration:'none' }}>
-                    {req.customerAvatar ? (
-                      <img src={req.customerAvatar} alt="" style={{ width:48, height:48, borderRadius:'50%', objectFit:'cover', flexShrink:0, border:'2px solid #f3f4f6' }} />
-                    ) : (
-                      <div style={{ width:48, height:48, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:18, flexShrink:0 }}>
-                        {(req.customerName||'А')[0].toUpperCase()}
+                <div className="jd-card">
+                  <h3 style={{ fontSize: 13, color: '#999', textTransform: 'uppercase', letterSpacing: '.6px' }}>Заказчик</h3>
+                  {req.customerId ? (
+                    <Link
+                      to={`/customers/${req.customerId}?name=${encodeURIComponent(custNameFull)}`}
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                      <div className="jd-author">
+                        <div className="jd-author-ava">
+                          {req.customerAvatar ? (
+                            <img src={jdPhotoUrl(req.customerAvatar)} alt="" />
+                          ) : (
+                            <div
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: 800,
+                                color: '#888',
+                              }}
+                            >
+                              {(custNameFull[0] || '?').toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="jd-author-name">{custNameFull}</div>
+                          <div className="jd-author-status">Активный заказчик</div>
+                        </div>
                       </div>
-                    )}
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:15, fontWeight:700, color:'#111827' }}>
-                        {[req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
+                      <div className="jd-author-rating">
+                        <span className="stars">
+                          {'★'.repeat(custStars)}
+                          {'☆'.repeat(5 - custStars)}
+                        </span>{' '}
+                        {custAvg.toFixed(1)} ({reviewsCountLabel(custCnt)})
                       </div>
-                      <div style={{ fontSize:12, color:'#22c55e', fontWeight:600 }}>● Активный заказчик</div>
-                      <div style={{ fontSize:12, color:'#6b7280', marginTop:6, display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>
-                        <span style={{ color:'#f59e0b', letterSpacing:1 }}>{'★'.repeat(custStars)}{'☆'.repeat(5 - custStars)}</span>
-                        <span style={{ fontWeight:800, color:'#111827' }}>{custAvg.toFixed(1)}</span>
-                        <span>({reviewsCountLabel(custCnt)})</span>
+                    </Link>
+                  ) : (
+                    <div className="jd-author">
+                      <div className="jd-author-ava">
+                        <div
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 800,
+                            color: '#888',
+                          }}
+                        >
+                          {(custNameFull[0] || '?').toUpperCase()}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="jd-author-name">{custNameFull}</div>
+                        <div className="jd-author-status">Активный заказчик</div>
                       </div>
                     </div>
-                    <div style={{ color:'#9ca3af', fontSize:18 }}>›</div>
-                  </a>
+                  )}
                 </div>
               )}
-            </div>
+            </aside>
           </div>
         </div>
       </div>

@@ -209,3 +209,20 @@
 .jd-author-status::before { content:''; width:7px; height:7px; border-radius:50%; background:#16a34a; }
 .jd-author-rating { margin-top: 6px; font-size: 13px; color: #555; }
 .jd-author-rating .stars { color: #f5a623; }
+
+/* «Назад» как кнопка (тот же вид, что у ссылки) */
+button.jd-back {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+a.jd-btn.jd-btn-ghost {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
