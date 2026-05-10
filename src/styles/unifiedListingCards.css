@@ -22,7 +22,7 @@
   display: flex;
   align-items: center;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid #dfe6ee;
   overflow: hidden;
   cursor: pointer;
@@ -55,19 +55,19 @@
 }
 
 .ml-row-img {
-  width: 140px;
-  height: 112px;
+  width: 132px;
+  height: 106px;
   flex-shrink: 0;
   background: #eef1f5;
   overflow: hidden;
   position: relative;
   align-self: center;
-  border-radius: 8px;
-  margin: 10px 0 10px 10px;
+  border-radius: 6px;
+  margin: 10px 0 10px 12px;
 }
 .ml-row-img img,
 .ml-row-img-ph {
-  min-height: 112px;
+  min-height: 106px;
 }
 .ml-row-img img {
   width: 100%;
@@ -97,14 +97,14 @@
 }
 .ml-row-body {
   flex: 1;
-  padding: 10px 14px 10px 12px;
+  padding: 10px 14px 10px;
   min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
 }
 .ml-row-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #111827;
@@ -115,7 +115,7 @@
   text-overflow: ellipsis;
 }
 .ml-row-price {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   margin-bottom: 5px;
@@ -123,7 +123,7 @@
   letter-spacing: -0.02em;
 }
 .ml-row-unit {
-  font-size: 12px;
+  font-size: 11px;
   color: #8f8f8f;
   font-weight: 500;
   margin-left: 4px;
@@ -136,7 +136,7 @@
   box-sizing: border-box;
   margin-bottom: 5px;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 5px 10px;
@@ -161,7 +161,7 @@
   -webkit-box-orient: vertical;
 }
 .ml-row-date {
-  font-size: 12px;
+  font-size: 11px;
   color: #64748b;
   font-weight: 500;
   margin-bottom: 5px;
@@ -169,7 +169,7 @@
 .ml-row-stats {
   display: flex;
   flex-direction: row;
-  gap: 14px;
+  gap: 8px;
   flex-wrap: wrap;
   margin: 0;
   padding: 0;
@@ -193,7 +193,7 @@
   box-shadow: 0 0 0 2px rgba(55, 65, 81, 0.22);
 }
 .ml-row-stat {
-  font-size: 14px;
+  font-size: 12px;
   color: #6b7280;
   display: flex;
   align-items: center;
@@ -204,22 +204,22 @@
   font-weight: 800;
   color: #111827;
   font-variant-numeric: tabular-nums;
-  font-size: 16px;
+  font-size: 13px;
 }
 .ml-row-stat-status-active {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: #16a34a;
 }
 .ml-row-stat-status-arch {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: #ef4444;
 }
 .ml-row-actions {
-  width: 236px;
+  width: 192px;
   flex-shrink: 0;
-  padding: 14px 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -231,22 +231,22 @@
 .ml-row-actions .ml-btn-edit,
 .ml-row-actions .ml-btn-copy,
 .ml-row-actions .ml-btn-outline-neutral {
-  border-radius: 12px;
-  min-height: 52px;
-  font-size: 15px;
-  padding: 11px 14px;
+  border-radius: 5px;
+  min-height: 34px;
+  font-size: 12px;
+  padding: 8px 10px;
   white-space: nowrap;
 }
 .ml-row-actions .ml-btn-copy,
 .ml-row-actions .ml-btn-outline-neutral {
-  font-size: 14px;
+  font-size: 12px;
   letter-spacing: -0.01em;
 }
 .ml-row-actions .ml-btn-review-customer {
   white-space: nowrap;
-  font-size: 14px;
-  min-height: 52px;
-  padding: 11px 14px;
+  font-size: 12px;
+  min-height: 34px;
+  padding: 8px 10px;
   letter-spacing: -0.01em;
 }
 .ml-row-actions .ml-btn-edit {
@@ -807,21 +807,11 @@
     margin: 0 -12px -8px;
   }
 
-  .ml-row-actions {
-    width: 184px;
-    padding: 10px 10px;
-    gap: 6px;
-  }
-
+  .ml-row-actions { width: 176px; padding: 10px 10px; gap: 6px; }
   .ml-row-actions .ml-btn-edit,
   .ml-row-actions .ml-btn-copy,
   .ml-row-actions .ml-btn-outline-neutral,
-  .ml-row-actions .ml-btn-review-customer {
-    min-height: 38px;
-    border-radius: 8px;
-    font-size: 12px;
-    padding: 8px 10px;
-  }
+  .ml-row-actions .ml-btn-review-customer { min-height: 32px; font-size: 11px; padding: 7px 8px; }
 
   .wd-card-img {
     width: 112px;
