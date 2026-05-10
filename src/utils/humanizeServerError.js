@@ -29,6 +29,18 @@ export function humanizeServerErrorMessage(text) {
   if (/relation\s+"[^"]+"\s+does not exist/i.test(core)) {
     return 'В базе не найдена нужная таблица. Напишите в поддержку.';
   }
+  if (/required request header 'x-user-id'.*not present/i.test(core)) {
+    return 'Нужно войти в аккаунт, чтобы выполнить это действие.';
+  }
+  if (/could not initialize proxy .* no session/i.test(core)) {
+    return 'Профиль временно недоступен из-за ошибки сервера. Попробуйте через пару минут.';
+  }
+  if (/request method '.+' is not supported/i.test(core)) {
+    return 'Временная ошибка запроса. Обновите страницу и попробуйте снова.';
+  }
+  if (/category not found/i.test(core)) {
+    return 'Выберите корректную категорию заявки.';
+  }
   if (/duplicate key|unique constraint/i.test(core)) {
     return 'Такая запись уже есть. Измените данные и сохраните снова.';
   }

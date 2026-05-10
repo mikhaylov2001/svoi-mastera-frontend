@@ -32,10 +32,18 @@ function getFriendlyMessage(status, endpoint, serverMessage) {
 async function apiCall(endpoint, options = {}) {
   try {
     const { headers: extraHeaders, cache, ...restOptions } = options;
+    const mergedHeaders = { 'Content-Type': 'application/json', ...extraHeaders };
+    // Не отправляем пустой X-User-Id, чтобы не получать ложные 500 от бэкенда.
+    if (Object.prototype.hasOwnProperty.call(mergedHeaders, 'X-User-Id')) {
+      const uid = mergedHeaders['X-User-Id'];
+      if (uid == null || String(uid).trim() === '' || String(uid).toLowerCase() === 'undefined') {
+        throw new Error('Сессия истекла. Войдите в аккаунт снова.');
+      }
+    }
     const response = await fetch(`${API_BASE}${endpoint}`, {
       ...restOptions,
       cache: cache || 'no-store',
-      headers: { 'Content-Type': 'application/json', ...extraHeaders },
+      headers: mergedHeaders,
     });
     const text = await response.text();
     let data;
