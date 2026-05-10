@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getJobRequestById } from '../../api';
 import './jobListings.css';
 
-const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
+const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 const photoUrl = (u) => !u ? null : (u.startsWith('http') || u.startsWith('data:')) ? u : BACKEND + u;
 const fmtDate = (d) => !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' });
 

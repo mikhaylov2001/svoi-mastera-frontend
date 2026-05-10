@@ -8,7 +8,7 @@ import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import '../../styles/profileDashboard.css';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
-const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
+const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 
 function resolveUrl(url) {
   if (!url) return null;

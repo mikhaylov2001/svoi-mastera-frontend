@@ -6,7 +6,7 @@ import ListingInfoPanels from '../../components/ListingInfoPanels';
 import { dealsWdCss } from '../shared/dealsWdStyles';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
-const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
+const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 /** Одна отправка просмотра на id за сессию (React StrictMode и повторные fetch) */
 const listingViewPostedIds = new Set();

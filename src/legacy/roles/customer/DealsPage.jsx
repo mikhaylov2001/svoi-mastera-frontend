@@ -14,7 +14,7 @@ import { formatListingOriginDescription } from '../../utils/listingOriginDescrip
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
 const DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
-const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
+const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 
 const ST = {
   NEW:         { label: 'Новый заказ',  color: '#d97706', bg: 'rgba(245,158,11,.12)',  dot: '#f59e0b' },

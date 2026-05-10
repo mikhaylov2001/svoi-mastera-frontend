@@ -7,7 +7,7 @@ import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIE
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { smartTextMatchScore, listingHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 
-const API = 'https://svoi-mastera-backend-mf3h.onrender.com/api/v1';
+const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 /* Плоский словарь slug → данные категории (фото, описание, цена, …) */
 const CAT_ALL = {};

@@ -14,7 +14,7 @@ import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 import '../../styles/modernProfile.css';
 
-const BACKEND = 'https://svoi-mastera-backend-mf3h.onrender.com';
+const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 
 const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND + u);
 const fmtCard = (d) => !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
