@@ -13,7 +13,9 @@ import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
-import { getCategoryPlaceholderPhotoUrl } from '../../utils/categoryPlaceholderPhoto';
+import {
+  getCategoryPlaceholderPhotoUrlOrDefault,
+} from '../../utils/categoryPlaceholderPhoto';
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 
@@ -1247,11 +1249,11 @@ export default function FindWorkPage() {
     const req = selectedRequest;
     const catStyle = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '📋', color: '#f3f4f6' };
     const jdPhotosRaw = (req.photos || []).map(jdPhotoUrl).filter(Boolean);
-    const jdPlaceholder = getCategoryPlaceholderPhotoUrl(
+    const jdPlaceholder = getCategoryPlaceholderPhotoUrlOrDefault(
       { categoryName: req.categoryName, categoryId: req.categoryId },
       categories,
     );
-    const jdPhotos = jdPhotosRaw.length ? jdPhotosRaw : jdPlaceholder ? [jdPlaceholder] : [];
+    const jdPhotos = jdPhotosRaw.length ? jdPhotosRaw : [jdPlaceholder];
     const mainSrc = jdPhotos[activePhotoIdx] || null;
     const budget = formatJobRequestBudgetLabel(req);
     const priceIsNegotiable = budget === 'Не указана';
@@ -1645,7 +1647,7 @@ export default function FindWorkPage() {
                         const ph = (req.photos || [])[0];
                         const phSrc =
                           ph ||
-                          getCategoryPlaceholderPhotoUrl(
+                          getCategoryPlaceholderPhotoUrlOrDefault(
                             { categoryName: req.categoryName, categoryId: req.categoryId },
                             categories,
                           );
@@ -1661,7 +1663,7 @@ export default function FindWorkPage() {
                             }}
                           >
                             <div className="fw2-search-hit-ph">
-                              {phSrc ? <img src={phSrc} alt="" /> : <span>нет фото</span>}
+                              <img src={phSrc} alt="" />
                             </div>
                             <div className="fw2-search-hit-body">
                               <div className="fw2-search-hit-title">{req.title || 'Заявка'}</div>
@@ -1839,7 +1841,7 @@ export default function FindWorkPage() {
                 {filtered.map(req => {
                   const photos = req.photos || [];
                   const hasPhoto = photos.length > 0;
-                  const placeholderBg = getCategoryPlaceholderPhotoUrl(
+                  const placeholderBg = getCategoryPlaceholderPhotoUrlOrDefault(
                     { categoryName: req.categoryName, categoryId: req.categoryId },
                     categories,
                   );
@@ -1896,19 +1898,11 @@ export default function FindWorkPage() {
                             )}
                             <div className="fw2-card-photo-hover">Смотреть</div>
                           </>
-                        ) : placeholderBg ? (
+                        ) : (
                           <>
                             <img src={placeholderBg} alt="" draggable={false} />
                             <span className="fw2-card-photo-active">АКТИВНО</span>
                             <div className="fw2-card-photo-hover">Смотреть</div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="fw2-card-photo-ph">
-                              <span className="fw2-card-photo-ph-ico">{catMeta.emoji || '📋'}</span>
-                              <span className="fw2-card-photo-ph-txt">Нет фото</span>
-                            </div>
-                            <span className="fw2-card-photo-active">АКТИВНО</span>
                           </>
                         )}
                       </div>

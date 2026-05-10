@@ -6,7 +6,7 @@ import ListingInfoPanels from '../../components/ListingInfoPanels';
 import { dealsWdCss } from '../shared/dealsWdStyles';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
 import {
-  getCategoryPlaceholderPhotoUrl,
+  getCategoryPlaceholderPhotoUrlOrDefault,
   getCategorySlugFromLabel,
 } from '../../utils/categoryPlaceholderPhoto';
 
@@ -443,8 +443,8 @@ export default function ListingDetailPage() {
   }, [listing, userId]);
 
   const photos = listing?.photos?.length ? listing.photos : [];
-  const fallbackPhoto = getCategoryPlaceholderPhotoUrl({ category: listing?.category });
-  const allPhotos = photos.length ? photos : (fallbackPhoto ? [fallbackPhoto] : []);
+  const fallbackPhoto = getCategoryPlaceholderPhotoUrlOrDefault({ category: listing?.category });
+  const allPhotos = photos.length ? photos : [fallbackPhoto];
   const catSlug = getCategorySlugFromLabel(listing?.category);
 
   const nextPhoto = useCallback(() => setActivePhoto(i => (allPhotos.length > 1 ? (i + 1) % allPhotos.length : i)), [allPhotos.length]);
@@ -641,10 +641,7 @@ export default function ListingDetailPage() {
           <div className="ld-fw-gallery-card">
             <div className="ld-gallery-wrap">
               <div className="ld-gallery-main" onClick={() => allPhotos.length && setLightbox(true)}>
-                {allPhotos.length > 0
-                  ? <img src={allPhotos[activePhoto]} alt={listing.title} key={activePhoto}/>
-                  : <div className="ld-gallery-ph">🔧</div>
-                }
+                <img src={allPhotos[activePhoto]} alt={listing.title} key={activePhoto}/>
 
                 {allPhotos.length > 1 && <>
                   <button type="button" className="ld-gallery-nav-btn prev" onClick={e => { e.stopPropagation(); prevPhoto(); }} aria-label="Предыдущее фото">‹</button>
@@ -887,11 +884,11 @@ export default function ListingDetailPage() {
               <div className="ld-similar-list">
                 {similar.map(s => {
                   const sPhoto =
-                    s.photos?.[0] || getCategoryPlaceholderPhotoUrl({ category: s.category });
+                    s.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category });
                   return (
                     <Link key={s.id} to={`/listings/${s.id}`} className="ld-sim-item">
                       <div className="ld-sim-img">
-                        {sPhoto ? <img src={sPhoto} alt=""/> : '🔧'}
+                        <img src={sPhoto} alt=""/>
                       </div>
                       <div style={{flex:1,minWidth:0}}>
                         <div className="ld-sim-title">{s.title}</div>

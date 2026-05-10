@@ -12,6 +12,7 @@ import {
 } from '../../api';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
+import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 import '../../styles/modernProfile.css';
 
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
@@ -283,7 +284,17 @@ export default function CustomerProfilePage() {
                       return (
                         <div key={deal.id}>
                           <Link to={`/deals?dealId=${deal.id}`} className="mp-deal">
-                            <div className="mp-deal-img">{deal.photos?.[0] ? <img src={resolveUrl(deal.photos[0])} alt="" /> : <div className="mp-deal-img-ph" />}</div>
+                            <div className="mp-deal-img">
+                              {deal.photos?.[0] ? (
+                                <img src={resolveUrl(deal.photos[0])} alt="" />
+                              ) : (
+                                <img
+                                  src={getCategoryPlaceholderPhotoUrlOrDefault({ category: deal.category })}
+                                  alt=""
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                              )}
+                            </div>
                             <div className="mp-deal-body">
                               <div style={{ display:'flex', justifyContent:'space-between', gap: 8 }}>
                                 <div className="mp-deal-title">{deal.title || 'Сделка'}</div>

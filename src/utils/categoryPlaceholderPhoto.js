@@ -75,6 +75,16 @@ export function getCategoryPlaceholderPhotoUrl(fields = {}, categoriesApi = null
   return CATEGORY_PLACEHOLDER_PHOTO_BY_SLUG[slug];
 }
 
+/** Если категорию распознать нельзя — то же превью, что у «Ремонт квартир». */
+export const DEFAULT_CATEGORY_PLACEHOLDER_URL =
+  CATEGORY_PLACEHOLDER_PHOTO_BY_SLUG['remont-kvartir'];
+
+export function getCategoryPlaceholderPhotoUrlOrDefault(fields = {}, categoriesApi = null) {
+  return (
+    getCategoryPlaceholderPhotoUrl(fields, categoriesApi) || DEFAULT_CATEGORY_PLACEHOLDER_URL
+  );
+}
+
 /** Slug категории по названию (для ссылок /find-master/:slug). */
 export function getCategorySlugFromLabel(categoryLabel) {
   const label = norm(categoryLabel);

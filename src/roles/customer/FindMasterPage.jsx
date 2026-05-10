@@ -6,7 +6,9 @@ import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { smartTextMatchScore, listingHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
-import { getCategoryPlaceholderPhotoUrl } from '../../utils/categoryPlaceholderPhoto';
+import {
+  getCategoryPlaceholderPhotoUrlOrDefault,
+} from '../../utils/categoryPlaceholderPhoto';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -1372,15 +1374,11 @@ export default function FindMasterPage() {
                   const photos = s.photos || [];
                   const mainPhoto =
                     photos[0] ||
-                    getCategoryPlaceholderPhotoUrl({ category: s.category }, categories);
+                    getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category }, categories);
                   return (
                     <Link key={s.id} to={`/listings/${s.id}`} className="fmp-gcard">
                       <div className="fmp-gcard-photo">
-                        {mainPhoto ? (
-                          <img src={mainPhoto} alt="" />
-                        ) : (
-                          <div className="fmp-gcard-ph">Нет фото</div>
-                        )}
+                        <img src={mainPhoto} alt="" />
                       </div>
                       <div className="fmp-gcard-body">
                         {s.category && <span className="fmp-gcard-cat">{s.category}</span>}
@@ -1559,7 +1557,12 @@ export default function FindMasterPage() {
                 ) : (
                   <>
                     {fmpDdMatches.map((s) => {
-                      const mainPhoto = (s.photos || [])[0];
+                      const mainPhoto =
+                        (s.photos || [])[0] ||
+                        getCategoryPlaceholderPhotoUrlOrDefault(
+                          { category: s.category, categorySlug },
+                          categories,
+                        );
                       return (
                         <Link
                           key={s.id}
@@ -1568,7 +1571,7 @@ export default function FindMasterPage() {
                           onClick={() => setFmpSearchFocused(false)}
                         >
                           <div className="fmp-search-hit-ph">
-                            {mainPhoto ? <img src={mainPhoto} alt="" /> : <span>нет фото</span>}
+                            <img src={mainPhoto} alt="" />
                           </div>
                           <div className="fmp-search-hit-body">
                             <div className="fmp-search-hit-title">{s.title || 'Объявление'}</div>
@@ -1747,7 +1750,7 @@ export default function FindMasterPage() {
                 const wid    = s.workerId;
                 const photos = s.photos || [];
                 const hasPhoto = photos.length > 0;
-                const listingPlaceholder = getCategoryPlaceholderPhotoUrl(
+                const listingPlaceholder = getCategoryPlaceholderPhotoUrlOrDefault(
                   { category: s.category, categorySlug },
                   categories,
                 );
@@ -1775,19 +1778,11 @@ export default function FindMasterPage() {
                           {photos.length > 1 && <span className="fmp-card-photo-cnt">📷 {photos.length}</span>}
                           <div className="fmp-card-photo-hover">Смотреть</div>
                         </>
-                      ) : listingPlaceholder ? (
+                      ) : (
                         <>
                           <img src={listingPlaceholder} alt={s.title}/>
                           {s.active !== false && <span className="fmp-card-photo-active">АКТИВНО</span>}
                           <div className="fmp-card-photo-hover">Смотреть</div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="fmp-card-photo-ph">
-                            <span className="fmp-card-photo-ph-ico">{catMeta.emoji || '🛠️'}</span>
-                            <span className="fmp-card-photo-ph-txt">Нет фото</span>
-                          </div>
-                          {s.active !== false && <span className="fmp-card-photo-active">АКТИВНО</span>}
                         </>
                       )}
                   </div>

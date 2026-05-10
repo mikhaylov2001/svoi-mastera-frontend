@@ -12,6 +12,7 @@ import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEven
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
+import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 
 const DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 const BACKEND    = 'https://svoi-mastera-backend.onrender.com';
@@ -613,7 +614,8 @@ export default function WorkerDealsPage() {
             ) : (
               filtered.map(d => {
                 const st     = ST[d.status] || ST.NEW;
-                const img    = d.photos?.[0];
+                const img =
+                  d.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ category: d.category });
                 const isNew  = d.status === 'NEW';
                 const isProg = d.status === 'IN_PROGRESS';
                 const isDone = d.status === 'COMPLETED';
@@ -626,10 +628,7 @@ export default function WorkerDealsPage() {
                   >
                     {/* Photo */}
                     <div className="wd-card-img">
-                      {img
-                        ? <img src={img} alt="" />
-                        : <div className="wd-card-img-ph">{isNew ? '🔔' : isProg ? '⚙️' : isDone ? '✅' : '🔨'}</div>
-                      }
+                      <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
 
                     {/* Body */}

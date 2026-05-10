@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
-import { getCategoryPlaceholderPhotoUrl } from '../../utils/categoryPlaceholderPhoto';
+import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 function timeAgo(d) {
@@ -280,13 +280,14 @@ export default function PublicCustomerProfilePage() {
 
   const renderCard = (item, isDeal) => {
     const hasPhoto = item.photos && item.photos.length > 0;
-    const reqPh =
-      !hasPhoto &&
-      !isDeal &&
-      getCategoryPlaceholderPhotoUrl({
-        categoryName: item.categoryName,
-        categoryId: item.categoryId,
-      });
+    const noPhotoThumb = !hasPhoto && (
+      isDeal
+        ? getCategoryPlaceholderPhotoUrlOrDefault({ category: item.category })
+        : getCategoryPlaceholderPhotoUrlOrDefault({
+          categoryName: item.categoryName,
+          categoryId: item.categoryId,
+        })
+    );
     const stLabel = isDeal ? 'Завершена' : (STATUS_LABEL[item.status] || item.status);
     return (
       <div key={`${isDeal?'d':'r'}-${item.id}`} className="pw-card"
@@ -294,10 +295,8 @@ export default function PublicCustomerProfilePage() {
         <div className="pw-card-img-wrap">
           {hasPhoto ? (
             <img src={item.photos[0]} alt={item.title} />
-          ) : reqPh ? (
-            <img src={reqPh} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            isDeal ? '🤝' : '📋'
+            <img src={noPhotoThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           )}
           <div className="pw-card-pill">{stLabel}</div>
           <button className="pw-card-heart" onClick={e => e.stopPropagation()}>♡</button>

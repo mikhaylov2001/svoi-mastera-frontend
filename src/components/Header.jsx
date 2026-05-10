@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getUnreadCount, getListings } from '../api';
 import { rankItemsBySmartMatch, listingHaystack } from '../utils/smartSearch';
 import { dispatchSameRouteRefetch, isSameNavDest } from '../utils/sameRouteRefetch';
+import { getCategoryPlaceholderPhotoUrlOrDefault } from '../utils/categoryPlaceholderPhoto';
 import './Header.css';
 
 const NOTIF_API = 'https://svoi-mastera-backend.onrender.com/api/v1/notifications';
@@ -320,7 +321,9 @@ function Header() {
                   <>
                     {headerSearchMatches.map(s => {
                       const ph = (s.photos || [])[0];
-                      const src = listingThumb(ph);
+                      const src =
+                        listingThumb(ph) ||
+                        getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category });
                       return (
                         <Link
                           key={s.id}
@@ -330,11 +333,7 @@ function Header() {
                           onClick={() => closeSearchUi()}
                         >
                           <div className="header-search-hit-ph">
-                            {src ? (
-                              <img src={src} alt="" />
-                            ) : (
-                              <span className="header-search-hit-ph-empty">нет фото</span>
-                            )}
+                            <img src={src} alt="" />
                           </div>
                           <div className="header-search-hit-body">
                             <div className="header-search-hit-title">{s.title || 'Объявление'}</div>

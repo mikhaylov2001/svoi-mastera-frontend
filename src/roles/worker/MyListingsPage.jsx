@@ -12,7 +12,7 @@ import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILT
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { LISTING_ARCHIVED_AFTER_DEAL } from '../../utils/listingArchiveEvents';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
-import { getCategoryPlaceholderPhotoUrl } from '../../utils/categoryPlaceholderPhoto';
+import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 
 const API = API_BASE;
 
@@ -1196,7 +1196,7 @@ export default function MyListingsPage() {
   // ══ ДЕТАЛЬНАЯ СТРАНИЦА ══
   if (detail) {
     const hasPhoto = detail.photos?.length > 0;
-    const detailPlaceholder = getCategoryPlaceholderPhotoUrl({ category: detail.category });
+    const detailPlaceholder = getCategoryPlaceholderPhotoUrlOrDefault({ category: detail.category });
     return (
       <div className="ml-detail">
         <style>{css}</style>
@@ -1215,9 +1215,7 @@ export default function MyListingsPage() {
               <div className="ml-detail-main-img" onClick={() => hasPhoto && setLightbox({photos: detail.photos, index: photoIdx})}>
                 {hasPhoto
                   ? <img src={detail.photos[photoIdx]} alt="" />
-                  : detailPlaceholder
-                    ? <img src={detailPlaceholder} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <div style={{fontSize:64, color:'#d1d5db'}}>🔧</div>
+                  : <img src={detailPlaceholder} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 }
                 {hasPhoto && detail.photos.length > 1 && (<>
                   <button onClick={e => {e.stopPropagation(); setPhotoIdx(i => (i-1+detail.photos.length)%detail.photos.length);}}
@@ -1413,10 +1411,7 @@ export default function MyListingsPage() {
             </div>
           ) : (
             <div className="ml-list">
-              {shown.map(l => {
-                const rowFallback =
-                  !l.photos?.length && getCategoryPlaceholderPhotoUrl({ category: l.category });
-                return (
+              {shown.map(l => (
               <div
                 key={l.id}
                 className="ml-row"
@@ -1425,9 +1420,7 @@ export default function MyListingsPage() {
                 <div className="ml-row-img">
                   {l.photos?.length
                     ? <><img src={l.photos[0]} alt=""/>{l.photos.length > 1 && <span className="ml-row-img-cnt">📷{l.photos.length}</span>}</>
-                    : rowFallback
-                      ? <img src={rowFallback} alt="" />
-                      : <div className="ml-row-img-ph">🔧</div>
+                    : <img src={getCategoryPlaceholderPhotoUrlOrDefault({ category: l.category })} alt="" />
                   }
                 </div>
                 <div className="ml-row-body">
@@ -1477,8 +1470,7 @@ export default function MyListingsPage() {
                   )}
                 </div>
               </div>
-                );
-              })}
+              ))}
             </div>
           )}
         </div>

@@ -15,7 +15,7 @@ import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILT
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
-import { getCategoryPlaceholderPhotoUrl } from '../../utils/categoryPlaceholderPhoto';
+import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -1116,7 +1116,7 @@ export default function MyOrdersPage() {
   if (detail) {
     const hasPhoto = detail.photos?.length > 0;
     const catNameD = getCategoryName(detail.categoryId);
-    const detailPlaceholder = getCategoryPlaceholderPhotoUrl(
+    const detailPlaceholder = getCategoryPlaceholderPhotoUrlOrDefault(
       { categoryName: catNameD, categoryId: detail.categoryId },
       categories,
     );
@@ -1154,9 +1154,7 @@ export default function MyOrdersPage() {
               <div className="ml-detail-main-img" onClick={() => hasPhoto && setLightbox({photos: detail.photos, index: photoIdx})}>
                 {hasPhoto
                   ? <img src={detail.photos[photoIdx]} alt="" />
-                  : detailPlaceholder
-                    ? <img src={detailPlaceholder} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <div style={{fontSize:64, color:'#d1d5db'}}>📋</div>
+                  : <img src={detailPlaceholder} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 }
                 {hasPhoto && detail.photos.length > 1 && (<>
                   <button onClick={e => {e.stopPropagation(); setPhotoIdx(i => (i-1+detail.photos.length)%detail.photos.length);}}
@@ -1431,12 +1429,10 @@ export default function MyOrdersPage() {
           <div className="ml-list">
             {shown.map(req => {
               const catName  = getCategoryName(req.categoryId);
-              const rowFallback =
-                !req.photos?.length &&
-                getCategoryPlaceholderPhotoUrl(
-                  { categoryName: catName, categoryId: req.categoryId },
-                  categories,
-                );
+              const rowFallback = getCategoryPlaceholderPhotoUrlOrDefault(
+                { categoryName: catName, categoryId: req.categoryId },
+                categories,
+              );
               const budget   = req.budgetTo || req.budgetFrom;
               const stLabel  = STATUS_LABELS[req.status] || req.status;
               const isActive = isActiveStatus(req.status);
@@ -1449,9 +1445,7 @@ export default function MyOrdersPage() {
                     <div className="ml-row-img">
                       {req.photos?.length
                         ? <><img src={req.photos[0]} alt="" />{req.photos.length > 1 && <span className="ml-row-img-cnt">📷{req.photos.length}</span>}</>
-                        : rowFallback
-                          ? <img src={rowFallback} alt="" />
-                          : <div className="ml-row-img-ph">📋</div>
+                        : <img src={rowFallback} alt="" />
                       }
                     </div>
                     <div className="ml-row-body">

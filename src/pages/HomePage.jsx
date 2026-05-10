@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
 import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
 import {
-  getCategoryPlaceholderPhotoUrl,
+  getCategoryPlaceholderPhotoUrlOrDefault,
   CATEGORY_PLACEHOLDER_PHOTO_BY_SLUG as CAT_PHOTOS,
 } from '../utils/categoryPlaceholderPhoto';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
@@ -408,14 +408,14 @@ function CustomerHome({ userId }) {
                     const img0 = l.photos?.[0];
                     const src =
                       workerListingPhotoUrl(img0) ||
-                      getCategoryPlaceholderPhotoUrl({ category: l.category });
+                      getCategoryPlaceholderPhotoUrlOrDefault({ category: l.category });
                     const avUrl = workerListingPhotoUrl(l.workerAvatar);
                     const wname =
                       [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
                     return (
                       <Link key={l.id} to={`/listings/${l.id}`} className="av-card">
                         <div className="av-card-img">
-                          {src ? <img src={src} alt="" /> : '🔧'}
+                          <img src={src} alt="" />
                           {l.category ? <span className="av-card-cat">{l.category}</span> : null}
                         </div>
                         <div className="av-card-body">
@@ -651,7 +651,7 @@ function WorkerHome({ userId, userName }) {
                     const catLabel = item.categoryName || catName(item.categoryId);
                     const photoSrc =
                       workerListingPhotoUrl(item.photos?.[0] || item.photo) ||
-                      getCategoryPlaceholderPhotoUrl(
+                      getCategoryPlaceholderPhotoUrlOrDefault(
                         { categoryName: catLabel, categoryId: item.categoryId },
                         categories,
                       );
@@ -671,11 +671,7 @@ function WorkerHome({ userId, userName }) {
                         className="av-card"
                       >
                         <div className="av-card-img">
-                          {photoSrc ? (
-                            <img src={photoSrc} alt={item.title || ''} loading="lazy" />
-                          ) : (
-                            '📋'
-                          )}
+                          <img src={photoSrc} alt={item.title || ''} loading="lazy" />
                           {catLabel ? <span className="av-card-cat">{catLabel}</span> : null}
                         </div>
                         <div className="av-card-body">
