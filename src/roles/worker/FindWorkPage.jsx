@@ -2,11 +2,8 @@ import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   FaArrowLeft,
-  FaMapMarkerAlt,
-  FaCalendarAlt,
   FaChevronLeft,
   FaChevronRight,
-  FaFolder,
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -1279,21 +1276,13 @@ export default function FindWorkPage() {
             <h1 className="jd-title">{req.title}</h1>
             <div className="jd-meta-row">
               {categoryLabel && (
-                <span>
-                  <FaFolder /> {categoryLabel}
-                </span>
+                <span>📂 {categoryLabel}</span>
               )}
               {addressLine && (
-                <span>
-                  <FaMapMarkerAlt />
-                  {addressLine}
-                </span>
+                <span>📍 {addressLine}</span>
               )}
               {req.createdAt && (
-                <span>
-                  <FaCalendarAlt />
-                  {jdFmtDateLong(req.createdAt)}
-                </span>
+                <span>📅 {jdFmtDateLong(req.createdAt)}</span>
               )}
             </div>
           </div>
