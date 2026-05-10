@@ -338,8 +338,8 @@
 }
 
 .wd-card-img {
-  width: 112px;
-  height: 96px;
+  width: 132px;
+  height: 106px;
   flex-shrink: 0;
   background: #eef1f5;
   overflow: hidden;
@@ -384,7 +384,7 @@
   text-overflow: ellipsis;
 }
 .wd-card-price {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   margin-bottom: 4px;
@@ -530,12 +530,29 @@
 .wd-card-meta {
   font-size: 12px;
   font-weight: 500;
-  color: #64748b;
+  color: #66758c;
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
   align-items: center;
   margin-bottom: 5px;
+}
+.wd-card-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.wd-card-meta span:first-child::before {
+  content: '👤';
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.6;
+}
+.wd-card-meta span:last-child::before {
+  content: '📅';
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.6;
 }
 .wd-card-stats {
   display: flex;
@@ -549,6 +566,17 @@
   border-radius: 0;
   align-items: center;
 }
+.wd-card-stats .wd-status-badge {
+  background: transparent !important;
+  color: #334155 !important;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 !important;
+}
+.wd-card-stats .wd-status-badge span {
+  width: 8px !important;
+  height: 8px !important;
+}
 .wd-card-stat {
   font-size: 11px;
   font-weight: 600;
@@ -559,15 +587,15 @@
 }
 
 .wd-card-actions {
-  width: 170px;
+  width: 192px;
   flex-shrink: 0;
-  padding: 10px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   justify-content: center;
   border-left: 1px solid #e8edf3;
-  background: #fafbfc;
+  background: #fff;
 }
 
 .wd-btn-primary,
@@ -582,9 +610,9 @@
 .wd-card-actions .wd-btn-green,
 .wd-card-actions .wd-btn-danger {
   white-space: nowrap;
-  padding-left: 8px;
-  padding-right: 8px;
-  font-size: 11px;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 12px;
   letter-spacing: -0.01em;
 }
 
@@ -776,7 +804,7 @@
   }
 
   .wd-card-img {
-    width: 100px;
+    width: 112px;
     height: 92px;
     min-height: 92px;
   }
