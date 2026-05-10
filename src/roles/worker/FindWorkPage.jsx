@@ -1,14 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  FaArrowLeft,
-  FaCalendarAlt,
-  FaChevronLeft,
-  FaChevronRight,
-  FaFolder,
-  FaMapMarkerAlt,
-  FaRegClock,
-} from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaRegClock } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats } from '../../api';
@@ -20,6 +12,7 @@ import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HER
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
+import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 
@@ -1263,48 +1256,63 @@ export default function FindWorkPage() {
     const custStars = Math.min(5, Math.max(0, Math.round(Number(custAvg) || 0)));
     const custNameFull = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
     const categoryLabel = selectedCategory?.name || req.categoryName;
+    const breadCrumbTitle =
+      (req.title || '').length > 40 ? `${(req.title || '').slice(0, 37)}…` : (req.title || '');
 
     return (
       <>
-      <div className="jd-page">
-        <div className="jd-wrap">
-          <button
-            type="button"
-            className="jd-back"
-            onClick={() => { setSelectedRequest(null); setActivePhotoIdx(0); }}
-          >
-            <FaArrowLeft /> Назад к заявкам
-          </button>
-
-          <div className="jd-header">
-            <h1 className="jd-title">{req.title}</h1>
-            <div className="jd-meta-row">
-              {categoryLabel && (
-                <span>
-                  <FaFolder aria-hidden />
-                  {categoryLabel}
-                </span>
-              )}
-              {addressLine && (
-                <span>
-                  <FaMapMarkerAlt aria-hidden />
-                  {addressLine}
-                </span>
-              )}
-              {req.createdAt && (
-                <span>
-                  <FaCalendarAlt aria-hidden />
-                  {jdFmtDateLong(req.createdAt)}
-                </span>
-              )}
-            </div>
+      <div className="jd-detail-shell">
+        <div className="jd-breadcrumb-bar">
+          <div className="jd-breadcrumb-inner">
+            <button
+              type="button"
+              className="jd-breadcrumb-back"
+              onClick={() => {
+                setSelectedRequest(null);
+                setActivePhotoIdx(0);
+              }}
+            >
+              <span className="jd-breadcrumb-back-ico" aria-hidden>
+                ←
+              </span>
+              Назад
+            </button>
+            <span className="jd-breadcrumb-sep jd-breadcrumb-sep-bar">|</span>
+            <Link to="/">Главная</Link>
+            <span className="jd-breadcrumb-sep">›</span>
+            <Link to="/find-work">Найти работу</Link>
+            {categoryLabel && (
+              <>
+                <span className="jd-breadcrumb-sep">›</span>
+                <span className="jd-breadcrumb-muted">{categoryLabel}</span>
+              </>
+            )}
+            <span className="jd-breadcrumb-sep">›</span>
+            <span className="jd-breadcrumb-current">{breadCrumbTitle}</span>
           </div>
+        </div>
 
-          <div className="jd-grid">
-            <div>
-              <div className="jd-gallery">
+        <div className="jd-detail-page">
+          <div className="jd-detail-main">
+            <header className="jd-fw-head">
+              <h1 className="jd-fw-title">{req.title}</h1>
+              <div className="jd-fw-meta">
+                {categoryLabel && (
+                  <span className={`ml-row-cat jd-meta-cat ${categoryChipToneClass(categoryLabel)}`}>
+                    {categoryLabel}
+                  </span>
+                )}
+                {addressLine && <span className="jd-fw-meta-item">📍 {addressLine}</span>}
+                {req.createdAt && (
+                  <span className="jd-fw-meta-item">📅 {jdFmtDateLong(req.createdAt)}</span>
+                )}
+              </div>
+            </header>
+
+            <div className="jd-fw-gallery-card">
+              <div className="jd-gallery-wrap">
                 <div
-                  className="jd-main-photo"
+                  className="jd-gallery-main"
                   role="presentation"
                   onClick={() => mainSrc && setLightbox({ photos: jdPhotos, index: activePhotoIdx })}
                   style={{ cursor: mainSrc ? 'pointer' : 'default' }}
@@ -1312,15 +1320,13 @@ export default function FindWorkPage() {
                   {mainSrc ? (
                     <img src={mainSrc} alt={req.title || ''} />
                   ) : (
-                    <div className="jl-card-media-empty" style={{ height: '100%', minHeight: 200 }}>
-                      {catStyle.emoji}
-                    </div>
+                    <div className="jd-gallery-ph">{catStyle.emoji}</div>
                   )}
                   {jdPhotos.length > 1 && (
                     <>
                       <button
                         type="button"
-                        className="jd-nav-btn prev"
+                        className="jd-gallery-nav-btn prev"
                         aria-label="Предыдущее фото"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1331,7 +1337,7 @@ export default function FindWorkPage() {
                       </button>
                       <button
                         type="button"
-                        className="jd-nav-btn next"
+                        className="jd-gallery-nav-btn next"
                         aria-label="Следующее фото"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1344,13 +1350,13 @@ export default function FindWorkPage() {
                   )}
                 </div>
                 {jdPhotos.length > 1 && (
-                  <div className="jd-thumbs">
+                  <div className="jd-thumbs-strip">
                     {jdPhotos.map((p, i) => (
                       <div
                         key={i}
                         role="button"
                         tabIndex={0}
-                        className={`jd-thumb ${i === activePhotoIdx ? 'is-active' : ''}`}
+                        className={`jd-thumb-tile${i === activePhotoIdx ? ' active' : ''}`}
                         onClick={() => setActivePhotoIdx(i)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -1365,124 +1371,129 @@ export default function FindWorkPage() {
                   </div>
                 )}
               </div>
+            </div>
 
-              {req.description && req.description !== 'Без описания' && (
-                <div className="jd-card" style={{ marginTop: 16 }}>
-                  <h3>Описание</h3>
-                  <div className="jd-desc-body">
-                    {formatListingOriginDescription('WORKER', req.description)}
-                  </div>
-                  {req.urgency && (
-                    <div className="jd-urgency">
-                      <FaRegClock aria-hidden />
-                      <span>
-                        <b>Срочность:</b> {req.urgency}
-                      </span>
-                    </div>
-                  )}
+            {req.description && req.description !== 'Без описания' && (
+              <div className="jd-card jd-detail-card">
+                <h3 className="jd-desc-head">Описание</h3>
+                <div className="jd-desc-body">
+                  {formatListingOriginDescription('WORKER', req.description)}
                 </div>
-              )}
-
-              <div className="jd-card">
-                <h3>Подробности</h3>
-                {categoryLabel && (
-                  <div className="jd-row">
-                    <span className="k">Категория</span>
-                    <span className="v">{categoryLabel}</span>
-                  </div>
-                )}
-                {addressLine && (
-                  <div className="jd-row">
-                    <span className="k">Адрес</span>
-                    <span className="v">{addressLine}</span>
-                  </div>
-                )}
-                <div className="jd-row">
-                  <span className="k">Стоимость</span>
-                  <span className="v">{priceIsNegotiable ? 'Договорная' : budget}</span>
-                </div>
-                {req.createdAt && (
-                  <div className="jd-row">
-                    <span className="k">Опубликована</span>
-                    <span className="v">{jdFmtDateLong(req.createdAt)}</span>
+                {req.urgency && (
+                  <div className="jd-urgency">
+                    <FaRegClock aria-hidden />
+                    <span>
+                      <b>Срочность:</b> {req.urgency}
+                    </span>
                   </div>
                 )}
               </div>
+            )}
+
+            <div className="jd-card jd-detail-card">
+              <h3 className="jd-details-head">Подробности</h3>
+              {categoryLabel && (
+                <div className="jd-row">
+                  <span className="k">Категория</span>
+                  <span className="v">{categoryLabel}</span>
+                </div>
+              )}
+              {addressLine && (
+                <div className="jd-row">
+                  <span className="k">Адрес</span>
+                  <span className="v">{addressLine}</span>
+                </div>
+              )}
+              <div className="jd-row">
+                <span className="k">Стоимость</span>
+                <span className="v">{priceIsNegotiable ? 'Договорная' : budget}</span>
+              </div>
+              {req.createdAt && (
+                <div className="jd-row">
+                  <span className="k">Опубликована</span>
+                  <span className="v">{jdFmtDateLong(req.createdAt)}</span>
+                </div>
+              )}
             </div>
+          </div>
 
-            <aside className="jd-side">
-              <div className="jd-price-card">
+          <aside className="jd-detail-aside">
+            <div className="jd-price-panel">
+              <div className="jd-price-head">
                 <div className="jd-price-label">Стоимость</div>
-                <div className="jd-price-value">{priceIsNegotiable ? 'Договорная' : budget}</div>
-                <div className="jd-price-hint">за работу</div>
-
-                <button type="button" className="jd-btn jd-btn-primary" onClick={() => handleOpenOfferModal(req)}>
+                <div className="jd-price-big">{priceIsNegotiable ? 'Договорная' : budget}</div>
+                <div className="jd-price-sub">
+                  {priceIsNegotiable ? 'сумма по договорённости' : 'за работу'}
+                </div>
+              </div>
+              <div className="jd-price-btns">
+                <button type="button" className="jd-btn-msg" onClick={() => handleOpenOfferModal(req)}>
                   Откликнуться
                 </button>
                 {req.customerId && (
                   <Link
                     to={`/chat/${req.customerId}?jobRequestId=${req.id}`}
-                    className="jd-btn jd-btn-ghost"
+                    className="jd-btn-contact"
                   >
                     Написать сообщение
                   </Link>
                 )}
               </div>
+            </div>
 
-              {(req.customerName || req.customerId) && (
-                <div className="jd-person-card">
-                  <div className="jd-person-label">Заказчик</div>
-                  {req.customerId ? (
-                    <Link
-                      to={`/customers/${req.customerId}?name=${encodeURIComponent(custNameFull)}`}
-                      className="jd-person-link"
-                    >
-                      {req.customerAvatar ? (
-                        <img className="jd-person-ava" src={jdPhotoUrl(req.customerAvatar)} alt="" />
-                      ) : (
-                        <div className="jd-person-ava jd-person-ava--ph" aria-hidden>
-                          {(custNameFull[0] || '?').toUpperCase()}
-                        </div>
-                      )}
-                      <div className="jd-person-text">
-                        <div className="jd-person-name">{custNameFull}</div>
-                        <div className="jd-author-status">Активный заказчик</div>
-                        <div className="jd-author-rating">
-                          <span className="stars">
-                            {'★'.repeat(custStars)}
-                            {'☆'.repeat(5 - custStars)}
-                          </span>
-                          <span className="jd-rating-val">{custAvg.toFixed(1)}</span>
-                          <span>({reviewsCountLabel(custCnt)})</span>
-                        </div>
-                      </div>
-                      <span className="jd-person-chevron" aria-hidden>
-                        ›
-                      </span>
-                    </Link>
-                  ) : (
-                    <div className="jd-person-link" style={{ cursor: 'default', pointerEvents: 'none' }}>
+            {(req.customerName || req.customerId) && (
+              <div className="jd-person-card">
+                <div className="jd-person-label">Заказчик</div>
+                {req.customerId ? (
+                  <Link
+                    to={`/customers/${req.customerId}?name=${encodeURIComponent(custNameFull)}`}
+                    className="jd-person-link"
+                  >
+                    {req.customerAvatar ? (
+                      <img className="jd-person-ava" src={jdPhotoUrl(req.customerAvatar)} alt="" />
+                    ) : (
                       <div className="jd-person-ava jd-person-ava--ph" aria-hidden>
                         {(custNameFull[0] || '?').toUpperCase()}
                       </div>
-                      <div className="jd-person-text">
-                        <div className="jd-person-name">{custNameFull}</div>
-                        <div className="jd-author-status">Активный заказчик</div>
-                        <div className="jd-author-rating">
-                          <span className="stars">
-                            {'★'.repeat(custStars)}
-                            {'☆'.repeat(5 - custStars)}
-                          </span>
-                          <span className="jd-rating-val">{custAvg.toFixed(1)}</span>
-                          <span>({reviewsCountLabel(custCnt)})</span>
-                        </div>
+                    )}
+                    <div className="jd-person-text">
+                      <div className="jd-person-name">{custNameFull}</div>
+                      <div className="jd-person-line-status">Активный заказчик</div>
+                      <div className="jd-author-rating">
+                        <span className="stars">
+                          {'★'.repeat(custStars)}
+                          {'☆'.repeat(5 - custStars)}
+                        </span>
+                        <span className="jd-rating-val">{custAvg.toFixed(1)}</span>
+                        <span>({reviewsCountLabel(custCnt)})</span>
                       </div>
                     </div>
-                  )}
-                </div>
-              )}
-            </aside>
-          </div>
+                    <span className="jd-person-chevron" aria-hidden>
+                      ›
+                    </span>
+                  </Link>
+                ) : (
+                  <div className="jd-person-link" style={{ cursor: 'default', pointerEvents: 'none' }}>
+                    <div className="jd-person-ava jd-person-ava--ph" aria-hidden>
+                      {(custNameFull[0] || '?').toUpperCase()}
+                    </div>
+                    <div className="jd-person-text">
+                      <div className="jd-person-name">{custNameFull}</div>
+                      <div className="jd-person-line-status">Активный заказчик</div>
+                      <div className="jd-author-rating">
+                        <span className="stars">
+                          {'★'.repeat(custStars)}
+                          {'☆'.repeat(5 - custStars)}
+                        </span>
+                        <span className="jd-rating-val">{custAvg.toFixed(1)}</span>
+                        <span>({reviewsCountLabel(custCnt)})</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </aside>
         </div>
       </div>
 
