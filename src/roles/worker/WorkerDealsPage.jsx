@@ -35,6 +35,31 @@ function timeAgo(d) {
   return new Date(d).toLocaleDateString('ru-RU', { day:'numeric', month:'long' });
 }
 
+function firstNonEmpty(...vals) {
+  for (const v of vals) {
+    if (typeof v === 'string' && v.trim()) return v.trim();
+  }
+  return '';
+}
+
+function customerFullName(deal) {
+  if (!deal) return 'Заказчик';
+  const first = firstNonEmpty(
+    deal.customerName,
+    deal.customerFirstName,
+    deal.customer?.name,
+    deal.customer?.firstName,
+  );
+  const last = firstNonEmpty(
+    deal.customerLastName,
+    deal.customerSurname,
+    deal.lastName,
+    deal.customer?.lastName,
+    deal.customer?.surname,
+  );
+  return [first, last].filter(Boolean).join(' ') || 'Заказчик';
+}
+
 export default function WorkerDealsPage() {
   const { userId, userName, userLastName, userAvatar } = useAuth();
   const navigate  = useNavigate();
@@ -360,11 +385,11 @@ export default function WorkerDealsPage() {
               <div className="wd-customer-row" onClick={() => detail.customerId && navigate(`/customers/${detail.customerId}`)}>
                 {detail.customerAvatar && detail.customerAvatar.length > 10 && detail.customerAvatar !== 'null'
                   ? <img src={detail.customerAvatar} alt="" className="wd-customer-avatar" />
-                  : <div className="wd-customer-fallback">{(detail.customerName||'З')[0].toUpperCase()}</div>
+                  : <div className="wd-customer-fallback">{(customerFullName(detail)[0]||'З').toUpperCase()}</div>
                 }
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>
-                    {[detail.customerName, detail.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
+                    {customerFullName(detail)}
                   </div>
                   <div style={{
                     fontSize: 12,
@@ -457,10 +482,10 @@ export default function WorkerDealsPage() {
                   <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px', background:'#f9fafb', borderRadius:10, marginBottom:18 }}>
                     {reviewDeal.customerAvatar && reviewDeal.customerAvatar.length > 10
                       ? <img src={reviewDeal.customerAvatar} alt="" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} />
-                      : <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>{(reviewDeal.customerName||'З')[0].toUpperCase()}</div>
+                      : <div style={{ width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#e8410a,#ff7043)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:16 }}>{(customerFullName(reviewDeal)[0]||'З').toUpperCase()}</div>
                     }
                     <div>
-                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{[reviewDeal.customerName, reviewDeal.customerLastName].filter(Boolean).join(' ')}</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{customerFullName(reviewDeal)}</div>
                       <div style={{ fontSize:12, color:'#9ca3af' }}>Заказчик</div>
                     </div>
                   </div>
@@ -615,7 +640,7 @@ export default function WorkerDealsPage() {
                       )}
                       {d.category && <span className={`wd-card-cat ${categoryChipToneClass(d.category)}`}>{d.category}</span>}
                       <div className="wd-card-meta">
-                        <span>{d.customerName || 'Заказчик'}</span>
+                        <span>{customerFullName(d)}</span>
                         <span>{timeAgo(d.createdAt)}</span>
                       </div>
                       <div className="wd-card-stats">
