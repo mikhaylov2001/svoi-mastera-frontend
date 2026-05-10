@@ -1,15 +1,22 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { FaMapMarkerAlt, FaRegClock, FaBolt, FaImage } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats } from '../../api';
 import { formatJobRequestBudgetLabel } from '../../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
+import './jobListings.css';
 import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
+
+const BACKEND_JL = 'https://svoi-mastera-backend.onrender.com';
+const jlPhotoUrl = (u) => !u ? null : (u.startsWith('http') || u.startsWith('data:')) ? u : BACKEND_JL + u;
+const jlFmtDate = (d) => !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+const jlFmtPrice = (p) => (p ? `${Number(p).toLocaleString('ru-RU')} ₽` : null);
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 
@@ -1056,6 +1063,8 @@ export default function FindWorkPage() {
   const [submitting,       setSubmitting]       = useState(false);
   const [lightbox,         setLightbox]         = useState(null);
   const [heroCatSlug,      setHeroCatSlug]      = useState(null); // hover на карточке категории
+  /** Карточки «Актуальные заявки» (стиль jl-*), без отдельного роута */
+  const [jlCat, setJlCat] = useState('ALL');
 
   // Фильтры/поиск для экрана 2
   const [searchInput,   setSearchInput]   = useState('');
@@ -1101,6 +1110,16 @@ export default function FindWorkPage() {
     const pool = requests.filter((r) => r.categoryId === selectedCategory.id);
     return rankItemsBySmartMatch(pool, debouncedFwSearch, jobRequestHaystack, { limit: 8 });
   }, [requests, selectedCategory, debouncedFwSearch]);
+
+  const jlCats = useMemo(() => {
+    const s = new Map();
+    requests.forEach((i) => {
+      if (i.categoryName) s.set(i.categoryName, (s.get(i.categoryName) || 0) + 1);
+    });
+    return Array.from(s, ([name, n]) => ({ name, n }));
+  }, [requests]);
+
+  const jlVisible = jlCat === 'ALL' ? requests : requests.filter((i) => i.categoryName === jlCat);
 
   const showFwSearchDd = fwSearchFocused && debouncedFwSearch.length >= 2;
 
@@ -1975,6 +1994,97 @@ export default function FindWorkPage() {
   return (
     <div className="fw2-page">
       <style>{fw2css}</style>
+
+      {/* Актуальные заявки — тот же визуальный стиль jl-*, логика FindWorkPage */}
+      <div className="jl-page jl-findwork-embed">
+        <div className="jl-wrap">
+          <div className="jl-head">
+            <div>
+              <h1 className="jl-title">Актуальные заявки</h1>
+              <div className="jl-sub">{requests.length} заявок ждут отклика</div>
+            </div>
+            <div className="jl-filters">
+              <button type="button" className={`jl-chip ${jlCat === 'ALL' ? 'is-active' : ''}`} onClick={() => setJlCat('ALL')}>
+                Все
+              </button>
+              {jlCats.slice(0, 6).map((c) => (
+                <button type="button" key={c.name} className={`jl-chip ${jlCat === c.name ? 'is-active' : ''}`} onClick={() => setJlCat(c.name)}>
+                  {c.name} · {c.n}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="jl-empty">Загружаем заявки...</div>
+          ) : jlVisible.length === 0 ? (
+            <div className="jl-empty">В этой категории пока нет заявок.</div>
+          ) : (
+            <div className="jl-grid">
+              {jlVisible.map((item) => {
+                const photo = jlPhotoUrl(item.photos?.[0] || item.photo);
+                const price = jlFmtPrice(item.budgetTo || item.budgetFrom || item.budget || item.price);
+                return (
+                  <Link key={item.id} to={`/find-work?request=${encodeURIComponent(item.id)}`} className="jl-card">
+                    <div className="jl-card-media">
+                      {photo ? (
+                        <img src={photo} alt={item.title || 'Заявка'} loading="lazy" />
+                      ) : (
+                        <div className="jl-card-media-empty">
+                          <FaImage />
+                        </div>
+                      )}
+                      {item.categoryName && <span className="jl-cat-badge">{item.categoryName}</span>}
+                      {item.urgent && (
+                        <span className="jl-urgent">
+                          <FaBolt /> Срочно
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="jl-card-body">
+                      <div className="jl-price">{price || <span className="jl-price-muted">Договорная</span>}</div>
+                      <div className="jl-card-title">{item.title || 'Заявка'}</div>
+
+                      <div className="jl-meta">
+                        {(item.cityName || item.addressText || item.address) && (
+                          <span>
+                            <FaMapMarkerAlt />
+                            {item.cityName || item.addressText || item.address}
+                          </span>
+                        )}
+                        {item.createdAt && (
+                          <span>
+                            <FaRegClock />
+                            {jlFmtDate(item.createdAt)}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="jl-card-foot">
+                        <div className="jl-author-ava">
+                          {item.customerAvatar ? (
+                            <img src={jlPhotoUrl(item.customerAvatar)} alt="" />
+                          ) : (
+                            (item.customerName?.[0] || '?').toUpperCase()
+                          )}
+                        </div>
+                        <div className="jl-author-name">{[item.customerName, item.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}</div>
+                        {item.cityName && (
+                          <span className="jl-author-loc">
+                            <FaMapMarkerAlt />
+                            {item.cityName}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Hero */}
       <div className="fw2-hero">

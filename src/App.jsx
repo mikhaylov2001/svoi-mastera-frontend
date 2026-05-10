@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import Header from './components/Header';
@@ -19,8 +19,7 @@ import PublicWorkerProfilePage from './roles/worker/PublicWorkerProfilePage';
 import PublicCustomerProfilePage from './roles/customer/PublicCustomerProfilePage';
 import DealsPage from './roles/customer/DealsPage';
 import WorkerDealsPage from './roles/worker/WorkerDealsPage';
-import JobListingsPage from './roles/worker/JobListingsPage';
-import JobListingDetailPage from './roles/worker/JobListingDetailPage';
+import FindWorkPage from './roles/worker/FindWorkPage';
 import FindMasterPage from './roles/customer/FindMasterPage';
 import MyOrdersPage from './roles/customer/MyOrdersPage';
 import ChatPage from './pages/ChatPage';
@@ -36,6 +35,12 @@ import GuaranteeTermsPage from './pages/GuaranteeTermsPage';
 import ListingDetailPage from './roles/worker/ListingDetailPage';
 import './App.css';
 import './styles/unifiedListingCards.css';
+
+/** Старый роут /jobs/:id — открываем ту же заявку в FindWorkPage */
+function RedirectJobsDetailToFindWork() {
+  const { id } = useParams();
+  return <Navigate to={`/find-work?request=${encodeURIComponent(id)}`} replace />;
+}
 
 function ProtectedRoute({ children, workerOnly = false }) {
   const { userId, userRole } = useAuth();
@@ -72,9 +77,9 @@ function AppContent() {
           <Route path="/profile"         element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
           <Route path="/worker-profile"  element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
           <Route path="/deals"           element={<ProtectedRoute><DealsRoute /></ProtectedRoute>} />
-          <Route path="/find-work"       element={<ProtectedRoute workerOnly><JobListingsPage /></ProtectedRoute>} />
-          <Route path="/jobs"            element={<ProtectedRoute workerOnly><JobListingsPage /></ProtectedRoute>} />
-          <Route path="/jobs/:id"        element={<ProtectedRoute workerOnly><JobListingDetailPage /></ProtectedRoute>} />
+          <Route path="/find-work"       element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
+          <Route path="/jobs"            element={<ProtectedRoute workerOnly><FindWorkPage /></ProtectedRoute>} />
+          <Route path="/jobs/:id"        element={<ProtectedRoute workerOnly><RedirectJobsDetailToFindWork /></ProtectedRoute>} />
           <Route path="/find-master"     element={<FindMasterPage />} />
           <Route path="/find-master/:categorySlug" element={<FindMasterPage />} />
           <Route path="/my-requests"     element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />

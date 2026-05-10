@@ -1,3 +1,9 @@
+/* Встроенный блок на FindWorkPage (не на всю высоту экрана) */
+.jl-page.jl-findwork-embed {
+  min-height: 0;
+  padding: 24px 0 8px;
+}
+
 /* ===== Общая страница ===== */
 .jl-page {
   font-family: Manrope, Arial, sans-serif;
