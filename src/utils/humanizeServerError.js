@@ -8,6 +8,15 @@ export function humanizeServerErrorMessage(text) {
   let t = String(text).replace(/\s+/g, ' ').trim();
   if (!t) return 'Произошла ошибка. Попробуйте ещё раз.';
 
+  const lower = t.toLowerCase();
+  if (
+    /could not open jpa entitymanager|entitymanager for transaction|failed to obtain jdbc connection|could not obtain connection|hibernate\.exception|schema validation|schemamanagementexception|unable to build hibernate sessionfactory|dataaccessresourcefailure/i.test(
+      lower,
+    )
+  ) {
+    return 'Сервер временно не может обработать запрос (проблема с базой данных или обновление). Попробуйте через несколько минут. Если не проходит — напишите в поддержку.';
+  }
+
   const errBlock = t.match(/\[ERROR:\s*([^\]]+)\]/i);
   const core = (errBlock ? errBlock[1] : t).trim();
 
