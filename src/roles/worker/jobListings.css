@@ -18,14 +18,21 @@
 }
 .jl-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 
-.jl-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+/* Заголовок + чипы столбцом: подпись под тайтлом, фильтры строкой ниже */
+.jl-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 22px;
+}
 .jl-title { font-size: 28px; font-weight: 900; letter-spacing: -.5px; color: #111; margin: 0; }
-.jl-sub { color: #6b6b6b; font-size: 14px; margin-top: 4px; }
+.jl-sub { color: #6b6b6b; font-size: 14px; margin-top: 4px; line-height: 1.35; }
 
-.jl-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.jl-filters { display: flex; gap: 8px; flex-wrap: wrap; width: 100%; }
 .jl-chip {
   background: #fff; border: 1px solid #e7e7e7; border-radius: 999px;
-  padding: 8px 14px; font-size: 13px; font-weight: 600; color: #333; cursor: pointer;
+  padding: 8px 14px; font-size: 13px; font-weight: 700; color: #111; cursor: pointer;
   transition: all .15s;
 }
 .jl-chip:hover { border-color: #e8410a; color: #e8410a; }
