@@ -3,6 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
 import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
+import {
+  getCategoryPlaceholderPhotoUrl,
+  CATEGORY_PLACEHOLDER_PHOTO_BY_SLUG as CAT_PHOTOS,
+} from '../utils/categoryPlaceholderPhoto';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
@@ -17,18 +21,6 @@ function workerListingPhotoUrl(url) {
   if (url.startsWith('http') || url.startsWith('data:')) return url;
   return BACKEND_ORIGIN + url;
 }
-
-const CAT_PHOTOS = {
-  'remont-kvartir':       'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80',
-  'santehnika':           'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
-  'elektrika':            'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&q=80',
-  'uborka':               'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=600&q=80',
-  'parikhmaher':          'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=80',
-  'manikur':              'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&q=80',
-  'krasota-i-zdorovie':   'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80',
-  'repetitorstvo':        'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80',
-  'kompyuternaya-pomosh': 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=600&q=80',
-};
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800;900&display=swap');
@@ -414,7 +406,9 @@ function CustomerHome({ userId }) {
                 <div className="av-cards-grid">
                   {visibleMasterListings.slice(0, shown).map((l) => {
                     const img0 = l.photos?.[0];
-                    const src = workerListingPhotoUrl(img0);
+                    const src =
+                      workerListingPhotoUrl(img0) ||
+                      getCategoryPlaceholderPhotoUrl({ category: l.category });
                     const avUrl = workerListingPhotoUrl(l.workerAvatar);
                     const wname =
                       [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
@@ -654,10 +648,15 @@ function WorkerHome({ userId, userName }) {
               ) : (
                 <div className="av-cards-grid">
                   {homeVisibleRequests.map((item) => {
-                    const photoSrc = workerListingPhotoUrl(item.photos?.[0] || item.photo);
+                    const catLabel = item.categoryName || catName(item.categoryId);
+                    const photoSrc =
+                      workerListingPhotoUrl(item.photos?.[0] || item.photo) ||
+                      getCategoryPlaceholderPhotoUrl(
+                        { categoryName: catLabel, categoryId: item.categoryId },
+                        categories,
+                      );
                     const budgetLabel = formatJobRequestBudgetLabel(item);
                     const hasPrice = budgetLabel !== 'Не указана';
-                    const catLabel = item.categoryName || catName(item.categoryId);
                     const locLine = (item.cityName || item.address || item.addressText || '').trim();
                     const cityShort =
                       item.cityName ||

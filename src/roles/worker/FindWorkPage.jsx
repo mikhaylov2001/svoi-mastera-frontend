@@ -13,6 +13,7 @@ import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
+import { getCategoryPlaceholderPhotoUrl } from '../../utils/categoryPlaceholderPhoto';
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 
@@ -1245,7 +1246,12 @@ export default function FindWorkPage() {
   if (selectedRequest) {
     const req = selectedRequest;
     const catStyle = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '📋', color: '#f3f4f6' };
-    const jdPhotos = (req.photos || []).map(jdPhotoUrl).filter(Boolean);
+    const jdPhotosRaw = (req.photos || []).map(jdPhotoUrl).filter(Boolean);
+    const jdPlaceholder = getCategoryPlaceholderPhotoUrl(
+      { categoryName: req.categoryName, categoryId: req.categoryId },
+      categories,
+    );
+    const jdPhotos = jdPhotosRaw.length ? jdPhotosRaw : jdPlaceholder ? [jdPlaceholder] : [];
     const mainSrc = jdPhotos[activePhotoIdx] || null;
     const budget = formatJobRequestBudgetLabel(req);
     const priceIsNegotiable = budget === 'Не указана';
@@ -1314,8 +1320,8 @@ export default function FindWorkPage() {
                 <div
                   className="jd-gallery-main"
                   role="presentation"
-                  onClick={() => mainSrc && setLightbox({ photos: jdPhotos, index: activePhotoIdx })}
-                  style={{ cursor: mainSrc ? 'pointer' : 'default' }}
+                  onClick={() => jdPhotos.length > 0 && setLightbox({ photos: jdPhotos, index: activePhotoIdx })}
+                  style={{ cursor: jdPhotos.length ? 'pointer' : 'default' }}
                 >
                   {mainSrc ? (
                     <img src={mainSrc} alt={req.title || ''} />
@@ -1637,6 +1643,12 @@ export default function FindWorkPage() {
                     <>
                       {fwDdMatches.map((req) => {
                         const ph = (req.photos || [])[0];
+                        const phSrc =
+                          ph ||
+                          getCategoryPlaceholderPhotoUrl(
+                            { categoryName: req.categoryName, categoryId: req.categoryId },
+                            categories,
+                          );
                         const custLabel = [req.customerName, req.customerLastName].filter(Boolean).join(' ');
                         return (
                           <button
@@ -1649,7 +1661,7 @@ export default function FindWorkPage() {
                             }}
                           >
                             <div className="fw2-search-hit-ph">
-                              {ph ? <img src={ph} alt="" /> : <span>нет фото</span>}
+                              {phSrc ? <img src={phSrc} alt="" /> : <span>нет фото</span>}
                             </div>
                             <div className="fw2-search-hit-body">
                               <div className="fw2-search-hit-title">{req.title || 'Заявка'}</div>
@@ -1827,6 +1839,10 @@ export default function FindWorkPage() {
                 {filtered.map(req => {
                   const photos = req.photos || [];
                   const hasPhoto = photos.length > 0;
+                  const placeholderBg = getCategoryPlaceholderPhotoUrl(
+                    { categoryName: req.categoryName, categoryId: req.categoryId },
+                    categories,
+                  );
                   const budgetLabel = formatJobRequestBudgetLabel(req);
                   const custName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
 
@@ -1878,6 +1894,12 @@ export default function FindWorkPage() {
                             {photos.length > 1 && (
                               <span className="fw2-card-photo-cnt">📷 {photos.length}</span>
                             )}
+                            <div className="fw2-card-photo-hover">Смотреть</div>
+                          </>
+                        ) : placeholderBg ? (
+                          <>
+                            <img src={placeholderBg} alt="" draggable={false} />
+                            <span className="fw2-card-photo-active">АКТИВНО</span>
                             <div className="fw2-card-photo-hover">Смотреть</div>
                           </>
                         ) : (

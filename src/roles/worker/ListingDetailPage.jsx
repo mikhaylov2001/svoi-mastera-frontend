@@ -5,30 +5,15 @@ import { acceptListingDeal, recordListingView, getMyDeals, workerStartDeal } fro
 import ListingInfoPanels from '../../components/ListingInfoPanels';
 import { dealsWdCss } from '../shared/dealsWdStyles';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
+import {
+  getCategoryPlaceholderPhotoUrl,
+  getCategorySlugFromLabel,
+} from '../../utils/categoryPlaceholderPhoto';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 /** Одна отправка просмотра на id за сессию (React StrictMode и повторные fetch) */
 const listingViewPostedIds = new Set();
-
-const CAT_PHOTOS = {
-  'remont-kvartir':       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&q=80',
-  'santehnika':           'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80',
-  'elektrika':            'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=900&q=80',
-  'uborka':               'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=900&q=80',
-  'parikhmaher':          'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80',
-  'manikur':              'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=900&q=80',
-  'krasota-i-zdorovie':   'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=900&q=80',
-  'repetitorstvo':        'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=900&q=80',
-  'kompyuternaya-pomosh': 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=900&q=80',
-};
-
-const CAT_SLUGS = {
-  'Ремонт квартир': 'remont-kvartir', 'Сантехника': 'santehnika',
-  'Электрика': 'elektrika', 'Уборка': 'uborka', 'Парикмахер': 'parikhmaher',
-  'Маникюр и педикюр': 'manikur', 'Красота и здоровье': 'krasota-i-zdorovie',
-  'Репетиторство': 'repetitorstvo', 'Компьютерная помощь': 'kompyuternaya-pomosh',
-};
 
 function reviewsCountLabel(n) {
   const x = Number(n) || 0;
@@ -458,9 +443,9 @@ export default function ListingDetailPage() {
   }, [listing, userId]);
 
   const photos = listing?.photos?.length ? listing.photos : [];
-  const catSlug = CAT_SLUGS[listing?.category] || '';
-  const fallbackPhoto = CAT_PHOTOS[catSlug];
+  const fallbackPhoto = getCategoryPlaceholderPhotoUrl({ category: listing?.category });
   const allPhotos = photos.length ? photos : (fallbackPhoto ? [fallbackPhoto] : []);
+  const catSlug = getCategorySlugFromLabel(listing?.category);
 
   const nextPhoto = useCallback(() => setActivePhoto(i => (allPhotos.length > 1 ? (i + 1) % allPhotos.length : i)), [allPhotos.length]);
   const prevPhoto = useCallback(() => setActivePhoto(i => (allPhotos.length > 1 ? (i - 1 + allPhotos.length) % allPhotos.length : i)), [allPhotos.length]);
@@ -901,8 +886,8 @@ export default function ListingDetailPage() {
               </div>
               <div className="ld-similar-list">
                 {similar.map(s => {
-                  const sSlug = CAT_SLUGS[s.category] || '';
-                  const sPhoto = s.photos?.[0] || CAT_PHOTOS[sSlug];
+                  const sPhoto =
+                    s.photos?.[0] || getCategoryPlaceholderPhotoUrl({ category: s.category });
                   return (
                     <Link key={s.id} to={`/listings/${s.id}`} className="ld-sim-item">
                       <div className="ld-sim-img">

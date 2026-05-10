@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getCategoryPlaceholderPhotoUrl } from '../../utils/categoryPlaceholderPhoto';
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 function timeAgo(d) {
@@ -590,6 +591,10 @@ export default function PublicWorkerProfilePage() {
                   <div className="pw-grid">
                     {pageItems.map(item => {
                       const hasPhoto = item.photos && item.photos.length > 0;
+                      const catPh =
+                        !hasPhoto &&
+                        tab === 'active' &&
+                        getCategoryPlaceholderPhotoUrl({ category: item.category });
                       const price    = item.price || item.priceFrom || null;
                       return (
                         <div
@@ -606,7 +611,9 @@ export default function PublicWorkerProfilePage() {
                           <div className="pw-card-img-wrap">
                             {hasPhoto
                               ? <img src={item.photos[0]} alt={item.title} />
-                              : (tab === 'active' ? '🔧' : '🔨')
+                              : catPh
+                                ? <img src={catPh} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                : (tab === 'active' ? '🔧' : '🔨')
                             }
                             {tab === 'works' && <div className="pw-card-done">Завершена</div>}
                             <button className="pw-card-heart" onClick={e => e.stopPropagation()}>♡</button>

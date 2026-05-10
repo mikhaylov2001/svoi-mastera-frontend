@@ -6,6 +6,7 @@ import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { smartTextMatchScore, listingHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
+import { getCategoryPlaceholderPhotoUrl } from '../../utils/categoryPlaceholderPhoto';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -1369,7 +1370,9 @@ export default function FindMasterPage() {
               <div className="fmp-list fmp-global-list">
                 {globalMatches.map(s => {
                   const photos = s.photos || [];
-                  const mainPhoto = photos[0];
+                  const mainPhoto =
+                    photos[0] ||
+                    getCategoryPlaceholderPhotoUrl({ category: s.category }, categories);
                   return (
                     <Link key={s.id} to={`/listings/${s.id}`} className="fmp-gcard">
                       <div className="fmp-gcard-photo">
@@ -1744,6 +1747,10 @@ export default function FindMasterPage() {
                 const wid    = s.workerId;
                 const photos = s.photos || [];
                 const hasPhoto = photos.length > 0;
+                const listingPlaceholder = getCategoryPlaceholderPhotoUrl(
+                  { category: s.category, categorySlug },
+                  categories,
+                );
                 const ava    = stats?.workerAvatar || s.workerAvatar || null;
                 const locLine = (() => {
                   const addr = s.address && String(s.address).trim();
@@ -1766,6 +1773,12 @@ export default function FindMasterPage() {
                           <img src={photos[0]} alt={s.title}/>
                           {s.active !== false && <span className="fmp-card-photo-active">АКТИВНО</span>}
                           {photos.length > 1 && <span className="fmp-card-photo-cnt">📷 {photos.length}</span>}
+                          <div className="fmp-card-photo-hover">Смотреть</div>
+                        </>
+                      ) : listingPlaceholder ? (
+                        <>
+                          <img src={listingPlaceholder} alt={s.title}/>
+                          {s.active !== false && <span className="fmp-card-photo-active">АКТИВНО</span>}
                           <div className="fmp-card-photo-hover">Смотреть</div>
                         </>
                       ) : (
