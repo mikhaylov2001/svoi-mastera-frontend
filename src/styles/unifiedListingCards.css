@@ -308,7 +308,6 @@
   transform-origin: center center;
   -webkit-tap-highlight-color: transparent;
   position: relative;
-  padding-right: 30px;
 }
 .wd-card:hover {
   transform: translateY(-1px);
@@ -339,14 +338,14 @@
 }
 
 .wd-card-img {
-  width: 82px;
-  height: 82px;
+  width: 112px;
+  height: 96px;
   flex-shrink: 0;
   background: #eef1f5;
   overflow: hidden;
   position: relative;
   align-self: center;
-  border-radius: 10px;
+  border-radius: 6px;
   margin: 10px 0 10px 12px;
 }
 .wd-card-img img {
@@ -560,20 +559,15 @@
 }
 
 .wd-card-actions {
-  display: none;
-}
-
-.wd-card::after {
-  content: '›';
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #a0afc5;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1;
-  pointer-events: none;
+  width: 170px;
+  flex-shrink: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+  border-left: 1px solid #e8edf3;
+  background: #fafbfc;
 }
 
 .wd-btn-primary,
@@ -783,6 +777,7 @@
 
   .wd-card-img {
     width: 100px;
+    height: 92px;
     min-height: 92px;
   }
   .wd-card-img img,
