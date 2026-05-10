@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaBolt, FaImage, FaMapMarkerAlt, FaRegClock } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
 import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
@@ -411,9 +410,6 @@ function pluralRequestsLabel(n) {
   return `${n} заявок`;
 }
 
-const jlFmtDateShort = (d) =>
-  !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-
 function WorkerHome({ userId, userName }) {
   const navigate = useNavigate();
   const [openRequests, setOpenRequests] = useState([]);
@@ -562,83 +558,66 @@ function WorkerHome({ userId, userName }) {
               </div>
 
               {loading ? (
-                <div className="jl-empty">Загружаем заявки…</div>
+                <div className="av-empty">
+                  <div className="av-empty-ico">⏳</div>
+                  <h3>Загружаем заявки…</h3>
+                </div>
               ) : homeVisibleRequests.length === 0 ? (
-                <div className="jl-empty">
+                <div className="av-empty">
+                  <div className="av-empty-ico">📋</div>
+                  <h3>
+                    {homeListCat === 'ALL'
+                      ? 'Пока нет открытых заявок'
+                      : 'В этой категории пока нет заявок'}
+                  </h3>
                   {homeListCat === 'ALL' ? (
-                    'Пока нет открытых заявок. Когда заказчики опубликуют задачи, они появятся здесь и в «Найти работу».'
-                  ) : (
-                    'В этой категории пока нет заявок.'
-                  )}
+                    <p>Когда заказчики опубликуют задачи, они появятся здесь и в «Найти работу»</p>
+                  ) : null}
                 </div>
               ) : (
-                <div className="jl-grid">
+                <div className="av-cards-grid">
                   {homeVisibleRequests.map((item) => {
                     const photoSrc = workerListingPhotoUrl(item.photos?.[0] || item.photo);
                     const budgetLabel = formatJobRequestBudgetLabel(item);
                     const hasPrice = budgetLabel !== 'Не указана';
                     const catLabel = item.categoryName || catName(item.categoryId);
                     const locLine = (item.cityName || item.address || item.addressText || '').trim();
+                    const cityShort =
+                      item.cityName ||
+                      (locLine ? locLine.split(',')[0].trim() : '') ||
+                      city;
                     const custName =
                       [item.customerName, item.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
-                    const showUrgent = !!(
-                      item.urgent ||
-                      item.isUrgent ||
-                      (item.urgency && String(item.urgency).trim())
-                    );
                     return (
                       <Link
                         key={item.id}
                         to={`/find-work?request=${encodeURIComponent(item.id)}`}
-                        className="jl-card"
+                        className="av-card"
                       >
-                        <div className="jl-card-media">
+                        <div className="av-card-img">
                           {photoSrc ? (
                             <img src={photoSrc} alt={item.title || ''} loading="lazy" />
                           ) : (
-                            <div className="jl-card-media-empty">
-                              <FaImage />
-                            </div>
+                            '📋'
                           )}
-                          {catLabel && <span className="jl-cat-badge">{catLabel}</span>}
-                          {showUrgent && (
-                            <span className="jl-urgent">
-                              <FaBolt aria-hidden /> Срочно
-                            </span>
-                          )}
+                          {catLabel ? <span className="av-card-cat">{catLabel}</span> : null}
                         </div>
-                        <div className="jl-card-body">
-                          <div className="jl-price">
-                            {hasPrice ? (
-                              budgetLabel
-                            ) : (
-                              <span className="jl-price-muted">Договорная</span>
-                            )}
+                        <div className="av-card-body">
+                          <div className="av-card-price">
+                            {hasPrice ? budgetLabel : '— ₽'}
+                            {hasPrice ? <span className="av-card-price-unit">за работу</span> : null}
                           </div>
-                          <div className="jl-card-title">{item.title}</div>
-                          <div className="jl-meta">
-                            {locLine && (
-                              <span>
-                                <FaMapMarkerAlt aria-hidden />
-                                {locLine}
-                              </span>
-                            )}
-                            {item.createdAt && (
-                              <span>
-                                <FaRegClock aria-hidden />
-                                {jlFmtDateShort(item.createdAt)}
-                              </span>
-                            )}
-                          </div>
-                          <div className="jl-card-foot">
-                            <div className="jl-author-ava">
+                          <div className="av-card-title">{item.title}</div>
+                          <div className="av-card-footer">
+                            <div className="av-card-ava">
                               {item.customerAvatar ? (
                                 <img src={workerListingPhotoUrl(item.customerAvatar)} alt="" />
                               ) : (
                                 (custName[0] || '?').toUpperCase()
                               )}
                             </div>
-                            <div className="jl-author-name">{custName}</div>
+                            <span className="av-card-wname">{custName}</span>
+                            <span className="av-card-city">📍 {cityShort}</span>
                           </div>
                         </div>
                       </Link>
