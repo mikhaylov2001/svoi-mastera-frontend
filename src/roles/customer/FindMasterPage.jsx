@@ -3,7 +3,14 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { getCategories, getListings, acceptListingDeal, getMyDeals, cancelPendingDeal } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
-import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
+import {
+  PAGE_HERO_DEFAULT_PHOTO,
+  PAGE_HERO_IMG_FILTER,
+  PAGE_HERO_OVERLAY_GRADIENT,
+  PAGE_HERO_OBJECT_POSITION,
+  PAGE_HERO_OBJECT_FIT,
+  heroPhotoHiRes,
+} from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { smartTextMatchScore, listingHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import {
@@ -16,8 +23,10 @@ const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 /* Плоский словарь slug → данные категории (фото, описание, цена, …) */
 const CAT_ALL = {};
-Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
-  cats.forEach(cat => { CAT_ALL[cat.slug] = cat; })
+Object.values(CATEGORIES_BY_SECTION).forEach((cats) =>
+  cats.forEach((cat) => {
+    CAT_ALL[cat.slug] = { ...cat, photo: heroPhotoHiRes(cat.photo) };
+  }),
 );
 
 const HERO_PHOTO = PAGE_HERO_DEFAULT_PHOTO;
@@ -244,10 +253,26 @@ const css = `
     gap: 14px;
   }
 
-  /* Карточка категории — оболочка unifiedListingCards.css (.fmp-cat-card) */
+  /* Карточка категории — как .fw2-cat-card на «Найти работу» */
   .fmp-cat-card {
-    text-decoration: none;
+    background: #fff;
+    border-radius: 16px !important;
+    overflow: hidden;
     color: inherit;
+    display: flex;
+    flex-direction: column;
+    border: 1.5px solid #e8e8e8 !important;
+    transition: box-shadow 0.22s, transform 0.22s, border-color 0.22s;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    text-decoration: none;
+    font-family: Inter, Arial, sans-serif;
+  }
+  .fmp-cat-card:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.13);
+    transform: translateY(-4px) !important;
+    border-color: #e8410a;
   }
 
   .fmp-cat-img-wrap {
@@ -313,7 +338,7 @@ const css = `
     border-top: 1px solid #f0f0f0;
   }
   .fmp-cat-price { font-size: 13px; font-weight: 700; color: #e8410a; }
-  .fmp-cat-count { font-size: 12px; color: #aaa; margin-top: 1px; }
+  .fmp-cat-count { font-size: 12px; color: #e8410a; font-weight: 700; margin-top: 1px; }
   .fmp-cat-go {
     width: 30px;
     height: 30px;
@@ -519,6 +544,7 @@ const css = `
     position: relative;
     height: 110px;
     overflow: hidden;
+    background: #1a1a2e;
   }
   .fmp-sb-cat-photo img {
     width: 100%;
@@ -611,21 +637,24 @@ const css = `
   .fmp-rating-opt {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 7px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    border: 1.5px solid #e8e8e8;
-    background: #fff;
-    color: #555;
-    transition: all .15s;
-    margin-bottom: 6px;
+    gap: 8px;
     width: 100%;
-    font-family: Inter, sans-serif;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    border: 1.5px solid #e8e8e8;
+    background: #fafafa;
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
   }
+  .fmp-rating-opt:last-child { margin-bottom: 0; }
+  .fmp-rating-opt:hover { border-color: #e8410a; background: #fff8f5; }
   .fmp-rating-opt.active { border-color: #e8410a; background: #fff5f2; color: #e8410a; font-weight: 700; }
-  .fmp-stars-filter { color: #f59e0b; font-size: 13px; }
+  .fmp-stars-filter { color: #f59e0b; font-size: 13px; letter-spacing: 0.5px; }
 
   .fmp-reset-btn {
     width: 100%;
@@ -673,7 +702,7 @@ const css = `
 
   .fmp-list {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 12px;
   }
 
@@ -710,8 +739,8 @@ const css = `
     gap: 8px;
     color: #ccc;
   }
-  .fmp-card-photo-ph-ico { font-size: 38px; }
-  .fmp-card-photo-ph-txt { font-size: 12px; font-weight: 600; }
+  .fmp-card-photo-ph-ico { font-size: 44px; }
+  .fmp-card-photo-ph-txt { font-size: 11px; color: #bbb; font-weight: 600; }
   .fmp-card-photo-cnt {
     position: absolute;
     bottom: 8px;
@@ -759,6 +788,10 @@ const css = `
     display: flex;
     gap: 4px;
     padding: 6px 12px 0;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+    overflow: hidden;
+    cursor: pointer;
   }
   .fmp-thumb {
     width: 40px;
