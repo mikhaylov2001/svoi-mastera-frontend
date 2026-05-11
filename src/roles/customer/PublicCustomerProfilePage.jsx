@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
+import { formatJobRequestBudgetLabel, getJobRequestPublishedBudgetNumber } from '../../utils/jobRequestBudget';
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 function timeAgo(d) {
@@ -302,11 +303,21 @@ export default function PublicCustomerProfilePage() {
           <button className="pw-card-heart" onClick={e => e.stopPropagation()}>♡</button>
         </div>
         <div className="pw-card-title">{item.title || 'Задача'}</div>
-        {(item.agreedPrice || item.budgetTo) && (
-          <div className="pw-card-price">
-            {item.agreedPrice ? `${Number(item.agreedPrice).toLocaleString('ru-RU')} ₽` : `до ${Number(item.budgetTo).toLocaleString('ru-RU')} ₽`}
-          </div>
-        )}
+        {(() => {
+          if (isDeal && item.agreedPrice != null && Number(item.agreedPrice) > 0) {
+            return (
+              <div className="pw-card-price">{Number(item.agreedPrice).toLocaleString('ru-RU')} ₽</div>
+            );
+          }
+          if (isDeal) {
+            const b = getJobRequestPublishedBudgetNumber(item);
+            if (b == null) return null;
+            return <div className="pw-card-price">{b.toLocaleString('ru-RU')} ₽</div>;
+          }
+          const lbl = formatJobRequestBudgetLabel(item);
+          if (lbl === 'Не указана') return null;
+          return <div className="pw-card-price">{lbl}</div>;
+        })()}
         <div className="pw-card-loc"><span>📍</span><span>{customer?.city || 'Йошкар-Ола'}</span></div>
         {item.createdAt && <div className="pw-card-date">{new Date(item.createdAt).toLocaleDateString('ru-RU', {day:'numeric',month:'long',year:'numeric'})}</div>}
 

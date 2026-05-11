@@ -5,6 +5,7 @@ import { getUnreadCount, getListings } from '../api';
 import { rankItemsBySmartMatch, listingHaystack } from '../utils/smartSearch';
 import { dispatchSameRouteRefetch, isSameNavDest } from '../utils/sameRouteRefetch';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../utils/categoryPlaceholderPhoto';
+import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
 import './Header.css';
 
 const NOTIF_API = 'https://svoi-mastera-backend.onrender.com/api/v1/notifications';
@@ -174,7 +175,7 @@ function Header() {
       const processed = (listings || []).map(item => ({
         ...item,
         workerName: [item.workerName, item.workerLastName].filter(Boolean).join(' ') || 'Мастер',
-        priceFrom: item.price || 0,
+        priceFrom: getListingPublishedPriceNumber(item) || 0,
       }));
       setSearchListings(processed);
       setSearchCatalogLoaded(true);

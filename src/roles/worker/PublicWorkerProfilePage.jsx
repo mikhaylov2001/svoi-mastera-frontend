@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
+import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 function timeAgo(d) {
@@ -591,7 +592,7 @@ export default function PublicWorkerProfilePage() {
                   <div className="pw-grid">
                     {pageItems.map(item => {
                       const hasPhoto = item.photos && item.photos.length > 0;
-                      const price    = item.price || item.priceFrom || null;
+                      const price    = getListingPublishedPriceNumber(item);
                       return (
                         <div
                           key={item.id}

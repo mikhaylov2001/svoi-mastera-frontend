@@ -16,6 +16,7 @@ import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
+import { getJobRequestPublishedBudgetNumber } from '../../utils/jobRequestBudget';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -658,7 +659,10 @@ export default function MyOrdersPage() {
     setForm({
       title:       req.title || '',
       description: (req.description && req.description !== 'Без описания') ? req.description : '',
-      budget:      req.budgetTo || req.budgetFrom || '',
+      budget:      (() => {
+        const n = getJobRequestPublishedBudgetNumber(req);
+        return n != null ? String(n) : '';
+      })(),
       address:     req.addressText || '',
       city:        req.city || '',
       categoryId:  req.categoryId || '',
@@ -1120,7 +1124,7 @@ export default function MyOrdersPage() {
       { categoryName: catNameD, categoryId: detail.categoryId },
       categories,
     );
-    const budget   = detail.budgetTo || detail.budgetFrom;
+    const budget   = getJobRequestPublishedBudgetNumber(detail);
     return (
       <div className="ml-detail">
         <style>{css}</style>
@@ -1433,7 +1437,7 @@ export default function MyOrdersPage() {
                 { categoryName: catName, categoryId: req.categoryId },
                 categories,
               );
-              const budget   = req.budgetTo || req.budgetFrom;
+              const budget   = getJobRequestPublishedBudgetNumber(req);
               const stLabel  = STATUS_LABELS[req.status] || req.status;
               const isActive = isActiveStatus(req.status);
               return (

@@ -4,7 +4,7 @@ import { FaChevronLeft, FaChevronRight, FaRegClock } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats } from '../../api';
-import { formatJobRequestBudgetLabel } from '../../utils/jobRequestBudget';
+import { formatJobRequestBudgetLabel, getJobRequestPublishedBudgetNumber } from '../../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
 import './jobListings.css';
@@ -984,15 +984,7 @@ function pluralRequests(n) {
 }
 
 function jobRequestListPrice(req) {
-  if (!req) return null;
-  const to = req.budgetTo != null && req.budgetTo !== '' ? Number(req.budgetTo) : null;
-  const from = req.budgetFrom != null && req.budgetFrom !== '' ? Number(req.budgetFrom) : null;
-  const okTo = to != null && !Number.isNaN(to);
-  const okFrom = from != null && !Number.isNaN(from);
-  if (okTo && okFrom && to === from) return to;
-  if (okTo) return to;
-  if (okFrom) return from;
-  return null;
+  return getJobRequestPublishedBudgetNumber(req);
 }
 
 function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submitting }) {

@@ -1,19 +1,21 @@
 /**
- * Сумма в заявке для карточек (одна окончательная цифра в заявке; диапазон — редкий случай).
+ * Одна окончательная сумма бюджета заявки (без диапазона «от — до» и без «до» в тексте).
+ * Приоритет: budgetTo, затем budgetFrom — как сумма, указанная при публикации.
  */
-export function formatJobRequestBudgetLabel(req) {
-  if (!req) return 'Не указана';
+export function getJobRequestPublishedBudgetNumber(req) {
+  if (!req) return null;
   const to = req.budgetTo != null && req.budgetTo !== '' ? Number(req.budgetTo) : null;
   const from = req.budgetFrom != null && req.budgetFrom !== '' ? Number(req.budgetFrom) : null;
-  const okTo = to != null && !Number.isNaN(to);
-  const okFrom = from != null && !Number.isNaN(from);
-  if (okTo && okFrom && to === from) {
-    return `${to.toLocaleString('ru-RU')} ₽`;
-  }
-  if (okTo && okFrom && to !== from) {
-    return `${from.toLocaleString('ru-RU')} — ${to.toLocaleString('ru-RU')} ₽`;
-  }
-  if (okTo) return `${to.toLocaleString('ru-RU')} ₽`;
-  if (okFrom) return `${from.toLocaleString('ru-RU')} ₽`;
-  return 'Не указана';
+  const okTo = to != null && !Number.isNaN(to) && to > 0;
+  const okFrom = from != null && !Number.isNaN(from) && from > 0;
+  if (okTo) return to;
+  if (okFrom) return from;
+  return null;
+}
+
+/** Подпись бюджета для карточек и списков: одно число в ₽ или «Не указана». */
+export function formatJobRequestBudgetLabel(req) {
+  const n = getJobRequestPublishedBudgetNumber(req);
+  if (n == null) return 'Не указана';
+  return `${n.toLocaleString('ru-RU')} ₽`;
 }

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
 import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
+import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
   CATEGORY_PLACEHOLDER_PHOTO_BY_SLUG as CAT_PHOTOS,
@@ -420,7 +421,10 @@ function CustomerHome({ userId }) {
                         </div>
                         <div className="av-card-body">
                           <div className="av-card-price">
-                            {l.price ? Number(l.price).toLocaleString('ru-RU') : '—'} ₽
+                            {(() => {
+                              const p = getListingPublishedPriceNumber(l);
+                              return p ? `${p.toLocaleString('ru-RU')} ₽` : '— ₽';
+                            })()}
                             {l.priceUnit ? (
                               <span className="av-card-price-unit">{l.priceUnit}</span>
                             ) : null}

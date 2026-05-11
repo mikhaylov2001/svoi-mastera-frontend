@@ -13,6 +13,7 @@ import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { LISTING_ARCHIVED_AFTER_DEAL } from '../../utils/listingArchiveEvents';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
+import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 
 const API = API_BASE;
 
@@ -1243,9 +1244,12 @@ export default function MyListingsPage() {
               category={detail.category}
               address={detail.address || 'Йошкар-Ола · выезд по договорённости'}
               budgetLabel={
-                detail.price != null && Number(detail.price) > 0
-                  ? `${Number(detail.price).toLocaleString('ru-RU')} ₽${detail.priceUnit ? ` ${detail.priceUnit}` : ''}`
-                  : (detail.priceUnit || 'Договорная')
+                (() => {
+                  const pub = getListingPublishedPriceNumber(detail);
+                  return pub != null
+                    ? `${pub.toLocaleString('ru-RU')} ₽${detail.priceUnit ? ` ${detail.priceUnit}` : ''}`
+                    : (detail.priceUnit || 'Договорная');
+                })()
               }
               publishedAt={detail.createdAt}
             />
@@ -1254,10 +1258,10 @@ export default function MyListingsPage() {
           <div className="ml-detail-right">
             <div className="ml-detail-price-card">
               <div className="ml-detail-price-label">Стоимость</div>
-              {detail.priceUnit === 'договорная' || !detail.price || Number(detail.price) <= 0 ? (
+              {detail.priceUnit === 'договорная' || getListingPublishedPriceNumber(detail) == null ? (
                 <div className="ml-detail-price" style={{ fontSize: 22 }}>Договорная</div>
               ) : (
-                <div className="ml-detail-price">{Number(detail.price).toLocaleString('ru-RU')} ₽</div>
+                <div className="ml-detail-price">{getListingPublishedPriceNumber(detail).toLocaleString('ru-RU')} ₽</div>
               )}
               <div className="ml-detail-price-unit">{detail.priceUnit || 'за работу'}</div>
               <div className="ml-detail-status-line">
@@ -1426,10 +1430,10 @@ export default function MyListingsPage() {
                 <div className="ml-row-body">
                   <div className="ml-row-title">{l.title}</div>
                   <div className="ml-row-price">
-                    {l.priceUnit === 'договорная' || !l.price || Number(l.price) <= 0 ? (
+                    {l.priceUnit === 'договорная' || getListingPublishedPriceNumber(l) == null ? (
                       <span style={{fontSize:14, fontWeight:600, color:'#64748b'}}>Договорная</span>
                     ) : (
-                      <>{Number(l.price).toLocaleString('ru-RU')} ₽<span className="ml-row-unit">{l.priceUnit}</span></>
+                      <>{getListingPublishedPriceNumber(l).toLocaleString('ru-RU')} ₽<span className="ml-row-unit">{l.priceUnit}</span></>
                     )}
                   </div>
                   {l.category && <span className={`ml-row-cat ${categoryChipToneClass(l.category)}`}>{l.category}</span>}

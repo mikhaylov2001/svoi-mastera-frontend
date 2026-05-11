@@ -9,6 +9,7 @@ import { smartTextMatchScore, listingHaystack, rankItemsBySmartMatch } from '../
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
 } from '../../utils/categoryPlaceholderPhoto';
+import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -1221,7 +1222,7 @@ export default function FindMasterPage() {
         ...item,
         workerId:  item.workerId,
         workerName: [item.workerName, item.workerLastName].filter(Boolean).join(' ') || 'Мастер',
-        priceFrom:  item.price || 0,
+        priceFrom:  getListingPublishedPriceNumber(item) || 0,
         verified: item.workerVerified === true,
       }));
       setServices(processed);

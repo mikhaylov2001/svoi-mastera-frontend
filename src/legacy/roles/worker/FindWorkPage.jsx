@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats } from '../../api';
-import { formatJobRequestBudgetLabel } from '../../utils/jobRequestBudget';
+import { formatJobRequestBudgetLabel, getJobRequestPublishedBudgetNumber } from '../../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
 import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
@@ -849,15 +849,7 @@ function pluralRequests(n) {
 }
 
 function jobRequestListPrice(req) {
-  if (!req) return null;
-  const to = req.budgetTo != null && req.budgetTo !== '' ? Number(req.budgetTo) : null;
-  const from = req.budgetFrom != null && req.budgetFrom !== '' ? Number(req.budgetFrom) : null;
-  const okTo = to != null && !Number.isNaN(to);
-  const okFrom = from != null && !Number.isNaN(from);
-  if (okTo && okFrom && to === from) return to;
-  if (okTo) return to;
-  if (okFrom) return from;
-  return null;
+  return getJobRequestPublishedBudgetNumber(req);
 }
 
 function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submitting }) {

@@ -58,12 +58,23 @@ export default function ManageServicesPage() {
     setShowAddModal(true);
   };
 
+  const publishedServicePrice = (s) => {
+    if (!s) return null;
+    const pick = (x) => {
+      if (x == null || x === '') return null;
+      const n = Number(x);
+      return Number.isFinite(n) && n > 0 ? n : null;
+    };
+    return pick(s.priceFrom) ?? pick(s.priceTo) ?? pick(s.price) ?? null;
+  };
+
   const handleEditService = (service) => {
     setEditingService(service);
+    const p = publishedServicePrice(service);
     setFormData({
       title: service.title,
       description: service.description,
-      price: service.price,
+      price: p != null ? String(p) : '',
       category: service.category,
       experience: service.experience,
       warranty: service.warranty,
@@ -78,10 +89,13 @@ export default function ManageServicesPage() {
 
     try {
       setSaving(true);
+      const n = parseInt(formData.price, 10);
+      const amount = Number.isFinite(n) && n > 0 ? n : null;
       const serviceData = {
         title: formData.title,
         description: formData.description,
-        price: parseInt(formData.price),
+        priceFrom: amount,
+        priceTo: amount,
         category: formData.category,
         experience: formData.experience,
         warranty: formData.warranty,
@@ -232,7 +246,14 @@ export default function ManageServicesPage() {
                     <div className="service-details">
                       <div className="detail-item">
                         <FaDollarSign className="detail-icon" />
-                        <span>{service.price} ₽ / услуга</span>
+                        <span>
+                          {(() => {
+                            const p = publishedServicePrice(service);
+                            return Number.isFinite(p) && p > 0
+                              ? `${p.toLocaleString('ru-RU')} ₽ / услуга`
+                              : '—';
+                          })()}
+                        </span>
                       </div>
                       <div className="detail-item">
                         <FaTools className="detail-icon" />

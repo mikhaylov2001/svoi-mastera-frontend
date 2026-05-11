@@ -9,6 +9,7 @@ import {
   getCategoryPlaceholderPhotoUrlOrDefault,
   getCategorySlugFromLabel,
 } from '../../utils/categoryPlaceholderPhoto';
+import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -547,8 +548,8 @@ export default function ListingDetailPage() {
     ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : `${API.replace(/\/api\/v1$/, '')}${userAvatar.startsWith('/') ? '' : '/'}${userAvatar}`)
     : null;
 
-  const priceNum = listing.price != null ? Number(listing.price) : NaN;
-  const priceHasAmount = Number.isFinite(priceNum) && priceNum > 0;
+  const priceNum = getListingPublishedPriceNumber(listing);
+  const priceHasAmount = priceNum != null;
   const priceMainLine = priceHasAmount
     ? `${priceNum.toLocaleString('ru-RU')} ₽`
     : (listing.priceUnit || 'Договорная');
@@ -685,8 +686,8 @@ export default function ListingDetailPage() {
             category={listing.category}
             address={listing.address || 'Йошкар-Ола · выезд по договорённости'}
             budgetLabel={
-              listing.price != null && Number(listing.price) > 0
-                ? `${Number(listing.price).toLocaleString('ru-RU')} ₽${listing.priceUnit ? ` ${listing.priceUnit}` : ''}`
+              priceHasAmount
+                ? `${priceNum.toLocaleString('ru-RU')} ₽${listing.priceUnit ? ` ${listing.priceUnit}` : ''}`
                 : (listing.priceUnit || 'Договорная')
             }
             publishedAt={listing.createdAt}
@@ -892,7 +893,12 @@ export default function ListingDetailPage() {
                       </div>
                       <div style={{flex:1,minWidth:0}}>
                         <div className="ld-sim-title">{s.title}</div>
-                        <div className="ld-sim-price">{Number(s.price || 0).toLocaleString('ru-RU')} ₽</div>
+                        <div className="ld-sim-price">
+                          {(() => {
+                            const sp = getListingPublishedPriceNumber(s);
+                            return sp ? `${sp.toLocaleString('ru-RU')} ₽` : '—';
+                          })()}
+                        </div>
                       </div>
                     </Link>
                   );
