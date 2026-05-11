@@ -10,6 +10,7 @@ import {
   getCategoryPlaceholderPhotoUrlOrDefault,
 } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
+import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -1772,6 +1773,9 @@ export default function FindMasterPage() {
 
                     {/* Фото → объявление */}
                     <div className="fmp-card-photo" onClick={() => navigate(`/listings/${s.id}`)}>
+                      {s.active !== false && (
+                        <FavoriteHeartButton kind="listing" id={s.id} />
+                      )}
                       {hasPhoto ? (
                         <>
                           <img src={photos[0]} alt={s.title}/>

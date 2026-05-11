@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
+import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 function timeAgo(d) {
@@ -217,14 +218,6 @@ const css = `
   }
   .pw-card-img-wrap img {
     width: 100%; height: 100%; object-fit: cover; display: block;
-  }
-  .pw-card-heart {
-    position: absolute; top: 8px; right: 8px;
-    width: 32px; height: 32px; border-radius: 50%;
-    background: rgba(255,255,255,.85);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; cursor: pointer;
-    border: none;
   }
   .pw-card-done {
     position: absolute; bottom: 8px; left: 8px;
@@ -611,7 +604,9 @@ export default function PublicWorkerProfilePage() {
                               : <img src={getCategoryPlaceholderPhotoUrlOrDefault({ category: item.category })} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             }
                             {tab === 'works' && <div className="pw-card-done">Завершена</div>}
-                            <button className="pw-card-heart" onClick={e => e.stopPropagation()}>♡</button>
+                            {tab === 'active' && item.id ? (
+                              <FavoriteHeartButton kind="listing" id={item.id} />
+                            ) : null}
                           </div>
                           <div className="pw-card-title">{item.title || 'Без названия'}</div>
                           {price && (

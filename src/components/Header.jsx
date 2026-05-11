@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useFavorites } from '../context/FavoritesContext';
 import { getUnreadCount, getListings } from '../api';
 import { rankItemsBySmartMatch, listingHaystack } from '../utils/smartSearch';
 import { dispatchSameRouteRefetch, isSameNavDest } from '../utils/sameRouteRefetch';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
 import './Header.css';
+import FavoriteHeartButton from './FavoriteHeartButton';
 
 const NOTIF_API = 'https://svoi-mastera-backend.onrender.com/api/v1/notifications';
 
@@ -25,6 +27,7 @@ function LogoIcon() {
 
 function Header() {
   const { userId, userRole, userName, userLastName, userAvatar, logout } = useAuth();
+  const { count: favCount } = useFavorites();
   const BACKEND = 'https://svoi-mastera-backend.onrender.com';
   const fullAvatarUrl = userAvatar
     ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http')
@@ -334,6 +337,7 @@ function Header() {
                           onClick={() => closeSearchUi()}
                         >
                           <div className="header-search-hit-ph">
+                            <FavoriteHeartButton kind="listing" id={s.id} />
                             <img src={src} alt="" />
                           </div>
                           <div className="header-search-hit-body">
@@ -452,6 +456,33 @@ function Header() {
               <>
                 {/* ══ ДЛЯ НЕАВТОРИЗОВАННЫХ — только Войти/Регистрация ══ */}
               </>
+            )}
+
+            {userId && (
+              <NavLink
+                to="/favorites"
+                className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                onClick={onRepeatNavClick('/favorites')}
+              >
+                Избранное
+                {favCount > 0 && (
+                  <span
+                    className="header-unread-badge"
+                    style={{
+                      background: '#e8410a',
+                      color: '#fff',
+                      borderRadius: 999,
+                      fontSize: 11,
+                      fontWeight: 800,
+                      padding: '1px 6px',
+                      marginLeft: 4,
+                      verticalAlign: 'middle',
+                    }}
+                  >
+                    {favCount > 99 ? '99+' : favCount}
+                  </span>
+                )}
+              </NavLink>
             )}
 
             {/* 🔔 Колокольчик уведомлений */}
@@ -634,6 +665,9 @@ function Header() {
                     <NavLink to="/deals" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/deals')(e); setMobileMenuOpen(false); }}>
                       Мои сделки
                     </NavLink>
+                    <NavLink to="/favorites" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/favorites')(e); setMobileMenuOpen(false); }}>
+                      Избранное{favCount > 0 ? ` · ${favCount > 99 ? '99+' : favCount}` : ''}
+                    </NavLink>
                   </>
                 ) : userId ? (
                   <>
@@ -649,6 +683,9 @@ function Header() {
                     </NavLink>
                     <NavLink to="/deals" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/deals')(e); setMobileMenuOpen(false); }}>
                       Мои сделки
+                    </NavLink>
+                    <NavLink to="/favorites" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/favorites')(e); setMobileMenuOpen(false); }}>
+                      Избранное{favCount > 0 ? ` · ${favCount > 99 ? '99+' : favCount}` : ''}
                     </NavLink>
                   </>
                 ) : (

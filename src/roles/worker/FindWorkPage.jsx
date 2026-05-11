@@ -21,6 +21,7 @@ import { categoryChipToneClass } from '../../utils/categoryChipTone';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
 } from '../../utils/categoryPlaceholderPhoto';
+import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 
@@ -1891,6 +1892,7 @@ export default function FindWorkPage() {
                           }
                         }}
                       >
+                        <FavoriteHeartButton kind="jobRequest" id={req.id} />
                         {hasPhoto ? (
                           <>
                             <img src={photos[0]} alt="" draggable={false} />

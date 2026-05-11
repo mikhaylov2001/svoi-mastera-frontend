@@ -11,6 +11,7 @@ import {
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
+import FavoriteHeartButton from '../components/FavoriteHeartButton';
 import '../roles/worker/jobListings.css';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
@@ -416,6 +417,7 @@ function CustomerHome({ userId }) {
                     return (
                       <Link key={l.id} to={`/listings/${l.id}`} className="av-card">
                         <div className="av-card-img">
+                          <FavoriteHeartButton kind="listing" id={l.id} />
                           <img src={src} alt="" />
                           {l.category ? <span className="av-card-cat">{l.category}</span> : null}
                         </div>
@@ -675,6 +677,7 @@ function WorkerHome({ userId, userName }) {
                         className="av-card"
                       >
                         <div className="av-card-img">
+                          <FavoriteHeartButton kind="jobRequest" id={item.id} />
                           <img src={photoSrc} alt={item.title || ''} loading="lazy" />
                           {catLabel ? <span className="av-card-cat">{catLabel}</span> : null}
                         </div>

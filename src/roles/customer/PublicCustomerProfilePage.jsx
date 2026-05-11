@@ -8,6 +8,7 @@ import {
   getJobRequestPublishedBudgetNumber,
   hasJobRequestPublishedPrice,
 } from '../../utils/jobRequestBudget';
+import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 function timeAgo(d) {
@@ -102,7 +103,6 @@ const css = `
   .pw-card:hover { background: #f7f7f7; }
   .pw-card-img-wrap { position: relative; aspect-ratio: 4/3; background: #f0f0f0; border-radius: 8px; overflow: hidden; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #ccc; }
   .pw-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .pw-card-heart { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.85); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; border: none; }
   .pw-card-pill { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,.48); color: #fff; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
   .pw-card-title { font-size: 14px; font-weight: 400; line-height: 1.4; color: #1a1a1a; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .pw-card-price { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 3px; }
@@ -304,7 +304,9 @@ export default function PublicCustomerProfilePage() {
             <img src={noPhotoThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           )}
           <div className="pw-card-pill">{stLabel}</div>
-          <button className="pw-card-heart" onClick={e => e.stopPropagation()}>♡</button>
+          {!isDeal && ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'].includes(item.status) ? (
+            <FavoriteHeartButton kind="jobRequest" id={item.id} />
+          ) : null}
         </div>
         <div className="pw-card-title">{item.title || 'Задача'}</div>
         {(() => {

@@ -10,6 +10,7 @@ import {
   getCategorySlugFromLabel,
 } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
+import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -76,9 +77,15 @@ const css = `
   /* CARDS BASE — обводка: unifiedListingCards.css */
   .ld-card { background: #fff; overflow: hidden; }
 
-  .ld-actions-row { display: flex; gap: 8px; flex-shrink: 0; }
-  .ld-action-btn { display: inline-flex; align-items: center; gap: 6px; background: #f5f5f7; border: none; border-radius: 10px; font-size: 13px; font-weight: 500; color: #555; padding: 8px 14px; cursor: pointer; font-family: inherit; transition: background .15s, color .15s; }
-  .ld-action-btn:hover { background: #ececec; color: #222; }
+  .ld-actions-row { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+  .ld-actions-row .ulc-fav-heart {
+    position: static;
+    width: 40px;
+    height: 40px;
+    box-shadow: none;
+    background: #f5f5f7;
+  }
+  .ld-actions-row .ulc-fav-heart:hover { background: #ececec; }
 
   /* GALLERY */
   .ld-gallery-wrap { position: relative; background: #fff; overflow: hidden; user-select: none; }
@@ -623,7 +630,7 @@ export default function ListingDetailPage() {
             <div className="ld-fw-title-row">
               <h1 className="ld-fw-title">{listing.title}</h1>
               <div className="ld-actions-row">
-                <button type="button" className="ld-action-btn">♡ В избранное</button>
+                <FavoriteHeartButton kind="listing" id={listing.id} />
               </div>
             </div>
             <div className="ld-fw-meta">
