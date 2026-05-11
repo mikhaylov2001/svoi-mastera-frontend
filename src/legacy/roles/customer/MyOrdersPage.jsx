@@ -1048,7 +1048,7 @@ export default function MyOrdersPage() {
                       {saving
                         ? '⏳ Сохраняем…'
                         : isEdit
-                          ? '💾 Сохранить изменения'
+                          ? 'Сохранить изменения'
                           : '📢 Разместить заявку'}
                     </button>
                     <p style={{fontSize:12, color:'#bbb', textAlign:'center', marginTop:10, marginBottom:0}}>

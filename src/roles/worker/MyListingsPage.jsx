@@ -22,7 +22,6 @@ const CATEGORIES = [
   'Уборка','Парикмахер','Маникюр и педикюр','Красота и здоровье',
   'Репетиторство','Грузоперевозки','Сварочные работы','Другое',
 ];
-const PRICE_UNITS = ['за работу','за час','за день','договорная'];
 const EMPTY_FORM  = { title:'', description:'', price:'', priceUnit:'за работу', category:'', photos:[] };
 const MAX_DESC    = 2000;
 
@@ -480,7 +479,7 @@ const css = `
 
   /* price block */
   .mlf-price-block { padding: 18px 20px 20px; }
-  .mlf-price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; align-items: end; }
+  .mlf-price-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; align-items: end; }
 
   /* submit */
   .mlf-submit-card { padding: 20px; }
@@ -1063,20 +1062,11 @@ export default function MyListingsPage() {
                           onChange={e => { setFormErr(''); setForm(p => ({...p, price: e.target.value})); }}
                         />
                       </div>
-                      <div className="mlf-field" style={{margin: 0}}>
-                        <label>Единица</label>
-                        <select
-                          value={form.priceUnit}
-                          onChange={e => setForm(p => ({...p, priceUnit: e.target.value}))}
-                        >
-                          {PRICE_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
-                        </select>
-                      </div>
                     </div>
                     {form.price && Number(form.price) > 0 ? (
                       <div style={{padding:'12px 14px', background:'#f0fdf4', border:'1.5px solid #bbf7d0', borderRadius:8}}>
                         <div style={{fontSize:13, color:'#166534', fontWeight:600}}>
-                          ✅ В объявлении будет: <strong>{Number(form.price).toLocaleString('ru-RU')} ₽ {form.priceUnit}</strong>
+                          ✅ В объявлении будет: <strong>{Number(form.price).toLocaleString('ru-RU')} ₽</strong>
                         </div>
                         <div style={{fontSize:12, color:'#16a34a', marginTop:3}}>
                           Заказчики видят эту цену при поиске. Вы всегда можете её изменить.
@@ -1102,7 +1092,7 @@ export default function MyListingsPage() {
                       {saving
                         ? '⏳ Сохраняем…'
                         : isEdit
-                          ? '💾 Сохранить изменения'
+                          ? 'Сохранить изменения'
                           : '📢 Опубликовать объявление'}
                     </button>
                     <p style={{fontSize:12, color:'#bbb', textAlign:'center', marginTop:10, marginBottom:0}}>
@@ -1114,7 +1104,7 @@ export default function MyListingsPage() {
                         className="mlf-btn-copy-outline"
                         onClick={(e) => copyListingPublicLink(view.edit.id, e)}
                       >
-                        {copyFlashId === view.edit.id ? '✓ Ссылка скопирована' : '🔗 Копировать ссылку на объявление'}
+                        {copyFlashId === view.edit.id ? '✓ Ссылка скопирована' : 'Копировать ссылку на объявление'}
                       </button>
                     )}
                   </div>
