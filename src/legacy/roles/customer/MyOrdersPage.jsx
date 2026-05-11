@@ -704,7 +704,7 @@ export default function MyOrdersPage() {
   const handleSave = async () => {
     if (!form.title.trim())                           { setFormErr('Укажите название заявки'); return; }
     if (!form.categoryId)                             { setFormErr('Выберите категорию'); return; }
-    if (!form.budget || Number(form.budget) <= 0)     { setFormErr('Укажите окончательную цену за работу (больше нуля)'); return; }
+    if (!form.budget || Number(form.budget) <= 0)     { setFormErr('Укажите цену за работу (больше нуля)'); return; }
     if (!userId)                                      { setFormErr('Войдите в аккаунт и попробуйте снова.'); return; }
     setSaving(true); setFormErr('');
     try {
@@ -1004,9 +1004,9 @@ export default function MyOrdersPage() {
                   </div>
                 </div>
 
-                {/* ── 3. Окончательная цена ── */}
+                {/* ── 3. Цена за работу ── */}
                 <div className="mlf-card">
-                  <div className="mlf-card-title">Окончательная цена за работу</div>
+                  <div className="mlf-card-title">Цена за работу</div>
                   <div className="mlf-price-block">
                     <div style={{ marginBottom: 12 }}>
                       <div className="mlf-field" style={{ margin: 0 }}>
@@ -1030,7 +1030,7 @@ export default function MyOrdersPage() {
                       </div>
                     ) : (
                       <div style={{padding:'12px 14px', background:'#fafafa', border:'1.5px solid #e8e8e8', borderRadius:8, fontSize:13, color:'#aaa'}}>
-                        Укажите окончательную цену — мастера увидят её в заявке и напишут вам в чат
+                        Укажите цену за работу — мастера увидят её в заявке и напишут вам в чат
                       </div>
                     )}
                   </div>
@@ -1066,7 +1066,7 @@ export default function MyOrdersPage() {
               <div className="mlf-sb-title">⚡ Как это работает</div>
               <div className="mlf-steps">
                 {[
-                  ['Разместите заявку',        'Опишите задачу и сразу укажите окончательную цену — мастера увидят заявку'],
+                  ['Разместите заявку',        'Опишите задачу и сразу укажите цену за работу — мастера увидят заявку'],
                   ['Пишите в чате',             'Мастера откликаются и обсуждают детали в личных сообщениях'],
                   ['Договоритесь напрямую',     'Сроки и нюансы работы — в переписке с выбранным мастером'],
                   ['Оплата мастеру',            'Наличными или переводом на карту напрямую мастеру после выполнения работы'],
@@ -1183,7 +1183,7 @@ export default function MyOrdersPage() {
               description={formatListingOriginDescription('CUSTOMER', detail.description)}
               category={catNameD}
               address={[detail.city, detail.addressText].filter(Boolean).join(', ') || 'Не указан'}
-              budgetDtLabel="Окончательная цена"
+              budgetDtLabel="Цена за работу"
               budgetLabel={budget && Number(budget) > 0 ? `${Number(budget).toLocaleString('ru-RU')} ₽` : JOB_REQUEST_PRICE_MISSING_LABEL}
               publishedAt={detail.createdAt}
             />
@@ -1195,7 +1195,7 @@ export default function MyOrdersPage() {
               <div className="ml-detail-price">
                 {budget && Number(budget) > 0 ? `${Number(budget).toLocaleString('ru-RU')} ₽` : JOB_REQUEST_PRICE_MISSING_LABEL}
               </div>
-              <div className="ml-detail-price-unit">окончательная цена в заявке</div>
+              <div className="ml-detail-price-unit">цена в заявке</div>
               <div className="ml-detail-status-line">{STATUS_LABELS[detail.status] || detail.status}</div>
               {catNameD && <div style={{marginTop:8}}><span className={`ml-tag ${categoryChipToneClass(catNameD)}`}>{catNameD}</span></div>}
             </div>

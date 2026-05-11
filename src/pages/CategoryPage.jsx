@@ -283,7 +283,7 @@ export default function CategoryPage() {
     if (!userId) { navigate('/login'); return; }
     if (!form.title.trim()) { setError('Укажите название задачи'); return; }
     if (!form.description.trim()) { setError('Добавьте подробное описание'); return; }
-    if (!form.budget) { setError('Укажите окончательную цену за работу'); return; }
+    if (!form.budget) { setError('Укажите цену за работу'); return; }
     if (Number(form.budget) <= 0) { setError('Цена должна быть больше нуля'); return; }
 
     let categoryId = apiCategoryId;
@@ -559,9 +559,9 @@ export default function CategoryPage() {
               </div>
             </div>
 
-            {/* ── 4. Стоимость работы ── */}
+            {/* ── 4. Цена за работу ── */}
             <div className="cp-card">
-              <div className="cp-card-title">Окончательная стоимость</div>
+              <div className="cp-card-title">Цена за работу</div>
               <div className="cp-price-block">
                 <div className="cp-price-row" style={{ marginBottom: 12 }}>
                   <div className="cp-field" style={{ margin: 0 }}>
@@ -585,7 +585,7 @@ export default function CategoryPage() {
                       </div>
                     ) : (
                       <div style={{ padding: '12px 14px', background: '#fafafa', border: '1.5px solid #e8e8e8', borderRadius: 8 }}>
-                        <div style={{ fontSize: 13, color: '#aaa' }}>Укажите сумму — она будет показана мастерам как окончательная стоимость</div>
+                        <div style={{ fontSize: 13, color: '#aaa' }}>Укажите сумму — мастера увидят её в заявке</div>
                       </div>
                     )}
                   </div>
@@ -617,7 +617,7 @@ export default function CategoryPage() {
             <div className="cp-sb-title">⚡ Как это работает</div>
             <div className="cp-steps">
               {[
-                ['Опубликуйте задачу', 'Опишите работу и окончательную цену — мастера увидят заявку'],
+                ['Опубликуйте задачу', 'Опишите работу и цену за работу — мастера увидят заявку'],
                 ['Пишите в чате', 'Отклики и детали — в личных сообщениях с мастером'],
                 ['Выберите мастера', 'Сравните отзывы и рейтинги'],
                 ['Оплата напрямую', 'Наличные или перевод мастеру после работы — без посредников'],
