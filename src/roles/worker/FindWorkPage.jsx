@@ -4,7 +4,12 @@ import { FaChevronLeft, FaChevronRight, FaRegClock } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats } from '../../api';
-import { formatJobRequestBudgetLabel, getJobRequestPublishedBudgetNumber } from '../../utils/jobRequestBudget';
+import {
+  formatJobRequestBudgetLabel,
+  getJobRequestPublishedBudgetNumber,
+  hasJobRequestPublishedPrice,
+  JOB_REQUEST_PRICE_MISSING_LABEL,
+} from '../../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
 import './jobListings.css';
@@ -999,7 +1004,7 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
         <form onSubmit={onSubmit}>
           <div className="fw-modal-body">
             <div className="fw-modal-field">
-              <label className="fw-modal-label">Стоимость работы, ₽ *</label>
+              <label className="fw-modal-label">Ваша цена за работу, ₽ *</label>
               <input
                 type="number"
                 className="fw-modal-input"
@@ -1010,6 +1015,9 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
                 min="1"
                 autoFocus
               />
+              <p style={{ margin: '8px 0 0', fontSize: 12, color: '#64748b', lineHeight: 1.45 }}>
+                Оплата — наличными или переводом напрямую заказчику после работы. Условия уточняйте в личных сообщениях.
+              </p>
             </div>
             <div className="fw-modal-field">
               <label className="fw-modal-label">Срок выполнения (дней)</label>
@@ -1248,7 +1256,7 @@ export default function FindWorkPage() {
     const jdPhotos = jdPhotosRaw.length ? jdPhotosRaw : [jdPlaceholder];
     const mainSrc = jdPhotos[activePhotoIdx] || null;
     const budget = formatJobRequestBudgetLabel(req);
-    const priceIsNegotiable = budget === 'Не указана';
+    const priceIsNegotiable = !hasJobRequestPublishedPrice(req);
     const addressLine = (req.addressText || req.address || req.cityName || '').trim();
     const custRatingStats = req.customerId ? customerStats[String(req.customerId)] : null;
     const custAvg = custRatingStats?.averageRating ?? 0;
@@ -1405,8 +1413,8 @@ export default function FindWorkPage() {
                 </div>
               )}
               <div className="jd-row">
-                <span className="k">Стоимость</span>
-                <span className="v">{priceIsNegotiable ? 'Договорная' : budget}</span>
+                <span className="k">Окончательная цена</span>
+                <span className="v">{priceIsNegotiable ? JOB_REQUEST_PRICE_MISSING_LABEL : budget}</span>
               </div>
               {req.createdAt && (
                 <div className="jd-row">
@@ -1421,9 +1429,11 @@ export default function FindWorkPage() {
             <div className="jd-price-panel">
               <div className="jd-price-head">
                 <div className="jd-price-label">Стоимость</div>
-                <div className="jd-price-big">{priceIsNegotiable ? 'Договорная' : budget}</div>
+                <div className="jd-price-big">{priceIsNegotiable ? JOB_REQUEST_PRICE_MISSING_LABEL : budget}</div>
                 <div className="jd-price-sub">
-                  {priceIsNegotiable ? 'сумма по договорённости' : 'за работу'}
+                  {priceIsNegotiable
+                    ? 'заказчик не указал сумму — уточните в личных сообщениях'
+                    : 'окончательная цена в заявке; детали — в чате'}
                 </div>
               </div>
               <div className="jd-price-btns">
@@ -2020,15 +2030,15 @@ export default function FindWorkPage() {
 
                         <div className="fw2-card-footer">
                           <div className="fw2-card-price-block">
-                            {budgetLabel !== 'Не указана' ? (
+                            {hasJobRequestPublishedPrice(req) ? (
                               <>
                                 <div className="fw2-card-price">{budgetLabel}</div>
-                                <span className="fw2-card-price-unit">за работу</span>
+                                <span className="fw2-card-price-unit">окончательная цена в заявке</span>
                               </>
                             ) : (
                               <>
-                                <div className="fw2-card-price-none">Цена не указана</div>
-                                <span className="fw2-card-price-unit">заказчик не указал сумму</span>
+                                <div className="fw2-card-price-none">{JOB_REQUEST_PRICE_MISSING_LABEL}</div>
+                                <span className="fw2-card-price-unit">уточните сумму в личных сообщениях</span>
                               </>
                             )}
                           </div>

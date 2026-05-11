@@ -89,7 +89,7 @@ export default function ListingInfoPanels({
   /** Карточки как на детали заявки (отдельные блоки, типографика) */
   variant = 'default',
   /** Подпись строки цены в подробностях */
-  budgetDtLabel = 'Бюджет',
+  budgetDtLabel = 'Окончательная цена',
 }) {
   const [expanded, setExpanded] = useState(false);
   const { bodyText, urgencyLabel } = useMemo(() => parseListingDescription(description || ''), [description]);

@@ -1,6 +1,6 @@
 /**
- * Одна окончательная сумма бюджета заявки (без диапазона «от — до» и без «до» в тексте).
- * Приоритет: budgetTo, затем budgetFrom — как сумма, указанная при публикации.
+ * Одна окончательная сумма цены в заявке заказчика (поля API: budgetTo / budgetFrom).
+ * Приоритет: budgetTo, затем budgetFrom.
  */
 export function getJobRequestPublishedBudgetNumber(req) {
   if (!req) return null;
@@ -13,9 +13,16 @@ export function getJobRequestPublishedBudgetNumber(req) {
   return null;
 }
 
-/** Подпись бюджета для карточек и списков: одно число в ₽ или «Не указана». */
+/** Текст, если заказчик не указал сумму в заявке (для подписей в UI). */
+export const JOB_REQUEST_PRICE_MISSING_LABEL = 'Цена не указана';
+
+export function hasJobRequestPublishedPrice(req) {
+  return getJobRequestPublishedBudgetNumber(req) != null;
+}
+
+/** Подпись для карточек и списков: «N ₽» или JOB_REQUEST_PRICE_MISSING_LABEL. */
 export function formatJobRequestBudgetLabel(req) {
   const n = getJobRequestPublishedBudgetNumber(req);
-  if (n == null) return 'Не указана';
+  if (n == null) return JOB_REQUEST_PRICE_MISSING_LABEL;
   return `${n.toLocaleString('ru-RU')} ₽`;
 }

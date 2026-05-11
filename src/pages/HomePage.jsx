@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
-import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
+import { formatJobRequestBudgetLabel, hasJobRequestPublishedPrice } from '../utils/jobRequestBudget';
 import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
@@ -660,7 +660,7 @@ function WorkerHome({ userId, userName }) {
                         categories,
                       );
                     const budgetLabel = formatJobRequestBudgetLabel(item);
-                    const hasPrice = budgetLabel !== 'Не указана';
+                    const hasPrice = hasJobRequestPublishedPrice(item);
                     const locLine = (item.cityName || item.address || item.addressText || '').trim();
                     const cityShort =
                       item.cityName ||
@@ -681,7 +681,7 @@ function WorkerHome({ userId, userName }) {
                         <div className="av-card-body">
                           <div className="av-card-price">
                             {hasPrice ? budgetLabel : '— ₽'}
-                            {hasPrice ? <span className="av-card-price-unit">за работу</span> : null}
+                            {hasPrice ? <span className="av-card-price-unit">в заявке</span> : null}
                           </div>
                           <div className="av-card-title">{item.title}</div>
                           <div className="av-card-footer">
@@ -843,9 +843,9 @@ function GuestHome() {
           </div>
           <div className="g-how-grid">
             {[
-              {n:'1',title:'Создайте задачу',desc:'Опишите что нужно сделать, укажите адрес и удобное время. Это займёт 2 минуты.'},
-              {n:'2',title:'Получите отклики',desc:'Мастера предложат цену — смотрите рейтинг, отзывы и выбирайте лучшего.'},
-              {n:'3',title:'Заключите сделку',desc:'Оформите безопасную сделку внутри сервиса. Оплата только после выполнения.'},
+              {n:'1',title:'Создайте задачу',desc:'Опишите работу, укажите окончательную цену и адрес. Это займёт пару минут.'},
+              {n:'2',title:'Получите отклики',desc:'Мастера пишут в личные сообщения — уточняйте детали и договаривайтесь напрямую.'},
+              {n:'3',title:'Выполните и оплатите',desc:'Оплата наличными или переводом напрямую мастеру после работы — без посредников.'},
             ].map(s=>(
               <div key={s.n} className="g-how-card">
                 <div className="g-how-num">{s.n}</div>
@@ -896,12 +896,12 @@ function GuestHome() {
           </div>
           <div className="g-benefits-grid">
             {[
-              {ico:'⚡',bg:'#fffbeb',title:'Быстрый отклик',     desc:'Мастера видят вашу заявку и присылают предложения — выбирайте по цене и отзывам'},
-              {ico:'🔒',bg:'#f0fdf4',title:'Безопасная сделка',  desc:'Деньги переходят мастеру только после подтверждения выполненной работы'},
+              {ico:'⚡',bg:'#fffbeb',title:'Быстрый отклик',     desc:'Мастера видят вашу заявку с окончательной ценой и пишут в личные сообщения'},
+              {ico:'💬',bg:'#f0fdf4',title:'Договорённости в чате', desc:'Сроки и детали согласуете с мастером в переписке — без лишних звонков'},
               {ico:'⭐',bg:'#eff6ff',title:'Проверенные мастера',desc:'Рейтинг, отзывы и история работ — выбирайте лучшего с полной информацией'},
-              {ico:'💬',bg:'#fdf4ff',title:'Чат внутри сервиса', desc:'Обсуждайте детали, отправляйте фото прямо в приложении'},
+              {ico:'💳',bg:'#fdf4ff',title:'Оплата напрямую', desc:'Наличные или перевод на карту мастеру — платформа не удерживает деньги'},
               {ico:'📍',bg:'#fff3f0',title:'Мастера рядом',      desc:'Только мастера из Йошкар-Олы — никаких долгих ожиданий'},
-              {ico:'🎯',bg:'#fff9f0',title:'Точная цена',         desc:'Мастер называет цену до начала работы. Никаких скрытых платежей'},
+              {ico:'🎯',bg:'#fff9f0',title:'Цена в заявке',         desc:'Вы сразу указываете окончательную сумму за работу — без скрытых доплат'},
             ].map(b=>(
               <div key={b.title} className="g-benefit">
                 <div className="g-benefit-icon" style={{background:b.bg}}>{b.ico}</div>

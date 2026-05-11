@@ -16,7 +16,10 @@ import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
-import { getJobRequestPublishedBudgetNumber } from '../../utils/jobRequestBudget';
+import {
+  getJobRequestPublishedBudgetNumber,
+  JOB_REQUEST_PRICE_MISSING_LABEL,
+} from '../../utils/jobRequestBudget';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -702,7 +705,7 @@ export default function MyOrdersPage() {
   const handleSave = async () => {
     if (!form.title.trim())                           { setFormErr('Укажите название заявки'); return; }
     if (!form.categoryId)                             { setFormErr('Выберите категорию'); return; }
-    if (!form.budget || Number(form.budget) <= 0)     { setFormErr('Укажите бюджет (больше нуля)'); return; }
+    if (!form.budget || Number(form.budget) <= 0)     { setFormErr('Укажите окончательную цену за работу (больше нуля)'); return; }
     if (!userId)                                      { setFormErr('Войдите в аккаунт и попробуйте снова.'); return; }
     setSaving(true); setFormErr('');
     try {
@@ -1002,13 +1005,13 @@ export default function MyOrdersPage() {
                   </div>
                 </div>
 
-                {/* ── 3. БЮДЖЕТ ── */}
+                {/* ── 3. Окончательная цена ── */}
                 <div className="mlf-card">
-                  <div className="mlf-card-title">Бюджет на услугу</div>
+                  <div className="mlf-card-title">Окончательная цена за работу</div>
                   <div className="mlf-price-block">
                     <div style={{ marginBottom: 12 }}>
                       <div className="mlf-field" style={{ margin: 0 }}>
-                        <label>Бюджет, ₽ *</label>
+                        <label>Цена, ₽ *</label>
                         <input
                           type="number"
                           min="1"
@@ -1023,12 +1026,12 @@ export default function MyOrdersPage() {
                           ✅ В заявке будет: <strong>{Number(form.budget).toLocaleString('ru-RU')} ₽</strong>
                         </div>
                         <div style={{fontSize:12, color:'#16a34a', marginTop:3}}>
-                          Мастера видят этот бюджет при поиске. Вы всегда можете его изменить.
+                          Это та сумма, с которой вы заходите в работу. Детали и оплату согласуете в личных сообщениях с мастером (наличные или перевод напрямую).
                         </div>
                       </div>
                     ) : (
                       <div style={{padding:'12px 14px', background:'#fafafa', border:'1.5px solid #e8e8e8', borderRadius:8, fontSize:13, color:'#aaa'}}>
-                        Укажите бюджет — мастера предложат свою цену
+                        Укажите окончательную цену — мастера увидят её в заявке и напишут вам в чат
                       </div>
                     )}
                   </div>
@@ -1064,10 +1067,10 @@ export default function MyOrdersPage() {
               <div className="mlf-sb-title">⚡ Как это работает</div>
               <div className="mlf-steps">
                 {[
-                  ['Разместите заявку',        'Опишите задачу и укажите бюджет — мастера сразу её увидят'],
-                  ['Получайте отклики',         'Мастера откликаются и предлагают свою цену'],
-                  ['Согласуйте детали',         'Обсудите объём работ и окончательную цену'],
-                  ['Оплатите после выполнения', 'Оплата проходит после того, как вы подтвердите работу'],
+                  ['Разместите заявку',        'Опишите задачу и сразу укажите окончательную цену — мастера увидят заявку'],
+                  ['Пишите в чате',             'Мастера откликаются и обсуждают детали в личных сообщениях'],
+                  ['Договоритесь напрямую',     'Сроки и нюансы работы — в переписке с выбранным мастером'],
+                  ['Оплата мастеру',            'Наличными или переводом на карту напрямую мастеру после выполнения работы'],
                 ].map(([title, desc], i) => (
                   <div key={i} className="mlf-step">
                     <span className="mlf-step-num">{i + 1}</span>
@@ -1185,7 +1188,8 @@ export default function MyOrdersPage() {
               description={formatListingOriginDescription('CUSTOMER', detail.description)}
               category={catNameD}
               address={[detail.city, detail.addressText].filter(Boolean).join(', ') || 'Не указан'}
-              budgetLabel={budget && Number(budget) > 0 ? `${Number(budget).toLocaleString('ru-RU')} ₽` : 'Договорной'}
+              budgetDtLabel="Окончательная цена"
+              budgetLabel={budget && Number(budget) > 0 ? `${Number(budget).toLocaleString('ru-RU')} ₽` : JOB_REQUEST_PRICE_MISSING_LABEL}
               publishedAt={detail.createdAt}
             />
           </div>
@@ -1194,9 +1198,9 @@ export default function MyOrdersPage() {
             <div className="ml-detail-price-card">
               <div className="ml-detail-price-label">Стоимость</div>
               <div className="ml-detail-price">
-                {budget && Number(budget) > 0 ? `${Number(budget).toLocaleString('ru-RU')} ₽` : 'Договорной'}
+                {budget && Number(budget) > 0 ? `${Number(budget).toLocaleString('ru-RU')} ₽` : JOB_REQUEST_PRICE_MISSING_LABEL}
               </div>
-              <div className="ml-detail-price-unit">за работу</div>
+              <div className="ml-detail-price-unit">окончательная цена в заявке</div>
               <div className="ml-detail-status-line">{STATUS_LABELS[detail.status] || detail.status}</div>
               {catNameD && <div style={{marginTop:8}}><span className={`ml-tag ${categoryChipToneClass(catNameD)}`}>{catNameD}</span></div>}
             </div>
@@ -1263,7 +1267,7 @@ export default function MyOrdersPage() {
                             )}
                             {budget && Number(offer.price) > Number(budget) && (
                               <span style={{ fontSize: 12, fontWeight: 600, color: '#d97706', background: '#fef3c7', padding: '2px 8px', borderRadius: 12 }}>
-                                +{(Number(offer.price) - Number(budget)).toLocaleString('ru-RU')} ₽ к бюджету
+                                +{(Number(offer.price) - Number(budget)).toLocaleString('ru-RU')} ₽ к цене в заявке
                               </span>
                             )}
                           </div>
@@ -1456,8 +1460,8 @@ export default function MyOrdersPage() {
                       <div className="ml-row-title">{req.title}</div>
                       <div className="ml-row-price">
                         {budget && Number(budget) > 0
-                          ? <>{Number(budget).toLocaleString('ru-RU')} ₽<span className="ml-row-unit">бюджет</span></>
-                          : <span style={{fontSize:14, fontWeight:600, color:'#64748b'}}>Договорной</span>
+                          ? <>{Number(budget).toLocaleString('ru-RU')} ₽<span className="ml-row-unit">в заявке</span></>
+                          : <span style={{fontSize:14, fontWeight:600, color:'#64748b'}}>{JOB_REQUEST_PRICE_MISSING_LABEL}</span>
                         }
                       </div>
                       {catName && <span className={`ml-row-cat ${categoryChipToneClass(catName)}`}>{catName}</span>}

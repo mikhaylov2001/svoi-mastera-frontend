@@ -3,7 +3,11 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
-import { formatJobRequestBudgetLabel, getJobRequestPublishedBudgetNumber } from '../../utils/jobRequestBudget';
+import {
+  formatJobRequestBudgetLabel,
+  getJobRequestPublishedBudgetNumber,
+  hasJobRequestPublishedPrice,
+} from '../../utils/jobRequestBudget';
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 function timeAgo(d) {
@@ -314,9 +318,8 @@ export default function PublicCustomerProfilePage() {
             if (b == null) return null;
             return <div className="pw-card-price">{b.toLocaleString('ru-RU')} ₽</div>;
           }
-          const lbl = formatJobRequestBudgetLabel(item);
-          if (lbl === 'Не указана') return null;
-          return <div className="pw-card-price">{lbl}</div>;
+          if (!hasJobRequestPublishedPrice(item)) return null;
+          return <div className="pw-card-price">{formatJobRequestBudgetLabel(item)}</div>;
         })()}
         <div className="pw-card-loc"><span>📍</span><span>{customer?.city || 'Йошкар-Ола'}</span></div>
         {item.createdAt && <div className="pw-card-date">{new Date(item.createdAt).toLocaleDateString('ru-RU', {day:'numeric',month:'long',year:'numeric'})}</div>}

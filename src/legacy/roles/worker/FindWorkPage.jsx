@@ -3,7 +3,12 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats } from '../../api';
-import { formatJobRequestBudgetLabel, getJobRequestPublishedBudgetNumber } from '../../utils/jobRequestBudget';
+import {
+  formatJobRequestBudgetLabel,
+  getJobRequestPublishedBudgetNumber,
+  hasJobRequestPublishedPrice,
+  JOB_REQUEST_PRICE_MISSING_LABEL,
+} from '../../utils/jobRequestBudget';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
 import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
@@ -864,7 +869,7 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
         <form onSubmit={onSubmit}>
           <div className="fw-modal-body">
             <div className="fw-modal-field">
-              <label className="fw-modal-label">Стоимость работы, ₽ *</label>
+              <label className="fw-modal-label">Ваша цена за работу, ₽ *</label>
               <input
                 type="number"
                 className="fw-modal-input"
@@ -875,6 +880,9 @@ function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submi
                 min="1"
                 autoFocus
               />
+              <p style={{ margin: '8px 0 0', fontSize: 12, color: '#64748b', lineHeight: 1.45 }}>
+                Оплата — наличными или переводом напрямую заказчику после работы. Условия уточняйте в личных сообщениях.
+              </p>
             </div>
             <div className="fw-modal-field">
               <label className="fw-modal-label">Срок выполнения (дней)</label>
@@ -1071,6 +1079,7 @@ export default function FindWorkPage() {
     const hasPhoto = req.photos && req.photos.length > 0;
     const catStyle = CATEGORY_STYLES[selectedCategory?.slug] || { emoji: '📋', color: '#f3f4f6' };
     const budget = formatJobRequestBudgetLabel(req);
+    const priceIsNegotiable = !hasJobRequestPublishedPrice(req);
     const custRatingStats = req.customerId ? customerStats[String(req.customerId)] : null;
     const custAvg = custRatingStats?.averageRating ?? 0;
     const custCnt = custRatingStats?.reviewsCount ?? 0;
@@ -1162,7 +1171,7 @@ export default function FindWorkPage() {
                   {[
                     selectedCategory && ['Категория', selectedCategory.name],
                     req.addressText  && ['Адрес',     req.addressText],
-                    ['Стоимость', budget],
+                    ['Окончательная цена', budget],
                     req.createdAt    && ['Опубликована', new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })],
                   ].filter(Boolean).map(([label, value]) => (
                     <div key={label} style={{ display:'flex', justifyContent:'space-between', padding:'12px 0', borderBottom:'1px solid #f3f4f6', fontSize:14 }}>
@@ -1179,7 +1188,11 @@ export default function FindWorkPage() {
                 <div style={{ marginBottom:14 }}>
                   <div style={{ fontSize:12, color:'#9ca3af', fontWeight:600, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Стоимость</div>
                   <div style={{ fontSize:28, fontWeight:900, color:'#111827' }}>{budget}</div>
-                  <div style={{ fontSize:13, color:'#9ca3af', marginTop:4, fontWeight:500 }}>за работу</div>
+                  <div style={{ fontSize:13, color:'#9ca3af', marginTop:4, fontWeight:500 }}>
+                    {priceIsNegotiable
+                      ? 'заказчик не указал сумму — уточните в личных сообщениях'
+                      : 'окончательная цена в заявке; детали — в чате'}
+                  </div>
                 </div>
                 <button
                   onClick={() => handleOpenOfferModal(req)}
@@ -1691,15 +1704,15 @@ export default function FindWorkPage() {
 
                         <div className="fw2-card-footer">
                           <div className="fw2-card-price-block">
-                            {budgetLabel !== 'Не указана' ? (
+                            {hasJobRequestPublishedPrice(req) ? (
                               <>
                                 <div className="fw2-card-price">{budgetLabel}</div>
-                                <span className="fw2-card-price-unit">за работу</span>
+                                <span className="fw2-card-price-unit">окончательная цена в заявке</span>
                               </>
                             ) : (
                               <>
-                                <div className="fw2-card-price-none">Цена не указана</div>
-                                <span className="fw2-card-price-unit">заказчик не указал сумму</span>
+                                <div className="fw2-card-price-none">{JOB_REQUEST_PRICE_MISSING_LABEL}</div>
+                                <span className="fw2-card-price-unit">уточните сумму в личных сообщениях</span>
                               </>
                             )}
                           </div>
