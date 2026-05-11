@@ -1046,10 +1046,10 @@ export default function MyOrdersPage() {
                       onClick={handleSave}
                     >
                       {saving
-                        ? '⏳ Сохраняем…'
+                        ? 'Сохраняем…'
                         : isEdit
                           ? 'Сохранить изменения'
-                          : '📢 Разместить заявку'}
+                          : 'Разместить заявку'}
                     </button>
                     <p style={{fontSize:12, color:'#bbb', textAlign:'center', marginTop:10, marginBottom:0}}>
                       {isEdit ? 'Изменения сразу увидят мастера' : 'Размещение бесплатно · Мастера увидят сразу после публикации'}

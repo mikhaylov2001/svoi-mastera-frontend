@@ -1090,10 +1090,10 @@ export default function MyListingsPage() {
                       onClick={handleSave}
                     >
                       {saving
-                        ? '⏳ Сохраняем…'
+                        ? 'Сохраняем…'
                         : isEdit
                           ? 'Сохранить изменения'
-                          : '📢 Опубликовать объявление'}
+                          : 'Опубликовать объявление'}
                     </button>
                     <p style={{fontSize:12, color:'#bbb', textAlign:'center', marginTop:10, marginBottom:0}}>
                       {isEdit ? 'Изменения сразу увидят заказчики' : 'Размещение бесплатно · Заказчики увидят сразу после публикации'}

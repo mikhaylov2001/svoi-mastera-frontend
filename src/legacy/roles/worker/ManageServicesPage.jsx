@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaTools, FaStar, FaMapMarkerAlt, FaClock, FaDollarSign, FaSave, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaTools, FaStar, FaMapMarkerAlt, FaClock, FaDollarSign, FaTimes } from 'react-icons/fa';
 import { getMyWorkerServices, createWorkerService, updateWorkerService, deleteWorkerService } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import './ManageServicesPage.css';
@@ -395,7 +395,7 @@ export default function ManageServicesPage() {
                 Отмена
               </button>
               <button className="btn btn-primary" onClick={handleSaveService} disabled={saving}>
-                <FaSave /> {saving ? 'Сохранение...' : (editingService ? 'Сохранить' : 'Добавить')}
+                {saving ? 'Сохранение...' : (editingService ? 'Сохранить' : 'Добавить')}
               </button>
             </div>
           </div>
