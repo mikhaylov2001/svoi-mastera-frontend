@@ -17,6 +17,10 @@ import {
   getCategoryPlaceholderPhotoUrlOrDefault,
 } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
+import {
+  listingMatchesCatalogCategory,
+  mergeApiCategoriesWithCatalog,
+} from '../../utils/mergeApiCategoriesWithCatalog';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
@@ -1257,7 +1261,7 @@ export default function FindMasterPage() {
     try {
       const dealsPromise = userId ? getMyDeals(userId).catch(() => []) : Promise.resolve([]);
       const [cats, listings, deals] = await Promise.all([getCategories(), getListings(), dealsPromise]);
-      setCategories(cats);
+      setCategories(mergeApiCategoriesWithCatalog(cats || []));
       buildPendingFromDeals(deals);
       const processed = (listings || []).map(item => ({
         ...item,
@@ -1302,10 +1306,7 @@ export default function FindMasterPage() {
   const fmpDdMatches = useMemo(() => {
     if (!selectedCategory || !debouncedSearchInput || debouncedSearchInput.length < 2) return [];
     const pool = services.filter((s) => {
-      const catOk =
-        s.category === selectedCategory.name ||
-        s.categoryId === selectedCategory.id ||
-        String(s.categoryId) === String(selectedCategory.id);
+      const catOk = listingMatchesCatalogCategory(s, selectedCategory);
       return catOk && s.active !== false;
     });
     return rankItemsBySmartMatch(pool, debouncedSearchInput, listingHaystack, { limit: 8 });
@@ -1464,13 +1465,13 @@ export default function FindMasterPage() {
             <div className="fmp-cats-grid" onMouseLeave={() => setHeroCatSlug(null)}>
               {categories.map(cat => {
                 const meta  = CAT_ALL[cat.slug] || {};
-                const count = services.filter(s =>
-                  (s.category === cat.name || s.categoryId === cat.id) && s.active !== false
+                const count = services.filter(
+                  (s) => listingMatchesCatalogCategory(s, cat) && s.active !== false
                 ).length;
 
                 return (
                   <Link
-                    key={cat.id}
+                    key={cat.slug}
                     to={urlQ ? `/find-master/${cat.slug}?q=${encodeURIComponent(urlQ)}` : `/find-master/${cat.slug}`}
                     className="fmp-cat-card"
                     onMouseEnter={() => setHeroCatSlug(cat.slug)}
@@ -1526,7 +1527,7 @@ export default function FindMasterPage() {
   const qSearch = searchTerm.trim();
 
   const visibleFiltered = services.filter((s) => {
-      const catOk = s.category === selectedCategory?.name || s.categoryId === selectedCategory?.id || String(s.categoryId) === String(selectedCategory?.id);
+      const catOk = listingMatchesCatalogCategory(s, selectedCategory);
       if (!catOk) return false;
       if (showActive && !s.active) return false;
       if (onlyVerified && !s.verified) return false;

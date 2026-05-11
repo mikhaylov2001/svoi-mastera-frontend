@@ -21,6 +21,7 @@ import { categoryChipToneClass } from '../../utils/categoryChipTone';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
 } from '../../utils/categoryPlaceholderPhoto';
+import { mergeApiCategoriesWithCatalog } from '../../utils/mergeApiCategoriesWithCatalog';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
@@ -1154,7 +1155,7 @@ export default function FindWorkPage() {
         getCategories(),
         getOpenJobRequestsForWorker(userId),
       ]);
-      setCategories(cats || []);
+      setCategories(mergeApiCategoriesWithCatalog(cats || []));
       setRequests(reqs || []);
     } catch (err) {
       console.error('Failed to load data:', err);
@@ -2140,7 +2141,7 @@ export default function FindWorkPage() {
               const count = getRequestsForCategory(cat).length;
               return (
                 <button
-                  key={cat.id}
+                  key={cat.slug}
                   className="fw2-cat-card"
                   onMouseEnter={() => setHeroCatSlug(cat.slug)}
                   onClick={() => { setSelectedCategory(cat); resetCategoryFilters(); }}
