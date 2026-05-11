@@ -337,8 +337,8 @@ const css = `
     padding-top: 12px;
     border-top: 1px solid #f0f0f0;
   }
-  .fmp-cat-price { font-size: 13px; font-weight: 700; color: #e8410a; }
-  .fmp-cat-count { font-size: 12px; color: #e8410a; font-weight: 700; margin-top: 1px; }
+  .fmp-cat-count { font-size: 12px; color: #e8410a; font-weight: 700; }
+  .fmp-cat-count-none { font-size: 12px; color: #aaa; }
   .fmp-cat-go {
     width: 30px;
     height: 30px;
@@ -1123,6 +1123,13 @@ const css = `
   }
 `;
 
+function pluralActiveListings(n) {
+  const x = Number(n) || 0;
+  if (x % 10 === 1 && x % 100 !== 11) return `${x} объявление`;
+  if ([2, 3, 4].includes(x % 10) && ![12, 13, 14].includes(x % 100)) return `${x} объявления`;
+  return `${x} объявлений`;
+}
+
 function CheckItem({ checked, onChange, children }) {
   return (
     <div className="fmp-check-item" onClick={onChange}>
@@ -1434,7 +1441,7 @@ export default function FindMasterPage() {
 
         {/* Сетка категорий */}
         <div className="fmp-cats-wrap">
-          <div className="fmp-cats-label">Все категории услуг</div>
+          <div className="fmp-cats-label">Выберите категорию</div>
           {loading ? (
             <div className="fmp-cats-grid">
               {[1,2,3,4,5,6,7,8,9].map(i => (
@@ -1474,17 +1481,18 @@ export default function FindMasterPage() {
                         : <div className="fmp-cat-img-ph">{meta.emoji || '🛠️'}</div>
                       }
                       <span className="fmp-cat-badge">
-                        {count > 0 ? `${count} ${count === 1 ? 'мастер' : count < 5 ? 'мастера' : 'мастеров'}` : 'Нет объявл.'}
+                        {count > 0 ? pluralActiveListings(count) : 'Нет объявлений'}
                       </span>
                     </div>
                     <div className="fmp-cat-body">
                       <div className="fmp-cat-name">{cat.name}</div>
                       <div className="fmp-cat-desc">{meta.desc || cat.description || 'Профессиональные мастера'}</div>
                       <div className="fmp-cat-footer">
-                        <div>
-                          {meta.priceFrom && <div className="fmp-cat-price">{meta.priceFrom}</div>}
-                          {count > 0 && <div className="fmp-cat-count">{count} {count === 1 ? 'мастер' : count < 5 ? 'мастера' : 'мастеров'}</div>}
-                        </div>
+                        {count > 0 ? (
+                          <span className="fmp-cat-count">{pluralActiveListings(count)}</span>
+                        ) : (
+                          <span className="fmp-cat-count-none">Нет активных объявлений</span>
+                        )}
                         <div className="fmp-cat-go">›</div>
                       </div>
                     </div>
