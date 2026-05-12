@@ -9,6 +9,35 @@ function normName(s) {
     .replace(/\s+/g, ' ');
 }
 
+/** Ответ GET /categories может быть массивом или обёрткой { data, categories, … }. */
+export function normalizeCategoriesApiResponse(payload) {
+  if (payload == null) return [];
+  if (Array.isArray(payload)) return payload;
+  if (typeof payload === 'object') {
+    if (Array.isArray(payload.categories)) return payload.categories;
+    if (Array.isArray(payload.data)) return payload.data;
+    if (Array.isArray(payload.items)) return payload.items;
+    if (Array.isArray(payload.content)) return payload.content;
+  }
+  return [];
+}
+
+/** У бэка id может называться categoryId — приводим к полю id для UI. */
+export function pickCategoryId(row) {
+  if (!row || typeof row !== 'object') return null;
+  const v = row.id ?? row.categoryId ?? row.category_id;
+  if (v == null || v === undefined) return null;
+  const s = String(v).trim();
+  return s === '' ? null : s;
+}
+
+function ensureCategoryIdField(c) {
+  if (!c || typeof c !== 'object') return c;
+  const id = pickCategoryId(c);
+  if (id == null) return { ...c };
+  return { ...c, id };
+}
+
 /** Совпадение API-строки с slug каталога, если у бэка другое имя или нет slug. */
 function findApiRowForCatalogSlug(apiList, catalogSlug, consumedIds) {
   const want = String(catalogSlug || '').toLowerCase().trim();
@@ -16,7 +45,7 @@ function findApiRowForCatalogSlug(apiList, catalogSlug, consumedIds) {
 
   const usable = (row) => {
     if (!row) return null;
-    const idStr = row.id != null && row.id !== '' ? String(row.id) : null;
+    const idStr = pickCategoryId(row);
     if (idStr && consumedIds.has(idStr)) return null;
     return row;
   };
@@ -36,8 +65,14 @@ function findApiRowForCatalogSlug(apiList, catalogSlug, consumedIds) {
   }
 
   const keywords = {
-    santehnika: ['сантехник', 'сантехнич', 'водопровод', 'канализац', 'смесител'],
-    elektrika: ['электрик', 'электромонтаж', 'проводк', 'розетк', 'щитк', 'освещен'],
+    santehnika: [
+      'сантехник', 'сантехнич', 'водопровод', 'канализац', 'смесител',
+      'plumb', 'plumbing', 'pipe',
+    ],
+    elektrika: [
+      'электрик', 'электромонтаж', 'проводк', 'розетк', 'щитк', 'освещен',
+      'electric', 'wiring', 'socket', 'lighting',
+    ],
   };
   const keys = keywords[want];
   if (!keys?.length) return null;
@@ -59,24 +94,28 @@ export function resolveCatalogCategoryRow(catalogCat, mergedCategories, apiCateg
   const name = typeof catalogCat === 'string' ? catalogCat : catalogCat?.name;
   const slug = typeof catalogCat === 'object' && catalogCat ? catalogCat.slug : null;
   const merged = Array.isArray(mergedCategories) ? mergedCategories : [];
-  const api = Array.isArray(apiCategories) ? apiCategories : [];
+  const api = normalizeCategoriesApiResponse(apiCategories).map(ensureCategoryIdField);
 
   let c = merged.find((x) => normName(x.name) === normName(name));
   if (!c && slug) {
     c = merged.find((x) => String(x.slug || '').toLowerCase() === String(slug).toLowerCase());
   }
-  if (c && c.id != null && c.id !== '') return c;
+  const cid = pickCategoryId(c);
+  if (c && cid) return { ...c, id: cid };
 
   const consumed = new Set();
   for (const x of merged) {
-    if (x?.id != null && x.id !== '') consumed.add(String(x.id));
+    const xid = pickCategoryId(x);
+    if (xid) consumed.add(String(xid));
   }
   const slugKey = slug || getCategorySlugFromLabel(name || '');
   if (!slugKey) return c || null;
   const fromApi = findApiRowForCatalogSlug(api, slugKey, consumed);
-  if (fromApi && fromApi.id != null && fromApi.id !== '') {
+  const aid = pickCategoryId(fromApi);
+  if (fromApi && aid) {
     return {
       ...fromApi,
+      id: aid,
       name: name || fromApi.name,
       slug: slug || fromApi.slug || slugKey,
     };
@@ -90,7 +129,7 @@ export function resolveCatalogCategoryRow(catalogCat, mergedCategories, apiCateg
  * Категории из API, которых нет в каталоге, добавляются в конец.
  */
 export function mergeApiCategoriesWithCatalog(apiCategories) {
-  const api = Array.isArray(apiCategories) ? apiCategories : [];
+  const api = normalizeCategoriesApiResponse(apiCategories).map(ensureCategoryIdField);
   const bySlug = new Map();
   const byName = new Map();
   for (const c of api) {
@@ -114,11 +153,15 @@ export function mergeApiCategoriesWithCatalog(apiCategories) {
     if (!row) {
       return { ...sc, description: sc.desc };
     }
-    if (row.id != null && row.id !== '') consumedApiIds.add(String(row.id));
+    const rid = pickCategoryId(row);
+    if (!rid) {
+      return { ...sc, description: sc.desc };
+    }
+    consumedApiIds.add(String(rid));
     return {
       ...row,
       ...sc,
-      id: row.id,
+      id: rid,
       name: sc.name,
       slug: sc.slug,
       description:
@@ -130,11 +173,11 @@ export function mergeApiCategoriesWithCatalog(apiCategories) {
 
   for (const c of api) {
     if (!c) continue;
-    const idStr = c.id != null && c.id !== '' ? String(c.id) : null;
+    const idStr = pickCategoryId(c);
     if (idStr && consumedApiIds.has(idStr)) continue;
     const slugKey = c.slug != null && String(c.slug).trim() !== '' ? String(c.slug).toLowerCase() : '';
     if (slugKey && catalogSlugs.has(slugKey)) continue;
-    merged.push({ ...c });
+    merged.push(ensureCategoryIdField({ ...c }));
   }
   return merged;
 }
@@ -143,9 +186,10 @@ export function mergeApiCategoriesWithCatalog(apiCategories) {
 export function listingMatchesCatalogCategory(listing, categoryRow) {
   if (!listing || !categoryRow) return false;
   if (listing.category === categoryRow.name) return true;
-  if (categoryRow.id == null || categoryRow.id === '') return false;
+  const rowId = pickCategoryId(categoryRow);
+  if (rowId == null) return false;
   return (
     listing.categoryId === categoryRow.id ||
-    String(listing.categoryId) === String(categoryRow.id)
+    String(listing.categoryId) === String(rowId)
   );
 }

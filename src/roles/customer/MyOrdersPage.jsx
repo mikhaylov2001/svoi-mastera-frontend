@@ -20,7 +20,7 @@ import {
   getJobRequestPublishedBudgetNumber,
   JOB_REQUEST_PRICE_MISSING_LABEL,
 } from '../../utils/jobRequestBudget';
-import { mergeApiCategoriesWithCatalog, resolveCatalogCategoryRow } from '../../utils/mergeApiCategoriesWithCatalog';
+import { mergeApiCategoriesWithCatalog, resolveCatalogCategoryRow, normalizeCategoriesApiResponse, pickCategoryId } from '../../utils/mergeApiCategoriesWithCatalog';
 import '../worker/listings-new.css';
 
 const CATEGORY_PHOTO_BY_NAME = {};
@@ -427,7 +427,7 @@ export default function MyOrdersPage() {
 
   /* ── helpers ── */
   function getCategoryName(catId) {
-    const c = categories.find(x => String(x.id) === String(catId));
+    const c = categories.find((x) => String(pickCategoryId(x) || x.id) === String(catId));
     return c ? c.name : '';
   }
 
@@ -447,7 +447,7 @@ export default function MyOrdersPage() {
       ]);
       const merged = mergeRequestStatusesFromCustomerDeals(reqs || [], deals, userId);
       setRequests(merged);
-      const raw = cats || [];
+      const raw = normalizeCategoriesApiResponse(cats);
       setCategoriesRaw(raw);
       setCategories(mergeApiCategoriesWithCatalog(raw));
       setDetail(prev => {
@@ -463,6 +463,22 @@ export default function MyOrdersPage() {
   useEffect(() => { if (userId) load(); }, [userId, load]);
 
   useSameRouteRefetch('/my-requests', load);
+
+  /** Мастер «Найти работу» подгружает категории отдельно; у заказчика список заявок мог прийти раньше /categories — добираем при открытии мастера. */
+  useEffect(() => {
+    if (view == null || !userId) return;
+    if (categoriesRaw.length > 0) return;
+    let cancelled = false;
+    getCategories()
+      .then((cats) => {
+        if (cancelled) return;
+        const raw = normalizeCategoriesApiResponse(cats);
+        setCategoriesRaw(raw);
+        setCategories(mergeApiCategoriesWithCatalog(raw));
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [view, userId, categoriesRaw.length]);
 
   useEffect(() => {
     setDetailShowOffersPanel(false);
@@ -617,8 +633,9 @@ export default function MyOrdersPage() {
     const c = resolveCatalogCategoryRow(catalogCat, categories, categoriesRaw);
     setFormErr('');
     setHoverCategoryName(null);
-    if (c && c.id != null && c.id !== '') {
-      setForm((p) => ({ ...p, categoryId: String(c.id) }));
+    const cid = pickCategoryId(c);
+    if (cid) {
+      setForm((p) => ({ ...p, categoryId: String(cid) }));
     } else {
       setForm((p) => ({ ...p, categoryId: '' }));
       setFormErr('Категория не найдена на сервере. Обновите страницу или выберите другую.');
@@ -707,7 +724,7 @@ export default function MyOrdersPage() {
               || (row.slug && String(x.slug || '').toLowerCase() === String(row.slug).toLowerCase()),
           );
         })
-        .filter((x) => x && x.id != null && x.id !== '')
+        .filter((x) => x && pickCategoryId(x))
       : categories;
     const previewPhotoData = photos[0]?.data;
     const filledPhotos = photos.length;
@@ -934,17 +951,20 @@ export default function MyOrdersPage() {
                     {!isEdit ? (
                       <>
                         <div className="nl-cats">
-                          {categoriesForChips.map((c) => (
+                          {categoriesForChips.map((c) => {
+                            const cid = pickCategoryId(c);
+                            return (
                             <button
-                              key={String(c.id)}
+                              key={String(cid)}
                               type="button"
-                              className={`nl-cat${form.categoryId === String(c.id) ? ' is-active' : ''}`}
-                              onClick={() => { setFormErr(''); setForm((p) => ({ ...p, categoryId: String(c.id) })); }}
+                              className={`nl-cat${form.categoryId === String(cid) ? ' is-active' : ''}`}
+                              onClick={() => { setFormErr(''); setForm((p) => ({ ...p, categoryId: String(cid) })); }}
                             >
                               <span className="nl-cat-emoji" aria-hidden>{categoryEmoji(c.name)}</span>
                               {c.name}
                             </button>
-                          ))}
+                            );
+                          })}
                         </div>
                         <button
                           type="button"
@@ -962,7 +982,10 @@ export default function MyOrdersPage() {
                         onChange={e => { setFormErr(''); setForm(p => ({ ...p, categoryId: e.target.value })); }}
                       >
                         <option value="">Выберите категорию</option>
-                        {categories.map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                        {categories.map((c) => {
+                          const oid = pickCategoryId(c);
+                          return oid ? <option key={oid} value={String(oid)}>{c.name}</option> : null;
+                        })}
                       </select>
                     )}
                   </div>
