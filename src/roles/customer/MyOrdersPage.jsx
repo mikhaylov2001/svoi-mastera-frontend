@@ -20,7 +20,7 @@ import {
   getJobRequestPublishedBudgetNumber,
   JOB_REQUEST_PRICE_MISSING_LABEL,
 } from '../../utils/jobRequestBudget';
-import { mergeApiCategoriesWithCatalog } from '../../utils/mergeApiCategoriesWithCatalog';
+import { mergeApiCategoriesWithCatalog, resolveCatalogCategoryRow } from '../../utils/mergeApiCategoriesWithCatalog';
 import '../worker/listings-new.css';
 
 const CATEGORY_PHOTO_BY_NAME = {};
@@ -399,6 +399,7 @@ export default function MyOrdersPage() {
 
   const [requests,       setRequests]       = useState([]);
   const [categories,     setCategories]     = useState([]);
+  const [categoriesRaw,  setCategoriesRaw]  = useState([]);
   const [loading,        setLoading]        = useState(true);
   const [tab,            setTab]            = useState('active');
   const [detail,         setDetail]         = useState(null);
@@ -446,7 +447,9 @@ export default function MyOrdersPage() {
       ]);
       const merged = mergeRequestStatusesFromCustomerDeals(reqs || [], deals, userId);
       setRequests(merged);
-      setCategories(mergeApiCategoriesWithCatalog(cats || []));
+      const raw = cats || [];
+      setCategoriesRaw(raw);
+      setCategories(mergeApiCategoriesWithCatalog(raw));
       setDetail(prev => {
         if (!prev) return null;
         return (merged || []).find(r => r.id === prev.id) || prev;
@@ -609,16 +612,9 @@ export default function MyOrdersPage() {
     setForm(p => ({ ...p, photos: p.photos.filter(ph => ph.id !== id) }));
   };
 
-  const normCat = (s) => String(s || '').trim().toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ');
-
   /* ── pick category from wizard (каталог → id с бэка по имени или slug) ── */
   const handlePickCategory = (catalogCat) => {
-    const name = typeof catalogCat === 'string' ? catalogCat : catalogCat?.name;
-    const slug = typeof catalogCat === 'object' && catalogCat ? catalogCat.slug : null;
-    let c = categories.find((x) => normCat(x.name) === normCat(name));
-    if (!c && slug) {
-      c = categories.find((x) => String(x.slug || '').toLowerCase() === String(slug).toLowerCase());
-    }
+    const c = resolveCatalogCategoryRow(catalogCat, categories, categoriesRaw);
     setFormErr('');
     setHoverCategoryName(null);
     if (c && c.id != null && c.id !== '') {
