@@ -727,6 +727,29 @@ a.jd-btn.jd-btn-ghost {
   padding-right: 16px;
 }
 
+/* «Найти мастера» — тот же топбар под jl-page */
+.jl-page.fw-jl-cat-feed .fmp-topbar {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.jl-page.fw-jl-cat-feed .fmp-topbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* Пендинг / ошибки внутри jl-bigcard (классы из inline-css FindMaster) */
+.jl-bigcard .fmp-card-footer-pending,
+.jl-bigcard .fmp-card-footer {
+  margin-top: 0;
+}
+.jl-bigcard .fmp-card-action-err {
+  flex-basis: 100%;
+  margin-top: 8px;
+}
+
 .jl-layout {
   display: grid;
   grid-template-columns: 280px 1fr;
@@ -1402,6 +1425,26 @@ a.jl-bigcard-author:hover .jl-bigcard-author-name {
 .jl-feed-empty p {
   margin: 0;
   line-height: 1.5;
+}
+.jl-feed-empty a.jl-bigcard-btn.ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.jl-side-card .fmp-check-item {
+  padding: 7px 0;
+}
+.jl-side-card .fmp-check-item:first-of-type {
+  padding-top: 2px;
+}
+
+.jl-stars-muted {
+  opacity: 0.38;
+  letter-spacing: 1px;
+  color: #d1d5db;
 }
 .jl-feed-empty-ico {
   font-size: 40px;

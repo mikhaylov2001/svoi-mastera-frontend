@@ -22,6 +22,7 @@ import {
   mergeApiCategoriesWithCatalog,
 } from '../../utils/mergeApiCategoriesWithCatalog';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import '../worker/jobListings.css';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -32,6 +33,25 @@ Object.values(CATEGORIES_BY_SECTION).forEach((cats) =>
     CAT_ALL[cat.slug] = { ...cat, photo: heroPhotoHiRes(cat.photo) };
   }),
 );
+
+/** Заголовок объявления в карточке: первая буква по правилам ru-RU. */
+function displayListingTitle(t) {
+  const raw = typeof t === 'string' ? t.trim() : '';
+  if (!raw) return 'Объявление';
+  return raw.charAt(0).toLocaleUpperCase('ru-RU') + raw.slice(1);
+}
+
+function listingFeedStatusLabel(s) {
+  if (s?.active === false) return 'НЕАКТИВНО';
+  const t = s?.createdAt ? new Date(s.createdAt).getTime() : 0;
+  if (t && Date.now() - t < 72 * 3600 * 1000) return 'НОВОЕ';
+  return 'АКТИВНО';
+}
+
+function listingFeedLooksUrgent(s) {
+  const hay = `${s?.title || ''} ${s?.description || ''}`.toLowerCase();
+  return hay.includes('срочн') || hay.includes('сегодня') || hay.includes('завтра');
+}
 
 const HERO_PHOTO = PAGE_HERO_DEFAULT_PHOTO;
 
@@ -702,7 +722,17 @@ const css = `
   }
   .fmp-sort-opt:hover { border-color: #e8410a; color: #e8410a; }
   .fmp-sort-opt.active { border-color: #e8410a; background: #e8410a; color: #fff; }
-  .fmp-result-count { margin-left: auto; font-size: 13px; color: #aaa; font-weight: 500; white-space: nowrap; }
+  .fmp-result-count {
+    margin-left: auto;
+    font-size: 13px;
+    color: #888;
+    font-weight: 600;
+    white-space: nowrap;
+    line-height: 34px;
+    align-self: center;
+  }
+  .fmp-rating-empty { font-size: 13px; color: #9ca3af; font-weight: 600; }
+  .fmp-stars--muted { opacity: 0.38; letter-spacing: 1px; color: #d1d5db; }
 
   .fmp-list {
     display: grid;
@@ -1561,7 +1591,7 @@ export default function FindMasterPage() {
   const hasFilters = !showActive || onlyVerified || onlyWithPhoto || priceMin || priceMax || ratingMin > 0 || searchTerm;
 
   return (
-    <div className="fmp-page">
+    <div className="jl-page fw-jl-cat-feed">
       <style>{css}</style>
 
       {/* Топ-бар поиска */}
@@ -1618,7 +1648,7 @@ export default function FindMasterPage() {
                             <img src={mainPhoto} alt="" />
                           </div>
                           <div className="fmp-search-hit-body">
-                            <div className="fmp-search-hit-title">{s.title || 'Объявление'}</div>
+                            <div className="fmp-search-hit-title">{displayListingTitle(s.title)}</div>
                             <div className="fmp-search-hit-meta">{s.workerName || ''}</div>
                             <div className="fmp-search-hit-price">
                               {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
@@ -1647,262 +1677,309 @@ export default function FindMasterPage() {
         </div>
       </div>
 
-      {/* Хлебные крошки */}
-      <div className="fmp-breadcrumb">
-        <Link to="/find-master">Все категории</Link>
-        <span className="fmp-breadcrumb-sep">›</span>
-        <span className="fmp-breadcrumb-cur">{selectedCategory?.name}</span>
-        {!loading && (
-          <>
-            <span className="fmp-breadcrumb-sep">·</span>
-            <span>{visible.length} {visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}</span>
-          </>
-        )}
-      </div>
+      <div className="jl-wrap">
+        <div className="jl-crumbs">
+          <Link to="/find-master" className="jl-crumbs-link">Все категории</Link>
+          <span className="sep">›</span>
+          <span className="cur">{selectedCategory?.name}</span>
+          {!loading && (
+            <>
+              <span className="sep">·</span>
+              <span>{visible.length} {visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}</span>
+            </>
+          )}
+        </div>
 
-      {/* Layout */}
-      <div className="fmp-cat-page">
-
-        {/* Сайдбар */}
-        <aside className="fmp-sidebar">
-
-          {/* Карточка категории с реальным фото */}
-          <div className="fmp-sb-cat">
-            <div className="fmp-sb-cat-photo">
-              {catMeta.photo
-                ? <img src={catMeta.photo} alt={selectedCategory?.name}/>
-                : <div style={{ width: '100%', height: '100%', background: '#1a1a2e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>{catMeta.emoji || '🛠️'}</div>
-              }
-              <div className="fmp-sb-cat-photo-overlay">
-                <span className="fmp-sb-cat-name">{selectedCategory?.name}</span>
+        <div className="jl-layout">
+          <aside className="jl-side">
+            <div className="jl-cat-cover">
+              {catMeta.photo ? (
+                <img src={catMeta.photo} alt={selectedCategory?.name || ''} />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, color: 'rgba(255,255,255,.9)' }}>
+                  {catMeta.emoji || '🛠️'}
+                </div>
+              )}
+              <div className="jl-cat-cover-body">
+                <div className="jl-cat-cover-title">{selectedCategory?.name}</div>
+                <button type="button" className="jl-cat-cover-back" onClick={() => navigate('/find-master')}>
+                  ← Все категории
+                </button>
               </div>
             </div>
-            <div className="fmp-sb-cat-body">
-              <button className="fmp-sb-back" onClick={() => navigate('/find-master')}>
-                ← Все категории
-              </button>
-            </div>
-          </div>
 
-          {/* Цена */}
-          <div className="fmp-filter-card">
-            <div className="fmp-filter-title">Цена, ₽</div>
-            <div className="fmp-filter-body">
-              <div className="fmp-price-row">
-            <div>
-                  <div className="fmp-price-label">От</div>
-                  <input className="fmp-price-inp" type="number" min="0" placeholder="0" value={priceMin} onChange={e => setPriceMin(e.target.value)}/>
+            <div className="jl-side-card">
+              <div className="jl-side-title">Цена, ₽</div>
+              <div className="jl-side-row">
+                <div className="jl-side-field">
+                  <label htmlFor="fmp-price-min">От</label>
+                  <input id="fmp-price-min" type="number" min="0" placeholder="0" value={priceMin} onChange={e => setPriceMin(e.target.value)} />
                 </div>
-                <div>
-                  <div className="fmp-price-label">До</div>
-                  <input className="fmp-price-inp" type="number" min="0" placeholder="∞" value={priceMax} onChange={e => setPriceMax(e.target.value)}/>
+                <div className="jl-side-field">
+                  <label htmlFor="fmp-price-max">До</label>
+                  <input id="fmp-price-max" type="number" min="0" placeholder="∞" value={priceMax} onChange={e => setPriceMax(e.target.value)} />
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-          {/* Рейтинг */}
-          <div className="fmp-filter-card">
-            <div className="fmp-filter-title">Рейтинг</div>
-            <div className="fmp-filter-body">
+            <div className="jl-side-card">
+              <div className="jl-side-title">Рейтинг</div>
               {[
-                { r: 0,   label: 'Любой' },
-                { r: 4,   label: '4.0+', stars: '★★★★' },
-                { r: 4.5, label: '4.5+', stars: '★★★★½' },
+                { r: 0, label: 'Любой', stars: '' },
+                { r: 4, label: '4.0+', stars: '★★★★☆' },
+                { r: 4.5, label: '4.5+', stars: '★★★★★' },
               ].map(({ r, label, stars }) => (
-                <button key={r} className={`fmp-rating-opt${ratingMin === r ? ' active' : ''}`} onClick={() => setRatingMin(r)}>
-                  {stars && <span className="fmp-stars-filter">{stars}</span>}
+                <button
+                  key={String(r)}
+                  type="button"
+                  className={`jl-rating-opt${ratingMin === r ? ' is-active' : ''}`}
+                  onClick={() => setRatingMin(r)}
+                >
+                  {stars ? <span className="stars">{stars}</span> : null}
                   {label}
                 </button>
               ))}
-          </div>
-          </div>
+            </div>
 
-          {/* Параметры */}
-          <div className="fmp-filter-card">
-            <div className="fmp-filter-title">Параметры</div>
-            <div className="fmp-filter-body">
-              <CheckItem checked={showActive}    onChange={() => setShowActive(v => !v)}>Только активные</CheckItem>
-              <CheckItem checked={onlyVerified}  onChange={() => setOnlyVerified(v => !v)}>Проверенные мастера</CheckItem>
+            <div className="jl-side-card">
+              <div className="jl-side-title">Параметры</div>
+              <CheckItem checked={showActive} onChange={() => setShowActive(v => !v)}>Только активные</CheckItem>
+              <CheckItem checked={onlyVerified} onChange={() => setOnlyVerified(v => !v)}>Проверенные мастера</CheckItem>
               <CheckItem checked={onlyWithPhoto} onChange={() => setOnlyWithPhoto(v => !v)}>С фотографиями</CheckItem>
-        </div>
-      </div>
+            </div>
 
-          {hasFilters && (
-            <button className="fmp-reset-btn" onClick={resetFilters}>✕ Сбросить фильтры</button>
-          )}
-        </aside>
+            {hasFilters && (
+              <button type="button" className="jl-cat-feed-reset" onClick={resetFilters}>✕ Сбросить фильтры</button>
+            )}
+          </aside>
 
-        {/* Основная зона */}
-        <div className="fmp-main">
-
-          {/* Сортировка */}
-          <div className="fmp-sort-bar">
-            <span className="fmp-sort-label">Сортировать:</span>
-            <div className="fmp-sort-opts">
+          <main>
+            <div className="jl-toolbar">
+              <span className="jl-toolbar-label">Сортировать:</span>
               {[
-                { val: 'recency',   label: 'Новые' },
-                { val: 'priceAsc',  label: 'Цена ↑' },
+                { val: 'recency', label: 'Новые' },
+                { val: 'priceAsc', label: 'Цена ↑' },
                 { val: 'priceDesc', label: 'Цена ↓' },
               ].map(o => (
                 <button
                   key={o.val}
                   type="button"
-                  className={`fmp-sort-opt${sortBy === o.val ? ' active' : ''}`}
+                  className={`jl-chip${sortBy === o.val ? ' is-active' : ''}`}
                   onClick={() => setSortBy(o.val)}
                 >
                   {o.label}
                 </button>
               ))}
+              <span className="jl-toolbar-count">
+                {loading ? '…' : `${visible.length} ${visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}`}
+              </span>
             </div>
-            <span className="fmp-result-count">
-              {loading ? '...' : `${visible.length} ${visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}`}
-            </span>
-          </div>
 
-          {/* Карточки */}
-        {loading ? (
-            <div className="fmp-list">
-              {[1,2,3,4].map(i => (
-                <div key={i} style={{ background: '#fff', borderRadius: 16, border: '1.5px solid #e8e8e8', overflow: 'hidden' }}>
-                  <div className="sk" style={{ paddingTop: '62%', borderRadius: 0 }}/>
-                  <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div className="sk" style={{ height: 12, width: '45%' }}/>
-                    <div className="sk" style={{ height: 16, width: '80%' }}/>
-                    <div className="sk" style={{ height: 11, width: '90%' }}/>
-                    <div className="sk" style={{ height: 20, width: '35%', marginTop: 4 }}/>
-                </div>
+            {loading ? (
+              <div className="jl-list">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} style={{ background: '#fff', borderRadius: 16, border: '1px solid #ececec', overflow: 'hidden' }}>
+                    <div className="sk" style={{ paddingTop: '38%', borderRadius: 0 }} />
+                    <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div className="sk" style={{ height: 12, width: '45%' }} />
+                      <div className="sk" style={{ height: 18, width: '80%' }} />
+                      <div className="sk" style={{ height: 11, width: '90%' }} />
+                      <div className="sk" style={{ height: 22, width: '35%', marginTop: 4 }} />
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          ) : visible.length === 0 ? (
-            <div className="fmp-list">
-          <div className="fmp-empty">
-                <div className="fmp-empty-ico">🔍</div>
+            ) : visible.length === 0 ? (
+              <div className="jl-feed-empty">
+                <div className="jl-feed-empty-ico">🔍</div>
                 <h3>Объявлений не найдено</h3>
                 <p>{hasFilters ? 'Измените параметры или сбросьте фильтры.' : 'В этой категории пока нет объявлений.'}</p>
-                {hasFilters
-                  ? <button className="fmp-empty-btn" onClick={resetFilters}>Сбросить фильтры</button>
-                  : <Link to="/find-master" className="fmp-empty-btn">← Все категории</Link>
-                }
+                {hasFilters ? (
+                  <button type="button" className="jl-bigcard-btn ghost" style={{ marginTop: 16, maxWidth: 280 }} onClick={resetFilters}>
+                    Сбросить фильтры
+                  </button>
+                ) : (
+                  <Link to="/find-master" className="jl-bigcard-btn ghost" style={{ marginTop: 16, maxWidth: 280 }}>
+                    ← Все категории
+                  </Link>
+                )}
               </div>
-          </div>
-        ) : (
-          <div className="fmp-list">
+            ) : (
+              <div className="jl-list jl-feed-list">
               {visible.map(s => {
-                const stats  = workerStats[s.workerId];
-                const wid    = s.workerId;
+                const stats = workerStats[s.workerId];
+                const wid = s.workerId;
                 const photos = s.photos || [];
                 const hasPhoto = photos.length > 0;
                 const listingPlaceholder = getCategoryPlaceholderPhotoUrlOrDefault(
                   { category: s.category, categorySlug },
                   categories,
                 );
-                const ava    = stats?.workerAvatar || s.workerAvatar || null;
-                const locLine = (() => {
+                const ava = stats?.workerAvatar || s.workerAvatar || null;
+                const addrShort = (() => {
                   const addr = s.address && String(s.address).trim();
-                  if (addr) return addr.length > 120 ? `${addr.slice(0, 120)}…` : addr;
+                  if (addr) {
+                    const part = addr.split(',')[0].trim();
+                    if (part) return part.length > 42 ? `${part.slice(0, 42)}…` : part;
+                  }
                   const c = s.city && String(s.city).trim();
-                  if (c) return c;
+                  if (c) return c.length > 42 ? `${c.slice(0, 42)}…` : c;
                   return 'Йошкар-Ола';
                 })();
-                const masterActiveSub = s.active !== false
-                  ? `● Активный мастер · ${locLine}`
-                  : `Мастер · ${locLine}`;
+                const urgent = listingFeedLooksUrgent(s);
+                const statusUpper = listingFeedStatusLabel(s);
+                const cFill = stats
+                  ? Math.min(5, Math.max(0, Math.round(Number(stats.averageRating) || 0)))
+                  : 0;
+                const cAvg = stats?.averageRating ?? 0;
+                const cCnt = stats?.reviewsCount ?? 0;
 
-              return (
-                  <div key={s.id} className="fmp-card">
+                const jlTags = [
+                  {
+                    kind: 'green',
+                    icon: '✓',
+                    label: s.active !== false ? 'Активно' : 'Неактивно',
+                  },
+                ];
+                if (!(urgent && s.active !== false)) {
+                  if (s.verified) {
+                    jlTags.push({ kind: 'green', icon: '✓', label: 'Проверен' });
+                  } else if (s.ownerGuaranteeTermsAccepted) {
+                    jlTags.push({ kind: 'amber', icon: '🛡', label: 'Гарантия' });
+                  } else {
+                    jlTags.push({ kind: 'gray', icon: '⚡', label: 'Объявление' });
+                  }
+                }
 
-                    {/* Фото → объявление */}
-                    <div className="fmp-card-photo" onClick={() => navigate(`/listings/${s.id}`)}>
-                      {s.active !== false && (
-                        <FavoriteHeartButton kind="listing" id={s.id} />
-                      )}
-                      {hasPhoto ? (
-                        <>
-                          <img src={photos[0]} alt={s.title}/>
-                          {s.active !== false && <span className="fmp-card-photo-active">АКТИВНО</span>}
-                          {photos.length > 1 && <span className="fmp-card-photo-cnt">📷 {photos.length}</span>}
-                          <div className="fmp-card-photo-hover">Смотреть</div>
-                        </>
-                      ) : (
-                        <>
-                          <img src={listingPlaceholder} alt={s.title}/>
-                          {s.active !== false && <span className="fmp-card-photo-active">АКТИВНО</span>}
-                          <div className="fmp-card-photo-hover">Смотреть</div>
-                        </>
-                      )}
-                  </div>
-
-                    {/* Миниатюры доп. фото */}
-                    {photos.length > 1 && (
-                      <div className="fmp-thumbs">
-                        {photos.slice(1, 4).map((p, i) => (
-                          <img key={i} src={p} alt="" className="fmp-thumb" onClick={() => navigate(`/listings/${s.id}`)}/>
-                        ))}
-                        {photos.length > 4 && (
-                          <div className="fmp-thumb-more" onClick={() => navigate(`/listings/${s.id}`)}>
-                            +{photos.length - 4}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="fmp-card-body">
-
-                      {/* Мастер → профиль */}
-                      <Link to={`/workers/${wid}`} className="fmp-card-worker">
-                        {ava && ava.length > 10
-                          ? <img src={ava} alt="" className="fmp-card-ava"/>
-                          : <div className="fmp-card-ava-ph" style={{ background: `linear-gradient(135deg, #e8410a, #ff7043)` }}>
-                              {(s.workerName || 'М')[0].toUpperCase()}
-                            </div>
+                return (
+                  <article key={s.id} className="jl-bigcard">
+                    <div
+                      className="jl-bigcard-cover"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => navigate(`/listings/${s.id}`)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          navigate(`/listings/${s.id}`);
                         }
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div className="fmp-card-worker-name">{s.workerName}</div>
-                          <div className={s.active !== false ? 'fmp-card-worker-sub fmp-card-worker-sub--active' : 'fmp-card-worker-sub'}>
-                            {masterActiveSub}
-                          </div>
+                      }}
+                    >
+                      <img
+                        src={hasPhoto ? photos[0] : listingPlaceholder}
+                        alt={displayListingTitle(s.title)}
+                        draggable={false}
+                      />
+                      <span className="jl-bigcard-status">{statusUpper}</span>
+                      {urgent && s.active !== false && (
+                        <span className="jl-bigcard-urgent">⚡ Срочно</span>
+                      )}
+                      {s.active !== false && (
+                        <div className="jl-bigcard-fav-slot" onClick={e => e.stopPropagation()}>
+                          <FavoriteHeartButton kind="listing" id={s.id} />
                         </div>
-                        <span className="fmp-card-worker-chev">›</span>
-                      </Link>
-
-                      {/* Название → объявление */}
-                      <div className="fmp-card-title" onClick={() => navigate(`/listings/${s.id}`)}>
-                        {s.title}
-                      </div>
-
-                      {s.description && <div className="fmp-card-desc">{s.description}</div>}
-
-                      <div className="fmp-card-badges">
-                        {s.verified && (
-                          <span className="fmp-badge fmp-badge-v">✓ Проверен</span>
-                        )}
-                        <span className="fmp-badge fmp-badge-f">⚡ Отклик</span>
-                        {s.ownerGuaranteeTermsAccepted && (
-                          <span className="fmp-badge fmp-badge-g">🛡 Гарантия</span>
-                        )}
+                      )}
+                      {photos.length > 1 && (
+                        <span className="jl-bigcard-photo-cnt">📷 {photos.length}</span>
+                      )}
                     </div>
 
-                    {stats && (
-                        <Link
-                          to={`/workers/${wid}#reviews`}
-                          className="fmp-card-stats"
-                          title="Открыть отзывы о мастере"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <span className="fmp-stars">
-                            {'★'.repeat(Math.min(5, Math.round(stats.averageRating || 0)))}
-                            {'☆'.repeat(Math.max(0, 5 - Math.round(stats.averageRating || 0)))}
-                          </span>
-                          <span className="fmp-rating-val">{(stats.averageRating || 0).toFixed(1)}</span>
-                          <span>({stats.reviewsCount || 0} {(stats.reviewsCount || 0) === 1 ? 'отзыв' : (stats.reviewsCount || 0) < 5 ? 'отзыва' : 'отзывов'})</span>
-                          {stats.completedWorksCount > 0 && <span>· 📦 {stats.completedWorksCount} заказов</span>}
-                      </Link>
+                    {photos.length > 1 && (
+                      <div
+                        className="jl-bigcard-thumbs"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => navigate(`/listings/${s.id}`)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            navigate(`/listings/${s.id}`);
+                          }
+                        }}
+                      >
+                        {photos.slice(1, 4).map((p, i) => (
+                          <img key={i} src={p} alt="" draggable={false} />
+                        ))}
+                        {photos.length > 4 && (
+                          <div className="jl-bigcard-thumb-more">+{photos.length - 4}</div>
+                        )}
+                      </div>
                     )}
 
+                    <div className="jl-bigcard-body">
+                      <Link to={`/workers/${wid}`} className="jl-bigcard-author">
+                        {ava && ava.length > 10 ? (
+                          <img src={ava} alt="" className="jl-author-ava" />
+                        ) : (
+                          <div className="jl-author-ava">{(s.workerName || 'М')[0].toUpperCase()}</div>
+                        )}
+                        <div className="jl-bigcard-author-info">
+                          <span className="jl-bigcard-author-name">{s.workerName}</span>
+                          <span className="jl-bigcard-author-meta">
+                            <span className="ok">{s.active !== false ? 'Активный мастер' : 'Мастер'}</span>
+                            <span className="dot">·</span>
+                            <span>{addrShort}</span>
+                          </span>
+                        </div>
+                        <span className="jl-bigcard-chevron">›</span>
+                      </Link>
+
+                      <div
+                        className="jl-bigcard-detail-zone"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => navigate(`/listings/${s.id}`)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            navigate(`/listings/${s.id}`);
+                          }
+                        }}
+                      >
+                        <h2 className="jl-bigcard-title">{displayListingTitle(s.title)}</h2>
+                        {s.description && <div className="jl-bigcard-sub">{s.description}</div>}
+                      </div>
+
+                      <div className="jl-tags">
+                        {jlTags.map((b, i) => (
+                          <span key={i} className={`jl-tag ${b.kind}`}>
+                            <span>{b.icon}</span> {b.label}
+                          </span>
+                        ))}
+                      </div>
+
+                      {stats ? (
+                        <Link
+                          to={`/workers/${wid}#reviews`}
+                          className="jl-rating-line jl-rating-line--link"
+                          title="Открыть отзывы о мастере"
+                          onClick={e => e.stopPropagation()}
+                        >
+                          {(stats.reviewsCount || 0) === 0 ? (
+                            <>
+                              <span className="stars jl-stars-muted">☆☆☆☆☆</span>
+                              <span className="fmp-rating-empty">Пока нет отзывов</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="stars">
+                                {'★'.repeat(cFill)}
+                                {'☆'.repeat(5 - cFill)}
+                              </span>
+                              <b>{cAvg.toFixed(1)}</b>
+                              <span>
+                                ({cCnt}{' '}
+                                {cCnt === 1 ? 'отзыв' : cCnt < 5 ? 'отзыва' : 'отзывов'})
+                              </span>
+                              {stats.completedWorksCount > 0 && (
+                                <span>· 📦 {stats.completedWorksCount} заказов</span>
+                              )}
+                            </>
+                          )}
+                        </Link>
+                      ) : null}
+
                       {pendingDeals[String(s.id)] ? (
-                        /* ── Pending: цена сверху, ссылка и баннер ниже ── */
                         <div className="fmp-card-footer-pending">
                           <div className="fmp-card-price-block">
                             <div className="fmp-card-price">
@@ -1910,58 +1987,90 @@ export default function FindMasterPage() {
                             </div>
                             {s.priceUnit && <span className="fmp-card-price-unit">{s.priceUnit}</span>}
                           </div>
-                          <div style={{ display:'flex', justifyContent:'flex-end' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <button
                               type="button"
                               className="fmp-pending-link"
-                              onClick={(e) => { e.stopPropagation(); navigate('/deals'); }}
+                              onClick={e => {
+                                e.stopPropagation();
+                                navigate('/deals');
+                              }}
                             >
                               К сделкам →
                             </button>
                           </div>
                           <div className="fmp-pending-banner">
                             <span>⏳ Ждём подтверждения мастера</span>
-                            <span style={{ fontWeight: 400, color: '#78350f' }}>
-                              Мастер должен принять заказ
-                            </span>
-                            <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:4, alignItems:'center' }}>
+                            <span style={{ fontWeight: 400, color: '#78350f' }}>Мастер должен принять заказ</span>
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: 8,
+                                marginTop: 4,
+                                alignItems: 'center',
+                              }}
+                            >
                               <button
                                 type="button"
                                 className="fmp-pending-link"
                                 disabled={cancellingListingId === s.id}
-                                onClick={(e) => { e.stopPropagation(); handleCancelPendingListing(s.id); }}
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  handleCancelPendingListing(s.id);
+                                }}
                                 style={{ color: '#b91c1c', fontWeight: 700 }}
                               >
                                 {cancellingListingId === s.id ? 'Отменяем…' : 'Отменить заявку'}
                               </button>
                             </div>
                             {acceptErr[s.id] && (
-                              <div className="fmp-card-action-err" style={{ alignSelf: 'stretch', textAlign: 'left', maxWidth: 'none' }}>{acceptErr[s.id]}</div>
+                              <div
+                                className="fmp-card-action-err"
+                                style={{ alignSelf: 'stretch', textAlign: 'left', maxWidth: 'none' }}
+                              >
+                                {acceptErr[s.id]}
+                              </div>
                             )}
                           </div>
                         </div>
                       ) : (
-                        <div className="fmp-card-footer">
-                          <div className="fmp-card-price-block">
-                            <div className="fmp-card-price">
-                              {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
-                            </div>
-                            {s.priceUnit && <span className="fmp-card-price-unit">{s.priceUnit}</span>}
+                        <>
+                          <div className="jl-bigcard-price-row">
+                            {s.priceFrom ? (
+                              <>
+                                <div className="jl-bigcard-price">
+                                  {Number(s.priceFrom).toLocaleString('ru-RU')} ₽
+                                </div>
+                                <div className="jl-bigcard-price-hint">за работу</div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="jl-bigcard-price-muted">Договорная</div>
+                                <div className="jl-bigcard-price-hint">уточните у мастера</div>
+                              </>
+                            )}
                           </div>
-                          <div className="fmp-card-actions">
+                          <div className="jl-bigcard-actions">
                             <button
                               type="button"
-                              className="fmp-btn-accept"
+                              className="jl-bigcard-btn primary"
                               disabled={acceptingId === s.id || String(userId) === String(wid)}
                               title={String(userId) === String(wid) ? 'Нельзя принять своё объявление' : ''}
-                              onClick={(e) => { e.stopPropagation(); handleAcceptListing(s.id, wid); }}
+                              onClick={e => {
+                                e.stopPropagation();
+                                handleAcceptListing(s.id, wid);
+                              }}
                             >
                               {acceptingId === s.id ? '⏳ Оформляем…' : 'Принять'}
                             </button>
                             <button
                               type="button"
-                              className="fmp-btn-msg"
-                              onClick={(e) => { e.stopPropagation(); navigate(`/chat/${wid}`); }}
+                              className="jl-bigcard-btn ghost"
+                              onClick={e => {
+                                e.stopPropagation();
+                                navigate(`/chat/${wid}`);
+                              }}
                             >
                               Написать
                             </button>
@@ -1969,14 +2078,15 @@ export default function FindMasterPage() {
                               <div className="fmp-card-action-err">{acceptErr[s.id]}</div>
                             )}
                           </div>
-                        </div>
+                        </>
                       )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                    </div>
+                  </article>
+                );
+              })}
+              </div>
+            )}
+          </main>
         </div>
       </div>
     </div>
