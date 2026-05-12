@@ -9,6 +9,25 @@ function normName(s) {
     .replace(/\s+/g, ' ');
 }
 
+function normSlug(s) {
+  return String(s || '').trim().toLowerCase();
+}
+
+/**
+ * В каталоге на главной есть «Сантехника» / «Электрика», а GET /categories отдаёт одну «Ремонт квартир».
+ * Для создания заявки и фильтров нужен реальный id с бэка — подставляем slug родительской категории из API.
+ */
+const CATALOG_SLUG_API_FALLBACK_SLUG = {
+  santehnika: 'remont-kvartir',
+  elektrika: 'remont-kvartir',
+};
+
+function apiRowBySlug(apiList, slug) {
+  const want = normSlug(slug);
+  if (!want || !Array.isArray(apiList)) return null;
+  return apiList.find((c) => c && normSlug(c.slug) === want) || null;
+}
+
 /** Ответ GET /categories может быть массивом или обёрткой { data, categories, … }. */
 export function normalizeCategoriesApiResponse(payload) {
   if (payload == null) return [];
@@ -110,7 +129,11 @@ export function resolveCatalogCategoryRow(catalogCat, mergedCategories, apiCateg
   }
   const slugKey = slug || getCategorySlugFromLabel(name || '');
   if (!slugKey) return c || null;
-  const fromApi = findApiRowForCatalogSlug(api, slugKey, consumed);
+  let fromApi = findApiRowForCatalogSlug(api, slugKey, consumed);
+  if (!fromApi) {
+    const fb = CATALOG_SLUG_API_FALLBACK_SLUG[normSlug(slugKey)];
+    if (fb) fromApi = apiRowBySlug(api, fb);
+  }
   const aid = pickCategoryId(fromApi);
   if (fromApi && aid) {
     return {
@@ -150,6 +173,10 @@ export function mergeApiCategoriesWithCatalog(apiCategories) {
     let row = bySlug.get(String(sc.slug).toLowerCase());
     if (!row) row = byName.get(normName(sc.name));
     if (!row) row = findApiRowForCatalogSlug(api, sc.slug, consumedApiIds);
+    if (!row) {
+      const fbSlug = CATALOG_SLUG_API_FALLBACK_SLUG[normSlug(sc.slug)];
+      if (fbSlug) row = apiRowBySlug(api, fbSlug);
+    }
     if (!row) {
       return { ...sc, description: sc.desc };
     }
