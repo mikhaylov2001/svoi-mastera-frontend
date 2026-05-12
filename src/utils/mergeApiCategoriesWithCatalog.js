@@ -132,7 +132,7 @@ export function resolveCatalogCategoryRow(catalogCat, mergedCategories, apiCateg
   let fromApi = findApiRowForCatalogSlug(api, slugKey, consumed);
   if (!fromApi) {
     const fb = CATALOG_SLUG_API_FALLBACK_SLUG[normSlug(slugKey)];
-    if (fb) fromApi = apiRowBySlug(api, fb);
+    if (fb && !apiRowBySlug(api, slugKey)) fromApi = apiRowBySlug(api, fb);
   }
   const aid = pickCategoryId(fromApi);
   if (fromApi && aid) {
@@ -175,7 +175,7 @@ export function mergeApiCategoriesWithCatalog(apiCategories) {
     if (!row) row = findApiRowForCatalogSlug(api, sc.slug, consumedApiIds);
     if (!row) {
       const fbSlug = CATALOG_SLUG_API_FALLBACK_SLUG[normSlug(sc.slug)];
-      if (fbSlug) row = apiRowBySlug(api, fbSlug);
+      if (fbSlug && !apiRowBySlug(api, sc.slug)) row = apiRowBySlug(api, fbSlug);
     }
     if (!row) {
       return { ...sc, description: sc.desc };

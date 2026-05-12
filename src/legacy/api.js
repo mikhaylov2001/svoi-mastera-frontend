@@ -73,6 +73,8 @@ export async function getCategories() { return apiCall('/categories'); }
 // ── JOB REQUESTS ──
 export async function createJobRequest(userId, data) {
   const body = { categoryId: data.categoryId, title: data.title, description: data.description || 'Без описания' };
+  const csl = data.categorySlug != null ? String(data.categorySlug).trim() : '';
+  if (csl) body.categorySlug = csl;
   if (data.address) body.addressText = data.address;
   if (data.budget != null && data.budget !== '') {
     const n = Number(data.budget);

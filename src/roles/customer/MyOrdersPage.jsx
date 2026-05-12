@@ -475,6 +475,19 @@ export default function MyOrdersPage() {
     return getCategoryName(form.categoryId, form.categorySlug);
   }
 
+  /** Подпись в списке/деталке: categorySlug с бэка → имя из каталога; иначе categoryName; иначе по id. */
+  function jobRequestCategoryLabel(req) {
+    if (!req) return '';
+    const slug = String(req.categorySlug || req.category_slug || '').trim().toLowerCase();
+    if (slug) {
+      const row = categories.find((x) => String(x.slug || '').trim().toLowerCase() === slug);
+      if (row?.name) return row.name;
+    }
+    const cn = String(req.categoryName || req.category || '').trim();
+    if (cn) return cn;
+    return getCategoryName(req.categoryId, '');
+  }
+
   /* ── load ── */
   const load = useCallback(async () => {
     setLoading(true);
@@ -646,6 +659,8 @@ export default function MyOrdersPage() {
       city:        req.city || '',
       categoryId:  req.categoryId || '',
       categorySlug: (() => {
+        const fromApi = String(req.categorySlug || req.category_slug || '').trim();
+        if (fromApi) return fromApi;
         const cid = String(req.categoryId || '');
         const cname = req.categoryName || req.category || '';
         if (!cid) return '';
@@ -709,6 +724,7 @@ export default function MyOrdersPage() {
     setSaving(true); setFormErr('');
     try {
       const isEdit = view !== 'create';
+      const slugSave = String(form.categorySlug || '').trim();
       const payload = {
         categoryId:  form.categoryId,
         title:       form.title.trim(),
@@ -718,9 +734,11 @@ export default function MyOrdersPage() {
         budget:      Number(form.budget),
         photos:      (form.photos || []).map(p => p.data).filter(Boolean),
       };
+      if (slugSave) payload.categorySlug = slugSave;
       if (isEdit) {
         await updateJobRequest(userId, view.edit.id, {
           categoryId:  payload.categoryId,
+          ...(slugSave ? { categorySlug: slugSave } : {}),
           title:       payload.title,
           description: payload.description,
           city:        payload.city,
@@ -1284,9 +1302,13 @@ export default function MyOrdersPage() {
   // ══ ДЕТАЛЬНАЯ СТРАНИЦА ══
   if (detail) {
     const hasPhoto = detail.photos?.length > 0;
-    const catNameD = getCategoryName(detail.categoryId);
+    const catNameD = jobRequestCategoryLabel(detail);
     const detailPlaceholder = getCategoryPlaceholderPhotoUrlOrDefault(
-      { categoryName: catNameD, categoryId: detail.categoryId },
+      {
+        categoryName: catNameD,
+        categoryId: detail.categoryId,
+        categorySlug: detail.categorySlug || detail.category_slug,
+      },
       categories,
     );
     const budget   = getJobRequestPublishedBudgetNumber(detail);
@@ -1598,9 +1620,13 @@ export default function MyOrdersPage() {
         ) : (
           <div className="ml-list">
             {shown.map(req => {
-              const catName  = getCategoryName(req.categoryId);
+              const catName  = jobRequestCategoryLabel(req);
               const rowFallback = getCategoryPlaceholderPhotoUrlOrDefault(
-                { categoryName: catName, categoryId: req.categoryId },
+                {
+                  categoryName: catName,
+                  categoryId: req.categoryId,
+                  categorySlug: req.categorySlug || req.category_slug,
+                },
                 categories,
               );
               const budget   = getJobRequestPublishedBudgetNumber(req);
