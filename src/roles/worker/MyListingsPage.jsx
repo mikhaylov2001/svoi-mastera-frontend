@@ -24,6 +24,34 @@ const CATEGORIES = [
 ];
 const EMPTY_FORM  = { title:'', description:'', price:'', priceUnit:'за работу', category:'', photos:[] };
 const MAX_DESC    = 2000;
+const MAX_TITLE   = 80;
+
+const CATEGORY_EMOJI = {
+  'Ремонт квартир': '🔨',
+  'Сантехника': '🔧',
+  'Электрика': '⚡',
+  'Компьютерная помощь': '💻',
+  'Уборка': '🧹',
+  'Парикмахер': '✂️',
+  'Маникюр и педикюр': '💅',
+  'Красота и здоровье': '✨',
+  'Репетиторство': '📚',
+  'Грузоперевозки': '🚚',
+  'Сварочные работы': '🔥',
+  'Другое': '📌',
+};
+
+function categoryEmoji(name) {
+  if (!name) return '📌';
+  return CATEGORY_EMOJI[name] || '📌';
+}
+
+function priceKindFromListing(l) {
+  const u = String(l?.priceUnit || '').trim().toLowerCase();
+  if (u.includes('договор')) return 'negotiable';
+  if (u === 'от' || u.startsWith('от ')) return 'from';
+  return 'fixed';
+}
 
 const DEFAULT_MY_LISTINGS_BG = PAGE_HERO_DEFAULT_PHOTO;
 
@@ -132,6 +160,7 @@ function compressImage(file) {
 /* ══ CSS ══ */
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
   *, *::before, *::after { box-sizing: border-box; }
 
   /* ── GENERAL ── */
@@ -270,7 +299,53 @@ const css = `
   .mlf-hero-title { font-size: clamp(22px, 4vw, 34px); font-weight: 900; color: #fff; margin: 0 0 6px; letter-spacing: -.4px; line-height: 1.15; }
   .mlf-hero-sub { font-size: 14px; color: rgba(255,255,255,.75); margin: 0; }
 
+  /* Фон страницы формы + степпер на фото-герое (как раньше: img + overlay из констант) */
+  .ml-page.mlf-form-shell { background: #f6f6f4; font-family: Manrope, Inter, system-ui, sans-serif; }
+  .mlf-stepper--hero {
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .mlf-hero .mlf-stepper--hero .mlf-step-pill {
+    background: rgba(255,255,255,.12);
+    border-color: rgba(255,255,255,.22);
+    color: rgba(255,255,255,.85);
+  }
+  .mlf-hero .mlf-stepper--hero .mlf-step-pill.on {
+    background: #e8410a;
+    border-color: #e8410a;
+    color: #fff;
+    box-shadow: 0 6px 22px rgba(232,65,10,.45);
+  }
+  .mlf-hero .mlf-stepper--hero .mlf-step-dot { background: rgba(255,255,255,.35); }
+  .mlf-hero-progress {
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.22);
+    overflow: visible;
+    margin-top: 8px;
+    margin-bottom: 22px;
+  }
+  .mlf-hero-progress-bar {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ff8a4a, #e8410a);
+    transition: width .35s ease;
+  }
+  .mlf-hero-progress-label {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,.88);
+  }
+
   .mlf-wrap { max-width: 1080px; margin: 0 auto; padding: 20px 24px 60px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: flex-start; }
+  .mlf-wrap--lovable { max-width: 1120px; grid-template-columns: 1fr 340px; gap: 24px; padding-top: 24px; }
 
   .mlf-stepper {
     display: flex;
@@ -433,19 +508,26 @@ const css = `
   .mlf-change-cat:hover { opacity: .8; }
 
   /* cards */
-  .mlf-card { background: #fff; margin-bottom: 12px; overflow: hidden; }
-  .mlf-card-title { font-size: 16px; font-weight: 700; color: #111; padding: 18px 20px 0; margin-bottom: 16px; }
+  .mlf-card { background: #fff; margin-bottom: 12px; overflow: hidden; border-radius: 20px; border: 1px solid rgba(0,0,0,.06); box-shadow: 0 4px 28px rgba(15,23,42,.06); }
+  .mlf-form-shell .mlf-card { border-radius: 22px; }
+  .mlf-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 22px 0; margin-bottom: 14px; }
+  .mlf-card-head-text { min-width: 0; }
+  .mlf-card-kicker { font-size: 13px; color: #6b7280; font-weight: 500; margin: 6px 0 0; line-height: 1.45; }
+  .mlf-card-title { font-size: 17px; font-weight: 800; color: #111827; margin: 0; letter-spacing: -.02em; }
+  .mlf-card-counter { font-size: 13px; font-weight: 700; color: #9ca3af; flex-shrink: 0; padding-top: 2px; }
+  .mlf-card-counter strong { color: #e8410a; font-weight: 800; }
 
   /* photo grid */
-  .mlf-photos { padding: 18px 20px 20px; }
-  .mlf-photo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-  .mlf-photo-cell { aspect-ratio: 1; border-radius: 8px; overflow: hidden; position: relative; border: 1.5px dashed #d0d0d0; background: #fafafa; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all .18s; }
+  .mlf-photos { padding: 0 22px 22px; }
+  .mlf-photo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .mlf-photo-cell { aspect-ratio: 1; border-radius: 14px; overflow: hidden; position: relative; border: 1.5px dashed rgba(232,65,10,.35); background: #fffaf7; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all .18s; }
   .mlf-photo-cell:hover { border-color: #e8410a; background: #fff5f2; }
   .mlf-photo-cell.filled { border: none; cursor: zoom-in; }
   .mlf-photo-cell.main-photo { grid-column: span 2; grid-row: span 2; }
   .mlf-photo-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
   .mlf-photo-cell.filled:hover .mlf-photo-img { transform: scale(1.05); }
-  .mlf-photo-add-icon { font-size: 28px; opacity: .5; }
+  .mlf-photo-add-icon { font-size: 28px; opacity: .55; }
+  .mlf-photo-main-label { font-size: 11px; font-weight: 700; color: #9a3412; margin-top: 6px; text-align: center; line-height: 1.25; max-width: 90%; }
   .mlf-photo-num { font-size: 11px; font-weight: 600; color: #aaa; margin-top: 4px; text-align: center; }
   .mlf-photo-hint { font-size: 12px; color: #aaa; margin-top: 10px; }
   .mlf-photo-del { position: absolute; top: 5px; right: 5px; width: 26px; height: 26px; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; opacity: 0; transition: opacity .15s; z-index: 2; }
@@ -460,11 +542,12 @@ const css = `
   .mlf-fields { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 16px; }
   .mlf-field label { display: block; font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; }
   .mlf-field input, .mlf-field textarea, .mlf-field select {
-    width: 100%; padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 8px;
-    font-size: 15px; font-family: Inter, Arial, sans-serif; color: #111; outline: none;
-    background: #fff; transition: border-color .15s, box-shadow .15s; box-sizing: border-box;
+    width: 100%; padding: 12px 14px; border: 1.5px solid #e5e7eb; border-radius: 14px;
+    font-size: 15px; font-family: inherit; color: #111; outline: none;
+    background: #f3f4f6; transition: border-color .15s, box-shadow .15s, background .15s; box-sizing: border-box;
     appearance: none;
   }
+  .mlf-field input:focus, .mlf-field textarea:focus, .mlf-field select:focus { background: #fff; }
   .mlf-field input:focus, .mlf-field textarea:focus, .mlf-field select:focus { border-color: #e8410a; box-shadow: 0 0 0 3px rgba(232,65,10,.08); }
   .mlf-field textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
   .mlf-field-hint { font-size: 12px; color: #aaa; margin-top: 5px; line-height: 1.4; }
@@ -478,12 +561,134 @@ const css = `
   .mlf-char.over { color: #ef4444; }
 
   /* price block */
-  .mlf-price-block { padding: 18px 20px 20px; }
+  .mlf-price-block { padding: 0 22px 22px; }
   .mlf-price-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; align-items: end; }
+  .mlf-price-seg {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;
+  }
+  .mlf-price-seg button {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1.5px solid #e5e7eb;
+    background: #f3f4f6;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: #4b5563;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s, box-shadow .15s;
+  }
+  .mlf-price-seg button.on {
+    border-color: #e8410a;
+    background: #fff4ef;
+    color: #c2410c;
+    box-shadow: 0 0 0 1px rgba(232,65,10,.12);
+  }
+  .mlf-price-input-wrap { position: relative; }
+  .mlf-price-input-wrap input { padding-right: 36px; }
+  .mlf-price-rub {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    font-weight: 700;
+    color: #9ca3af;
+    pointer-events: none;
+  }
+  .mlf-price-foot { font-size: 12px; color: #9ca3af; margin-top: 8px; line-height: 1.45; }
 
-  /* submit */
-  .mlf-submit-card { padding: 20px; }
-  .mlf-btn-submit { width: 100%; padding: 15px; background: #e8410a; border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; transition: background .15s; }
+  .mlf-tips-panel {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(232,65,10,.22);
+    background: linear-gradient(180deg, #fff7f0 0%, #fffdfb 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .mlf-tips-panel .mlf-tip { padding-left: 14px; color: #57534e; }
+  .mlf-tips-panel .mlf-tip::before { content: '•'; color: #e8410a; font-size: 14px; top: 0; left: 0; }
+
+  .mlf-cat-chip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .mlf-cat-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 76px;
+    padding: 10px 8px;
+    border-radius: 16px;
+    border: 1.5px solid #e5e7eb;
+    background: #f9fafb;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color .15s, background .15s, box-shadow .15s, transform .12s;
+  }
+  .mlf-cat-chip:hover { border-color: #fdba74; background: #fff7ed; }
+  .mlf-cat-chip.on {
+    border-color: #e8410a;
+    background: linear-gradient(180deg, #fff4ef, #fff);
+    box-shadow: 0 8px 26px rgba(232,65,10,.18);
+    transform: translateY(-1px);
+  }
+  .mlf-cat-chip-ico { font-size: 22px; line-height: 1; }
+  .mlf-cat-chip-name { font-size: 12px; font-weight: 800; color: #1f2937; text-align: center; line-height: 1.25; }
+  .mlf-cat-chip.on .mlf-cat-chip-name { color: #9a3412; }
+
+  /* предпросмотр */
+  .mlf-preview-card { padding: 0 0 18px; overflow: hidden; }
+  .mlf-preview-ph {
+    position: relative;
+    aspect-ratio: 16/10;
+    background: linear-gradient(145deg, #f3f4f6, #e7e5e4);
+    overflow: hidden;
+  }
+  .mlf-preview-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mlf-preview-tag {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    background: rgba(17,24,39,.82);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 999px;
+    max-width: calc(100% - 20px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mlf-preview-body { padding: 14px 18px 0; }
+  .mlf-preview-price { font-size: 20px; font-weight: 900; color: #111827; letter-spacing: -.02em; }
+  .mlf-preview-title { font-size: 14px; font-weight: 700; color: #374151; margin-top: 8px; line-height: 1.35; }
+  .mlf-preview-meta { font-size: 12px; color: #9ca3af; margin-top: 8px; font-weight: 600; }
+
+  .mlf-btn-submit {
+    width: 100%;
+    padding: 16px 18px;
+    background: #e8410a;
+    border: none;
+    border-radius: 16px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .mlf-btn-submit-inner { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .mlf-btn-submit-sub { font-size: 12px; font-weight: 600; opacity: .92; }
   .mlf-btn-submit:hover { background: #c73208; }
   .mlf-btn-submit:disabled { background: #fca98e; cursor: not-allowed; }
   .mlf-btn-copy-outline {
@@ -496,8 +701,9 @@ const css = `
   .mlf-error { background: #fff5f5; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #dc2626; margin-bottom: 12px; }
 
   /* sidebar */
-  .mlf-sidebar { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 76px; }
-  .mlf-sb-card { background: #fff; padding: 18px; }
+  .mlf-sidebar { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 76px; }
+  .mlf-form-shell .mlf-sb-card { border-radius: 22px; border: 1px solid rgba(0,0,0,.06); box-shadow: 0 4px 28px rgba(15,23,42,.06); }
+  .mlf-sb-card { background: #fff; padding: 18px; border-radius: 20px; }
   .mlf-sb-title { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
   .mlf-steps { display: flex; flex-direction: column; gap: 10px; }
   .mlf-step { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; color: #555; }
@@ -566,6 +772,7 @@ export default function MyListingsPage() {
   const [hoverSectionSlug, setHoverSectionSlug] = useState(null); // превью фона шага «разделы»
   const [hoverCategoryName, setHoverCategoryName] = useState(null); // превью фона шага «категории»
   const [form,     setForm]     = useState(EMPTY_FORM);
+  const [priceKind, setPriceKind] = useState('fixed'); // 'fixed' | 'from' | 'negotiable'
   const [saving,   setSaving]   = useState(false);
   const [formErr,  setFormErr]  = useState('');
   const [lightbox, setLightbox] = useState(null); // { photos, index }
@@ -671,6 +878,7 @@ export default function MyListingsPage() {
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
+    setPriceKind('fixed');
     setFormErr('');
     setPickedSection(null);
     setHoverSectionSlug(null);
@@ -682,6 +890,7 @@ export default function MyListingsPage() {
     e?.stopPropagation();
     if (listingLockedAfterDeal(l)) return;
     setForm({ title: l.title, description: l.description || '', price: l.price, priceUnit: l.priceUnit || 'за работу', category: l.category || '', photos: (l.photos || []).map((p, i) => ({ id: i, data: p })) });
+    setPriceKind(priceKindFromListing(l));
     setFormErr('');
     setView({ edit: l });
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -712,7 +921,12 @@ export default function MyListingsPage() {
   const handleSave = async () => {
     if (!form.title.trim()) { setFormErr('Укажите название объявления'); return; }
     if (!form.category)     { setFormErr('Выберите категорию'); return; }
-    if (!form.price || Number(form.price) <= 0) { setFormErr('Укажите цену (больше нуля)'); return; }
+    const negotiable = priceKind === 'negotiable';
+    const numPrice = Number(form.price);
+    if (!negotiable && (!form.price || !Number.isFinite(numPrice) || numPrice <= 0)) {
+      setFormErr('Укажите цену (больше нуля)');
+      return;
+    }
     if (!userId) { setFormErr('Войдите в аккаунт и попробуйте снова.'); return; }
     const isEdit = view !== 'create';
     if (isEdit && listingLockedAfterDeal(view.edit)) {
@@ -725,8 +939,8 @@ export default function MyListingsPage() {
       const payload = {
         title:       form.title.trim(),
         description: (form.description || '').trim(),
-        price:       Number(form.price),
-        priceUnit:   form.priceUnit,
+        price:       negotiable ? 0 : numPrice,
+        priceUnit:   negotiable ? 'договорная' : priceKind === 'from' ? 'от' : (form.priceUnit || 'за работу'),
         category:    form.category,
         photos:      (form.photos || []).map(p => p.data).filter(Boolean),
       };
@@ -804,6 +1018,16 @@ export default function MyListingsPage() {
     const photos   = form.photos || [];
     const descLen  = form.description.length;
 
+    const chipSource = pickedSection ? (CATEGORIES_BY_SECTION[pickedSection] || []).map((c) => c.name).filter(Boolean) : [];
+    const categoriesForChips = chipSource.length ? chipSource : CATEGORIES;
+    const previewImage = (photos[0] && photos[0].data) || getCategoryPlaceholderPhotoUrlOrDefault({ category: form.category });
+    let previewPriceLine = 'Цена';
+    if (priceKind === 'negotiable') previewPriceLine = 'Договорная';
+    else if (form.price && Number(form.price) > 0) {
+      previewPriceLine = `${Number(form.price).toLocaleString('ru-RU')} ₽${priceKind === 'from' ? ' от' : ''}`;
+    }
+    const canSubmitForm = !!(form.title.trim() && form.category && (priceKind === 'negotiable' || (form.price && Number(form.price) > 0)));
+
     let createHeroSrc = DEFAULT_MY_LISTINGS_BG;
     if (isEdit && form.category) createHeroSrc = photoForCategoryName(form.category);
     else if (!isEdit) {
@@ -820,22 +1044,45 @@ export default function MyListingsPage() {
       }
     }
 
+    const useFormShell = isFormStep && !isEdit;
+    const filledPhotos = photos.length;
+    const draftProgress = isFormStep && !isEdit
+      ? Math.min(100, Math.round(
+        (form.title.trim() ? 25 : 0)
+        + (form.description.length >= 30 ? 25 : Math.round((form.description.length / 30) * 25))
+        + (priceKind === 'negotiable' || (form.price && Number(form.price) > 0) ? 25 : 0)
+        + (filledPhotos > 0 ? 25 : 0),
+      ))
+      : 0;
+
     return (
-      <div className="ml-page">
+      <div className={`ml-page${useFormShell ? ' mlf-form-shell' : ''}`}>
         <style>{css}</style>
 
-        {/* Hero */}
         <div className="mlf-hero">
           <img src={createHeroSrc} alt="" className="mlf-hero-img" />
           <div className="mlf-hero-overlay" />
           <div className="mlf-hero-body">
-            <button className="mlf-hero-back" onClick={() => {
-              if (isCatStep) { setHoverCategoryName(null); setPickedSection(null); }
-              else if (isFormStep && !isEdit) { setHoverCategoryName(null); setForm(p => ({...p, category: ''})); setPickedSection(null); }
-              else { setView(null); }
-            }}>
+            <button
+              type="button"
+              className="mlf-hero-back"
+              onClick={() => {
+                if (isCatStep) { setHoverCategoryName(null); setPickedSection(null); }
+                else if (isFormStep && !isEdit) { setHoverCategoryName(null); setForm(p => ({...p, category: ''})); setPickedSection(null); }
+                else { setView(null); }
+              }}
+            >
               {isCatStep ? `← Все разделы` : isFormStep && !isEdit ? '← Выбор категории' : '← Мои объявления'}
             </button>
+            {!isEdit && (
+              <div className="mlf-stepper mlf-stepper--hero">
+                <span className={`mlf-step-pill${isSectionStep ? ' on' : ''}`}>1. Раздел</span>
+                <span className="mlf-step-dot" />
+                <span className={`mlf-step-pill${isCatStep ? ' on' : ''}`}>2. Категория</span>
+                <span className="mlf-step-dot" />
+                <span className={`mlf-step-pill${isFormStep ? ' on' : ''}`}>3. Объявление</span>
+              </div>
+            )}
             <h1 className="mlf-hero-title">
               {isEdit ? 'Редактировать объявление' : isSectionStep ? 'Выберите раздел' : isCatStep ? pickedSection && SECTIONS.find(s=>s.slug===pickedSection)?.name : 'Новое объявление'}
             </h1>
@@ -846,23 +1093,20 @@ export default function MyListingsPage() {
                   ? 'Шаг 1 — выберите раздел услуги'
                   : isCatStep
                     ? 'Шаг 2 — выберите категорию, откроется форма'
-                    : 'Шаг 3 — заполните объявление и опубликуйте'}
+                    : 'Шаг 3 — заполните детали и опубликуйте за минуту'}
             </p>
+            {isFormStep && !isEdit && (
+              <div className="mlf-hero-progress">
+                <div className="mlf-hero-progress-bar" style={{ width: `${draftProgress}%` }} />
+                <span className="mlf-hero-progress-label">{draftProgress}% готово</span>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="mlf-wrap">
+        <div className={`mlf-wrap${useFormShell ? ' mlf-wrap--lovable' : ''}`}>
           <div>
             {formErr && <div className="mlf-error">⚠️ {formErr}</div>}
-            {!isEdit && (
-              <div className="mlf-stepper">
-                <span className={`mlf-step-pill${isSectionStep ? ' on' : ''}`}>1. Раздел</span>
-                <span className="mlf-step-dot" />
-                <span className={`mlf-step-pill${isCatStep ? ' on' : ''}`}>2. Категория</span>
-                <span className="mlf-step-dot" />
-                <span className={`mlf-step-pill${isFormStep ? ' on' : ''}`}>3. Объявление</span>
-              </div>
-            )}
 
             {isSectionStep ? (
               /* ── ШАГ 1: РАЗДЕЛЫ С ФОТО ── */
@@ -935,8 +1179,14 @@ export default function MyListingsPage() {
               <>
                 {/* ── 1. ФОТОГРАФИИ ── */}
                 <div className="mlf-card">
-                  <div className="mlf-card-title">
-                    Фотографии <span style={{fontSize:13,color:'#aaa',fontWeight:400}}>(необязательно, до 5 шт.)</span>
+                  <div className="mlf-card-head">
+                    <div className="mlf-card-head-text">
+                      <div className="mlf-card-title">Фотографии</div>
+                      <p className="mlf-card-kicker">Объявления с фото получают заметно больше откликов</p>
+                    </div>
+                    <span className="mlf-card-counter">
+                      <strong>{photos.length}</strong>/5
+                    </span>
                   </div>
                   <div className="mlf-photos">
                     <div
@@ -969,6 +1219,7 @@ export default function MyListingsPage() {
                             onClick={() => photoRef.current?.click()}
                           >
                             <span className="mlf-photo-add-icon">{i === 0 ? '📷' : '+'}</span>
+                            {i === 0 && <span className="mlf-photo-main-label">Главное фото</span>}
                           </div>
                         );
                       })}
@@ -991,30 +1242,56 @@ export default function MyListingsPage() {
 
                 {/* ── 2. ОПИСАНИЕ УСЛУГИ ── */}
                 <div className="mlf-card">
-                  <div className="mlf-card-title">Описание услуги</div>
+                  <div className="mlf-card-head">
+                    <div className="mlf-card-head-text">
+                      <div className="mlf-card-title">Описание услуги</div>
+                    </div>
+                  </div>
                   <div className="mlf-fields">
                     <div className="mlf-field">
-                      <label>Название объявления *</label>
+                      <div className="mlf-field-top">
+                        <label>Название объявления *</label>
+                        <span className={`mlf-char${form.title.length > MAX_TITLE * 0.9 ? form.title.length >= MAX_TITLE ? ' over' : ' warn' : ''}`}>
+                          {form.title.length}/{MAX_TITLE}
+                        </span>
+                      </div>
                       <input
                         ref={titleRef}
                         value={form.title}
                         onChange={e => { setFormErr(''); setForm(p => ({...p, title: e.target.value})); }}
-                        maxLength={120}
+                        maxLength={MAX_TITLE}
+                        placeholder="Например: ремонт ванной под ключ"
                       />
                       <span className="mlf-field-hint">Коротко и конкретно — что вы делаете</span>
                     </div>
 
                     <div className="mlf-field">
                       <label>Категория *</label>
-                      <div className="mlf-selected-cat">
-                        <b>{form.category}</b>
-                        {!isEdit && (
-                          <button type="button" className="mlf-change-cat" onClick={() => setForm(p => ({...p, category: ''}))}>
-                            Сменить
+                      {!isEdit ? (
+                        <>
+                          <div className="mlf-cat-chip-grid">
+                            {categoriesForChips.map((name) => (
+                              <button
+                                key={name}
+                                type="button"
+                                className={`mlf-cat-chip${form.category === name ? ' on' : ''}`}
+                                onClick={() => { setFormErr(''); setForm((p) => ({ ...p, category: name })); }}
+                              >
+                                <span className="mlf-cat-chip-ico" aria-hidden>{categoryEmoji(name)}</span>
+                                <span className="mlf-cat-chip-name">{name}</span>
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            className="mlf-change-cat"
+                            style={{ marginTop: 10, display: 'inline-block' }}
+                            onClick={() => { setForm((p) => ({ ...p, category: '' })); setPickedSection(null); }}
+                          >
+                            ← Выбрать другую категорию из каталога
                           </button>
-                        )}
-                      </div>
-                      {isEdit && (
+                        </>
+                      ) : (
                         <select
                           value={form.category}
                           style={{ marginTop: 8 }}
@@ -1038,9 +1315,10 @@ export default function MyListingsPage() {
                         onChange={e => setForm(p => ({...p, description: e.target.value}))}
                         maxLength={MAX_DESC}
                         rows={5}
+                        placeholder="Опишите опыт, сроки, что входит в стоимость…"
                       />
                       {tips.length > 0 && (
-                        <div className="mlf-tips" style={{marginTop: 8}}>
+                        <div className="mlf-tips-panel">
                           {tips.map((t, i) => <span key={i} className="mlf-tip">{t}</span>)}
                         </div>
                       )}
@@ -1050,33 +1328,85 @@ export default function MyListingsPage() {
 
                 {/* ── 3. ЦЕНА ── */}
                 <div className="mlf-card">
-                  <div className="mlf-card-title">Цена на услугу</div>
-                  <div className="mlf-price-block">
-                    <div className="mlf-price-row">
-                      <div className="mlf-field" style={{margin: 0}}>
-                        <label>Стоимость, ₽ *</label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={form.price}
-                          onChange={e => { setFormErr(''); setForm(p => ({...p, price: e.target.value})); }}
-                        />
-                      </div>
+                  <div className="mlf-card-head">
+                    <div className="mlf-card-head-text">
+                      <div className="mlf-card-title">Цена на услугу</div>
                     </div>
-                    {form.price && Number(form.price) > 0 ? (
-                      <div style={{padding:'12px 14px', background:'#f0fdf4', border:'1.5px solid #bbf7d0', borderRadius:8}}>
+                  </div>
+                  <div className="mlf-price-block">
+                    <div className="mlf-price-seg" role="group" aria-label="Тип цены">
+                      <button
+                        type="button"
+                        className={priceKind === 'fixed' ? 'on' : ''}
+                        onClick={() => {
+                          setPriceKind('fixed');
+                          setFormErr('');
+                          setForm((p) => ({ ...p, priceUnit: 'за работу' }));
+                        }}
+                      >
+                        Фиксированная
+                      </button>
+                      <button
+                        type="button"
+                        className={priceKind === 'from' ? 'on' : ''}
+                        onClick={() => {
+                          setPriceKind('from');
+                          setFormErr('');
+                          setForm((p) => ({ ...p, priceUnit: 'от' }));
+                        }}
+                      >
+                        От…
+                      </button>
+                      <button
+                        type="button"
+                        className={priceKind === 'negotiable' ? 'on' : ''}
+                        onClick={() => {
+                          setPriceKind('negotiable');
+                          setFormErr('');
+                          setForm((p) => ({ ...p, price: '', priceUnit: 'договорная' }));
+                        }}
+                      >
+                        Договорная
+                      </button>
+                    </div>
+                    {priceKind !== 'negotiable' && (
+                      <div className="mlf-price-row">
+                        <div className="mlf-field" style={{margin: 0}}>
+                          <label>Стоимость, ₽ *</label>
+                          <div className="mlf-price-input-wrap">
+                            <input
+                              type="number"
+                              min="1"
+                              value={form.price}
+                              onChange={e => { setFormErr(''); setForm(p => ({...p, price: e.target.value})); }}
+                            />
+                            <span className="mlf-price-rub">₽</span>
+                          </div>
+                          <p className="mlf-price-foot">Заказчик увидит эту цену в карточке объявления</p>
+                        </div>
+                      </div>
+                    )}
+                    {priceKind === 'negotiable' && (
+                      <p className="mlf-price-foot" style={{ marginTop: 0 }}>
+                        В карточке будет указано, что цена договорная — сумму вы согласуете с заказчиком в чате.
+                      </p>
+                    )}
+                    {priceKind !== 'negotiable' && form.price && Number(form.price) > 0 ? (
+                      <div style={{padding:'12px 14px', background:'#f0fdf4', border:'1.5px solid #bbf7d0', borderRadius:14}}>
                         <div style={{fontSize:13, color:'#166534', fontWeight:600}}>
-                          ✅ В объявлении будет: <strong>{Number(form.price).toLocaleString('ru-RU')} ₽</strong>
+                          В объявлении: <strong>{Number(form.price).toLocaleString('ru-RU')} ₽</strong>
+                          {priceKind === 'from' ? ' · пометка «от»' : ''}
                         </div>
                         <div style={{fontSize:12, color:'#16a34a', marginTop:3}}>
                           Заказчики видят эту цену при поиске. Вы всегда можете её изменить.
                         </div>
                       </div>
-                    ) : (
-                      <div style={{padding:'12px 14px', background:'#fafafa', border:'1.5px solid #e8e8e8', borderRadius:8, fontSize:13, color:'#aaa'}}>
-                        Укажите стоимость — она попадёт в объявление как ваша цена
+                    ) : null}
+                    {priceKind !== 'negotiable' && (!form.price || Number(form.price) <= 0) ? (
+                      <div style={{padding:'12px 14px', background:'#f9fafb', border:'1.5px solid #e5e7eb', borderRadius:14, fontSize:13, color:'#9ca3af'}}>
+                        Укажите стоимость — она попадёт в объявление
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
 
@@ -1086,18 +1416,24 @@ export default function MyListingsPage() {
                     <button
                       type="button"
                       className="mlf-btn-submit"
-                      disabled={saving || !form.title.trim() || !form.category || !form.price || Number(form.price) <= 0}
+                      disabled={saving || !canSubmitForm}
                       onClick={handleSave}
                     >
-                      {saving
-                        ? 'Сохраняем…'
-                        : isEdit
-                          ? 'Сохранить изменения'
-                          : 'Опубликовать объявление'}
+                      <span className="mlf-btn-submit-inner">
+                        <span>
+                          {saving
+                            ? 'Сохраняем…'
+                            : isEdit
+                              ? 'Сохранить изменения'
+                              : 'Опубликовать объявление'}
+                        </span>
+                        {!saving && (
+                          <span className="mlf-btn-submit-sub">
+                            {isEdit ? 'Изменения сразу увидят заказчики' : 'Размещение бесплатно · Заказчики увидят сразу'}
+                          </span>
+                        )}
+                      </span>
                     </button>
-                    <p style={{fontSize:12, color:'#bbb', textAlign:'center', marginTop:10, marginBottom:0}}>
-                      {isEdit ? 'Изменения сразу увидят заказчики' : 'Размещение бесплатно · Заказчики увидят сразу после публикации'}
-                    </p>
                     {isEdit && view?.edit?.id && (
                       <button
                         type="button"
@@ -1115,6 +1451,24 @@ export default function MyListingsPage() {
 
           {/* ══ САЙДБАР ══ */}
           <div className="mlf-sidebar">
+            {isFormStep && (
+              <div className="mlf-sb-card mlf-preview-card">
+                <div className="mlf-sb-title" style={{ padding: '0 18px', marginBottom: 12 }}>👀 Предпросмотр</div>
+                <div className="mlf-preview-ph">
+                  <img src={previewImage} alt="" />
+                  {form.category ? <span className="mlf-preview-tag">{form.category}</span> : null}
+                </div>
+                <div className="mlf-preview-body">
+                  <div className="mlf-preview-price">{previewPriceLine}</div>
+                  <div className="mlf-preview-title">
+                    {form.title.trim() || 'Название вашего объявления'}
+                  </div>
+                  <div className="mlf-preview-meta">
+                    ★ {isEdit ? 'Редактирование' : 'Новое'} · Ваш регион
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Как это работает */}
             <div className="mlf-sb-card">
               <div className="mlf-sb-title">⚡ Как это работает</div>
