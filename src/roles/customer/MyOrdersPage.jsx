@@ -20,6 +20,7 @@ import {
   getJobRequestPublishedBudgetNumber,
   JOB_REQUEST_PRICE_MISSING_LABEL,
 } from '../../utils/jobRequestBudget';
+import { mergeApiCategoriesWithCatalog } from '../../utils/mergeApiCategoriesWithCatalog';
 import '../worker/listings-new.css';
 
 const CATEGORY_PHOTO_BY_NAME = {};
@@ -445,7 +446,7 @@ export default function MyOrdersPage() {
       ]);
       const merged = mergeRequestStatusesFromCustomerDeals(reqs || [], deals, userId);
       setRequests(merged);
-      setCategories(cats || []);
+      setCategories(mergeApiCategoriesWithCatalog(cats || []));
       setDetail(prev => {
         if (!prev) return null;
         return (merged || []).find(r => r.id === prev.id) || prev;
@@ -608,12 +609,24 @@ export default function MyOrdersPage() {
     setForm(p => ({ ...p, photos: p.photos.filter(ph => ph.id !== id) }));
   };
 
-  /* ── pick category from wizard ── */
-  const handlePickCategory = (categoryName) => {
-    const c = categories.find(x => String(x.name || '').trim().toLowerCase() === String(categoryName).trim().toLowerCase());
+  const normCat = (s) => String(s || '').trim().toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ');
+
+  /* ── pick category from wizard (каталог → id с бэка по имени или slug) ── */
+  const handlePickCategory = (catalogCat) => {
+    const name = typeof catalogCat === 'string' ? catalogCat : catalogCat?.name;
+    const slug = typeof catalogCat === 'object' && catalogCat ? catalogCat.slug : null;
+    let c = categories.find((x) => normCat(x.name) === normCat(name));
+    if (!c && slug) {
+      c = categories.find((x) => String(x.slug || '').toLowerCase() === String(slug).toLowerCase());
+    }
     setFormErr('');
     setHoverCategoryName(null);
-    setForm(p => ({ ...p, categoryId: c ? String(c.id) : categoryName }));
+    if (c && c.id != null && c.id !== '') {
+      setForm((p) => ({ ...p, categoryId: String(c.id) }));
+    } else {
+      setForm((p) => ({ ...p, categoryId: '' }));
+      setFormErr('Категория не найдена на сервере. Обновите страницу или выберите другую.');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => { titleRef.current?.focus(); }, 150);
   };
@@ -688,11 +701,17 @@ export default function MyOrdersPage() {
       }
     }
 
-    const chipNames = pickedSection ? (CATEGORIES_BY_SECTION[pickedSection] || []).map((c) => c.name).filter(Boolean) : [];
-    const categoriesForChips = chipNames.length
-      ? chipNames.map((name) => categories.find(
-        (x) => String(x.name || '').trim().toLowerCase() === String(name).trim().toLowerCase(),
-      )).filter(Boolean)
+    const catalogRowsForChips = pickedSection ? (CATEGORIES_BY_SECTION[pickedSection] || []) : [];
+    const categoriesForChips = catalogRowsForChips.length
+      ? catalogRowsForChips
+        .map((row) => {
+          const n = (s) => String(s || '').trim().toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ');
+          return categories.find(
+            (x) => n(x.name) === n(row.name)
+              || (row.slug && String(x.slug || '').toLowerCase() === String(row.slug).toLowerCase()),
+          );
+        })
+        .filter((x) => x && x.id != null && x.id !== '')
       : categories;
     const previewPhotoData = photos[0]?.data;
     const filledPhotos = photos.length;
@@ -804,7 +823,7 @@ export default function MyOrdersPage() {
                         type="button"
                         className="mlf-cat-card"
                         onMouseEnter={() => setHoverCategoryName(cat.name)}
-                        onClick={() => handlePickCategory(cat.name)}
+                        onClick={() => handlePickCategory(cat)}
                       >
                         <div className="mlf-cat-img">
                           <img src={cat.photo} alt={cat.name} />
@@ -921,7 +940,7 @@ export default function MyOrdersPage() {
                         <div className="nl-cats">
                           {categoriesForChips.map((c) => (
                             <button
-                              key={c.id}
+                              key={String(c.id)}
                               type="button"
                               className={`nl-cat${form.categoryId === String(c.id) ? ' is-active' : ''}`}
                               onClick={() => { setFormErr(''); setForm((p) => ({ ...p, categoryId: String(c.id) })); }}
