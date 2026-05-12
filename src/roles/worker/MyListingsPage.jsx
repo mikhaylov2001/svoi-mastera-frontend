@@ -14,6 +14,7 @@ import { LISTING_ARCHIVED_AFTER_DEAL } from '../../utils/listingArchiveEvents';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
+import './listings-new.css';
 
 const API = API_BASE;
 
@@ -1020,31 +1021,9 @@ export default function MyListingsPage() {
 
     const chipSource = pickedSection ? (CATEGORIES_BY_SECTION[pickedSection] || []).map((c) => c.name).filter(Boolean) : [];
     const categoriesForChips = chipSource.length ? chipSource : CATEGORIES;
-    const previewImage = (photos[0] && photos[0].data) || getCategoryPlaceholderPhotoUrlOrDefault({ category: form.category });
-    let previewPriceLine = 'Цена';
-    if (priceKind === 'negotiable') previewPriceLine = 'Договорная';
-    else if (form.price && Number(form.price) > 0) {
-      previewPriceLine = `${Number(form.price).toLocaleString('ru-RU')} ₽${priceKind === 'from' ? ' от' : ''}`;
-    }
+    const previewPhotoData = photos[0]?.data;
     const canSubmitForm = !!(form.title.trim() && form.category && (priceKind === 'negotiable' || (form.price && Number(form.price) > 0)));
 
-    let createHeroSrc = DEFAULT_MY_LISTINGS_BG;
-    if (isEdit && form.category) createHeroSrc = photoForCategoryName(form.category);
-    else if (!isEdit) {
-      if (isSectionStep) {
-        const hs = hoverSectionSlug && SECTIONS.find(s => s.slug === hoverSectionSlug);
-        createHeroSrc = hs?.photo || DEFAULT_MY_LISTINGS_BG;
-      } else if (isCatStep) {
-        const secPhoto = SECTIONS.find(s => s.slug === pickedSection)?.photo;
-        createHeroSrc = hoverCategoryName
-          ? photoForCategoryName(hoverCategoryName)
-          : (secPhoto || DEFAULT_MY_LISTINGS_BG);
-      } else if (form.category) {
-        createHeroSrc = photoForCategoryName(form.category);
-      }
-    }
-
-    const useFormShell = isFormStep && !isEdit;
     const filledPhotos = photos.length;
     const draftProgress = isFormStep && !isEdit
       ? Math.min(100, Math.round(
@@ -1056,16 +1035,15 @@ export default function MyListingsPage() {
       : 0;
 
     return (
-      <div className={`ml-page${useFormShell ? ' mlf-form-shell' : ''}`}>
+      <div className="nl-page">
         <style>{css}</style>
 
-        <div className="mlf-hero">
-          <img src={createHeroSrc} alt="" className="mlf-hero-img" />
-          <div className="mlf-hero-overlay" />
-          <div className="mlf-hero-body">
+        <header className="nl-hero">
+          <div className="nl-hero-bg" aria-hidden />
+          <div className="nl-hero-inner">
             <button
               type="button"
-              className="mlf-hero-back"
+              className="nl-back"
               onClick={() => {
                 if (isCatStep) { setHoverCategoryName(null); setPickedSection(null); }
                 else if (isFormStep && !isEdit) { setHoverCategoryName(null); setForm(p => ({...p, category: ''})); setPickedSection(null); }
@@ -1075,18 +1053,16 @@ export default function MyListingsPage() {
               {isCatStep ? `← Все разделы` : isFormStep && !isEdit ? '← Выбор категории' : '← Мои объявления'}
             </button>
             {!isEdit && (
-              <div className="mlf-stepper mlf-stepper--hero">
-                <span className={`mlf-step-pill${isSectionStep ? ' on' : ''}`}>1. Раздел</span>
-                <span className="mlf-step-dot" />
-                <span className={`mlf-step-pill${isCatStep ? ' on' : ''}`}>2. Категория</span>
-                <span className="mlf-step-dot" />
-                <span className={`mlf-step-pill${isFormStep ? ' on' : ''}`}>3. Объявление</span>
+              <div className="nl-stepper">
+                <span className={`nl-step ${isSectionStep ? 'active' : isCatStep || isFormStep ? 'done' : ''}`}>1 · Раздел</span>
+                <span className={`nl-step ${isCatStep ? 'active' : isFormStep && !isCatStep && !isSectionStep ? 'done' : ''}`}>2 · Категория</span>
+                <span className={`nl-step ${isFormStep && !isCatStep && !isSectionStep ? 'active' : ''}`}>3 · Объявление</span>
               </div>
             )}
-            <h1 className="mlf-hero-title">
+            <h1 className="nl-h1">
               {isEdit ? 'Редактировать объявление' : isSectionStep ? 'Выберите раздел' : isCatStep ? pickedSection && SECTIONS.find(s=>s.slug===pickedSection)?.name : 'Новое объявление'}
             </h1>
-            <p className="mlf-hero-sub">
+            <p className="nl-sub">
               {isEdit
                 ? 'Обновите данные и сохраните'
                 : isSectionStep
@@ -1096,17 +1072,18 @@ export default function MyListingsPage() {
                     : 'Шаг 3 — заполните детали и опубликуйте за минуту'}
             </p>
             {isFormStep && !isEdit && (
-              <div className="mlf-hero-progress">
-                <div className="mlf-hero-progress-bar" style={{ width: `${draftProgress}%` }} />
-                <span className="mlf-hero-progress-label">{draftProgress}% готово</span>
+              <div className="nl-progress">
+                <span className="nl-progress-label">{draftProgress}% готово</span>
+                <div className="nl-progress-bar" style={{ width: `${draftProgress}%` }} />
               </div>
             )}
           </div>
-        </div>
+        </header>
 
-        <div className={`mlf-wrap${useFormShell ? ' mlf-wrap--lovable' : ''}`}>
-          <div>
-            {formErr && <div className="mlf-error">⚠️ {formErr}</div>}
+        <div className="nl-wrap">
+          <div className="nl-grid">
+            <main className="nl-main">
+            {formErr && <div className="nl-err">⚠️ {formErr}</div>}
 
             {isSectionStep ? (
               /* ── ШАГ 1: РАЗДЕЛЫ С ФОТО ── */
@@ -1177,348 +1154,358 @@ export default function MyListingsPage() {
               })()
             ) : (
               <>
-                {/* ── 1. ФОТОГРАФИИ ── */}
-                <div className="mlf-card">
-                  <div className="mlf-card-head">
-                    <div className="mlf-card-head-text">
-                      <div className="mlf-card-title">Фотографии</div>
-                      <p className="mlf-card-kicker">Объявления с фото получают заметно больше откликов</p>
+                <section className="nl-card">
+                  <div className="nl-card-head">
+                    <div>
+                      <h2 className="nl-card-title">Фотографии</h2>
+                      <p className="nl-card-sub">Объявления с фото получают в 5× больше откликов</p>
                     </div>
-                    <span className="mlf-card-counter">
-                      <strong>{photos.length}</strong>/5
-                    </span>
+                    <span className="nl-counter">{photos.length}/5</span>
                   </div>
-                  <div className="mlf-photos">
-                    <div
-                      className="mlf-photo-grid"
-                      onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
-                      onDragLeave={() => setIsDragging(false)}
-                      onDrop={e => { e.preventDefault(); setIsDragging(false); handlePhotoUpload(e.dataTransfer.files); }}
-                    >
-                      {Array.from({ length: 5 }).map((_, i) => {
-                        const ph = photos[i];
-                        if (ph) {
-                          return (
-                            <div
-                              key={ph.id}
-                              className={`mlf-photo-cell filled${i === 0 ? ' main-photo' : ''}`}
-                              onClick={() => setLightbox({ photos: photos.map(p => p.data), index: i })}
-                            >
-                              <img src={ph.data} alt="" className="mlf-photo-img" />
-                              {i === 0 && <span className="mlf-photo-main-badge">Главное</span>}
-                              <div className="mlf-photo-zoom"><span className="mlf-photo-zoom-text">Просмотр</span></div>
-                              <button type="button" className="mlf-photo-del" onClick={e => removePhoto(ph.id, e)}>×</button>
-                            </div>
-                          );
-                        }
+                  <div
+                    className="nl-photos"
+                    onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={e => { e.preventDefault(); setIsDragging(false); handlePhotoUpload(e.dataTransfer.files); }}
+                  >
+                    {Array.from({ length: 5 }).map((_, i) => {
+                      const ph = photos[i];
+                      if (ph) {
                         return (
                           <div
-                            key={i}
-                            className="mlf-photo-cell"
-                            style={isDragging ? { borderColor: '#e8410a', background: '#fff5f2' } : {}}
-                            onClick={() => photoRef.current?.click()}
+                            key={ph.id}
+                            className={`nl-photo filled${i === 0 ? ' main' : ''}`}
+                            onClick={() => setLightbox({ photos: photos.map(p => p.data), index: i })}
                           >
-                            <span className="mlf-photo-add-icon">{i === 0 ? '📷' : '+'}</span>
-                            {i === 0 && <span className="mlf-photo-main-label">Главное фото</span>}
+                            <img src={ph.data} alt="" />
+                            {i === 0 && <span className="nl-photo-badge">Главное</span>}
+                            <button type="button" className="nl-photo-x" onClick={e => removePhoto(ph.id, e)} aria-label="Удалить фото">×</button>
                           </div>
                         );
-                      })}
-                    </div>
-                    <input
-                      ref={photoRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      style={{ display: 'none' }}
-                      onChange={e => { handlePhotoUpload(e.target.files); e.target.value = ''; }}
-                    />
-                    <p className="mlf-photo-hint">
-                      {photos.length > 0
-                        ? `${photos.length}/5 фото · Нажмите на фото для просмотра`
-                        : 'Перетащите файлы сюда или кликните по ячейке · до 10 МБ'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* ── 2. ОПИСАНИЕ УСЛУГИ ── */}
-                <div className="mlf-card">
-                  <div className="mlf-card-head">
-                    <div className="mlf-card-head-text">
-                      <div className="mlf-card-title">Описание услуги</div>
-                    </div>
-                  </div>
-                  <div className="mlf-fields">
-                    <div className="mlf-field">
-                      <div className="mlf-field-top">
-                        <label>Название объявления *</label>
-                        <span className={`mlf-char${form.title.length > MAX_TITLE * 0.9 ? form.title.length >= MAX_TITLE ? ' over' : ' warn' : ''}`}>
-                          {form.title.length}/{MAX_TITLE}
-                        </span>
-                      </div>
-                      <input
-                        ref={titleRef}
-                        value={form.title}
-                        onChange={e => { setFormErr(''); setForm(p => ({...p, title: e.target.value})); }}
-                        maxLength={MAX_TITLE}
-                        placeholder="Например: ремонт ванной под ключ"
-                      />
-                      <span className="mlf-field-hint">Коротко и конкретно — что вы делаете</span>
-                    </div>
-
-                    <div className="mlf-field">
-                      <label>Категория *</label>
-                      {!isEdit ? (
-                        <>
-                          <div className="mlf-cat-chip-grid">
-                            {categoriesForChips.map((name) => (
-                              <button
-                                key={name}
-                                type="button"
-                                className={`mlf-cat-chip${form.category === name ? ' on' : ''}`}
-                                onClick={() => { setFormErr(''); setForm((p) => ({ ...p, category: name })); }}
-                              >
-                                <span className="mlf-cat-chip-ico" aria-hidden>{categoryEmoji(name)}</span>
-                                <span className="mlf-cat-chip-name">{name}</span>
-                              </button>
-                            ))}
-                          </div>
-                          <button
-                            type="button"
-                            className="mlf-change-cat"
-                            style={{ marginTop: 10, display: 'inline-block' }}
-                            onClick={() => { setForm((p) => ({ ...p, category: '' })); setPickedSection(null); }}
-                          >
-                            ← Выбрать другую категорию из каталога
-                          </button>
-                        </>
-                      ) : (
-                        <select
-                          value={form.category}
-                          style={{ marginTop: 8 }}
-                          onChange={e => { setFormErr(''); setForm(p => ({...p, category: e.target.value})); }}
+                      }
+                      return (
+                        <div
+                          key={i}
+                          className={`nl-photo${i === 0 ? ' main' : ''}`}
+                          style={isDragging ? { borderColor: '#e8410a', background: '#fff5f2' } : undefined}
                         >
-                          <option value="">Выберите категорию</option>
-                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                      )}
-                    </div>
-
-                    <div className="mlf-field">
-                      <div className="mlf-field-top">
-                        <label>Подробное описание</label>
-                        <span className={`mlf-char${descLen > MAX_DESC * 0.9 ? descLen >= MAX_DESC ? ' over' : ' warn' : ''}`}>
-                          {descLen}/{MAX_DESC}
-                        </span>
-                      </div>
-                      <textarea
-                        value={form.description}
-                        onChange={e => setForm(p => ({...p, description: e.target.value}))}
-                        maxLength={MAX_DESC}
-                        rows={5}
-                        placeholder="Опишите опыт, сроки, что входит в стоимость…"
-                      />
-                      {tips.length > 0 && (
-                        <div className="mlf-tips-panel">
-                          {tips.map((t, i) => <span key={i} className="mlf-tip">{t}</span>)}
+                          <button type="button" className="nl-photo-add" onClick={() => photoRef.current?.click()}>
+                            {i === 0 ? (
+                              <>
+                                <span aria-hidden>📷</span>
+                                <span>Главное фото</span>
+                              </>
+                            ) : (
+                              <span className="plus">+</span>
+                            )}
+                          </button>
                         </div>
-                      )}
+                      );
+                    })}
+                  </div>
+                  <input
+                    ref={photoRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={e => { handlePhotoUpload(e.target.files); e.target.value = ''; }}
+                  />
+                  <p className="nl-hint">
+                    {photos.length > 0
+                      ? `${photos.length}/5 фото · Нажмите на фото для просмотра`
+                      : 'Перетащите файлы сюда или кликните по ячейке · до 10 МБ'}
+                  </p>
+                </section>
+
+                <section className="nl-card">
+                  <div className="nl-card-head">
+                    <div>
+                      <h2 className="nl-card-title">Описание услуги</h2>
                     </div>
                   </div>
-                </div>
+                  <label className="nl-label nl-label--tight">
+                    <span>Название объявления <em>*</em></span>
+                    <input
+                      ref={titleRef}
+                      className="nl-input"
+                      value={form.title}
+                      onChange={e => { setFormErr(''); setForm(p => ({...p, title: e.target.value})); }}
+                      maxLength={MAX_TITLE}
+                      placeholder="Например: ремонт ванной под ключ"
+                    />
+                    <small className="nl-help">
+                      Коротко и конкретно
+                      <span className={`nl-rt nl-char${form.title.length > MAX_TITLE * 0.9 ? form.title.length >= MAX_TITLE ? ' over' : ' warn' : ''}`}>{form.title.length}/{MAX_TITLE}</span>
+                    </small>
+                  </label>
 
-                {/* ── 3. ЦЕНА ── */}
-                <div className="mlf-card">
-                  <div className="mlf-card-head">
-                    <div className="mlf-card-head-text">
-                      <div className="mlf-card-title">Цена на услугу</div>
-                    </div>
-                  </div>
-                  <div className="mlf-price-block">
-                    <div className="mlf-price-seg" role="group" aria-label="Тип цены">
-                      <button
-                        type="button"
-                        className={priceKind === 'fixed' ? 'on' : ''}
-                        onClick={() => {
-                          setPriceKind('fixed');
-                          setFormErr('');
-                          setForm((p) => ({ ...p, priceUnit: 'за работу' }));
-                        }}
-                      >
-                        Фиксированная
-                      </button>
-                      <button
-                        type="button"
-                        className={priceKind === 'from' ? 'on' : ''}
-                        onClick={() => {
-                          setPriceKind('from');
-                          setFormErr('');
-                          setForm((p) => ({ ...p, priceUnit: 'от' }));
-                        }}
-                      >
-                        От…
-                      </button>
-                      <button
-                        type="button"
-                        className={priceKind === 'negotiable' ? 'on' : ''}
-                        onClick={() => {
-                          setPriceKind('negotiable');
-                          setFormErr('');
-                          setForm((p) => ({ ...p, price: '', priceUnit: 'договорная' }));
-                        }}
-                      >
-                        Договорная
-                      </button>
-                    </div>
-                    {priceKind !== 'negotiable' && (
-                      <div className="mlf-price-row">
-                        <div className="mlf-field" style={{margin: 0}}>
-                          <label>Стоимость, ₽ *</label>
-                          <div className="mlf-price-input-wrap">
-                            <input
-                              type="number"
-                              min="1"
-                              value={form.price}
-                              onChange={e => { setFormErr(''); setForm(p => ({...p, price: e.target.value})); }}
-                            />
-                            <span className="mlf-price-rub">₽</span>
-                          </div>
-                          <p className="mlf-price-foot">Заказчик увидит эту цену в карточке объявления</p>
+                  <div className="nl-label">
+                    <span>Категория <em>*</em></span>
+                    {!isEdit ? (
+                      <>
+                        <div className="nl-cats">
+                          {categoriesForChips.map((name) => (
+                            <button
+                              key={name}
+                              type="button"
+                              className={`nl-cat${form.category === name ? ' is-active' : ''}`}
+                              onClick={() => { setFormErr(''); setForm((p) => ({ ...p, category: name })); }}
+                            >
+                              <span className="nl-cat-emoji" aria-hidden>{categoryEmoji(name)}</span>
+                              {name}
+                            </button>
+                          ))}
                         </div>
-                      </div>
+                        <button
+                          type="button"
+                          className="nl-change-cat"
+                          onClick={() => { setForm((p) => ({ ...p, category: '' })); setPickedSection(null); }}
+                        >
+                          ← Выбрать другую категорию из каталога
+                        </button>
+                      </>
+                    ) : (
+                      <select
+                        className="nl-input"
+                        value={form.category}
+                        style={{ marginTop: 8 }}
+                        onChange={e => { setFormErr(''); setForm(p => ({...p, category: e.target.value})); }}
+                      >
+                        <option value="">Выберите категорию</option>
+                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
                     )}
-                    {priceKind === 'negotiable' && (
-                      <p className="mlf-price-foot" style={{ marginTop: 0 }}>
-                        В карточке будет указано, что цена договорная — сумму вы согласуете с заказчиком в чате.
-                      </p>
-                    )}
-                    {priceKind !== 'negotiable' && form.price && Number(form.price) > 0 ? (
-                      <div style={{padding:'12px 14px', background:'#f0fdf4', border:'1.5px solid #bbf7d0', borderRadius:14}}>
-                        <div style={{fontSize:13, color:'#166534', fontWeight:600}}>
-                          В объявлении: <strong>{Number(form.price).toLocaleString('ru-RU')} ₽</strong>
-                          {priceKind === 'from' ? ' · пометка «от»' : ''}
-                        </div>
-                        <div style={{fontSize:12, color:'#16a34a', marginTop:3}}>
-                          Заказчики видят эту цену при поиске. Вы всегда можете её изменить.
-                        </div>
-                      </div>
-                    ) : null}
-                    {priceKind !== 'negotiable' && (!form.price || Number(form.price) <= 0) ? (
-                      <div style={{padding:'12px 14px', background:'#f9fafb', border:'1.5px solid #e5e7eb', borderRadius:14, fontSize:13, color:'#9ca3af'}}>
-                        Укажите стоимость — она попадёт в объявление
-                      </div>
-                    ) : null}
                   </div>
-                </div>
 
-                {/* ── КНОПКА ── */}
-                <div className="mlf-card">
-                  <div className="mlf-submit-card">
+                  <label className="nl-label">
+                    <span>Подробное описание</span>
+                    <textarea
+                      className="nl-textarea"
+                      value={form.description}
+                      onChange={e => setForm(p => ({...p, description: e.target.value}))}
+                      maxLength={MAX_DESC}
+                      rows={6}
+                      placeholder="Опишите опыт, сроки, что входит в стоимость…"
+                    />
+                    <small className="nl-help">
+                      <span />
+                      <span className={`nl-rt nl-char${descLen > MAX_DESC * 0.9 ? descLen >= MAX_DESC ? ' over' : ' warn' : ''}`}>{descLen}/{MAX_DESC}</span>
+                    </small>
+                  </label>
+                  {tips.length > 0 && (
+                    <div className="nl-tips">
+                      {tips.map((t, i) => (
+                        <div key={i} className="nl-tip">{t}</div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                <section className="nl-card">
+                  <div className="nl-card-head">
+                    <div>
+                      <h2 className="nl-card-title">Цена на услугу</h2>
+                    </div>
+                  </div>
+                  <div className="nl-segmented" role="group" aria-label="Тип цены">
                     <button
                       type="button"
-                      className="mlf-btn-submit"
-                      disabled={saving || !canSubmitForm}
-                      onClick={handleSave}
+                      className={`nl-seg${priceKind === 'fixed' ? ' is-active' : ''}`}
+                      onClick={() => {
+                        setPriceKind('fixed');
+                        setFormErr('');
+                        setForm((p) => ({ ...p, priceUnit: 'за работу' }));
+                      }}
                     >
-                      <span className="mlf-btn-submit-inner">
-                        <span>
-                          {saving
-                            ? 'Сохраняем…'
-                            : isEdit
-                              ? 'Сохранить изменения'
-                              : 'Опубликовать объявление'}
-                        </span>
-                        {!saving && (
-                          <span className="mlf-btn-submit-sub">
-                            {isEdit ? 'Изменения сразу увидят заказчики' : 'Размещение бесплатно · Заказчики увидят сразу'}
-                          </span>
-                        )}
-                      </span>
+                      Фиксированная
                     </button>
-                    {isEdit && view?.edit?.id && (
-                      <button
-                        type="button"
-                        className="mlf-btn-copy-outline"
-                        onClick={(e) => copyListingPublicLink(view.edit.id, e)}
-                      >
-                        {copyFlashId === view.edit.id ? '✓ Ссылка скопирована' : 'Копировать ссылку на объявление'}
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      className={`nl-seg${priceKind === 'from' ? ' is-active' : ''}`}
+                      onClick={() => {
+                        setPriceKind('from');
+                        setFormErr('');
+                        setForm((p) => ({ ...p, priceUnit: 'от' }));
+                      }}
+                    >
+                      От …
+                    </button>
+                    <button
+                      type="button"
+                      className={`nl-seg${priceKind === 'negotiable' ? ' is-active' : ''}`}
+                      onClick={() => {
+                        setPriceKind('negotiable');
+                        setFormErr('');
+                        setForm((p) => ({ ...p, price: '', priceUnit: 'договорная' }));
+                      }}
+                    >
+                      Договорная
+                    </button>
                   </div>
-                </div>
+                  {priceKind !== 'negotiable' ? (
+                    <label className="nl-label nl-label--tight">
+                      <span>Стоимость, ₽ <em>*</em></span>
+                      <div className="nl-price-input">
+                        <input
+                          className="nl-input"
+                          type="number"
+                          min="1"
+                          value={form.price}
+                          onChange={e => { setFormErr(''); setForm(p => ({...p, price: e.target.value})); }}
+                        />
+                        <span className="nl-price-suffix">₽</span>
+                      </div>
+                      <small className="nl-help">
+                        Заказчик увидит эту цену в карточке
+                        <span />
+                      </small>
+                    </label>
+                  ) : (
+                    <div className="nl-negot">
+                      Цена обсуждается с заказчиком в чате после отклика.
+                    </div>
+                  )}
+                  {priceKind !== 'negotiable' && form.price && Number(form.price) > 0 ? (
+                    <div className="nl-price-hint nl-price-hint--ok">
+                      <strong>В объявлении:</strong>{' '}
+                      {Number(form.price).toLocaleString('ru-RU')} ₽
+                      {priceKind === 'from' ? ' · пометка «от»' : ''}
+                      <div style={{ fontSize: 12, marginTop: 4, opacity: 0.9 }}>Заказчики видят эту цену при поиске.</div>
+                    </div>
+                  ) : null}
+                  {priceKind !== 'negotiable' && (!form.price || Number(form.price) <= 0) ? (
+                    <div className="nl-price-hint nl-price-hint--muted">Укажите стоимость — она попадёт в объявление</div>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    className="nl-publish"
+                    disabled={saving || !canSubmitForm}
+                    onClick={handleSave}
+                  >
+                    <span>
+                      {saving
+                        ? 'Сохраняем…'
+                        : isEdit
+                          ? 'Сохранить изменения'
+                          : 'Опубликовать объявление'}
+                    </span>
+                    {!saving && (
+                      <small>
+                        {isEdit ? 'Изменения сразу увидят заказчики' : 'Размещение бесплатно · Заказчики увидят сразу'}
+                      </small>
+                    )}
+                  </button>
+                  {isEdit && view?.edit?.id && (
+                    <button
+                      type="button"
+                      className="nl-btn-outline"
+                      onClick={(e) => copyListingPublicLink(view.edit.id, e)}
+                    >
+                      {copyFlashId === view.edit.id ? '✓ Ссылка скопирована' : 'Копировать ссылку на объявление'}
+                    </button>
+                  )}
+                </section>
               </>
             )}
-          </div>
+            </main>
 
-          {/* ══ САЙДБАР ══ */}
-          <div className="mlf-sidebar">
+            <aside className="nl-side">
             {isFormStep && (
-              <div className="mlf-sb-card mlf-preview-card">
-                <div className="mlf-sb-title" style={{ padding: '0 18px', marginBottom: 12 }}>👀 Предпросмотр</div>
-                <div className="mlf-preview-ph">
-                  <img src={previewImage} alt="" />
-                  {form.category ? <span className="mlf-preview-tag">{form.category}</span> : null}
+              <div className="nl-side-card nl-side-preview">
+                <div className="nl-side-card-head">
+                  <span className="nl-side-icon" aria-hidden>👀</span>
+                  <h3>Предпросмотр</h3>
                 </div>
-                <div className="mlf-preview-body">
-                  <div className="mlf-preview-price">{previewPriceLine}</div>
-                  <div className="mlf-preview-title">
-                    {form.title.trim() || 'Название вашего объявления'}
+                <div className="nl-preview">
+                  <div className="nl-preview-img">
+                    {previewPhotoData ? (
+                      <img src={previewPhotoData} alt="" />
+                    ) : (
+                      <span>Фото появится здесь</span>
+                    )}
+                    {form.category ? <span className="nl-preview-cat">{form.category}</span> : null}
                   </div>
-                  <div className="mlf-preview-meta">
-                    ★ {isEdit ? 'Редактирование' : 'Новое'} · Ваш регион
+                  <div className="nl-preview-body">
+                    <div className="nl-preview-price">
+                      {priceKind === 'negotiable' ? (
+                        <span className="muted">Договорная</span>
+                      ) : form.price && Number(form.price) > 0 ? (
+                        <>
+                          {priceKind === 'from' && <span className="from">от</span>}
+                          {Number(form.price).toLocaleString('ru-RU')} ₽
+                        </>
+                      ) : (
+                        <span className="muted">Цена</span>
+                      )}
+                    </div>
+                    <div className="nl-preview-title">
+                      {form.title.trim() || 'Название вашего объявления'}
+                    </div>
+                    <div className="nl-preview-meta">
+                      <span>★ {isEdit ? 'Редактирование' : 'Новое'}</span>
+                      <span>· Ваш регион</span>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
-            {/* Как это работает */}
-            <div className="mlf-sb-card">
-              <div className="mlf-sb-title">⚡ Как это работает</div>
-              <div className="mlf-steps">
+            <div className="nl-side-card">
+              <div className="nl-side-card-head">
+                <span className="nl-side-icon nl-grad" aria-hidden>⚡</span>
+                <h3>Как это работает</h3>
+              </div>
+              <ol className="nl-steps">
                 {[
                   ['Разместите объявление', 'Опишите услугу и укажите цену — заказчики сразу его увидят'],
                   ['Получайте заявки', 'Заказчики откликаются или пишут вам напрямую в чат'],
                   ['Согласуйте детали', 'Обсудите объём работ и окончательную цену'],
                   ['Получите оплату', 'Заказчик оплачивает напрямую — наличными или переводом после работы'],
                 ].map(([title, desc], i) => (
-                  <div key={i} className="mlf-step">
-                    <span className="mlf-step-num">{i + 1}</span>
-                    <div>
-                      <div style={{fontSize:13, fontWeight:700, color:'#333', marginBottom:2}}>{title}</div>
-                      <div style={{fontSize:12, color:'#888', lineHeight:1.5}}>{desc}</div>
-                    </div>
-                  </div>
+                  <li key={i}>
+                    <b>{title}</b>
+                    <span>{desc}</span>
+                  </li>
                 ))}
+              </ol>
+            </div>
+
+            <div className="nl-side-card">
+              <div className="nl-side-card-head">
+                <span className="nl-side-icon" aria-hidden>🛡</span>
+                <h3>Ваши преимущества</h3>
               </div>
+              <ul className="nl-perks">
+                {[
+                  ['Чат с заказчиком', 'Детали и оплата — в личных сообщениях, без посредников'],
+                  ['Отзывы и рейтинг', 'Честные отзывы — только от реальных заказчиков'],
+                  ['Прямой чат', 'Общайтесь с заказчиком без посредников'],
+                ].map(([title, desc]) => (
+                  <li key={title}>
+                    <b>{title}</b>
+                    <span>{desc}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            {/* Ваши преимущества */}
-            <div className="mlf-sb-card">
-              <div className="mlf-sb-title">🛡 Ваши преимущества</div>
-              {[
-                ['💬', 'Чат с заказчиком', 'Детали и оплата — в личных сообщениях, без посредников'],
-                ['⭐', 'Отзывы и рейтинг', 'Честные отзывы — только от реальных заказчиков'],
-                ['💬', 'Прямой чат', 'Общайтесь с заказчиком без посредников'],
-              ].map(([ico, title, desc]) => (
-                <div key={title} className="mlf-sb-item">
-                  <span className="mlf-sb-ico">{ico}</span>
-                  <div>
-                    <div style={{fontWeight:600, fontSize:13, color:'#333', marginBottom:2}}>{title}</div>
-                    <div style={{fontSize:12, color:'#888', lineHeight:1.45}}>{desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Советы */}
             {form.category && tips.length > 0 && (
-              <div className="mlf-sb-card">
-                <div className="mlf-sb-title">💡 Советы для «{form.category}»</div>
-                <div className="mlf-tips">
-                  {tips.map((t, i) => <span key={i} className="mlf-tip">{t}</span>)}
+              <div className="nl-side-card">
+                <div className="nl-side-card-head">
+                  <span className="nl-side-icon" aria-hidden>💡</span>
+                  <h3>Советы для «{form.category}»</h3>
+                </div>
+                <div className="nl-tips">
+                  {tips.map((t, i) => (
+                    <div key={i} className="nl-tip">{t}</div>
+                  ))}
                 </div>
               </div>
             )}
-          </div>
+          </aside>
         </div>
+      </div>
 
         {/* Lightbox */}
         {lightbox && (
