@@ -710,6 +710,7 @@ export default function MyOrdersPage() {
       'Фото помогают оценить объём работ',
       'Чем яснее описание, тем точнее будут отклики',
     ];
+    const previewLocLine = [form.city, form.address].filter((s) => String(s || '').trim()).join(' · ');
 
     return (
       <div className="nl-page">
@@ -892,6 +893,7 @@ export default function MyOrdersPage() {
                   <div className="nl-card-head">
                     <div>
                       <h2 className="nl-card-title">Описание заявки</h2>
+                      <p className="nl-card-sub">Название, категория и детали — мастер увидит это перед откликом</p>
                     </div>
                   </div>
                   <label className="nl-label nl-label--tight">
@@ -965,8 +967,16 @@ export default function MyOrdersPage() {
                       <span className={`nl-rt nl-char${descLen > MAX_DESC * 0.9 ? descLen >= MAX_DESC ? ' over' : ' warn' : ''}`}>{descLen}/{MAX_DESC}</span>
                     </small>
                   </label>
+                </section>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 18 }}>
+                <section className="nl-card">
+                  <div className="nl-card-head">
+                    <div>
+                      <h2 className="nl-card-title">Где нужна работа</h2>
+                      <p className="nl-card-sub">Город и адрес — мастеру проще оценить выезд и сроки</p>
+                    </div>
+                  </div>
+                  <div className="nl-loc-row">
                     <label className="nl-label nl-label--tight">
                       <span>Город</span>
                       <input
@@ -976,7 +986,7 @@ export default function MyOrdersPage() {
                         placeholder="Йошкар-Ола"
                       />
                     </label>
-                    <label className="nl-label">
+                    <label className="nl-label nl-label--tight">
                       <span>Адрес</span>
                       <input
                         className="nl-input"
@@ -986,20 +996,13 @@ export default function MyOrdersPage() {
                       />
                     </label>
                   </div>
-
-                  {orderTips.length > 0 && (
-                    <div className="nl-tips" style={{ marginTop: 14 }}>
-                      {orderTips.map((t, i) => (
-                        <div key={i} className="nl-tip">{t}</div>
-                      ))}
-                    </div>
-                  )}
                 </section>
 
                 <section className="nl-card">
                   <div className="nl-card-head">
                     <div>
                       <h2 className="nl-card-title">Цена за работу</h2>
+                      <p className="nl-card-sub">Сумма в заявке — ориентир для мастеров; детали можно уточнить в чате</p>
                     </div>
                   </div>
                   <label className="nl-label nl-label--tight">
@@ -1086,9 +1089,23 @@ export default function MyOrdersPage() {
                       </div>
                       <div className="nl-preview-meta">
                         <span>★ {isEdit ? 'Редактирование' : 'Новая заявка'}</span>
-                        <span>· Ваш регион</span>
+                        <span>· {previewLocLine || 'Укажите город в форме'}</span>
                       </div>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {isFormStep && orderTips.length > 0 && (
+                <div className="nl-side-card">
+                  <div className="nl-side-card-head">
+                    <span className="nl-side-icon" aria-hidden>💡</span>
+                    <h3>Советы по заявке</h3>
+                  </div>
+                  <div className="nl-tips">
+                    {orderTips.map((t, i) => (
+                      <div key={i} className="nl-tip">{t}</div>
+                    ))}
                   </div>
                 </div>
               )}

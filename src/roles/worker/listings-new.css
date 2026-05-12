@@ -111,6 +111,12 @@
   margin: 18px 0 6px;
   line-height: 1.05;
 }
+@media (max-width: 640px) {
+  .nl-h1 {
+    font-size: clamp(26px, 9vw, 38px);
+    letter-spacing: -0.6px;
+  }
+}
 .nl-sub {
   color: rgba(255, 255, 255, 0.7);
   font-size: 15px;
@@ -438,6 +444,25 @@ select.nl-input:focus {
 .nl-tip {
   font-size: 13px;
   color: #555;
+}
+.nl-side-card .nl-tips {
+  margin-top: 0;
+}
+
+/* Город + адрес в одной строке (узкие экраны — колонка) */
+.nl-loc-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 18px;
+}
+.nl-loc-row .nl-label {
+  margin-top: 0;
+}
+@media (max-width: 560px) {
+  .nl-loc-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .nl-change-cat {
