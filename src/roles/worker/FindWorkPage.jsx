@@ -48,6 +48,18 @@ function reviewsCountLabel(n) {
   return `${x} отзывов`;
 }
 
+/** Бейдж на карточке заявки в ленте: свежие — «НОВОЕ», остальные — «АКТИВНО». */
+function jobRequestFeedStatusLabel(req) {
+  const t = req?.createdAt ? new Date(req.createdAt).getTime() : 0;
+  if (t && Date.now() - t < 72 * 3600 * 1000) return 'НОВОЕ';
+  return 'АКТИВНО';
+}
+
+function jobRequestFeedLooksUrgent(req) {
+  const hay = `${req?.title || ''} ${req?.description || ''}`.toLowerCase();
+  return hay.includes('срочн') || hay.includes('сегодня') || hay.includes('завтра');
+}
+
 const fw2css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; }
@@ -1608,7 +1620,7 @@ export default function FindWorkPage() {
     const hasFilters = onlyWithPhoto || priceMin || priceMax || searchTerm || ratingMin > 0;
 
     return (
-      <div className="fw2-page">
+      <div className="jl-page fw-jl-cat-feed">
         <style>{fw2css}</style>
 
         {/* Топ-бар поиска */}
@@ -1695,153 +1707,129 @@ export default function FindWorkPage() {
           </div>
         </div>
 
-        {/* Хлебные крошки */}
-        <div className="fw2-breadcrumb">
-          <button onClick={() => { setSelectedCategory(null); resetCategoryFilters(); }}>Все категории</button>
-          <span className="fw2-breadcrumb-sep">›</span>
-          <span className="fw2-breadcrumb-cur">{selectedCategory.name}</span>
+        <div className="jl-wrap">
+        <div className="jl-crumbs">
+          <button type="button" className="jl-crumbs-link" onClick={() => { setSelectedCategory(null); resetCategoryFilters(); }}>Все категории</button>
+          <span className="sep">›</span>
+          <span className="cur">{selectedCategory.name}</span>
           {!loading && (
             <>
-              <span className="fw2-breadcrumb-sep">·</span>
+              <span className="sep">·</span>
               <span>{pluralRequests(filtered.length)}</span>
             </>
           )}
         </div>
 
-        {/* Layout */}
-        <div className="fw2-cat-page">
+        <div className="jl-layout">
 
-          {/* Сайдбар */}
-          <aside className="fw2-sidebar">
+          <aside className="jl-side">
 
-            {/* Карточка категории */}
-            <div className="fw2-sb-cat">
-              <div className="fw2-sb-cat-photo">
-                {catMeta.photo
-                  ? <img src={catMeta.photo} alt={selectedCategory.name} />
-                  : <div style={{ width:'100%', height:'100%', background:'#1a1a2e', display:'flex', alignItems:'center', justifyContent:'center', fontSize:40 }}>{catMeta.emoji || '🛠️'}</div>
-                }
-                <div className="fw2-sb-cat-photo-overlay">
-                  <span className="fw2-sb-cat-name">{selectedCategory.name}</span>
+            <div className="jl-cat-cover">
+              {catMeta.photo ? (
+                <img src={catMeta.photo} alt={selectedCategory.name} />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, color: 'rgba(255,255,255,.9)' }}>
+                  {catMeta.emoji || '🛠️'}
+                </div>
+              )}
+              <div className="jl-cat-cover-body">
+                <div className="jl-cat-cover-title">{selectedCategory.name}</div>
+                <button type="button" className="jl-cat-cover-back" onClick={() => { setSelectedCategory(null); resetCategoryFilters(); }}>
+                  ← Все категории
+                </button>
+              </div>
+            </div>
+
+            <div className="jl-side-card">
+              <div className="jl-side-title">Цена, ₽</div>
+              <div className="jl-side-row">
+                <div className="jl-side-field">
+                  <label htmlFor="fw-price-min">От</label>
+                  <input id="fw-price-min" type="number" min="0" placeholder="0" value={priceMin} onChange={e => setPriceMin(e.target.value)} />
+                </div>
+                <div className="jl-side-field">
+                  <label htmlFor="fw-price-max">До</label>
+                  <input id="fw-price-max" type="number" min="0" placeholder="∞" value={priceMax} onChange={e => setPriceMax(e.target.value)} />
                 </div>
               </div>
-              <div className="fw2-sb-cat-body">
-                <button className="fw2-sb-back" onClick={() => { setSelectedCategory(null); resetCategoryFilters(); }}>
-              ← Все категории
-            </button>
-          </div>
-        </div>
-
-            {/* Цена */}
-            <div className="fw2-filter-card">
-              <div className="fw2-filter-title">Цена, ₽</div>
-              <div className="fw2-filter-body">
-                <div className="fw2-price-row">
-              <div>
-                    <div className="fw2-price-label">От</div>
-                    <input className="fw2-price-inp" type="number" min="0" placeholder="0" value={priceMin} onChange={e => setPriceMin(e.target.value)} />
-                  </div>
-                  <div>
-                    <div className="fw2-price-label">До</div>
-                    <input className="fw2-price-inp" type="number" min="0" placeholder="∞" value={priceMax} onChange={e => setPriceMax(e.target.value)} />
-              </div>
-            </div>
-            </div>
-        </div>
-
-            {/* Рейтинг заказчика (по отзывам мастеров) */}
-            <div className="fw2-filter-card">
-              <div className="fw2-filter-title">Рейтинг заказчика</div>
-              <div className="fw2-filter-body" style={{ display:'flex', flexDirection:'column', gap:0 }}>
-                {[
-                  { r: 0,   label: 'Любой', stars: '' },
-                  { r: 4,   label: '4.0+', stars: '★★★★' },
-                  { r: 4.5, label: '4.5+', stars: '★★★★☆' },
-                ].map(({ r, label, stars }) => (
-                  <button
-                    key={String(r)}
-                    type="button"
-                    className={`fw2-rating-opt${ratingMin === r ? ' active' : ''}`}
-                    onClick={() => setRatingMin(r)}
-                  >
-                    {stars ? <span className="fw2-stars-filter">{stars}</span> : null}
-                    {label}
-                  </button>
-                ))}
-              </div>
             </div>
 
-            {/* Параметры */}
-            <div className="fw2-filter-card">
-              <div className="fw2-filter-title">Параметры</div>
-              <div className="fw2-filter-body">
-                <div className="fw2-check-item" onClick={() => setOnlyWithPhoto(v => !v)}>
-                  <div className={`fw2-check-box${onlyWithPhoto ? ' on' : ''}`}>
-                    {onlyWithPhoto && <span className="fw2-check-tick">✓</span>}
-                  </div>
-                  <span>С фотографиями</span>
-                </div>
-              </div>
+            <div className="jl-side-card">
+              <div className="jl-side-title">Рейтинг заказчика</div>
+              {[
+                { r: 0, label: 'Любой', stars: '' },
+                { r: 4, label: '4.0+', stars: '★★★★☆' },
+                { r: 4.5, label: '4.5+', stars: '★★★★★' },
+              ].map(({ r, label, stars }) => (
+                <button
+                  key={String(r)}
+                  type="button"
+                  className={`jl-rating-opt${ratingMin === r ? ' is-active' : ''}`}
+                  onClick={() => setRatingMin(r)}
+                >
+                  {stars ? <span className="stars">{stars}</span> : null}
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div className="jl-side-card">
+              <div className="jl-side-title">Параметры</div>
+              <label className="jl-side-check">
+                <input type="checkbox" checked={onlyWithPhoto} onChange={e => setOnlyWithPhoto(e.target.checked)} />
+                С фотографиями
+              </label>
             </div>
 
             {hasFilters && (
-              <button className="fw2-reset-btn" onClick={resetCategoryFilters}>✕ Сбросить фильтры</button>
+              <button type="button" className="jl-cat-feed-reset" onClick={resetCategoryFilters}>✕ Сбросить фильтры</button>
             )}
           </aside>
 
-          {/* Основная зона */}
-          <div className="fw2-main">
-
-            {/* Сортировка */}
-            <div className="fw2-sort-bar">
-              <span className="fw2-sort-label">Сортировать:</span>
-              <div className="fw2-sort-opts">
-                {[
-                  { val: 'recency',    label: 'Новые' },
-                  { val: 'ratingDesc', label: 'Рейтинг' },
-                  { val: 'priceAsc',   label: 'Цена ↑' },
-                  { val: 'priceDesc',  label: 'Цена ↓' },
-                ].map(o => (
-                  <button
-                    key={o.val}
-                    type="button"
-                    className={`fw2-sort-opt${sortBy === o.val ? ' active' : ''}`}
-                    onClick={() => setSortBy(o.val)}
-                  >
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-              <span className="fw2-result-count">
-                {loading ? '...' : pluralRequests(filtered.length)}
-              </span>
+          <main>
+            <div className="jl-toolbar">
+              <span className="jl-toolbar-label">Сортировать:</span>
+              {[
+                { val: 'recency', label: 'Новые' },
+                { val: 'ratingDesc', label: 'Рейтинг' },
+                { val: 'priceAsc', label: 'Цена ↑' },
+                { val: 'priceDesc', label: 'Цена ↓' },
+              ].map(o => (
+                <button
+                  key={o.val}
+                  type="button"
+                  className={`jl-chip${sortBy === o.val ? ' is-active' : ''}`}
+                  onClick={() => setSortBy(o.val)}
+                >
+                  {o.label}
+                </button>
+              ))}
+              <span className="jl-toolbar-count">{loading ? '…' : pluralRequests(filtered.length)}</span>
             </div>
 
             {/* Карточки */}
             {loading ? (
-              <div className="fw2-list">
-                {[1,2,3,4].map(i => (
-                  <div key={i} style={{ background:'#fff', borderRadius:16, border:'1.5px solid #e8e8e8', overflow:'hidden' }}>
-                    <div className="fw2-sk" style={{ paddingTop:'62%', borderRadius:0 }}/>
-                    <div style={{ padding:'12px 14px', display:'flex', flexDirection:'column', gap:10 }}>
-                      <div className="fw2-sk" style={{ height:12, width:'45%' }}/>
-                      <div className="fw2-sk" style={{ height:16, width:'80%' }}/>
-                      <div className="fw2-sk" style={{ height:11, width:'90%' }}/>
-                      <div className="fw2-sk" style={{ height:20, width:'35%', marginTop:4 }}/>
+              <div className="jl-list">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} style={{ background: '#fff', borderRadius: 16, border: '1px solid #ececec', overflow: 'hidden' }}>
+                    <div className="fw2-sk" style={{ paddingTop: '38%', borderRadius: 0 }} />
+                    <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div className="fw2-sk" style={{ height: 12, width: '45%' }} />
+                      <div className="fw2-sk" style={{ height: 18, width: '80%' }} />
+                      <div className="fw2-sk" style={{ height: 11, width: '90%' }} />
+                      <div className="fw2-sk" style={{ height: 22, width: '35%', marginTop: 4 }} />
                     </div>
                   </div>
                 ))}
               </div>
             ) : filtered.length === 0 ? (
-              <div className="fw2-list">
-                <div className="fw2-empty">
-                  <div className="fw2-empty-ico">🔍</div>
-                  <h3>Заявок не найдено</h3>
-                  <p>{hasFilters ? 'Измените параметры или сбросьте фильтры.' : 'В этой категории пока нет активных заявок.'}</p>
-                </div>
-            </div>
-          ) : (
-              <div className="fw2-list">
+              <div className="jl-feed-empty">
+                <div className="jl-feed-empty-ico">🔍</div>
+                <h3>Заявок не найдено</h3>
+                <p>{hasFilters ? 'Измените параметры или сбросьте фильтры.' : 'В этой категории пока нет активных заявок.'}</p>
+              </div>
+            ) : (
+              <div className="jl-list jl-feed-list">
                 {filtered.map(req => {
                   const photos = req.photos || [];
                   const hasPhoto = photos.length > 0;
@@ -1855,19 +1843,18 @@ export default function FindWorkPage() {
                   const customerHref = req.customerId
                     ? `/customers/${req.customerId}?name=${encodeURIComponent(custName)}`
                     : null;
-                  const cityLine = (() => {
-                    const c = req.city && String(req.city).trim();
-                    if (c) return c;
+                  const addrShort = (() => {
                     const addr = req.addressText && String(req.addressText).trim();
                     if (addr) {
                       const part = addr.split(',')[0].trim();
-                      if (part) return part.length > 36 ? `${part.slice(0, 36)}…` : part;
+                      if (part) return part.length > 42 ? `${part.slice(0, 42)}…` : part;
                     }
+                    const c = req.city && String(req.city).trim();
+                    if (c) return c.length > 42 ? `${c.slice(0, 42)}…` : c;
                     return 'Йошкар-Ола';
                   })();
-                  const activeCustomerSub = req.addressText && String(req.addressText).trim()
-                    ? `● Активный заказчик · ${String(req.addressText).trim()}`
-                    : `● Активный заказчик · ${cityLine}`;
+                  const urgent = jobRequestFeedLooksUrgent(req);
+                  const statusUpper = jobRequestFeedStatusLabel(req);
                   const cst = req.customerId ? customerStats[String(req.customerId)] : null;
                   const cAvg = cst?.averageRating ?? 0;
                   const cCnt = cst?.reviewsCount ?? 0;
@@ -1877,12 +1864,16 @@ export default function FindWorkPage() {
                     ? `/customers/${req.customerId}${custName ? `?name=${encodeURIComponent(custName)}` : ''}#reviews`
                     : null;
 
-                  return (
-                    <div key={req.id} className="fw2-card">
+                  const secondBadges = urgent
+                    ? []
+                    : hasPhoto
+                      ? [{ kind: 'gray', icon: '📷', label: 'Есть фото' }]
+                      : [{ kind: 'gray', icon: '📋', label: 'Заявка' }];
 
-                      {/* Фото — как у заказчика: АКТИВНО + «Смотреть» */}
+                  return (
+                    <article key={req.id} className="jl-bigcard">
                       <div
-                        className="fw2-card-photo"
+                        className="jl-bigcard-cover"
                         role="button"
                         tabIndex={0}
                         onClick={() => openRequestDetail(req)}
@@ -1893,28 +1884,20 @@ export default function FindWorkPage() {
                           }
                         }}
                       >
-                        <FavoriteHeartButton kind="jobRequest" id={req.id} />
-                        {hasPhoto ? (
-                          <>
-                            <img src={photos[0]} alt="" draggable={false} />
-                            <span className="fw2-card-photo-active">АКТИВНО</span>
-                            {photos.length > 1 && (
-                              <span className="fw2-card-photo-cnt">📷 {photos.length}</span>
-                            )}
-                            <div className="fw2-card-photo-hover">Смотреть</div>
-                          </>
-                        ) : (
-                          <>
-                            <img src={placeholderBg} alt="" draggable={false} />
-                            <span className="fw2-card-photo-active">АКТИВНО</span>
-                            <div className="fw2-card-photo-hover">Смотреть</div>
-                          </>
+                        <img src={hasPhoto ? photos[0] : placeholderBg} alt="" draggable={false} />
+                        <span className="jl-bigcard-status">{statusUpper}</span>
+                        {urgent && <span className="jl-bigcard-urgent">⚡ Срочно</span>}
+                        <div className="jl-bigcard-fav-slot" onClick={e => e.stopPropagation()}>
+                          <FavoriteHeartButton kind="jobRequest" id={req.id} />
+                        </div>
+                        {photos.length > 1 && (
+                          <span className="jl-bigcard-photo-cnt">📷 {photos.length}</span>
                         )}
                       </div>
 
                       {photos.length > 1 && (
                         <div
-                          className="fw2-thumbs"
+                          className="jl-bigcard-thumbs"
                           role="button"
                           tabIndex={0}
                           onClick={() => openRequestDetail(req)}
@@ -1926,60 +1909,57 @@ export default function FindWorkPage() {
                           }}
                         >
                           {photos.slice(1, 4).map((p, i) => (
-                            <img key={i} src={p} alt="" className="fw2-thumb" draggable={false} />
+                            <img key={i} src={p} alt="" draggable={false} />
                           ))}
                           {photos.length > 4 && (
-                            <div className="fw2-thumb-more">+{photos.length - 4}</div>
+                            <div className="jl-bigcard-thumb-more">+{photos.length - 4}</div>
                           )}
                         </div>
                       )}
 
-                      <div className="fw2-card-body">
+                      <div className="jl-bigcard-body">
                         {customerHref ? (
-                          <Link to={customerHref} className="fw2-card-customer">
+                          <Link to={customerHref} className="jl-bigcard-author">
                             {req.customerAvatar ? (
-                              <img src={req.customerAvatar} alt="" className="fw2-card-ava" />
+                              <img src={req.customerAvatar} alt="" className="jl-author-ava" />
                             ) : (
-                              <div className="fw2-card-ava-ph" style={{ background:'linear-gradient(135deg,#e8410a,#ff7043)' }}>
-                                {(custName || 'З')[0].toUpperCase()}
-                              </div>
+                              <div className="jl-author-ava">{(custName || 'З')[0].toUpperCase()}</div>
                             )}
-                            <div style={{ flex:1, minWidth:0 }}>
-                              <div className="fw2-card-customer-name">{custName}</div>
-                              <div className="fw2-card-customer-sub">{activeCustomerSub}</div>
+                            <div className="jl-bigcard-author-info">
+                              <span className="jl-bigcard-author-name">{custName}</span>
+                              <span className="jl-bigcard-author-meta">
+                                <span className="ok">Активный заказчик</span>
+                                <span className="dot">·</span>
+                                <span>{addrShort}</span>
+                              </span>
                             </div>
-                            <span style={{ color:'#d1d5db', fontSize:18, flexShrink:0, lineHeight:1 }}>›</span>
+                            <span className="jl-bigcard-chevron">›</span>
                           </Link>
                         ) : (
-                          <div
-                            className="fw2-card-customer"
-                            role="button"
-                            tabIndex={0}
-                            style={{ cursor:'pointer' }}
+                          <button
+                            type="button"
+                            className="jl-bigcard-author jl-bigcard-author--btn"
                             onClick={() => openRequestDetail(req)}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                openRequestDetail(req);
-                              }
-                            }}
                           >
                             {req.customerAvatar ? (
-                              <img src={req.customerAvatar} alt="" className="fw2-card-ava" />
+                              <img src={req.customerAvatar} alt="" className="jl-author-ava" />
                             ) : (
-                              <div className="fw2-card-ava-ph" style={{ background:'linear-gradient(135deg,#e8410a,#ff7043)' }}>
-                                {(custName || 'З')[0].toUpperCase()}
-                              </div>
+                              <div className="jl-author-ava">{(custName || 'З')[0].toUpperCase()}</div>
                             )}
-                            <div>
-                              <div className="fw2-card-customer-name">{custName}</div>
-                              <div className="fw2-card-customer-sub">{activeCustomerSub}</div>
+                            <div className="jl-bigcard-author-info">
+                              <span className="jl-bigcard-author-name">{custName}</span>
+                              <span className="jl-bigcard-author-meta">
+                                <span className="ok">Активный заказчик</span>
+                                <span className="dot">·</span>
+                                <span>{addrShort}</span>
+                              </span>
                             </div>
-                          </div>
+                            <span className="jl-bigcard-chevron">›</span>
+                          </button>
                         )}
 
                         <div
-                          className="fw2-card-detail-zone"
+                          className="jl-bigcard-detail-zone"
                           role="button"
                           tabIndex={0}
                           onClick={() => openRequestDetail(req)}
@@ -1990,90 +1970,96 @@ export default function FindWorkPage() {
                             }
                           }}
                         >
-                          <div className="fw2-card-title">{req.title}</div>
+                          <h2 className="jl-bigcard-title">{req.title || 'Заявка'}</h2>
                           {req.description && req.description !== 'Без описания' && (
-                            <div className="fw2-card-desc">{formatListingOriginDescription('WORKER', req.description)}</div>
+                            <div className="jl-bigcard-sub">{formatListingOriginDescription('WORKER', req.description)}</div>
                           )}
                           {req.createdAt && (
-                            <div className="fw2-card-info">
-                              📅 {new Date(req.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'short', year:'numeric' })}
+                            <div className="jl-bigcard-date">
+                              🗓 {new Date(req.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
                             </div>
                           )}
                         </div>
 
-                        <div className="fw2-card-badges">
-                          <span className="fw2-badge fw2-badge-v">✓ Открыта</span>
-                          <span className="fw2-badge fw2-badge-f">⚡ Заявка</span>
+                        <div className="jl-tags">
+                          <span className="jl-tag green">
+                            <span>✓</span> Открыта
+                          </span>
+                          {secondBadges.map((b, i) => (
+                            <span key={i} className={`jl-tag ${b.kind}`}>
+                              <span>{b.icon}</span> {b.label}
+                            </span>
+                          ))}
                         </div>
 
                         {customerReviewsPath ? (
                           <Link
                             to={customerReviewsPath}
-                            className="fw2-card-stats fw2-card-stats--link"
+                            className="jl-rating-line jl-rating-line--link"
                             title="Открыть отзывы о заказчике"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <span className="fw2-stars">
+                            <span className="stars">
                               {'★'.repeat(cFill)}
                               {'☆'.repeat(5 - cFill)}
                             </span>
-                            <span className="fw2-rating-val">{cAvg.toFixed(1)}</span>
+                            <b>{cAvg.toFixed(1)}</b>
                             <span>({reviewsCountLabel(cCnt)})</span>
                           </Link>
                         ) : (
-                          <div className="fw2-card-stats">
-                            <span className="fw2-stars">
+                          <div className="jl-rating-line">
+                            <span className="stars">
                               {'★'.repeat(cFill)}
                               {'☆'.repeat(5 - cFill)}
                             </span>
-                            <span className="fw2-rating-val">{cAvg.toFixed(1)}</span>
+                            <b>{cAvg.toFixed(1)}</b>
                             <span>({reviewsCountLabel(cCnt)})</span>
                           </div>
                         )}
 
-                        <div className="fw2-card-footer">
-                          <div className="fw2-card-price-block">
-                            {hasJobRequestPublishedPrice(req) ? (
-                              <>
-                                <div className="fw2-card-price">{budgetLabel}</div>
-                                <span className="fw2-card-price-unit">окончательная цена в заявке</span>
-                              </>
-                            ) : (
-                              <>
-                                <div className="fw2-card-price-none">{JOB_REQUEST_PRICE_MISSING_LABEL}</div>
-                                <span className="fw2-card-price-unit">уточните сумму в личных сообщениях</span>
-                              </>
-                            )}
-                          </div>
-                          <div className="fw2-card-actions">
-                            <button
-                              type="button"
-                              className="fw2-btn-respond"
-                              onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
-                            >
-                              Откликнуться
-                            </button>
-                            <button
-                              type="button"
-                              className="fw2-btn-msg"
-                              disabled={!req.customerId}
-                              title={!req.customerId ? 'Чат будет доступен после появления профиля заказчика' : undefined}
-                              onClick={e => {
-                                e.stopPropagation();
-                                if (req.customerId) navigate(`/chat/${req.customerId}?jobRequestId=${req.id}`);
-                              }}
-                            >
-                              Написать
-                            </button>
-                          </div>
+                        <div className="jl-bigcard-price-row">
+                          {hasJobRequestPublishedPrice(req) ? (
+                            <>
+                              <div className="jl-bigcard-price">{budgetLabel}</div>
+                              <div className="jl-bigcard-price-hint">за работу</div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="jl-bigcard-price-muted">{JOB_REQUEST_PRICE_MISSING_LABEL}</div>
+                              <div className="jl-bigcard-price-hint">уточните сумму в личных сообщениях</div>
+                            </>
+                          )}
+                        </div>
+
+                        <div className="jl-bigcard-actions">
+                          <button
+                            type="button"
+                            className="jl-bigcard-btn primary"
+                            onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
+                          >
+                            Откликнуться
+                          </button>
+                          <button
+                            type="button"
+                            className="jl-bigcard-btn ghost"
+                            disabled={!req.customerId}
+                            title={!req.customerId ? 'Чат будет доступен после появления профиля заказчика' : undefined}
+                            onClick={e => {
+                              e.stopPropagation();
+                              if (req.customerId) navigate(`/chat/${req.customerId}?jobRequestId=${req.id}`);
+                            }}
+                          >
+                            Написать
+                          </button>
                         </div>
                       </div>
-                    </div>
+                    </article>
                   );
               })}
             </div>
           )}
-          </div>
+          </main>
+        </div>
         </div>
 
         <OfferModal
