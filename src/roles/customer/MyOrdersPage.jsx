@@ -137,6 +137,79 @@ function parseCategoryFormSelectValue(raw) {
   if (i <= 0) return { categoryId: v, categorySlug: '' };
   return { categoryId: v.slice(0, i), categorySlug: v.slice(i + 1) };
 }
+
+/** Бэкенд не хранит/не отдаёт categorySlug — помним slug каталога в localStorage (по userId + id заявки). */
+const LS_JOB_REQ_CAT_SLUG = 'sm_v1_job_req_cat_slug';
+
+function localCatSlugKey(userId) {
+  return `${LS_JOB_REQ_CAT_SLUG}_${String(userId || '')}`;
+}
+
+function readLocalJobRequestCatSlugs(userId) {
+  if (typeof window === 'undefined' || !userId) return {};
+  try {
+    const raw = window.localStorage.getItem(localCatSlugKey(userId));
+    const o = raw ? JSON.parse(raw) : {};
+    return o && typeof o === 'object' && !Array.isArray(o) ? o : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeLocalJobRequestCatSlugs(userId, map) {
+  if (typeof window === 'undefined' || !userId) return;
+  try {
+    window.localStorage.setItem(localCatSlugKey(userId), JSON.stringify(map));
+  } catch {
+    /* quota */
+  }
+}
+
+function setLocalJobRequestCategorySlug(userId, requestId, slug) {
+  const rid = String(requestId || '');
+  if (!userId || !rid) return;
+  const map = { ...readLocalJobRequestCatSlugs(userId) };
+  const s = String(slug || '').trim();
+  if (s) map[rid] = s;
+  else delete map[rid];
+  writeLocalJobRequestCatSlugs(userId, map);
+}
+
+function pruneLocalJobRequestCatSlugs(userId, requestIds) {
+  if (!userId) return;
+  const keep = new Set((requestIds || []).map((id) => String(id)));
+  const map = readLocalJobRequestCatSlugs(userId);
+  const next = {};
+  for (const [k, v] of Object.entries(map)) {
+    if (keep.has(k) && v) next[k] = v;
+  }
+  writeLocalJobRequestCatSlugs(userId, next);
+}
+
+function mergeLocalCatSlugsIntoRequests(userId, requests) {
+  if (!userId || !Array.isArray(requests)) return requests || [];
+  const map = readLocalJobRequestCatSlugs(userId);
+  if (!Object.keys(map).length) return requests;
+  return requests.map((r) => {
+    const id = String(r?.id ?? '');
+    const local = id && map[id];
+    if (!local) return r;
+    const hasApi = String(r.categorySlug || r.category_slug || '').trim();
+    if (hasApi) return r;
+    return { ...r, categorySlug: local };
+  });
+}
+
+function extractCreatedJobRequestId(created) {
+  if (created == null) return null;
+  if (typeof created === 'string' || typeof created === 'number') return String(created);
+  if (typeof created === 'object') {
+    const v = created.id ?? created.jobRequestId ?? created.requestId ?? created.data?.id;
+    if (v != null && String(v).trim() !== '') return String(v);
+  }
+  return null;
+}
+
 const MAX_DESC = 2000;
 
 /* ══ CSS: список/карточки — src/styles/unifiedListingCards.css ══ */
@@ -498,13 +571,18 @@ export default function MyOrdersPage() {
         getMyDeals(userId).catch(() => []),
       ]);
       const merged = mergeRequestStatusesFromCustomerDeals(reqs || [], deals, userId);
-      setRequests(merged);
+      pruneLocalJobRequestCatSlugs(userId, merged.map((r) => r.id));
+      const hydrated = mergeLocalCatSlugsIntoRequests(userId, merged);
+      setRequests(hydrated);
       const raw = normalizeCategoriesApiResponse(cats);
       setCategoriesRaw(raw);
       setCategories(mergeApiCategoriesWithCatalog(raw));
-      setDetail(prev => {
+      setDetail((prev) => {
         if (!prev) return null;
-        return (merged || []).find(r => r.id === prev.id) || prev;
+        const found = hydrated.find((r) => r.id === prev.id);
+        if (found) return found;
+        const [one] = mergeLocalCatSlugsIntoRequests(userId, [prev]);
+        return one || prev;
       });
     } catch (e) {
       console.error(e);
@@ -747,8 +825,35 @@ export default function MyOrdersPage() {
           budgetTo:    payload.budget,
           photos:      payload.photos,
         });
+        setLocalJobRequestCategorySlug(userId, view.edit.id, slugSave);
       } else {
-        await createJobRequest(userId, payload);
+        const created = await createJobRequest(userId, payload);
+        let newId = extractCreatedJobRequestId(created);
+        if (!newId && slugSave && userId) {
+          try {
+            const fresh = await getMyJobRequests(userId);
+            const list = Array.isArray(fresh) ? fresh : [];
+            const t = String(payload.title || '');
+            const bid = String(payload.categoryId || '');
+            const b = Number(payload.budget);
+            const match = list.find(
+              (r) =>
+                String(r.title || '') === t
+                && String(r.categoryId || '') === bid
+                && Math.abs(Number(getJobRequestPublishedBudgetNumber(r)) - b) < 0.01,
+            );
+            if (match?.id) newId = String(match.id);
+            if (!newId && list.length) {
+              const guess = [...list].sort(
+                (a, c) => new Date(c.createdAt || 0) - new Date(a.createdAt || 0),
+              )[0];
+              if (guess && String(guess.title || '') === t) newId = String(guess.id);
+            }
+          } catch {
+            /* ignore */
+          }
+        }
+        if (slugSave && newId) setLocalJobRequestCategorySlug(userId, newId, slugSave);
       }
       setView(null);
       await load();
