@@ -740,6 +740,76 @@ a.jd-btn.jd-btn-ghost {
   padding-right: 16px;
 }
 
+/* ─── Хаб «Найти работу» (экран выбора категории): тот же jl-page + hero + сетка ─── */
+.jl-page.fw-jl-work-hub {
+  padding: 0 0 64px;
+}
+.jl-page.fw-jl-work-hub .fw2-hero-body {
+  max-width: 1200px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.jl-page.fw-jl-work-hub .fw2-cats-wrap {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 28px 0 56px;
+}
+.jl-page.fw-jl-work-hub .fw2-cats-label {
+  font-family: Manrope, Arial, sans-serif;
+  letter-spacing: 0.1em;
+  color: #6b6b6b;
+}
+.jl-page.fw-jl-work-hub .fw2-cats-grid {
+  gap: 18px;
+}
+.jl-page.fw-jl-work-hub .fw2-cat-card {
+  position: relative;
+  border: 1px solid #ececec;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  overflow: hidden;
+}
+.jl-page.fw-jl-work-hub .fw2-cat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #e8410a, #ff7a3d, #ffb061);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  z-index: 3;
+  pointer-events: none;
+}
+.jl-page.fw-jl-work-hub .fw2-cat-card:hover::before {
+  opacity: 1;
+}
+.jl-page.fw-jl-work-hub .fw2-cat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px -18px rgba(232, 65, 10, 0.22), 0 8px 20px rgba(0, 0, 0, 0.06);
+  border-color: #f0d4c8;
+}
+.jl-page.fw-jl-work-hub .fw2-cat-img-wrap {
+  border-radius: 0;
+}
+.jl-page.fw-jl-work-hub .fw2-cat-body {
+  font-family: Manrope, Arial, sans-serif;
+}
+.jl-page.fw-jl-work-hub .fw2-hero h1,
+.jl-page.fw-jl-work-hub .fw2-hero-sub,
+.jl-page.fw-jl-work-hub .fw2-hero-stat {
+  font-family: Manrope, Arial, sans-serif;
+}
+@media (max-width: 640px) {
+  .jl-page.fw-jl-work-hub .fw2-cats-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+}
+
 /* Пендинг / ошибки внутри jl-bigcard (классы из inline-css FindMaster) */
 .jl-bigcard .fmp-card-footer-pending,
 .jl-bigcard .fmp-card-footer {

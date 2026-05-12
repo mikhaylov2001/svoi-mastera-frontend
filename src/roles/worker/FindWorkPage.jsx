@@ -64,13 +64,6 @@ const fw2css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; }
 
-  .fw2-page {
-    background: #f2f2f2;
-    min-height: 100vh;
-    font-family: Inter, Arial, sans-serif;
-    color: #1a1a1a;
-  }
-
   /* ═══ HERO ═══ */
   .fw2-hero {
     position: relative;
@@ -2078,7 +2071,7 @@ export default function FindWorkPage() {
   const totalRequests = requests.length;
 
   return (
-    <div className="fw2-page">
+    <div className="jl-page fw-jl-work-hub">
       <style>{fw2css}</style>
 
       {/* Hero */}
@@ -2104,59 +2097,66 @@ export default function FindWorkPage() {
         </div>
       </div>
 
-      {/* Сетка категорий */}
-      <div className="fw2-cats-wrap">
-        <div className="fw2-cats-label">Выберите категорию</div>
-        {loading ? (
-          <div className="fw2-cats-grid">
-            {[1,2,3,4,5,6,7,8,9].map(i => (
-              <div key={i} style={{ borderRadius:16, overflow:'hidden', background:'#fff', border:'1.5px solid #e8e8e8' }}>
-                <div className="fw2-sk" style={{ height:150, borderRadius:0 }}/>
-                <div style={{ padding:16, display:'flex', flexDirection:'column', gap:8 }}>
-                  <div className="fw2-sk" style={{ height:15, width:'70%' }}/>
-                  <div className="fw2-sk" style={{ height:12, width:'85%' }}/>
-                  <div className="fw2-sk" style={{ height:12, width:'55%' }}/>
+      <div className="jl-wrap">
+        <div className="fw2-cats-wrap">
+          <div className="fw2-cats-label">Выберите категорию</div>
+          {loading ? (
+            <div className="fw2-cats-grid">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
+                <div key={i} style={{ borderRadius: 16, overflow: 'hidden', background: '#fff', border: '1px solid #ececec' }}>
+                  <div className="fw2-sk" style={{ height: 150, borderRadius: 0 }} />
+                  <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div className="fw2-sk" style={{ height: 15, width: '70%' }} />
+                    <div className="fw2-sk" style={{ height: 12, width: '85%' }} />
+                    <div className="fw2-sk" style={{ height: 12, width: '55%' }} />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="fw2-cats-grid" onMouseLeave={() => setHeroCatSlug(null)}>
-            {categories.map(cat => {
-              const meta  = CAT_ALL[cat.slug] || {};
-              const count = getRequestsForCategory(cat).length;
-              return (
-                <button
-                  key={cat.slug}
-                  className="fw2-cat-card"
-                  onMouseEnter={() => setHeroCatSlug(cat.slug)}
-                  onClick={() => { setSelectedCategory(cat); resetCategoryFilters(); }}
-                >
-                  <div className="fw2-cat-img-wrap">
-                    {meta.photo
-                      ? <img src={meta.photo} alt={cat.name} loading="lazy" />
-                      : <div className="fw2-cat-img-ph">{meta.emoji || '🛠️'}</div>
-                    }
-                    <span className="fw2-cat-badge">
-                      {count > 0 ? pluralRequests(count) : 'Нет заявок'}
-                    </span>
-                  </div>
-                  <div className="fw2-cat-body">
-                    <div className="fw2-cat-name">{cat.name}</div>
-                    <div className="fw2-cat-desc">{meta.desc || 'Профессиональные заказы'}</div>
-                    <div className="fw2-cat-footer">
-                      {count > 0
-                        ? <span className="fw2-cat-count">{pluralRequests(count)}</span>
-                        : <span className="fw2-cat-count-none">Нет активных заявок</span>
-                      }
-                      <div className="fw2-cat-go">›</div>
-                  </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
+              ))}
+            </div>
+          ) : (
+            <div className="fw2-cats-grid" onMouseLeave={() => setHeroCatSlug(null)}>
+              {categories.map(cat => {
+                const meta = CAT_ALL[cat.slug] || {};
+                const count = getRequestsForCategory(cat).length;
+                return (
+                  <button
+                    key={cat.slug}
+                    type="button"
+                    className="fw2-cat-card"
+                    onMouseEnter={() => setHeroCatSlug(cat.slug)}
+                    onClick={() => {
+                      setSelectedCategory(cat);
+                      resetCategoryFilters();
+                    }}
+                  >
+                    <div className="fw2-cat-img-wrap">
+                      {meta.photo ? (
+                        <img src={meta.photo} alt={cat.name} loading="lazy" />
+                      ) : (
+                        <div className="fw2-cat-img-ph">{meta.emoji || '🛠️'}</div>
+                      )}
+                      <span className="fw2-cat-badge">
+                        {count > 0 ? pluralRequests(count) : 'Нет заявок'}
+                      </span>
+                    </div>
+                    <div className="fw2-cat-body">
+                      <div className="fw2-cat-name">{cat.name}</div>
+                      <div className="fw2-cat-desc">{meta.desc || 'Профессиональные заказы'}</div>
+                      <div className="fw2-cat-footer">
+                        {count > 0 ? (
+                          <span className="fw2-cat-count">{pluralRequests(count)}</span>
+                        ) : (
+                          <span className="fw2-cat-count-none">Нет активных заявок</span>
+                        )}
+                        <div className="fw2-cat-go">›</div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
