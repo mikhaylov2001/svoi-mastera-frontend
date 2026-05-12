@@ -23,28 +23,37 @@
   font-weight: 600;
 }
 
-/* Hero */
+/* Hero — то же фото и оверлей, что в приложении (PAGE_HERO_*) */
 .nl-hero {
   position: relative;
   padding: 32px 0 110px;
   overflow: hidden;
   color: #fff;
 }
-.nl-hero-bg {
+.nl-hero-photo {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background:
-    radial-gradient(900px 500px at 80% 20%, rgba(255, 160, 100, 0.4), transparent 60%),
-    radial-gradient(700px 500px at 10% 80%, rgba(232, 65, 10, 0.6), transparent 60%),
-    linear-gradient(135deg, #1a1a1a 0%, #2a1810 60%, #3a1a08 100%);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 46%;
+  filter: brightness(0.68) saturate(1.03);
 }
-.nl-hero-bg::after {
+.nl-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(172deg, rgba(13, 13, 13, 0.05) 0%, rgba(232, 65, 10, 0.12) 44%, rgba(13, 13, 13, 0.68) 100%);
+  pointer-events: none;
+}
+.nl-hero-overlay::after {
   content: '';
   position: absolute;
   inset: 0;
   background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 22px 22px;
+  opacity: 0.35;
 }
 .nl-hero-inner {
   position: relative;

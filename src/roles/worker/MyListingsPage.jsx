@@ -1024,6 +1024,22 @@ export default function MyListingsPage() {
     const previewPhotoData = photos[0]?.data;
     const canSubmitForm = !!(form.title.trim() && form.category && (priceKind === 'negotiable' || (form.price && Number(form.price) > 0)));
 
+    let heroSrc = DEFAULT_MY_LISTINGS_BG;
+    if (isEdit && form.category) heroSrc = photoForCategoryName(form.category);
+    else if (!isEdit) {
+      if (isSectionStep) {
+        const hs = hoverSectionSlug && SECTIONS.find(s => s.slug === hoverSectionSlug);
+        heroSrc = hs?.photo || DEFAULT_MY_LISTINGS_BG;
+      } else if (isCatStep) {
+        const secPhoto = SECTIONS.find(s => s.slug === pickedSection)?.photo;
+        heroSrc = hoverCategoryName
+          ? photoForCategoryName(hoverCategoryName)
+          : (secPhoto || DEFAULT_MY_LISTINGS_BG);
+      } else if (form.category) {
+        heroSrc = photoForCategoryName(form.category);
+      }
+    }
+
     const filledPhotos = photos.length;
     const draftProgress = isFormStep && !isEdit
       ? Math.min(100, Math.round(
@@ -1039,7 +1055,8 @@ export default function MyListingsPage() {
         <style>{css}</style>
 
         <header className="nl-hero">
-          <div className="nl-hero-bg" aria-hidden />
+          <img src={heroSrc} alt="" className="nl-hero-photo" />
+          <div className="nl-hero-overlay" aria-hidden />
           <div className="nl-hero-inner">
             <button
               type="button"

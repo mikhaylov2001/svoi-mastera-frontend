@@ -20,6 +20,7 @@ import {
   getJobRequestPublishedBudgetNumber,
   JOB_REQUEST_PRICE_MISSING_LABEL,
 } from '../../utils/jobRequestBudget';
+import '../worker/listings-new.css';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -27,6 +28,28 @@ Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
 });
 
 const DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
+
+const MAX_ORDER_TITLE = 80;
+
+const CATEGORY_EMOJI = {
+  'Ремонт квартир': '🔨',
+  'Сантехника': '🔧',
+  'Электрика': '⚡',
+  'Компьютерная помощь': '💻',
+  'Уборка': '🧹',
+  'Парикмахер': '✂️',
+  'Маникюр и педикюр': '💅',
+  'Красота и здоровье': '✨',
+  'Репетиторство': '📚',
+  'Грузоперевозки': '🚚',
+  'Сварочные работы': '🔥',
+  'Другое': '📌',
+};
+
+function categoryEmoji(name) {
+  if (!name) return '📌';
+  return CATEGORY_EMOJI[name] || '📌';
+}
 
 function photoForCategoryName(name) {
   if (!name || !String(name).trim()) return DEFAULT_BG;
@@ -233,23 +256,6 @@ const css = `
   .ml-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
 
   /* .ml-tag — см. unifiedListingCards.css */
-  .mlf-hero { position: relative; height: var(--page-hero-h-desktop); overflow: hidden; }
-  @media (max-width: 768px) { .mlf-hero { height: var(--page-hero-h-mobile); } }
-  .mlf-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: ${PAGE_HERO_OBJECT_FIT}; object-position: ${PAGE_HERO_OBJECT_POSITION}; filter: ${PAGE_HERO_IMG_FILTER}; }
-  .mlf-hero-overlay { position: absolute; inset: 0; background: ${PAGE_HERO_OVERLAY_GRADIENT}; }
-  .mlf-hero-body { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 24px 32px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
-  .mlf-hero-back { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: rgba(255,255,255,.8); background: none; border: none; font-family: inherit; cursor: pointer; padding: 0; margin-bottom: 10px; transition: color .15s; }
-  .mlf-hero-back:hover { color: #fff; }
-  .mlf-hero-title { font-size: clamp(22px, 4vw, 34px); font-weight: 900; color: #fff; margin: 0 0 6px; letter-spacing: -.4px; line-height: 1.15; }
-  .mlf-hero-sub { font-size: 14px; color: rgba(255,255,255,.75); margin: 0; }
-
-  .mlf-wrap { max-width: 1080px; margin: 0 auto; padding: 20px 24px 60px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: flex-start; }
-
-  .mlf-stepper { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-  .mlf-step-pill { border-radius: 999px; padding: 7px 12px; font-size: 12px; font-weight: 700; border: 1.5px solid #e5e7eb; background: #fff; color: #6b7280; }
-  .mlf-step-pill.on { border-color: #e8410a; color: #e8410a; background: #fff4ef; }
-  .mlf-step-dot { width: 6px; height: 6px; border-radius: 50%; background: #d1d5db; }
-
   .mlf-sec-grid {
     display: grid; grid-template-columns: repeat(12, 1fr);
     grid-auto-rows: 200px; gap: 12px; margin-bottom: 12px;
@@ -299,15 +305,6 @@ const css = `
     padding: 3px 10px; font-size: 11px; font-weight: 600; color: #fff;
   }
 
-  .mlf-cat-head-simple {
-    background: #fff; border: 1.5px solid #e8e8e8;
-    border-radius: 14px; padding: 16px 18px 18px; margin-bottom: 12px;
-  }
-  .mlf-cat-head-back { background: none; border: none; color: #e8410a; font-size: 13px; font-weight: 700; cursor: pointer; padding: 0; margin-bottom: 10px; font-family: inherit; }
-  .mlf-cat-head-back:hover { opacity: .8; }
-  .mlf-cat-head-name { font-size: 22px; font-weight: 900; color: #111827; margin: 0 0 4px; line-height: 1.2; }
-  .mlf-cat-head-sub { font-size: 13px; color: #6b7280; margin: 0; line-height: 1.45; }
-
   .mlf-cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   .mlf-cat-card {
     background: #fff; border-radius: 14px; border: 1.5px solid #e8e8e8;
@@ -328,78 +325,6 @@ const css = `
   .mlf-cat-go { width: 28px; height: 28px; border-radius: 50%; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #999; transition: background .2s, color .2s; }
   .mlf-cat-card:hover .mlf-cat-go { background: #e8410a; color: #fff; }
 
-  .mlf-selected-cat {
-    margin-top: 10px; padding: 10px 12px; border: 1px solid #fed7c2;
-    background: #fff7f3; border-radius: 10px;
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  }
-  .mlf-selected-cat b { color: #9a3412; font-size: 13px; }
-  .mlf-change-cat { border: none; background: none; color: #e8410a; font-size: 12px; font-weight: 700; cursor: pointer; padding: 0; font-family: inherit; }
-  .mlf-change-cat:hover { opacity: .8; }
-
-  .mlf-card { background: #fff; margin-bottom: 12px; overflow: hidden; }
-  .mlf-card-title { font-size: 16px; font-weight: 700; color: #111; padding: 18px 20px 0; margin-bottom: 16px; }
-
-  .mlf-photos { padding: 18px 20px 20px; }
-  .mlf-photo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-  .mlf-photo-cell { aspect-ratio: 1; border-radius: 8px; overflow: hidden; position: relative; border: 1.5px dashed #d0d0d0; background: #fafafa; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all .18s; }
-  .mlf-photo-cell:hover { border-color: #e8410a; background: #fff5f2; }
-  .mlf-photo-cell.filled { border: none; cursor: zoom-in; }
-  .mlf-photo-cell.main-photo { grid-column: span 2; grid-row: span 2; }
-  .mlf-photo-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
-  .mlf-photo-cell.filled:hover .mlf-photo-img { transform: scale(1.05); }
-  .mlf-photo-add-icon { font-size: 28px; opacity: .5; }
-  .mlf-photo-hint { font-size: 12px; color: #aaa; margin-top: 10px; }
-  .mlf-photo-del { position: absolute; top: 5px; right: 5px; width: 26px; height: 26px; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; opacity: 0; transition: opacity .15s; z-index: 2; }
-  .mlf-photo-cell.filled:hover .mlf-photo-del { opacity: 1; }
-  .mlf-photo-del:hover { background: #dc2626 !important; }
-  .mlf-photo-main-badge { position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,.5); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
-  .mlf-photo-zoom { position: absolute; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; pointer-events: none; }
-  .mlf-photo-zoom-text { font-size: 12px; font-weight: 700; color: #fff; letter-spacing: .04em; text-transform: uppercase; }
-  .mlf-photo-cell.filled:hover .mlf-photo-zoom { opacity: 1; }
-
-  .mlf-fields { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 16px; }
-  .mlf-field label { display: block; font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; }
-  .mlf-field input, .mlf-field textarea, .mlf-field select {
-    width: 100%; padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 8px;
-    font-size: 15px; font-family: Inter, Arial, sans-serif; color: #111; outline: none;
-    background: #fff; transition: border-color .15s, box-shadow .15s; box-sizing: border-box;
-    appearance: none;
-  }
-  .mlf-field input:focus, .mlf-field textarea:focus, .mlf-field select:focus { border-color: #e8410a; box-shadow: 0 0 0 3px rgba(232,65,10,.08); }
-  .mlf-field textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
-  .mlf-field-hint { font-size: 12px; color: #aaa; margin-top: 5px; line-height: 1.4; }
-  .mlf-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  .mlf-field-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .mlf-field-top label { margin: 0; }
-  .mlf-char { font-size: 12px; color: #bbb; }
-  .mlf-char.warn { color: #f59e0b; }
-  .mlf-char.over { color: #ef4444; }
-
-  .mlf-price-block { padding: 18px 20px 20px; }
-  .mlf-price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; align-items: end; }
-
-  .mlf-submit-card { padding: 20px; }
-  .mlf-btn-submit { width: 100%; padding: 15px; background: #e8410a; border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; transition: background .15s; }
-  .mlf-btn-submit:hover { background: #c73208; }
-  .mlf-btn-submit:disabled { background: #fca98e; cursor: not-allowed; }
-
-  .mlf-error { background: #fff5f5; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #dc2626; margin-bottom: 12px; }
-
-  .mlf-sidebar { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 76px; }
-  .mlf-sb-card { background: #fff; padding: 18px; }
-  .mlf-sb-title { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-  .mlf-steps { display: flex; flex-direction: column; gap: 10px; }
-  .mlf-step { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; color: #555; }
-  .mlf-step-num { width: 24px; height: 24px; border-radius: 50%; background: #e8410a; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
-  .mlf-sb-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #555; padding: 8px 0; border-bottom: 1px solid #f5f5f5; line-height: 1.5; }
-  .mlf-sb-item:last-child { border-bottom: none; padding-bottom: 0; }
-  .mlf-sb-ico { font-size: 18px; flex-shrink: 0; }
-  .mlf-tips { display: flex; flex-direction: column; gap: 6px; }
-  .mlf-tip { font-size: 12px; color: #666; padding-left: 16px; position: relative; line-height: 1.5; }
-  .mlf-tip::before { content: '💡'; position: absolute; left: 0; font-size: 11px; }
-
   .mlf-lb { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.94); display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .mlf-lb-close { position: fixed; top: 18px; right: 18px; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .mlf-lb-counter { position: fixed; top: 22px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,.15); color: #fff; font-size: 14px; font-weight: 700; padding: 6px 18px; border-radius: 20px; }
@@ -416,8 +341,6 @@ const css = `
   .ml-accept-btn { border-radius: 5px; }
 
   @media(max-width: 900px) {
-    .mlf-wrap { grid-template-columns: 1fr; }
-    .mlf-sidebar { position: static; }
     .ml-detail-wrap { grid-template-columns: 1fr; }
     .ml-detail-right { position: static; }
   }
@@ -429,18 +352,12 @@ const css = `
   }
   @media(max-width: 720px) {
     .ml-row-actions { display: none; }
-    .mlf-photo-grid { grid-template-columns: repeat(3, 1fr); }
-    .mlf-photo-cell.main-photo { grid-column: span 1; grid-row: span 1; }
   }
   @media(max-width: 520px) {
     .mlf-sec-grid { grid-template-columns: 1fr; grid-auto-rows: 160px; gap: 8px; }
     .mlf-sec-featured, .mlf-sec-5, .mlf-sec-6 { grid-column: span 1; }
     .mlf-sec-name { font-size: 22px !important; }
     .mlf-cat-grid { grid-template-columns: 1fr; }
-  }
-  @media(max-width: 500px) {
-    .mlf-row2 { grid-template-columns: 1fr; }
-    .mlf-price-row { grid-template-columns: 1fr; }
   }
 `;
 
@@ -771,49 +688,80 @@ export default function MyOrdersPage() {
       }
     }
 
+    const chipNames = pickedSection ? (CATEGORIES_BY_SECTION[pickedSection] || []).map((c) => c.name).filter(Boolean) : [];
+    const categoriesForChips = chipNames.length
+      ? chipNames.map((name) => categories.find(
+        (x) => String(x.name || '').trim().toLowerCase() === String(name).trim().toLowerCase(),
+      )).filter(Boolean)
+      : categories;
+    const previewPhotoData = photos[0]?.data;
+    const filledPhotos = photos.length;
+    const draftProgress = isFormStep && !isEdit
+      ? Math.min(100, Math.round(
+        (form.title.trim() ? 25 : 0)
+          + (form.description.length >= 30 ? 25 : Math.round((form.description.length / 30) * 25))
+          + (form.budget && Number(form.budget) > 0 ? 25 : 0)
+          + (filledPhotos > 0 ? 25 : 0),
+      ))
+      : 0;
+
+    const orderTips = [
+      'Короткое название — мастера быстрее поймут задачу',
+      'Фото помогают оценить объём работ',
+      'Чем яснее описание, тем точнее будут отклики',
+    ];
+
     return (
-      <div className="ml-page">
+      <div className="nl-page">
         <style>{css}</style>
 
-        {/* Hero */}
-        <div className="mlf-hero">
-          <img src={heroSrc} alt="" className="mlf-hero-img" />
-          <div className="mlf-hero-overlay" />
-          <div className="mlf-hero-body">
-            <button className="mlf-hero-back" onClick={() => {
-              if (isCatStep) { setHoverCategoryName(null); setPickedSection(null); }
-              else if (isFormStep && !isEdit) { setHoverCategoryName(null); setForm(p => ({...p, categoryId: ''})); setPickedSection(null); }
-              else { setView(null); }
-            }}>
+        <header className="nl-hero">
+          <img src={heroSrc} alt="" className="nl-hero-photo" />
+          <div className="nl-hero-overlay" aria-hidden />
+          <div className="nl-hero-inner">
+            <button
+              type="button"
+              className="nl-back"
+              onClick={() => {
+                if (isCatStep) { setHoverCategoryName(null); setPickedSection(null); }
+                else if (isFormStep && !isEdit) { setHoverCategoryName(null); setForm(p => ({ ...p, categoryId: '' })); setPickedSection(null); }
+                else { setView(null); }
+              }}
+            >
               {isCatStep ? '← Все разделы' : isFormStep && !isEdit ? '← Выбор категории' : '← Мои заявки'}
             </button>
-            <h1 className="mlf-hero-title">
+            {!isEdit && (
+              <div className="nl-stepper">
+                <span className={`nl-step ${isSectionStep ? 'active' : isCatStep || isFormStep ? 'done' : ''}`}>1 · Раздел</span>
+                <span className={`nl-step ${isCatStep ? 'active' : isFormStep && !isCatStep && !isSectionStep ? 'done' : ''}`}>2 · Категория</span>
+                <span className={`nl-step ${isFormStep && !isCatStep && !isSectionStep ? 'active' : ''}`}>3 · Заявка</span>
+              </div>
+            )}
+            <h1 className="nl-h1">
               {isEdit ? 'Редактировать заявку' : isSectionStep ? 'Выберите раздел' : isCatStep ? (SECTIONS.find(s => s.slug === pickedSection)?.name || '') : 'Новая заявка'}
             </h1>
-            <p className="mlf-hero-sub">
+            <p className="nl-sub">
               {isEdit
                 ? 'Обновите данные и сохраните'
                 : isSectionStep
                   ? 'Шаг 1 — выберите раздел услуги'
                   : isCatStep
                     ? 'Шаг 2 — выберите категорию, откроется форма'
-                    : 'Шаг 3 — заполните заявку и опубликуйте'}
+                    : 'Шаг 3 — заполните заявку и опубликуйте за минуту'}
             </p>
-          </div>
-        </div>
-
-        <div className="mlf-wrap">
-          <div>
-            {formErr && <div className="mlf-error">⚠️ {formErr}</div>}
-            {!isEdit && (
-              <div className="mlf-stepper">
-                <span className={`mlf-step-pill${isSectionStep ? ' on' : ''}`}>1. Раздел</span>
-                <span className="mlf-step-dot" />
-                <span className={`mlf-step-pill${isCatStep ? ' on' : ''}`}>2. Категория</span>
-                <span className="mlf-step-dot" />
-                <span className={`mlf-step-pill${isFormStep ? ' on' : ''}`}>3. Заявка</span>
+            {isFormStep && !isEdit && (
+              <div className="nl-progress">
+                <span className="nl-progress-label">{draftProgress}% готово</span>
+                <div className="nl-progress-bar" style={{ width: `${draftProgress}%` }} />
               </div>
             )}
+          </div>
+        </header>
+
+        <div className="nl-wrap">
+          <div className="nl-grid">
+            <main className="nl-main">
+            {formErr && <div className="nl-err">⚠️ {formErr}</div>}
 
             {isSectionStep ? (
               (() => {
@@ -876,228 +824,313 @@ export default function MyOrdersPage() {
               })()
             ) : (
               <>
-                {/* ── 1. ФОТОГРАФИИ ── */}
-                <div className="mlf-card">
-                  <div className="mlf-card-title">
-                    Фотографии <span style={{fontSize:13,color:'#aaa',fontWeight:400}}>(необязательно, до 5 шт.)</span>
+                <section className="nl-card">
+                  <div className="nl-card-head">
+                    <div>
+                      <h2 className="nl-card-title">Фотографии</h2>
+                      <p className="nl-card-sub">Заявки с фото получают больше откликов от мастеров</p>
+                    </div>
+                    <span className="nl-counter">{photos.length}/5</span>
                   </div>
-                  <div className="mlf-photos">
-                    <div
-                      className="mlf-photo-grid"
-                      onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
-                      onDragLeave={() => setIsDragging(false)}
-                      onDrop={e => { e.preventDefault(); setIsDragging(false); handlePhotoUpload(e.dataTransfer.files); }}
-                    >
-                      {Array.from({ length: 5 }).map((_, i) => {
-                        const ph = photos[i];
-                        if (ph) {
-                          return (
-                            <div
-                              key={ph.id}
-                              className={`mlf-photo-cell filled${i === 0 ? ' main-photo' : ''}`}
-                              onClick={() => setLightbox({ photos: photos.map(p => p.data), index: i })}
-                            >
-                              <img src={ph.data} alt="" className="mlf-photo-img" />
-                              {i === 0 && <span className="mlf-photo-main-badge">Главное</span>}
-                              <div className="mlf-photo-zoom"><span className="mlf-photo-zoom-text">Просмотр</span></div>
-                              <button type="button" className="mlf-photo-del" onClick={e => removePhoto(ph.id, e)}>×</button>
-                            </div>
-                          );
-                        }
+                  <div
+                    className="nl-photos"
+                    onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={e => { e.preventDefault(); setIsDragging(false); handlePhotoUpload(e.dataTransfer.files); }}
+                  >
+                    {Array.from({ length: 5 }).map((_, i) => {
+                      const ph = photos[i];
+                      if (ph) {
                         return (
                           <div
-                            key={i}
-                            className="mlf-photo-cell"
-                            style={isDragging ? { borderColor: '#e8410a', background: '#fff5f2' } : {}}
-                            onClick={() => photoRef.current?.click()}
+                            key={ph.id}
+                            className={`nl-photo filled${i === 0 ? ' main' : ''}`}
+                            onClick={() => setLightbox({ photos: photos.map(p => p.data), index: i })}
                           >
-                            <span className="mlf-photo-add-icon">{i === 0 ? '📷' : '+'}</span>
+                            <img src={ph.data} alt="" />
+                            {i === 0 && <span className="nl-photo-badge">Главное</span>}
+                            <button type="button" className="nl-photo-x" onClick={e => removePhoto(ph.id, e)} aria-label="Удалить фото">×</button>
                           </div>
                         );
-                      })}
-                    </div>
-                    <input
-                      ref={photoRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      style={{ display: 'none' }}
-                      onChange={e => { handlePhotoUpload(e.target.files); e.target.value = ''; }}
-                    />
-                    <p className="mlf-photo-hint">
-                      {photos.length > 0
-                        ? `${photos.length}/5 фото · Нажмите на фото для просмотра`
-                        : 'Перетащите файлы сюда или кликните по ячейке · до 10 МБ'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* ── 2. ОПИСАНИЕ ЗАЯВКИ ── */}
-                <div className="mlf-card">
-                  <div className="mlf-card-title">Описание заявки</div>
-                  <div className="mlf-fields">
-                    <div className="mlf-field">
-                      <label>Название заявки *</label>
-                      <input
-                        ref={titleRef}
-                        value={form.title}
-                        onChange={e => { setFormErr(''); setForm(p => ({...p, title: e.target.value})); }}
-                        maxLength={120}
-                      />
-                      <span className="mlf-field-hint">Коротко и конкретно — что нужно сделать</span>
-                    </div>
-
-                    <div className="mlf-field">
-                      <label>Категория *</label>
-                      <div className="mlf-selected-cat">
-                        <b>{catNameStr || form.categoryId}</b>
-                        {!isEdit && (
-                          <button type="button" className="mlf-change-cat" onClick={() => setForm(p => ({...p, categoryId: ''}))}>
-                            Сменить
-                          </button>
-                        )}
-                      </div>
-                      {isEdit && (
-                        <select
-                          value={form.categoryId}
-                          style={{ marginTop: 8 }}
-                          onChange={e => { setFormErr(''); setForm(p => ({...p, categoryId: e.target.value})); }}
+                      }
+                      return (
+                        <div
+                          key={i}
+                          className={`nl-photo${i === 0 ? ' main' : ''}`}
+                          style={isDragging ? { borderColor: '#e8410a', background: '#fff5f2' } : undefined}
                         >
-                          <option value="">Выберите категорию</option>
-                          {categories.map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
-                        </select>
-                      )}
-                    </div>
+                          <button type="button" className="nl-photo-add" onClick={() => photoRef.current?.click()}>
+                            {i === 0 ? (
+                              <>
+                                <span aria-hidden>📷</span>
+                                <span>Главное фото</span>
+                              </>
+                            ) : (
+                              <span className="plus">+</span>
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <input
+                    ref={photoRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={e => { handlePhotoUpload(e.target.files); e.target.value = ''; }}
+                  />
+                  <p className="nl-hint">
+                    {photos.length > 0
+                      ? `${photos.length}/5 фото · Нажмите на фото для просмотра`
+                      : 'Перетащите файлы сюда или кликните по ячейке · до 10 МБ'}
+                  </p>
+                </section>
 
-                    <div className="mlf-field">
-                      <div className="mlf-field-top">
-                        <label>Подробное описание</label>
-                        <span className={`mlf-char${descLen > MAX_DESC * 0.9 ? descLen >= MAX_DESC ? ' over' : ' warn' : ''}`}>
-                          {descLen}/{MAX_DESC}
-                        </span>
-                      </div>
-                      <textarea
-                        value={form.description}
-                        onChange={e => setForm(p => ({...p, description: e.target.value}))}
-                        maxLength={MAX_DESC}
-                        rows={5}
-                      />
-                    </div>
-
-                    <div className="mlf-row2">
-                      <div className="mlf-field">
-                        <label>Город</label>
-                        <input
-                          value={form.city}
-                          onChange={e => setForm(p => ({...p, city: e.target.value}))}
-                          placeholder="Йошкар-Ола"
-                        />
-                      </div>
-                      <div className="mlf-field">
-                        <label>Адрес</label>
-                        <input
-                          value={form.address}
-                          onChange={e => setForm(p => ({...p, address: e.target.value}))}
-                          placeholder="ул. Ленина, 1"
-                        />
-                      </div>
+                <section className="nl-card">
+                  <div className="nl-card-head">
+                    <div>
+                      <h2 className="nl-card-title">Описание заявки</h2>
                     </div>
                   </div>
-                </div>
+                  <label className="nl-label nl-label--tight">
+                    <span>Название заявки <em>*</em></span>
+                    <input
+                      ref={titleRef}
+                      className="nl-input"
+                      value={form.title}
+                      onChange={e => { setFormErr(''); setForm(p => ({ ...p, title: e.target.value })); }}
+                      maxLength={MAX_ORDER_TITLE}
+                      placeholder="Например: замена смесителя на кухне"
+                    />
+                    <small className="nl-help">
+                      Коротко и конкретно — что нужно сделать
+                      <span className={`nl-rt nl-char${form.title.length > MAX_ORDER_TITLE * 0.9 ? form.title.length >= MAX_ORDER_TITLE ? ' over' : ' warn' : ''}`}>
+                        {form.title.length}/{MAX_ORDER_TITLE}
+                      </span>
+                    </small>
+                  </label>
 
-                {/* ── 3. Цена за работу ── */}
-                <div className="mlf-card">
-                  <div className="mlf-card-title">Цена за работу</div>
-                  <div className="mlf-price-block">
-                    <div style={{ marginBottom: 12 }}>
-                      <div className="mlf-field" style={{ margin: 0 }}>
-                        <label>Цена, ₽ *</label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={form.budget}
-                          onChange={e => { setFormErr(''); setForm(p => ({...p, budget: e.target.value})); }}
-                        />
-                      </div>
-                    </div>
-                    {form.budget && Number(form.budget) > 0 ? (
-                      <div style={{padding:'12px 14px', background:'#f0fdf4', border:'1.5px solid #bbf7d0', borderRadius:8}}>
-                        <div style={{fontSize:13, color:'#166534', fontWeight:600}}>
-                          ✅ В заявке будет: <strong>{Number(form.budget).toLocaleString('ru-RU')} ₽</strong>
+                  <div className="nl-label">
+                    <span>Категория <em>*</em></span>
+                    {!isEdit ? (
+                      <>
+                        <div className="nl-cats">
+                          {categoriesForChips.map((c) => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              className={`nl-cat${form.categoryId === String(c.id) ? ' is-active' : ''}`}
+                              onClick={() => { setFormErr(''); setForm((p) => ({ ...p, categoryId: String(c.id) })); }}
+                            >
+                              <span className="nl-cat-emoji" aria-hidden>{categoryEmoji(c.name)}</span>
+                              {c.name}
+                            </button>
+                          ))}
                         </div>
-                        <div style={{fontSize:12, color:'#16a34a', marginTop:3}}>
-                          Это та сумма, с которой вы заходите в работу. Детали и оплату согласуете в личных сообщениях с мастером (наличные или перевод напрямую).
-                        </div>
-                      </div>
+                        <button
+                          type="button"
+                          className="nl-change-cat"
+                          onClick={() => { setForm((p) => ({ ...p, categoryId: '' })); setPickedSection(null); }}
+                        >
+                          ← Выбрать другую категорию из каталога
+                        </button>
+                      </>
                     ) : (
-                      <div style={{padding:'12px 14px', background:'#fafafa', border:'1.5px solid #e8e8e8', borderRadius:8, fontSize:13, color:'#aaa'}}>
-                        Укажите цену за работу — мастера увидят её в заявке и напишут вам в чат
-                      </div>
+                      <select
+                        className="nl-input"
+                        value={form.categoryId}
+                        style={{ marginTop: 8 }}
+                        onChange={e => { setFormErr(''); setForm(p => ({ ...p, categoryId: e.target.value })); }}
+                      >
+                        <option value="">Выберите категорию</option>
+                        {categories.map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                      </select>
                     )}
                   </div>
-                </div>
 
-                {/* ── КНОПКА ── */}
-                <div className="mlf-card">
-                  <div className="mlf-submit-card">
-                    <button
-                      type="button"
-                      className="mlf-btn-submit"
-                      disabled={saving || !form.title.trim() || !form.categoryId || !form.budget || Number(form.budget) <= 0}
-                      onClick={handleSave}
-                    >
+                  <label className="nl-label">
+                    <span>Подробное описание</span>
+                    <textarea
+                      className="nl-textarea"
+                      value={form.description}
+                      onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+                      maxLength={MAX_DESC}
+                      rows={6}
+                      placeholder="Объём работ, сроки, что важно учесть…"
+                    />
+                    <small className="nl-help">
+                      <span />
+                      <span className={`nl-rt nl-char${descLen > MAX_DESC * 0.9 ? descLen >= MAX_DESC ? ' over' : ' warn' : ''}`}>{descLen}/{MAX_DESC}</span>
+                    </small>
+                  </label>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 18 }}>
+                    <label className="nl-label nl-label--tight">
+                      <span>Город</span>
+                      <input
+                        className="nl-input"
+                        value={form.city}
+                        onChange={e => setForm(p => ({ ...p, city: e.target.value }))}
+                        placeholder="Йошкар-Ола"
+                      />
+                    </label>
+                    <label className="nl-label">
+                      <span>Адрес</span>
+                      <input
+                        className="nl-input"
+                        value={form.address}
+                        onChange={e => setForm(p => ({ ...p, address: e.target.value }))}
+                        placeholder="ул. Ленина, 1"
+                      />
+                    </label>
+                  </div>
+
+                  {orderTips.length > 0 && (
+                    <div className="nl-tips" style={{ marginTop: 14 }}>
+                      {orderTips.map((t, i) => (
+                        <div key={i} className="nl-tip">{t}</div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                <section className="nl-card">
+                  <div className="nl-card-head">
+                    <div>
+                      <h2 className="nl-card-title">Цена за работу</h2>
+                    </div>
+                  </div>
+                  <label className="nl-label nl-label--tight">
+                    <span>Сумма в заявке, ₽ <em>*</em></span>
+                    <div className="nl-price-input">
+                      <input
+                        className="nl-input"
+                        type="number"
+                        min="1"
+                        value={form.budget}
+                        onChange={e => { setFormErr(''); setForm(p => ({ ...p, budget: e.target.value })); }}
+                      />
+                      <span className="nl-price-suffix">₽</span>
+                    </div>
+                    <small className="nl-help">
+                      Мастера увидят эту сумму в карточке заявки
+                      <span />
+                    </small>
+                  </label>
+                  {form.budget && Number(form.budget) > 0 ? (
+                    <div className="nl-price-hint nl-price-hint--ok">
+                      <strong>В заявке:</strong>{' '}
+                      {Number(form.budget).toLocaleString('ru-RU')} ₽
+                      <div style={{ fontSize: 12, marginTop: 4, opacity: 0.95 }}>
+                        Детали и оплату согласуете в чате с мастером (наличные или перевод напрямую).
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="nl-price-hint nl-price-hint--muted">
+                      Укажите цену за работу — мастера увидят её в заявке и напишут вам в чат
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    className="nl-publish"
+                    disabled={saving || !form.title.trim() || !form.categoryId || !form.budget || Number(form.budget) <= 0}
+                    onClick={handleSave}
+                  >
+                    <span>
                       {saving
                         ? 'Сохраняем…'
                         : isEdit
                           ? 'Сохранить изменения'
                           : 'Разместить заявку'}
-                    </button>
-                    <p style={{fontSize:12, color:'#bbb', textAlign:'center', marginTop:10, marginBottom:0}}>
-                      {isEdit ? 'Изменения сразу увидят мастера' : 'Размещение бесплатно · Мастера увидят сразу после публикации'}
-                    </p>
-                  </div>
-                </div>
+                    </span>
+                    {!saving && (
+                      <small>
+                        {isEdit ? 'Изменения сразу увидят мастера' : 'Размещение бесплатно · Мастера увидят сразу после публикации'}
+                      </small>
+                    )}
+                  </button>
+                </section>
               </>
             )}
-          </div>
+            </main>
 
-          {/* ══ САЙДБАР ══ */}
-          <div className="mlf-sidebar">
-            <div className="mlf-sb-card">
-              <div className="mlf-sb-title">⚡ Как это работает</div>
-              <div className="mlf-steps">
-                {[
-                  ['Разместите заявку',        'Опишите задачу и сразу укажите цену за работу — мастера увидят заявку'],
-                  ['Пишите в чате',             'Мастера откликаются и обсуждают детали в личных сообщениях'],
-                  ['Договоритесь напрямую',     'Сроки и нюансы работы — в переписке с выбранным мастером'],
-                  ['Оплата мастеру',            'Наличными или переводом на карту напрямую мастеру после выполнения работы'],
-                ].map(([title, desc], i) => (
-                  <div key={i} className="mlf-step">
-                    <span className="mlf-step-num">{i + 1}</span>
-                    <div>
-                      <div style={{fontSize:13, fontWeight:700, color:'#333', marginBottom:2}}>{title}</div>
-                      <div style={{fontSize:12, color:'#888', lineHeight:1.5}}>{desc}</div>
+            <aside className="nl-side">
+              {isFormStep && (
+                <div className="nl-side-card nl-side-preview">
+                  <div className="nl-side-card-head">
+                    <span className="nl-side-icon" aria-hidden>👀</span>
+                    <h3>Предпросмотр</h3>
+                  </div>
+                  <div className="nl-preview">
+                    <div className="nl-preview-img">
+                      {previewPhotoData ? (
+                        <img src={previewPhotoData} alt="" />
+                      ) : (
+                        <span>Фото появится здесь</span>
+                      )}
+                      {catNameStr ? <span className="nl-preview-cat">{catNameStr}</span> : null}
+                    </div>
+                    <div className="nl-preview-body">
+                      <div className="nl-preview-price">
+                        {form.budget && Number(form.budget) > 0 ? (
+                          <>{Number(form.budget).toLocaleString('ru-RU')} ₽</>
+                        ) : (
+                          <span className="muted">Цена в заявке</span>
+                        )}
+                      </div>
+                      <div className="nl-preview-title">
+                        {form.title.trim() || 'Название вашей заявки'}
+                      </div>
+                      <div className="nl-preview-meta">
+                        <span>★ {isEdit ? 'Редактирование' : 'Новая заявка'}</span>
+                        <span>· Ваш регион</span>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mlf-sb-card">
-              <div className="mlf-sb-title">🛡 Ваши преимущества</div>
-              {[
-                ['⭐', 'Отзывы и рейтинг',  'Честные отзывы — только от реальных мастеров'],
-                ['💬', 'Прямой чат',         'Общайтесь с мастером без посредников'],
-              ].map(([ico, title, desc]) => (
-                <div key={title} className="mlf-sb-item">
-                  <span className="mlf-sb-ico">{ico}</span>
-                  <div>
-                    <div style={{fontWeight:600, fontSize:13, color:'#333', marginBottom:2}}>{title}</div>
-                    <div style={{fontSize:12, color:'#888', lineHeight:1.45}}>{desc}</div>
-                  </div>
                 </div>
-              ))}
-            </div>
+              )}
+
+              <div className="nl-side-card">
+                <div className="nl-side-card-head">
+                  <span className="nl-side-icon nl-grad" aria-hidden>⚡</span>
+                  <h3>Как это работает</h3>
+                </div>
+                <ol className="nl-steps">
+                  {[
+                    ['Разместите заявку', 'Опишите задачу и укажите цену за работу — мастера увидят заявку'],
+                    ['Пишите в чате', 'Мастера откликаются и обсуждают детали в личных сообщениях'],
+                    ['Договоритесь напрямую', 'Сроки и нюансы — в переписке с выбранным мастером'],
+                    ['Оплата мастеру', 'Наличными или переводом на карту напрямую после выполнения работы'],
+                  ].map(([title, desc], i) => (
+                    <li key={i}>
+                      <b>{title}</b>
+                      <span>{desc}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <div className="nl-side-card">
+                <div className="nl-side-card-head">
+                  <span className="nl-side-icon" aria-hidden>🛡</span>
+                  <h3>Ваши преимущества</h3>
+                </div>
+                <ul className="nl-perks">
+                  {[
+                    ['Отзывы и рейтинг', 'Честные отзывы — только от реальных мастеров'],
+                    ['Прямой чат', 'Общайтесь с мастером без посредников'],
+                  ].map(([title, desc]) => (
+                    <li key={title}>
+                      <b>{title}</b>
+                      <span>{desc}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </aside>
           </div>
         </div>
 
