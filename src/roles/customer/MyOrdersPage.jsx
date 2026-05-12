@@ -109,7 +109,34 @@ function compressImage(file) {
   });
 }
 
-const EMPTY_FORM = { title: '', description: '', budget: '', address: '', city: '', categoryId: '', photos: [] };
+const EMPTY_FORM = {
+  title: '',
+  description: '',
+  budget: '',
+  address: '',
+  city: '',
+  categoryId: '',
+  /** Различает карточки с одним categoryId на бэке (напр. сантехника → remont-kvartir). */
+  categorySlug: '',
+  photos: [],
+};
+
+function normCatName(s) {
+  return String(s || '').trim().toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ');
+}
+
+function categoryFormSelectValue(categoryId, categorySlug) {
+  if (!categoryId) return '';
+  const s = String(categorySlug || '').trim();
+  return s ? `${categoryId}|${s}` : String(categoryId);
+}
+
+function parseCategoryFormSelectValue(raw) {
+  const v = String(raw || '');
+  const i = v.indexOf('|');
+  if (i <= 0) return { categoryId: v, categorySlug: '' };
+  return { categoryId: v.slice(0, i), categorySlug: v.slice(i + 1) };
+}
 const MAX_DESC = 2000;
 
 /* ══ CSS: список/карточки — src/styles/unifiedListingCards.css ══ */
@@ -426,14 +453,26 @@ export default function MyOrdersPage() {
   const titleRef = useRef();
 
   /* ── helpers ── */
-  function getCategoryName(catId) {
-    const c = categories.find((x) => String(pickCategoryId(x) || x.id) === String(catId));
+  function getCategoryName(catId, categorySlug) {
+    const idStr = String(catId || '');
+    if (!idStr) return '';
+    const slugStr = String(categorySlug || '').trim().toLowerCase();
+    if (slugStr) {
+      const bySlug = categories.find(
+        (x) => String(x.slug || '').trim().toLowerCase() === slugStr
+          && String(pickCategoryId(x) || x.id) === idStr,
+      );
+      if (bySlug?.name) return bySlug.name;
+      const loose = categories.find((x) => String(x.slug || '').trim().toLowerCase() === slugStr);
+      if (loose?.name) return loose.name;
+    }
+    const c = categories.find((x) => String(pickCategoryId(x) || x.id) === idStr);
     return c ? c.name : '';
   }
 
   function getCategoryNameForForm() {
     if (!form.categoryId) return '';
-    return getCategoryName(form.categoryId);
+    return getCategoryName(form.categoryId, form.categorySlug);
   }
 
   /* ── load ── */
@@ -606,6 +645,20 @@ export default function MyOrdersPage() {
       address:     req.addressText || '',
       city:        req.city || '',
       categoryId:  req.categoryId || '',
+      categorySlug: (() => {
+        const cid = String(req.categoryId || '');
+        const cname = req.categoryName || req.category || '';
+        if (!cid) return '';
+        if (cname) {
+          const row = categories.find(
+            (x) => String(pickCategoryId(x) || x.id) === cid && normCatName(x.name) === normCatName(cname),
+          );
+          if (row?.slug) return String(row.slug);
+        }
+        const sameId = categories.filter((x) => String(pickCategoryId(x) || x.id) === cid);
+        if (sameId.length === 1 && sameId[0].slug) return String(sameId[0].slug);
+        return '';
+      })(),
       photos:      (req.photos || []).map((p, i) => ({ id: i, data: p })),
     });
     setFormErr('');
@@ -634,10 +687,13 @@ export default function MyOrdersPage() {
     setFormErr('');
     setHoverCategoryName(null);
     const cid = pickCategoryId(c);
+    const slug = (typeof catalogCat === 'object' && catalogCat?.slug)
+      ? String(catalogCat.slug)
+      : (c?.slug != null ? String(c.slug) : '');
     if (cid) {
-      setForm((p) => ({ ...p, categoryId: String(cid) }));
+      setForm((p) => ({ ...p, categoryId: String(cid), categorySlug: slug }));
     } else {
-      setForm((p) => ({ ...p, categoryId: '' }));
+      setForm((p) => ({ ...p, categoryId: '', categorySlug: '' }));
       setFormErr('Категория не найдена на сервере. Обновите страницу или выберите другую.');
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -757,7 +813,7 @@ export default function MyOrdersPage() {
               className="nl-back"
               onClick={() => {
                 if (isCatStep) { setHoverCategoryName(null); setPickedSection(null); }
-                else if (isFormStep && !isEdit) { setHoverCategoryName(null); setForm(p => ({ ...p, categoryId: '' })); setPickedSection(null); }
+                else if (isFormStep && !isEdit) { setHoverCategoryName(null); setForm(p => ({ ...p, categoryId: '', categorySlug: '' })); setPickedSection(null); }
                 else { setView(null); }
               }}
             >
@@ -953,12 +1009,24 @@ export default function MyOrdersPage() {
                         <div className="nl-cats">
                           {categoriesForChips.map((c) => {
                             const cid = pickCategoryId(c);
+                            const slug = String(c.slug || '').trim().toLowerCase();
+                            const formSlug = String(form.categorySlug || '').trim().toLowerCase();
+                            const chipActive = formSlug
+                              ? formSlug === slug
+                              : form.categoryId === String(cid);
                             return (
                             <button
-                              key={String(cid)}
+                              key={c.slug || String(cid)}
                               type="button"
-                              className={`nl-cat${form.categoryId === String(cid) ? ' is-active' : ''}`}
-                              onClick={() => { setFormErr(''); setForm((p) => ({ ...p, categoryId: String(cid) })); }}
+                              className={`nl-cat${chipActive ? ' is-active' : ''}`}
+                              onClick={() => {
+                                setFormErr('');
+                                setForm((p) => ({
+                                  ...p,
+                                  categoryId: String(cid),
+                                  categorySlug: c.slug != null ? String(c.slug) : '',
+                                }));
+                              }}
                             >
                               <span className="nl-cat-emoji" aria-hidden>{categoryEmoji(c.name)}</span>
                               {c.name}
@@ -969,7 +1037,7 @@ export default function MyOrdersPage() {
                         <button
                           type="button"
                           className="nl-change-cat"
-                          onClick={() => { setForm((p) => ({ ...p, categoryId: '' })); setPickedSection(null); }}
+                          onClick={() => { setForm((p) => ({ ...p, categoryId: '', categorySlug: '' })); setPickedSection(null); }}
                         >
                           ← Выбрать другую категорию из каталога
                         </button>
@@ -977,14 +1045,20 @@ export default function MyOrdersPage() {
                     ) : (
                       <select
                         className="nl-input"
-                        value={form.categoryId}
+                        value={categoryFormSelectValue(form.categoryId, form.categorySlug)}
                         style={{ marginTop: 8 }}
-                        onChange={e => { setFormErr(''); setForm(p => ({ ...p, categoryId: e.target.value })); }}
+                        onChange={(e) => {
+                          setFormErr('');
+                          const { categoryId: cid, categorySlug: csl } = parseCategoryFormSelectValue(e.target.value);
+                          setForm((p) => ({ ...p, categoryId: cid, categorySlug: csl }));
+                        }}
                       >
                         <option value="">Выберите категорию</option>
                         {categories.map((c) => {
                           const oid = pickCategoryId(c);
-                          return oid ? <option key={oid} value={String(oid)}>{c.name}</option> : null;
+                          if (!oid) return null;
+                          const optVal = categoryFormSelectValue(String(oid), c.slug);
+                          return <option key={optVal} value={optVal}>{c.name}</option>;
                         })}
                       </select>
                     )}
