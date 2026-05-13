@@ -328,17 +328,16 @@ export default function ListingDetailPage() {
 
   const priceNum = getListingPublishedPriceNumber(listing);
   const priceHasAmount = priceNum != null;
+  const priceUnitTrim = listing.priceUnit && String(listing.priceUnit).trim();
   const priceMainLine = priceHasAmount
     ? `${priceNum.toLocaleString('ru-RU')}`
     : listing.priceUnit || 'Договорная';
   const priceSubLine = priceHasAmount
-    ? listing.priceUnit && String(listing.priceUnit).trim()
-      ? listing.priceUnit
-      : 'за работу · оплата по договорённости с заказчиком'
+    ? priceUnitTrim || 'за работу'
     : listing.priceUnit || null;
 
   const budgetDetailVal = priceHasAmount
-    ? `${priceNum.toLocaleString('ru-RU')} ₽${listing.priceUnit ? ` ${listing.priceUnit}` : ''}`
+    ? `${priceNum.toLocaleString('ru-RU')} ₽${priceUnitTrim ? ` ${priceUnitTrim}` : ' за работу'}`
     : listing.priceUnit || 'Договорная';
 
   const pubStr = listing.createdAt
@@ -349,7 +348,7 @@ export default function ListingDetailPage() {
       })
     : '—';
 
-  const addressLine = listing.address || 'Йошкар-Ола · выезд по договорённости';
+  const addressLine = (listing.address || 'Йошкар-Ола • выезд по договорённости').replace(/\s*·\s*/g, ' • ');
   const listingActive = listing.active !== false;
   const crumbTitle = `${listing.title?.slice(0, 48) || ''}${listing.title?.length > 48 ? '…' : ''}`;
 
@@ -424,7 +423,7 @@ export default function ListingDetailPage() {
 
         <nav className="jd-crumbs">
           <Link to="/">Главная</Link>
-          <span className="sep">/</span>
+          <span className="sep"> / </span>
           {isOwnListing ? (
             <Link to="/my-listings">Мои объявления</Link>
           ) : (
@@ -432,13 +431,13 @@ export default function ListingDetailPage() {
               <Link to="/find-master">Мастера</Link>
               {listing.category && (
                 <>
-                  <span className="sep">/</span>
+                  <span className="sep"> / </span>
                   <Link to={`/find-master/${catSlug}`}>{listing.category}</Link>
                 </>
               )}
             </>
           )}
-          <span className="sep">/</span>
+          <span className="sep"> / </span>
           <span className="cur">{crumbTitle}</span>
         </nav>
 
@@ -475,7 +474,7 @@ export default function ListingDetailPage() {
                 )}
                 <div className="jd-floats">
                   {listingActive && (
-                    <div className="jd-chip">
+                    <div className="jd-chip jd-chip--live">
                       <span className="pulse" />
                       Активна
                     </div>
@@ -599,6 +598,13 @@ export default function ListingDetailPage() {
               )}
               {priceSubLine && <p className="jd-price-sub">{priceSubLine}</p>}
 
+              {isOwnListing && (
+                <div className="jd-own-banner">
+                  <strong>Ваше объявление.</strong>{' '}
+                  Здесь видите цену так же, как заказчик. Редактировать список — в «Мои объявления».
+                </div>
+              )}
+
               {!isOwnListing && (
                 <div className="jd-actions">
                   {customerListingDeal &&
@@ -704,7 +710,7 @@ export default function ListingDetailPage() {
                   Ваш профиль
                 </div>
                 <div className="jd-cust-row jd-cust-row-static">
-                  <div className="jd-ava">
+                  <div className="jd-ava jd-ava--round">
                     {ownerAva ? <img src={ownerAva} alt={ownerFullName} /> : <div className="jd-ava-fallback">{(userName || 'М')[0].toUpperCase()}</div>}
                     <span className="jd-ava-dot" />
                   </div>
@@ -727,7 +733,7 @@ export default function ListingDetailPage() {
                   Мастер
                 </div>
                 <Link to={`/workers/${listing.workerId}`} className="jd-cust-row">
-                  <div className="jd-ava">
+                  <div className="jd-ava jd-ava--round">
                     {listing.workerAvatar?.length > 10 ? (
                       <img src={listing.workerAvatar} alt="" />
                     ) : (
@@ -748,10 +754,8 @@ export default function ListingDetailPage() {
                     {'★'.repeat(workerStars)}
                     {'☆'.repeat(5 - workerStars)}
                   </span>
-                  <span>
-                    <span className="jd-rating-num">{workerRating.toFixed(1)}</span>
-                    <span className="jd-rating-sub">({reviewsCountLabel(workerReviews)})</span>
-                  </span>
+                  <span className="jd-rating-num">{workerRating.toFixed(1)}</span>
+                  <span className="jd-rating-sub">({reviewsCountLabel(workerReviews)})</span>
                 </div>
               </div>
             )}
