@@ -5,7 +5,13 @@ import {
   cancelPendingDeal, cancelActiveDeal,
 } from '../../api';
 import { useAuth } from '../../context/AuthContext';
-import { dealsWdCss, dealsMdListCss, dealCategoryEmoji, dealInitialsFromFullName, dealToUiStatus } from '../shared/dealsWdStyles';
+import {
+  dealsWdCss, dealsMdListCss, dealsDetailEdCss, dealCategoryEmoji, dealInitialsFromFullName, dealToUiStatus,
+} from '../shared/dealsWdStyles';
+import DealDetailEdProgress, { DealDetailEdCheck, DealDetailEdHourglass } from '../shared/DealDetailEdProgress';
+import { getDealEdProgress } from '../../utils/dealDetailEdProgress';
+import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
+import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
@@ -89,6 +95,14 @@ function timeAgo(d) {
   const days = Math.floor(h / 24);
   if (days < 30) return `${days} дн. назад`;
   return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+}
+
+function dealWorkerAvatarUrl(detail) {
+  const a = detail?.workerAvatar;
+  if (!a || String(a).length <= 10 || a === 'null') return null;
+  const s = String(a);
+  if (s.startsWith('http') || s.startsWith('data:')) return s;
+  return BACKEND + s;
 }
 
 export default function DealsPage() {
@@ -250,233 +264,339 @@ export default function DealsPage() {
   /* ══ DETAIL ══ */
   if (detail) {
     const st = ST[detail.status] || ST.NEW;
-    const hasPhoto = detail.photos?.length > 0;
+    const photoList = detail.photos || [];
+    const hasPhoto = photoList.length > 0;
     const myOk = detail.customerConfirmed;
     const workerOk = detail.workerConfirmed;
     const taskDescShown = formatListingOriginDescription('CUSTOMER', detail.description);
+    const prog = getDealEdProgress(detail, 'customer', timeAgo);
+    const workerAva = dealWorkerAvatarUrl(detail);
+    const workerLabel = [detail.workerName, detail.workerLastName].filter(Boolean).join(' ') || 'Мастер';
+    const pulseShadow = `0 0 0 3px ${st.dot}26`;
 
     return (
-      <div className="wd-detail">
-        <style>{dealsWdCss}</style>
-        <div className="wd-detail-nav">
-          <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 20px' }}>
-            <button
-              type="button"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: 14, fontFamily: 'Inter,sans-serif', padding: 0 }}
-              onClick={() => { setDetail(null); setPhotoIdx(0); }}
-            >← Мои сделки</button>
-          </div>
-        </div>
+      <div className="ed">
+        <style>{`${dealsWdCss}\n${dealsDetailEdCss}`}</style>
+        <div className="ed-wrap">
+          <button
+            type="button"
+            className="ed-back"
+            onClick={() => { setDetail(null); setPhotoIdx(0); }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Мои сделки
+          </button>
 
-        <div className="wd-detail-wrap">
-          <div>
-            <div className="wd-detail-gallery">
-              <div className="wd-detail-main">
-                {hasPhoto
-                  ? <img src={detail.photos[photoIdx]} alt="" />
-                  : <div style={{ fontSize: 64, color: '#d1d5db' }}>🤝</div>}
-                {hasPhoto && detail.photos.length > 1 && (<>
-                  <button
-                    type="button"
-                    onClick={e => { e.stopPropagation(); setPhotoIdx(i => (i - 1 + detail.photos.length) % detail.photos.length); }}
-                    style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,.45)', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}
-                  >‹</button>
-                  <button
-                    type="button"
-                    onClick={e => { e.stopPropagation(); setPhotoIdx(i => (i + 1) % detail.photos.length); }}
-                    style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,.45)', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}
-                  >›</button>
-                  <div style={{ position: 'absolute', bottom: 10, right: 10, background: 'rgba(0,0,0,.52)', color: '#fff', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, zIndex: 2 }}>
-                    {photoIdx + 1} / {detail.photos.length}
-                  </div>
-                </>)}
-              </div>
-              {hasPhoto && detail.photos.length > 1 && (
-                <div className="wd-detail-thumbs">
-                  {detail.photos.map((p, i) => (
-                    <div key={i} className={`wd-detail-thumb${i === photoIdx ? ' on' : ''}`} onClick={() => setPhotoIdx(i)} role="presentation">
-                      <img src={p} alt="" />
+          <div className="ed-head">
+            <div className="ed-head-left">
+              <h1>{detail.title || 'Задача'}</h1>
+              <span className="ed-head-id">#{detail.id}</span>
+            </div>
+            <span className="ed-status-pill">
+              <span className="dot" style={{ background: st.dot, boxShadow: pulseShadow }} />
+              {st.label}
+            </span>
+          </div>
+
+          <div className="ed-grid">
+            <div className="ed-col">
+              <div className="ed-gallery">
+                <div className="ed-main">
+                  {hasPhoto ? (
+                    <img src={photoList[photoIdx]} alt="" />
+                  ) : (
+                    <div className="ed-main-placeholder" aria-hidden>🤝</div>
+                  )}
+                  <div className="ed-floats">
+                    <div className="ed-chip">
+                      <span className="pulse" style={{ background: st.dot, boxShadow: pulseShadow }} />
+                      <span className="ed-chip-text">{st.label}</span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {taskDescShown && (
-              <div className="wd-info-card">
-                <div className="wd-info-label">Описание задачи</div>
-                <p style={{ fontSize: 14, color: '#374151', lineHeight: 1.75, margin: 0 }}>{taskDescShown}</p>
-              </div>
-            )}
-
-            <div className="wd-info-card">
-              <div className="wd-info-label">Подробности</div>
-              <dl style={{ margin: 0 }}>
-                {[
-                  detail.category && ['Категория', detail.category],
-                  detail.agreedPrice && ['Стоимость', `${Number(detail.agreedPrice).toLocaleString('ru-RU')} ₽`],
-                  detail.createdAt && ['Создана', timeAgo(detail.createdAt)],
-                ].filter(Boolean).map(([label, value]) => (
-                  <div key={label} className="wd-info-row">
-                    <dt>{label}</dt>
-                    <dd>{value}</dd>
+                    {detail.category ? (
+                      <div className="ed-chip">
+                        <span className="ed-chip-text">
+                          {dealCategoryEmoji(detail.category)} {detail.category}
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
-                ))}
-              </dl>
-            </div>
-
-            {detail.status === 'CANCELLED' && detail.cancellationReason && (
-              <div style={{ background: 'rgba(239,68,68,.05)', borderRadius: 12, padding: '14px 18px', border: '1px solid rgba(239,68,68,.15)' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#ef4444', marginBottom: 4 }}>Причина отмены</div>
-                <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.55 }}>{detail.cancellationReason}</div>
-              </div>
-            )}
-          </div>
-
-          <div className="wd-right">
-            {detail.agreedPrice && (
-              <div className="wd-price-card">
-                <div className="wd-price-big">{Number(detail.agreedPrice).toLocaleString('ru-RU')} ₽</div>
-                <div className="wd-price-sub">Договорная стоимость</div>
-                <div style={{ marginTop: 10 }}>
-                  <span className="wd-status-badge" style={{ color: st.color, background: st.bg }}>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: st.dot, display: 'inline-block', flexShrink: 0 }} />
-                    {st.label}
-                  </span>
+                  {hasPhoto && photoList.length > 1 ? (
+                    <>
+                      <button
+                        type="button"
+                        className="ed-arrow l"
+                        aria-label="Предыдущее фото"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPhotoIdx((i) => (i - 1 + photoList.length) % photoList.length);
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="ed-arrow r"
+                        aria-label="Следующее фото"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPhotoIdx((i) => (i + 1) % photoList.length);
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                      <div className="ed-counter">
+                        {String(photoIdx + 1).padStart(2, '0')} / {String(photoList.length).padStart(2, '0')}
+                      </div>
+                    </>
+                  ) : null}
                 </div>
-              </div>
-            )}
-
-            {detail.status === 'NEW' && (
-              <div className="wd-action-card" style={{ border: '1.5px solid #fde68a' }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: '#111827', marginBottom: 4 }}>Ждём ответа мастера</div>
-                <p style={{ fontSize: 13, color: '#78350f', margin: '0 0 14px', lineHeight: 1.55, background: '#fffbeb', borderRadius: 8, padding: '10px 12px' }}>
-                  Вы выбрали мастера. После подтверждения заказ перейдёт в работу.
-                </p>
-                {detail.workerId && (
-                  <button type="button" className="wd-btn-full-outline" onClick={() => navigate(`/chat/${detail.workerId}`)}>
-                    Написать мастеру
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className="wd-btn-full-red"
-                  onClick={() => { setCancelNewErr(''); setCancelNewNote(''); setCancelNewOpen(true); }}
-                >
-                  Отменить заявку
-                </button>
-                <p style={{ margin: 0, fontSize: 11, color: '#78716c', lineHeight: 1.45, textAlign: 'center' }}>
-                  Пока мастер не принял заказ, отмена без последствий
-                </p>
-              </div>
-            )}
-
-            {detail.status === 'IN_PROGRESS' && (
-              <div className="wd-action-card">
-                <div className="wd-action-label">Подтверждение выполнения</div>
-                <div className={`wd-confirm-row${myOk ? ' ok' : ' wait'}`}>
-                  <span style={{ fontSize: 16 }}>{myOk ? '✅' : '⏳'}</span>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>Заказчик (вы)</div>
-                    <div style={{ fontSize: 11, color: myOk ? '#22c55e' : '#9ca3af' }}>{myOk ? 'Подтвердили выполнение' : 'Ожидание вашего подтверждения'}</div>
+                {hasPhoto && photoList.length > 1 ? (
+                  <div className="ed-thumbs">
+                    {photoList.map((p, i) => (
+                      <div
+                        key={i}
+                        className={`ed-thumb${i === photoIdx ? ' on' : ''}`}
+                        onClick={() => setPhotoIdx(i)}
+                        role="presentation"
+                      >
+                        <img src={p} alt="" />
+                      </div>
+                    ))}
                   </div>
-                </div>
-                <div className={`wd-confirm-row${workerOk ? ' ok' : ' wait'}`} style={{ marginTop: 6 }}>
-                  <span style={{ fontSize: 16 }}>{workerOk ? '✅' : '⏳'}</span>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>Мастер</div>
-                    <div style={{ fontSize: 11, color: workerOk ? '#22c55e' : '#9ca3af' }}>{workerOk ? 'Подтвердил выполнение' : 'Ожидание подтверждения'}</div>
-                  </div>
-                </div>
-                {!myOk ? (
-                  <button type="button" className="wd-btn-full-green" style={{ marginTop: 10 }} disabled={actionId === detail.id} onClick={e => handleComplete(detail.id, e)}>
-                    {actionId === detail.id ? 'Подтверждаем…' : 'Подтвердить выполнение'}
-                  </button>
-                ) : (
-                  <div style={{ marginTop: 10, textAlign: 'center', fontSize: 13, color: '#16a34a', fontWeight: 700, padding: '10px', background: 'rgba(34,197,94,.07)', borderRadius: 8 }}>
-                    ✓ Вы подтвердили{!workerOk && ' — ожидаем мастера…'}
-                  </div>
-                )}
-                <div style={{ marginTop: 10, borderTop: '1px solid #f3f4f6', paddingTop: 10 }}>
-                  <button type="button" className="wd-btn-full-red" onClick={() => { setCancelActErr(''); setCancelActOpen(true); }}>
-                    Отменить сделку в работе
-                  </button>
-                  <p style={{ margin: '5px 0 0', fontSize: 11, color: '#a8a29e', textAlign: 'center', lineHeight: 1.4 }}>После завершения отмена невозможна</p>
-                </div>
-              </div>
-            )}
-
-            {detail.status === 'COMPLETED' && (
-              <div className="wd-action-card" style={{ background: 'rgba(34,197,94,.06)', border: '1px solid rgba(34,197,94,.2)', textAlign: 'center' }}>
-                <div style={{ fontSize: 32, marginBottom: 4 }}>🏆</div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: '#111827', marginBottom: 4 }}>Сделка завершена!</div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>Обе стороны подтвердили выполнение</div>
-                {!detail.hasReview && detail.workerId && dealEligibleForReviews(detail) ? (
-                  <button
-                    type="button"
-                    onClick={() => { setReviewForm({ rating: 5, text: '' }); setReviewStatus('idle'); setReviewDeal(detail); }}
-                    style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 16px rgba(99,102,241,.28)' }}
-                  >⭐ Оставить отзыв мастеру</button>
-                ) : detail.hasReview ? (
-                  <div style={{ fontSize: 13, color: '#16a34a', fontWeight: 600, background: 'rgba(34,197,94,.08)', borderRadius: 8, padding: '8px 12px' }}>✓ Вы оставили отзыв</div>
                 ) : null}
               </div>
-            )}
 
-            {detail.status === 'CANCELLED' && (
-              <div className="wd-action-card" style={{ background: 'rgba(239,68,68,.05)', border: '1px solid rgba(239,68,68,.15)', textAlign: 'center' }}>
-                <div style={{ fontSize: 32, marginBottom: 4 }}>❌</div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: '#ef4444', marginBottom: 4 }}>Сделка отменена</div>
-                {detail.cancellationReason && <div style={{ fontSize: 12, color: '#9ca3af' }}>{detail.cancellationReason}</div>}
-              </div>
-            )}
+              <DealDetailEdProgress {...prog} />
 
-            <div className="wd-customer-card">
-              <div className="wd-info-label">Мастер</div>
-              <div className="wd-customer-row" onClick={() => detail.workerId && navigate(`/workers/${detail.workerId}`)} role="presentation">
-                {detail.workerAvatar && detail.workerAvatar.length > 10 && detail.workerAvatar !== 'null'
-                  ? <img src={detail.workerAvatar} alt="" className="wd-customer-avatar" />
-                  : <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 16, flexShrink: 0 }}>
-                    {(detail.workerName || 'М')[0].toUpperCase()}
-                  </div>}
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
-                    {[detail.workerName, detail.workerLastName].filter(Boolean).join(' ') || 'Мастер'}
+              {taskDescShown ? (
+                <section className="ed-card">
+                  <div className="ed-eyebrow">Описание</div>
+                  <p className="ed-desc">{taskDescShown}</p>
+                </section>
+              ) : null}
+
+              <section className="ed-card">
+                <div className="ed-eyebrow">Условия</div>
+                <dl className="ed-rows">
+                  {[
+                    detail.category && ['Категория', detail.category],
+                    detail.agreedPrice && ['Стоимость', `${Number(detail.agreedPrice).toLocaleString('ru-RU')} ₽`],
+                    detail.createdAt && ['Создана', timeAgo(detail.createdAt)],
+                  ].filter(Boolean).map(([label, value]) => (
+                    <div key={label} className="ed-row">
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+
+              {detail.status === 'CANCELLED' && detail.cancellationReason ? (
+                <div className="ed-reason-box">
+                  <div className="ed-reason-label">Причина отмены</div>
+                  <p className="ed-reason-text">{detail.cancellationReason}</p>
+                </div>
+              ) : null}
+            </div>
+
+            <aside className="ed-side">
+              <div className="ed-card">
+                <div className="ed-eyebrow">Согласованная стоимость</div>
+                {detail.agreedPrice ? (
+                  <div className="ed-price-num">
+                    {Number(detail.agreedPrice).toLocaleString('ru-RU')}
+                    <small> ₽</small>
                   </div>
-                  <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600 }}>● Мастер</div>
-                </div>
-                <div style={{ color: '#d1d5db', fontSize: 20 }}>›</div>
+                ) : (
+                  <div className="ed-price-num" style={{ fontSize: 22, fontWeight: 700 }}>
+                    По договорённости
+                  </div>
+                )}
+                <p className="ed-price-sub">
+                  Оплата после выполнения и подтверждения обеими сторонами.
+                </p>
               </div>
-              {detail.workerId && (
-                <button type="button" onClick={() => navigate(`/chat/${detail.workerId}`)} className="wd-btn-full-outline" style={{ marginTop: 12 }}>
-                  Написать мастеру
-                </button>
-              )}
-            </div>
 
-            <div style={{ background: '#fff', borderRadius: 14, padding: '16px 18px' }}>
-              <div className="wd-info-label">Ваш профиль</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => navigate('/profile')} role="presentation">
-                {ava
-                  ? <img src={ava} alt="" style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid #f3f4f6' }} />
-                  : <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'linear-gradient(135deg,#e8410a,#ff7043)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 15, flexShrink: 0 }}>
-                    {(userName || 'З')[0].toUpperCase()}
-                  </div>}
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{fullName}</div>
-                  <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Заказчик</div>
+              {detail.status === 'NEW' ? (
+                <div className="ed-card">
+                  <div className="ed-eyebrow">Статус</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 8 }}>Ждём ответа мастера</div>
+                  <div className="ed-callout ed-callout-warn">
+                    Вы выбрали мастера. После подтверждения заказ перейдёт в работу.
+                  </div>
+                  <div className="ed-actions">
+                    {detail.workerId ? (
+                      <button type="button" className="ed-msg-btn" onClick={() => navigate(`/chat/${detail.workerId}`)}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+                        Написать мастеру
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="ed-btn ed-btn-cancel"
+                      onClick={() => { setCancelNewErr(''); setCancelNewNote(''); setCancelNewOpen(true); }}
+                    >
+                      Отменить заявку
+                    </button>
+                    <p className="ed-callout-muted">Пока мастер не принял заказ, отмена без последствий</p>
+                  </div>
+                </div>
+              ) : null}
+
+              {detail.status === 'IN_PROGRESS' ? (
+                <div className="ed-card">
+                  <div className="ed-eyebrow">Подтверждение</div>
+                  <div className="ed-conf-rows">
+                    <div className={`ed-conf-row ${myOk ? 'ok' : 'wait'}`}>
+                      <div className="ed-conf-icon">{myOk ? <DealDetailEdCheck /> : <DealDetailEdHourglass />}</div>
+                      <div>
+                        <div className="ed-conf-name">Заказчик (вы)</div>
+                        <div className="ed-conf-status">
+                          {myOk ? 'Подтвердили выполнение' : 'Ожидание вашего подтверждения'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className={`ed-conf-row ${workerOk ? 'ok' : 'wait'}`}>
+                      <div className="ed-conf-icon">{workerOk ? <DealDetailEdCheck /> : <DealDetailEdHourglass />}</div>
+                      <div>
+                        <div className="ed-conf-name">Мастер</div>
+                        <div className="ed-conf-status">
+                          {workerOk ? 'Подтвердил выполнение' : 'Ожидание подтверждения'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="ed-actions">
+                    {!myOk ? (
+                      <button
+                        type="button"
+                        className="ed-btn ed-btn-confirm"
+                        disabled={actionId === detail.id}
+                        onClick={(e) => handleComplete(detail.id, e)}
+                      >
+                        {actionId === detail.id ? 'Подтверждаем…' : 'Подтвердить выполнение'}
+                      </button>
+                    ) : (
+                      <div className="ed-inline-wait">
+                        ✓ Вы подтвердили{!workerOk ? ' — ожидаем мастера…' : ''}
+                      </div>
+                    )}
+                    <div className="ed-actions-split">
+                      <button
+                        type="button"
+                        className="ed-btn ed-btn-cancel"
+                        onClick={() => { setCancelActErr(''); setCancelActOpen(true); }}
+                      >
+                        Отменить сделку в работе
+                      </button>
+                      <p className="ed-callout-muted">После завершения отмена невозможна</p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {detail.status === 'COMPLETED' ? (
+                <div className="ed-card">
+                  <div className="ed-done-banner">
+                    <div className="ed-done-emoji" aria-hidden>🏆</div>
+                    <div className="ed-done-title">Сделка завершена!</div>
+                    <div className="ed-done-sub">Обе стороны подтвердили выполнение</div>
+                    {!detail.hasReview && detail.workerId && dealEligibleForReviews(detail) ? (
+                      <button
+                        type="button"
+                        className="ed-btn-review"
+                        onClick={() => {
+                          setReviewForm({ rating: 5, text: '' });
+                          setReviewStatus('idle');
+                          setReviewDeal(detail);
+                        }}
+                      >
+                        ⭐ Оставить отзыв мастеру
+                      </button>
+                    ) : detail.hasReview ? (
+                      <div className="ed-review-done">✓ Вы оставили отзыв</div>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+
+              {detail.status === 'CANCELLED' ? (
+                <div className="ed-card">
+                  <div className="ed-cancel-banner">
+                    <div className="ed-cancel-emoji" aria-hidden>❌</div>
+                    <div className="ed-cancel-title">Сделка отменена</div>
+                    {detail.cancellationReason ? (
+                      <div style={{ fontSize: 12, color: '#71717a' }}>{detail.cancellationReason}</div>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="ed-card">
+                <div className="ed-eyebrow" style={{ marginBottom: 14, display: 'block' }}>Мастер</div>
+                <div
+                  className="ed-cust-row"
+                  onClick={() => detail.workerId && navigate(`/workers/${detail.workerId}`)}
+                  role="presentation"
+                >
+                  <div className="ed-ava">
+                    {workerAva ? <img src={workerAva} alt="" /> : (
+                      <div className="ed-ava-fallback">{(detail.workerName || 'М')[0].toUpperCase()}</div>
+                    )}
+                    <span className="ed-ava-dot" />
+                  </div>
+                  <div className="ed-cust-info">
+                    <div className="ed-cust-name">{workerLabel}</div>
+                    <div className="ed-cust-meta">Мастер</div>
+                  </div>
+                  <div className="ed-cust-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+                {detail.workerId ? (
+                  <button type="button" className="ed-msg-btn" onClick={() => navigate(`/chat/${detail.workerId}`)}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                    Написать мастеру
+                  </button>
+                ) : null}
+              </div>
+
+              <div className="ed-card">
+                <div className="ed-eyebrow" style={{ marginBottom: 14, display: 'block' }}>Ваш профиль</div>
+                <div className="ed-cust-row" onClick={() => navigate('/profile')} role="presentation">
+                  <div className="ed-ava">
+                    {ava ? <img src={ava} alt="" /> : (
+                      <div className="ed-ava-fallback">{(userName || 'З')[0].toUpperCase()}</div>
+                    )}
+                  </div>
+                  <div className="ed-cust-info">
+                    <div className="ed-cust-name">{fullName}</div>
+                    <div className="ed-cust-meta">Заказчик</div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
 
         {cancelNewOpen && (
           <div className="wd-modal-bg" onClick={() => !cancelNewBusy && setCancelNewOpen(false)}>
-            <div className="wd-modal" onClick={e => e.stopPropagation()}>
+            <div className="wd-modal" onClick={(e) => e.stopPropagation()}>
               <h3 className="wd-modal-title">Отменить заявку?</h3>
               <p className="wd-modal-sub">Мастер получит уведомление. Можно указать причину — необязательно.</p>
-              <textarea className="wd-modal-textarea" rows={3} value={cancelNewNote} onChange={e => setCancelNewNote(e.target.value)} placeholder="Например: передумал, нашёл другого мастера…" />
+              <textarea className="wd-modal-textarea" rows={3} value={cancelNewNote} onChange={(e) => setCancelNewNote(e.target.value)} placeholder="Например: передумал, нашёл другого мастера…" />
               {cancelNewErr && <div className="wd-modal-error">{cancelNewErr}</div>}
               <div className="wd-modal-btns">
                 <button type="button" className="wd-modal-cancel" disabled={cancelNewBusy} onClick={() => setCancelNewOpen(false)}>Назад</button>
@@ -488,13 +608,13 @@ export default function DealsPage() {
 
         {cancelActOpen && (
           <div className="wd-modal-bg" onClick={() => !cancelActBusy && setCancelActOpen(false)}>
-            <div className="wd-modal" onClick={e => e.stopPropagation()}>
+            <div className="wd-modal" onClick={(e) => e.stopPropagation()}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🚫</div>
                 <h3 className="wd-modal-title" style={{ margin: 0 }}>Отменить сделку?</h3>
               </div>
               <div className="wd-modal-warn">⚠️ Сделка уже <b>в работе</b>. Мастер получит уведомление. Это действие необратимо.</div>
-              <textarea className="wd-modal-textarea" rows={3} value={cancelActNote} onChange={e => setCancelActNote(e.target.value)} placeholder="Причина отмены (необязательно)…" />
+              <textarea className="wd-modal-textarea" rows={3} value={cancelActNote} onChange={(e) => setCancelActNote(e.target.value)} placeholder="Причина отмены (необязательно)…" />
               {cancelActErr && <div className="wd-modal-error">{cancelActErr}</div>}
               <div className="wd-modal-btns">
                 <button type="button" className="wd-modal-cancel" disabled={cancelActBusy} onClick={() => setCancelActOpen(false)}>Не отменять</button>
@@ -506,7 +626,7 @@ export default function DealsPage() {
 
         {reviewDeal && (
           <div className="wd-modal-bg" onClick={() => setReviewDeal(null)}>
-            <div className="wd-modal" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
+            <div className="wd-modal" style={{ maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
               {reviewStatus === 'done' ? (
                 <div style={{ textAlign: 'center', padding: '20px 0' }}>
                   <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
@@ -532,8 +652,8 @@ export default function DealsPage() {
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Оценка</div>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      {[1, 2, 3, 4, 5].map(s => (
-                        <button key={s} type="button" onClick={() => setReviewForm(p => ({ ...p, rating: s }))} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 32, padding: 0, opacity: s <= reviewForm.rating ? 1 : 0.22, color: '#f59e0b' }}>★</button>
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <button key={s} type="button" onClick={() => setReviewForm((p) => ({ ...p, rating: s }))} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 32, padding: 0, opacity: s <= reviewForm.rating ? 1 : 0.22, color: '#f59e0b' }}>★</button>
                       ))}
                     </div>
                   </div>
@@ -541,7 +661,7 @@ export default function DealsPage() {
                     <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Комментарий</div>
                     <textarea
                       value={reviewForm.text}
-                      onChange={e => setReviewForm(p => ({ ...p, text: e.target.value }))}
+                      onChange={(e) => setReviewForm((p) => ({ ...p, text: e.target.value }))}
                       placeholder="Расскажите о качестве работы, пунктуальности, общении…"
                       className="wd-modal-textarea"
                       rows={4}

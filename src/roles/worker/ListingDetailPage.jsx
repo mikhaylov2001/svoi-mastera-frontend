@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { acceptListingDeal, recordListingView, getMyDeals, workerStartDeal } from '../../api';
 import ListingInfoPanels from '../../components/ListingInfoPanels';
-import { dealsWdCss } from '../shared/dealsWdStyles';
+import { dealsWdCss, dealsDetailEdCss } from '../shared/dealsWdStyles';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
@@ -567,7 +567,7 @@ export default function ListingDetailPage() {
   return (
     <div className="ld">
       <style>{css}</style>
-      {listingDeal ? <style>{dealsWdCss}</style> : null}
+      {listingDeal ? <style>{`${dealsWdCss}\n${dealsDetailEdCss}`}</style> : null}
 
       {/* Lightbox */}
       {lightbox && allPhotos.length > 0 && (
@@ -772,47 +772,52 @@ export default function ListingDetailPage() {
             )}
           </div>
 
-          {/* Заказчик по активной/завершённой сделке — как в WorkerDealsPage */}
+          {/* Заказчик по активной/завершённой сделке — тот же стиль, что на странице сделки */}
           {isOwnListing && listingDeal?.customerId && (
-            <div className="wd-customer-card">
-              <div className="wd-info-label">Заказчик</div>
+            <div className="ed-card" style={{ marginTop: 16 }}>
+              <div className="ed-eyebrow" style={{ marginBottom: 14, display: 'block' }}>Заказчик</div>
               <div
-                className="wd-customer-row"
+                className="ed-cust-row"
                 onClick={() => listingDeal.customerId && navigate(`/customers/${listingDeal.customerId}`)}
                 role="presentation"
               >
-                {listingDeal.customerAvatar && listingDeal.customerAvatar.length > 10 && listingDeal.customerAvatar !== 'null'
-                  ? <img src={listingDeal.customerAvatar} alt="" className="wd-customer-avatar" />
-                  : <div className="wd-customer-fallback">{(listingDeal.customerName || 'З')[0].toUpperCase()}</div>}
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
+                <div className="ed-ava">
+                  {listingDeal.customerAvatar && listingDeal.customerAvatar.length > 10 && listingDeal.customerAvatar !== 'null'
+                    ? <img src={listingDeal.customerAvatar} alt="" />
+                    : <div className="ed-ava-fallback">{(listingDeal.customerName || 'З')[0].toUpperCase()}</div>}
+                  <span className="ed-ava-dot" />
+                </div>
+                <div className="ed-cust-info">
+                  <div className="ed-cust-name">
                     {[listingDeal.customerName, listingDeal.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
                   </div>
-                  {listingDeal.status === 'NEW' && (
-                    <div style={{ fontSize: 12, color: '#d97706', fontWeight: 600 }}>● Ожидает вашего подтверждения</div>
-                  )}
-                  {listingDeal.status === 'IN_PROGRESS' && (
-                    <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>● Сделка в работе</div>
-                  )}
-                  {listingDeal.status === 'COMPLETED' && (
-                    <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>● Сделка завершена</div>
-                  )}
+                  <div className="ed-cust-meta">
+                    {listingDeal.status === 'NEW' && 'Ожидает вашего подтверждения'}
+                    {listingDeal.status === 'IN_PROGRESS' && 'Сделка в работе'}
+                    {listingDeal.status === 'COMPLETED' && 'Сделка завершена'}
+                  </div>
                 </div>
-                <div style={{ color: '#d1d5db', fontSize: 20 }}>›</div>
+                <div className="ed-cust-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => navigate(`/chat/${listingDeal.customerId}`)}
-                className="wd-btn-full-outline"
-                style={{ marginTop: 12 }}
+                className="ed-msg-btn"
               >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
                 Написать заказчику
               </button>
               {listingDeal.status === 'NEW' && (
                 <button
                   type="button"
-                  className="ld-btn-accept"
-                  style={{ marginTop: 10, width: '100%' }}
+                  className="ed-btn ed-btn-confirm"
+                  style={{ marginTop: 10 }}
                   onClick={handleWorkerAcceptOnListing}
                   disabled={workerAccepting}
                 >
@@ -820,18 +825,18 @@ export default function ListingDetailPage() {
                 </button>
               )}
               {listingDeal.status === 'IN_PROGRESS' && (
-                <div className="ld-success-banner" style={{ marginTop: 12 }}>
+                <div className="ed-inline-wait" style={{ marginTop: 12 }}>
                   ✓ Вы приняли заказ — сделка активна
                 </div>
               )}
               {workerDealError && <div className="ld-error-msg" style={{ marginTop: 8 }}>{workerDealError}</div>}
               <button
                 type="button"
-                className="ld-deals-link"
+                className="ed-btn ed-btn-ghost"
                 style={{ marginTop: 10 }}
                 onClick={() => navigate(`/deals?dealId=${listingDeal.id}`)}
               >
-                Открыть сделку →
+                Открыть сделку
               </button>
             </div>
           )}
