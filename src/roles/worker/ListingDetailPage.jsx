@@ -30,33 +30,33 @@ function reviewsCountLabel(n) {
 
 const Icon = {
   back: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M15 19l-7-7 7-7" />
     </svg>
   ),
   next: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M9 5l7 7-7 7" />
     </svg>
   ),
   search: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
       <circle cx="11" cy="11" r="7" />
-      <path strokeLinecap="round" d="M21 21l-4.3-4.3" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.3-4.3" />
     </svg>
   ),
   more: () => (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <circle cx="12" cy="6" r="1.5" />
-      <circle cx="12" cy="12" r="1.5" />
-      <circle cx="12" cy="18" r="1.5" />
+      <circle cx="12" cy="6" r="1.35" />
+      <circle cx="12" cy="12" r="1.35" />
+      <circle cx="12" cy="18" r="1.35" />
     </svg>
   ),
 };
 
 const MetaIco = {
   folder: () => (
-    <svg className="jd-meta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+    <svg className="jd-meta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -65,13 +65,13 @@ const MetaIco = {
     </svg>
   ),
   pin: () => (
-    <svg className="jd-meta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+    <svg className="jd-meta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s7-7.5 7-13a7 7 0 10-14 0c0 5.5 7 13 7 13z" />
-      <circle cx="12" cy="10" r="2" fill="none" />
+      <circle cx="12" cy="10" r="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   ),
   cal: () => (
-    <svg className="jd-meta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+    <svg className="jd-meta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
       <rect x="3" y="4" width="18" height="18" rx="2" />
       <path strokeLinecap="round" d="M3 10h18M8 2v4M16 2v4" />
     </svg>
@@ -480,7 +480,7 @@ export default function ListingDetailPage() {
                       }}
                       aria-label="Предыдущее фото"
                     >
-                      <Icon.back />
+                      {Icon.back()}
                     </button>
                     <button
                       type="button"
@@ -491,11 +491,8 @@ export default function ListingDetailPage() {
                       }}
                       aria-label="Следующее фото"
                     >
-                      <Icon.next />
+                      {Icon.next()}
                     </button>
-                    <div className="jd-counter">
-                      {String(activePhoto + 1).padStart(2, '0')} / {String(allPhotos.length).padStart(2, '0')}
-                    </div>
                   </>
                 )}
                 {allPhotos.length > 0 && (
@@ -597,7 +594,7 @@ export default function ListingDetailPage() {
               {priceHasAmount ? (
                 <div className="jd-price-num">
                   {priceMainLine}
-                  <small> ₽</small>
+                  <span className="jd-price-rub"> ₽</span>
                 </div>
               ) : (
                 <div className="jd-price-plain">{priceMainLine}</div>
@@ -753,9 +750,9 @@ export default function ListingDetailPage() {
                   <span className="jd-cust-chevron">›</span>
                 </Link>
                 <div className="jd-rating-row">
-                  <span className="jd-stars">
-                    {'★'.repeat(workerStars)}
-                    {'☆'.repeat(5 - workerStars)}
+                  <span className="jd-stars" aria-hidden>
+                    <span className="jd-stars-fill">{'★'.repeat(workerStars)}</span>
+                    <span className="jd-stars-empty">{'☆'.repeat(5 - workerStars)}</span>
                   </span>
                   <span className="jd-rating-num">{workerRating.toFixed(1)}</span>
                   <span className="jd-rating-sub">({reviewsCountLabel(workerReviews)})</span>
