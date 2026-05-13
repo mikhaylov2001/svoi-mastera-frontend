@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { FaChevronLeft, FaChevronRight, FaRegClock } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats } from '../../api';
+import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats, recordJobRequestView } from '../../api';
 import {
   formatJobRequestBudgetLabel,
   getJobRequestPublishedBudgetNumber,
@@ -1086,6 +1086,16 @@ export default function FindWorkPage() {
   const [ratingMin,     setRatingMin]     = useState(0);
   const [customerStats, setCustomerStats] = useState({});
 
+  /** Один POST на заявку за сессию страницы, чтобы не дублировать счётчик при серии кликов. */
+  const jobRequestViewSentRef = useRef(new Set());
+  const bumpJobRequestView = useCallback((reqId) => {
+    if (!userId || reqId == null) return;
+    const id = String(reqId);
+    if (jobRequestViewSentRef.current.has(id)) return;
+    jobRequestViewSentRef.current.add(id);
+    recordJobRequestView(userId, id).catch(() => {});
+  }, [userId]);
+
   const [debouncedFwSearch, setDebouncedFwSearch] = useState('');
   const [fwSearchFocused, setFwSearchFocused] = useState(false);
   const fwSearchDdRef = useRef(null);
@@ -1150,8 +1160,9 @@ export default function FindWorkPage() {
     if (cat) setSelectedCategory(cat);
     setSelectedRequest(req);
     setActivePhotoIdx(0);
+    bumpJobRequestView(req.id);
     setSearchParams(p => { const next = new URLSearchParams(p); next.delete('request'); return next; }, { replace: true });
-  }, [requestIdFromUrl, loading, requests, categories, setSearchParams, showToast]);
+  }, [requestIdFromUrl, loading, requests, categories, setSearchParams, showToast, bumpJobRequestView]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -1205,11 +1216,13 @@ export default function FindWorkPage() {
     requests.filter(r => r.categoryId === cat.id);
 
   const openRequestDetail = useCallback((req) => {
+    bumpJobRequestView(req?.id);
     setSelectedRequest(req);
     setActivePhotoIdx(0);
-  }, []);
+  }, [bumpJobRequestView]);
 
   const handleOpenOfferModal = (request) => {
+    bumpJobRequestView(request?.id);
     setShowOfferModal(request);
     const p = jobRequestListPrice(request);
     setOfferForm({
@@ -2039,7 +2052,10 @@ export default function FindWorkPage() {
                             title={!req.customerId ? 'Чат будет доступен после появления профиля заказчика' : undefined}
                             onClick={e => {
                               e.stopPropagation();
-                              if (req.customerId) navigate(`/chat/${req.customerId}?jobRequestId=${req.id}`);
+                              if (req.customerId) {
+                                bumpJobRequestView(req.id);
+                                navigate(`/chat/${req.customerId}?jobRequestId=${req.id}`);
+                              }
                             }}
                           >
                             Написать

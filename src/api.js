@@ -110,6 +110,19 @@ export async function getJobRequestById(userId, requestId) {
   return apiCall(`/job-requests/${requestId}`, { headers: { 'X-User-Id': userId } });
 }
 
+/**
+ * Зафиксировать просмотр заявки (мастер открыл карточку / чат / форму отклика).
+ * Бэкенд: POST /api/v1/job-requests/{id}/view с заголовком X-User-Id (мастер).
+ * В БД: увеличить job_requests.views_count (или аналог), вернуть в DTO поле viewsCount в GET /job-requests/my и /worker/job-requests.
+ * См. backend/sql/job_request_views.sql
+ */
+export async function recordJobRequestView(viewerUserId, requestId) {
+  return apiCall(`/job-requests/${requestId}/view`, {
+    method: 'POST',
+    headers: { 'X-User-Id': viewerUserId },
+  });
+}
+
 /** Редактирование своей открытой заявки (только заказчик, статус OPEN на бэкенде) */
 export async function updateJobRequest(userId, requestId, body) {
   return apiCall(`/job-requests/${requestId}`, {

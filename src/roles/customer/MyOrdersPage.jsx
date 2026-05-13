@@ -20,7 +20,7 @@ import {
   getJobRequestPublishedBudgetNumber,
   JOB_REQUEST_PRICE_MISSING_LABEL,
 } from '../../utils/jobRequestBudget';
-import { mergeApiCategoriesWithCatalog, resolveCatalogCategoryRow, normalizeCategoriesApiResponse, pickCategoryId } from '../../utils/mergeApiCategoriesWithCatalog';
+import { getJobRequestViewsCount } from '../../utils/jobRequestViews';
 import '../worker/listings-new.css';
 
 const CATEGORY_PHOTO_BY_NAME = {};
@@ -267,34 +267,35 @@ const css = `
   .mo-orders-root .mo-search input:focus { border-color: #e8410a; box-shadow: 0 0 0 4px rgba(232,65,10,.1); }
   .mo-orders-root .mo-search svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #94a3b8; }
 
-  .mo-orders-root .mo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .mo-orders-root .mo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
   @media (max-width: 880px) { .mo-orders-root .mo-grid { grid-template-columns: 1fr; } }
 
   .mo-orders-root .mo-card {
-    background: #fff; border: 1.5px solid #ececec; border-radius: 22px; overflow: hidden; position: relative;
-    transition: all .3s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column;
+    background: #fff; border: 1px solid #ececec; border-radius: 18px; overflow: hidden; position: relative;
+    transition: all .28s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column;
     animation: mo-orders-fade .45s both; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
   }
   @keyframes mo-orders-fade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
   .mo-orders-root .mo-card:hover {
-    transform: translateY(-4px); border-color: #ffd4bf; box-shadow: 0 24px 48px -18px rgba(232,65,10,.25);
+    transform: translateY(-3px); border-color: #ffd4bf; box-shadow: 0 18px 40px -16px rgba(232,65,10,.22);
   }
   .mo-orders-root .mo-card::before {
     content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-    background: linear-gradient(180deg, #e8410a, #ff8a5b); opacity: 0; transition: opacity .25s; border-radius: 2px;
+    background: linear-gradient(180deg, #ff4d2d, #ff8a5b); opacity: 0; transition: opacity .22s; border-radius: 2px;
   }
   .mo-orders-root .mo-card:hover::before { opacity: 1; }
 
-  .mo-orders-root .mo-card-top { display: flex; gap: 16px; padding: 18px; }
+  .mo-orders-root .mo-card-top { display: flex; gap: 14px; padding: 20px; align-items: flex-start; }
 
   .mo-orders-root .mo-card-photo {
-    width: 130px; height: 130px; border-radius: 18px; overflow: hidden; flex-shrink: 0;
-    background: linear-gradient(135deg, #fff5ef 0%, #ffe4d4 100%); display: flex; align-items: center; justify-content: center;
-    position: relative; box-shadow: inset 0 0 0 1px rgba(232,65,10,.06);
+    width: 112px; height: 112px; border-radius: 16px; overflow: hidden; flex-shrink: 0;
+    background: linear-gradient(145deg, #fff7f0 0%, #ffe8dc 100%); display: flex; align-items: center; justify-content: center;
+    position: relative; box-shadow: inset 0 0 0 1px rgba(255, 77, 45, 0.07);
   }
   .mo-orders-root .mo-card-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
   .mo-orders-root .mo-card:hover .mo-card-photo img { transform: scale(1.08); }
-  .mo-orders-root .mo-card-photo .emoji { font-size: 54px; line-height: 1; filter: drop-shadow(0 6px 12px rgba(232,65,10,.25)); }
+  .mo-orders-root .mo-card-photo .emoji { font-size: 48px; line-height: 1; filter: drop-shadow(0 4px 10px rgba(255,77,45,.2)); }
 
   .mo-orders-root .mo-card-photo::after {
     content: ''; position: absolute; inset: 0;
@@ -315,7 +316,7 @@ const css = `
 
   .mo-orders-root .mo-card-body { flex: 1; min-width: 0; }
   .mo-orders-root .mo-card-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-  .mo-orders-root .mo-card-title { margin: 0; font-size: 17px; font-weight: 800; color: #0f172a; letter-spacing: -0.015em; line-height: 1.3; }
+  .mo-orders-root .mo-card-title { margin: 0; font-size: 17px; font-weight: 800; color: #0a0a0a; letter-spacing: -0.02em; line-height: 1.28; }
   .mo-orders-root .mo-card-desc {
     margin-top: 6px; font-size: 13px; color: #64748b; line-height: 1.45;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -335,7 +336,7 @@ const css = `
   .mo-orders-root .mo-status.neutral { background: #f1f5f9; color: #64748b; }
   .mo-orders-root .mo-status.neutral .dot { background: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,.2); }
 
-  .mo-orders-root .mo-cat { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; padding: 5px 11px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+  .mo-orders-root .mo-cat { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
   .mo-orders-root .mo-cat.elec { background: #cffafe; color: #0e7490; }
   .mo-orders-root .mo-cat.plumb { background: #fef3c7; color: #92400e; }
   .mo-orders-root .mo-cat.beauty { background: #f3e8ff; color: #7c3aed; }
@@ -345,21 +346,27 @@ const css = `
   .mo-orders-root .mo-price-row { margin-top: 14px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
   .mo-orders-root .mo-price { display: flex; align-items: baseline; gap: 8px; }
   .mo-orders-root .mo-price-num {
-    font-size: 26px; font-weight: 900; background: linear-gradient(135deg, #e8410a, #ff6b3d);
-    -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -0.025em; line-height: 1;
+    font-size: 25px; font-weight: 900;
+    background: linear-gradient(135deg, #ff4d2d, #ff6b3d);
+    -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -0.03em; line-height: 1;
   }
   .mo-orders-root .mo-price-lbl { font-size: 12px; color: #94a3b8; font-weight: 600; }
 
   .mo-orders-root .mo-meta {
-    display: flex; gap: 16px; align-items: center; flex-wrap: wrap; padding: 12px 18px;
-    border-top: 1px dashed #ececec; color: #64748b; font-size: 12.5px; font-weight: 600;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 12px 20px; border-top: 1px dashed #e8e8e8; color: #64748b; font-size: 12.5px; font-weight: 600;
     background: linear-gradient(180deg, #fafafb, #fff);
   }
+  .mo-orders-root .mo-meta-start { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .mo-orders-root .mo-meta-views { font-weight: 700; color: #64748b; }
+  .mo-orders-root .mo-meta-views svg { opacity: 0.85; }
+  .mo-orders-root .mo-meta-trail { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; text-align: right; }
   .mo-orders-root .mo-meta-item { display: inline-flex; align-items: center; gap: 6px; }
-  .mo-orders-root .mo-meta-item svg { width: 14px; height: 14px; opacity: .7; flex-shrink: 0; }
-  .mo-orders-root .mo-offers { font-weight: 800; margin-left: auto; display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; text-align: right; }
+  .mo-orders-root .mo-meta-item svg { width: 14px; height: 14px; opacity: .72; flex-shrink: 0; }
+  .mo-orders-root .mo-offers { font-weight: 800; display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .mo-orders-root .mo-offers--has { color: #e8410a; }
-  .mo-orders-root .mo-offers--wait { color: #b45309; font-weight: 700; }
+  .mo-orders-root .mo-offers--wait { color: #64748b; font-weight: 600; gap: 5px; }
+  .mo-orders-root .mo-offers--wait svg { flex-shrink: 0; opacity: 0.75; }
 
   .mo-orders-root .mo-avatars { display: inline-flex; margin-right: 4px; }
   .mo-orders-root .mo-avatars span {
@@ -370,7 +377,7 @@ const css = `
   }
   .mo-orders-root .mo-avatars span:first-child { margin-left: 0; }
 
-  .mo-orders-root .mo-actions { display: flex; gap: 8px; padding: 14px 18px 18px; }
+  .mo-orders-root .mo-actions { display: flex; gap: 8px; padding: 12px 20px 18px; }
   .mo-orders-root .mo-btn {
     flex: 1; border: none; border-radius: 13px; padding: 12px 14px; font: inherit; font-weight: 800; font-size: 13.5px;
     cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -1953,12 +1960,19 @@ export default function MyOrdersPage() {
           <div className="mo-grid">
             {shownFiltered.map((req) => {
               const catName = jobRequestCategoryLabel(req);
+              const categoryPhoto = getCategoryPlaceholderPhotoUrlOrDefault(
+                {
+                  categoryName: catName,
+                  categoryId: req.categoryId,
+                  categorySlug: req.categorySlug || req.category_slug,
+                },
+                categories,
+              );
               const pillClass = moCardStatusPillClass(req.status);
               const stPillLabel = moCardStatusPillLabel(req.status);
               const budget = getJobRequestPublishedBudgetNumber(req);
               const offers = Number(req.offersCount) || 0;
-              const viewsRaw = req.viewsCount ?? req.views ?? req.viewCount;
-              const views = viewsRaw != null && viewsRaw !== '' ? Number(viewsRaw) : null;
+              const views = getJobRequestViewsCount(req);
               const desc = (req.description && req.description !== 'Без описания') ? req.description : '';
               const urgent = !!(req.urgent || req.isUrgent);
               const openDetail = (showOffers) => {
@@ -1993,7 +2007,7 @@ export default function MyOrdersPage() {
                       {req.photos?.length ? (
                         <img src={req.photos[0]} alt="" />
                       ) : (
-                        <span className="emoji" aria-hidden>{categoryEmoji(catName)}</span>
+                        <img src={categoryPhoto} alt="" />
                       )}
                     </div>
                     <div className="mo-card-body">
@@ -2004,12 +2018,12 @@ export default function MyOrdersPage() {
                           {stPillLabel}
                         </span>
                       </div>
-                      {!!desc && <div className="mo-card-desc">{desc}</div>}
                       {!!catName && (
                         <span className={`mo-cat ${moCatClassFromLabel(catName)}`}>
                           {categoryEmoji(catName)} {catName}
                         </span>
                       )}
+                      {!!desc && <div className="mo-card-desc">{desc}</div>}
                       <div className="mo-price-row">
                         <div className="mo-price">
                           {budget && Number(budget) > 0 ? (
@@ -2026,18 +2040,18 @@ export default function MyOrdersPage() {
                   </div>
 
                   <div className="mo-meta">
-                    <span className="mo-meta-item">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
-                      {formatJobRequestRelativeRu(req.createdAt)}
-                    </span>
-                    {views != null && !Number.isNaN(views) && (
+                    <div className="mo-meta-start">
                       <span className="mo-meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+                        {formatJobRequestRelativeRu(req.createdAt)}
+                      </span>
+                      <span className="mo-meta-item mo-meta-views">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>
                         {views}
                       </span>
-                    )}
+                    </div>
                     {offers > 0 ? (
-                      <span className="mo-offers mo-offers--has">
+                      <span className="mo-meta-trail mo-offers mo-offers--has">
                         <span className="mo-avatars" aria-hidden>
                           {Array.from({ length: Math.min(offers, 3) }).map((_, i) => (
                             <span key={i}>{['А', 'М', 'С', 'К'][i]}</span>
@@ -2046,7 +2060,13 @@ export default function MyOrdersPage() {
                         {offers} {pluralOffers(offers)} →
                       </span>
                     ) : (
-                      <span className="mo-offers mo-offers--wait">⏳ Ждём первый отклик</span>
+                      <span className="mo-meta-trail mo-offers mo-offers--wait">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                          <path d="M5 2h14v3l-4 5 4 5v3H5v-3l4-5-4-5V2z" />
+                          <path d="M9 12h6" />
+                        </svg>
+                        Ждём первый отклик
+                      </span>
                     )}
                   </div>
 
