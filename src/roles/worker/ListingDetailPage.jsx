@@ -42,7 +42,6 @@ const listingPageExtraCss = `
   font-size: 13px;
   border-radius: 10px;
 }
-.ed--listing-detail .ed-msg-btn svg { width: 14px; height: 14px; }
 .ed--listing-detail .ed-cust-row { padding: 0 0 10px; }
 .ed--listing-detail .ed-eyebrow--block { display: block; margin-bottom: 8px; }
 .ed--listing-detail .ed-rating-line { margin-top: 10px; padding-top: 10px; gap: 6px; font-size: 12px; }
@@ -708,13 +707,6 @@ export default function ListingDetailPage() {
                         </div>
                       )}
                       <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-msg-btn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                          />
-                        </svg>
                         Написать сообщение
                       </Link>
                       <button type="button" className="ed-link-deals" onClick={() => navigate('/deals')}>
@@ -778,13 +770,6 @@ export default function ListingDetailPage() {
                   </div>
                 </div>
                 <button type="button" className="ed-msg-btn" onClick={() => navigate(`/chat/${listingDeal.customerId}`)}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                    />
-                  </svg>
                   Написать заказчику
                 </button>
                 {listingDeal.status === 'NEW' && (
@@ -862,13 +847,6 @@ export default function ListingDetailPage() {
                   </div>
                 </div>
                 <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-msg-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                    />
-                  </svg>
                   Написать мастеру
                 </Link>
                 <div className="ed-rating-line">

@@ -733,14 +733,22 @@ export const dealsDetailEdCss = `
   line-height: 1.35;
   cursor: pointer;
   transition: all .15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
 }
 .ed-btn-confirm { background: #f45b31; color: #fff; box-shadow: 0 8px 20px -6px rgba(244,91,49,.4); }
+.ed-btn-confirm:visited { color: #fff; }
 .ed-btn-confirm:hover { background: #e04a23; }
 .ed-btn-confirm:disabled { opacity: .65; cursor: not-allowed; transform: none; }
 .ed-btn-cancel { background: #fff; color: #71717a; border: 1px solid #ececef; }
 .ed-btn-cancel:hover { color: #ef4444; border-color: #fecaca; background: #fef2f2; }
 .ed-btn-ghost { background: #fff; color: #0a0a0a; border: 1px solid #ececef; }
 .ed-btn-ghost:hover { background: #fafafa; }
+.ed-btn-ghost:visited { color: #0a0a0a; }
 
 .ed-done-banner { text-align: center; padding: 18px; background: rgba(34,197,94,.06); border-radius: 12px; border: 1px solid rgba(34,197,94,.18); margin-bottom: 12px; }
 .ed-done-emoji { font-size: 32px; margin-bottom: 4px; }
@@ -779,15 +787,26 @@ export const dealsDetailEdCss = `
   font-size: 13.5px;
   line-height: 1.35;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+  gap: 0;
   transition: background .15s;
   box-shadow: 0 8px 20px -6px rgba(244,91,49,.4);
 }
-.ed-msg-btn:hover { background: #e04a23; }
-.ed-msg-btn svg { width: 15px; height: 15px; stroke-width: 2; }
+.ed-msg-btn:visited,
+.ed-msg-btn:active {
+  color: #fff;
+  text-decoration: none;
+}
+.ed-msg-btn:hover {
+  color: #fff;
+  text-decoration: none;
+  background: #e04a23;
+}
 
 .ed-inline-ok { text-align: center; padding: 12px; background: #fafafa; border-radius: 10px; color: #0a0a0a; font-weight: 600; font-size: 13px; line-height: 1.4; }
 .ed-inline-wait { margin-top: 10px; text-align: center; font-size: 13px; color: #16a34a; font-weight: 600; padding: 10px; background: rgba(34,197,94,.07); border-radius: 10px; line-height: 1.4; }
