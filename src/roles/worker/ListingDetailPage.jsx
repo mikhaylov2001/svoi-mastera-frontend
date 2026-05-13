@@ -19,6 +19,39 @@ const listingViewPostedIds = new Set();
 const COLLAPSE = 420;
 
 const listingPageExtraCss = `
+/* Узкий сайдбар и компактные карточки (стоимость / мастер и др.) */
+.ed--listing-detail .ed-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+  gap: 18px;
+}
+@media (max-width: 1020px) {
+  .ed--listing-detail .ed-grid { grid-template-columns: 1fr; }
+}
+.ed--listing-detail .ed-side { gap: 12px; min-width: 0; }
+.ed--listing-detail .ed-side .ed-card {
+  padding: 14px 16px;
+  border-radius: 14px;
+}
+.ed--listing-detail .ed-price-num { font-size: 26px; margin-top: 6px; letter-spacing: -0.03em; }
+.ed--listing-detail .ed-price-num small { font-size: 15px; }
+.ed--listing-detail .ed-price-sub { margin-top: 6px; font-size: 12px; line-height: 1.45; }
+.ed--listing-detail .ed-actions { margin-top: 10px; gap: 6px; }
+.ed--listing-detail .ed-btn,
+.ed--listing-detail .ed-msg-btn {
+  padding: 9px 14px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+.ed--listing-detail .ed-msg-btn svg { width: 14px; height: 14px; }
+.ed--listing-detail .ed-cust-row { padding: 0 0 10px; }
+.ed--listing-detail .ed-eyebrow--block { display: block; margin-bottom: 8px; }
+.ed--listing-detail .ed-rating-line { margin-top: 10px; padding-top: 10px; gap: 6px; font-size: 12px; }
+.ed--listing-detail .ed-rating-stars { font-size: 13px; letter-spacing: 1px; }
+.ed--listing-detail .ed-own-note { margin-top: 10px; padding: 10px 12px; font-size: 12px; line-height: 1.45; }
+.ed--listing-detail .ed-link-deals { padding: 6px 0 0; font-size: 12px; }
+.ed--listing-detail .ed-similar-head { margin-bottom: 10px; }
+.ed--listing-detail .ed-similar-head strong { font-size: 14px; }
+
 .ed-head { align-items: flex-start; }
 .ed-head-right { display: flex; align-items: flex-start; gap: 10px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
 .ed-fav.ulc-fav-heart {
@@ -290,7 +323,7 @@ export default function ListingDetailPage() {
 
   if (loading) {
     return (
-      <div className="ed">
+      <div className="ed ed--listing-detail">
         <style>{listingStyles}</style>
         <div className="ed-wrap">
           <div
@@ -327,7 +360,7 @@ export default function ListingDetailPage() {
 
   if (!listing) {
     return (
-      <div className="ed">
+      <div className="ed ed--listing-detail">
         <style>{listingStyles}</style>
         <div className="ed-wrap" style={{ textAlign: 'center', padding: '80px 24px' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>😕</div>
@@ -413,7 +446,7 @@ export default function ListingDetailPage() {
   const lbIdx = hasUploadedPhotos ? activePhoto : 0;
 
   return (
-    <div className="ed">
+    <div className="ed ed--listing-detail">
       <style>{listingStyles}</style>
 
       {lightbox && (
@@ -710,7 +743,7 @@ export default function ListingDetailPage() {
 
             {isOwnListing && listingDeal?.customerId ? (
               <div className="ed-card">
-                <div className="ed-eyebrow" style={{ marginBottom: 14, display: 'block' }}>
+                <div className="ed-eyebrow ed-eyebrow--block">
                   Заказчик
                 </div>
                 <div
@@ -784,7 +817,7 @@ export default function ListingDetailPage() {
 
             {isOwnListing ? (
               <div className="ed-card">
-                <div className="ed-eyebrow" style={{ marginBottom: 14, display: 'block' }}>
+                <div className="ed-eyebrow ed-eyebrow--block">
                   Ваш профиль
                 </div>
                 <div className="ed-cust-row ed-cust-row-static" onClick={() => navigate('/worker-profile')} role="presentation">
@@ -802,7 +835,7 @@ export default function ListingDetailPage() {
               </div>
             ) : (
               <div className="ed-card">
-                <div className="ed-eyebrow" style={{ marginBottom: 14, display: 'block' }}>
+                <div className="ed-eyebrow ed-eyebrow--block">
                   Мастер
                 </div>
                 <div

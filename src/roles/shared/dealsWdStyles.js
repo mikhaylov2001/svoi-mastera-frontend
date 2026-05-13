@@ -614,7 +614,7 @@ export const dealsDetailEdCss = `
   padding: 10px 10px 10px 0;
   box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
 }
-.ed-main { position: relative; aspect-ratio: 16 / 10; min-height: clamp(280px, 44vw, 520px); border-radius: 10px; overflow: hidden; background: #f4f4f5; }
+.ed-main { position: relative; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #f4f4f5; display: flex; align-items: center; justify-content: center; }
 .ed-main img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
 .ed-main-placeholder { display: flex; align-items: center; justify-content: center; font-size: 64px; color: #d4d4d8; }
 .ed-floats { position: absolute; top: 14px; left: 14px; display: flex; flex-wrap: wrap; gap: 6px; z-index: 3; }
@@ -699,6 +699,7 @@ export const dealsDetailEdCss = `
 
 .ed-side { position: sticky; top: 24px; align-self: start; display: flex; flex-direction: column; gap: 16px; }
 @media (max-width: 1020px) { .ed-side { position: static; } }
+@media (max-width: 900px) { .ed-main { aspect-ratio: 4 / 3; } }
 
 .ed-price-num { font-size: 40px; font-weight: 700; color: #0a0a0a; letter-spacing: -.035em; line-height: 1; margin-top: 12px; font-variant-numeric: tabular-nums; }
 .ed-price-num small { font-size: 22px; margin-left: 4px; font-weight: 500; color: #71717a; }
@@ -858,7 +859,7 @@ export const listingsDetailJdCss = `
 .jd-h2-card { font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 2px; letter-spacing: -.02em; line-height: 1.25; }
 
 .jd-gallery { background: #fff; border-radius: 16px; border: 1px solid #e8e8ec; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04), 0 12px 40px rgba(0,0,0,.05); }
-.jd-main { position: relative; aspect-ratio: 16 / 10; min-height: clamp(280px, 44vw, 480px); border-radius: 14px; overflow: hidden; background: #f4f4f5; cursor: pointer; }
+.jd-main { position: relative; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: #f4f4f5; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .jd-main img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
 .jd-main-ph { display: flex; align-items: center; justify-content: center; font-size: 64px; color: #d4d4d8; width: 100%; height: 100%; }
 .jd-img-tools { position: absolute; bottom: 14px; left: 14px; z-index: 4; display: flex; align-items: center; gap: 8px; }
@@ -896,6 +897,7 @@ export const listingsDetailJdCss = `
 
 .jd-side { position: sticky; top: 72px; align-self: start; display: flex; flex-direction: column; gap: 16px; }
 @media (max-width: 1020px) { .jd-side { position: static; } }
+@media (max-width: 900px) { .jd-main { aspect-ratio: 4 / 3; } }
 
 .jd-price-num { font-size: 36px; font-weight: 700; color: #0a0a0a; letter-spacing: -.035em; line-height: 1.05; margin-top: 12px; font-variant-numeric: tabular-nums; }
 .jd-price-num .jd-price-rub { font-size: 0.92em; font-weight: 700; color: #111827; margin-left: 2px; }
