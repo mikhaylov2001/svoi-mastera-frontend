@@ -21,6 +21,12 @@ import {
   JOB_REQUEST_PRICE_MISSING_LABEL,
 } from '../../utils/jobRequestBudget';
 import { getJobRequestViewsCount } from '../../utils/jobRequestViews';
+import {
+  mergeApiCategoriesWithCatalog,
+  normalizeCategoriesApiResponse,
+  pickCategoryId,
+  resolveCatalogCategoryRow,
+} from '../../utils/mergeApiCategoriesWithCatalog';
 import '../worker/listings-new.css';
 
 const CATEGORY_PHOTO_BY_NAME = {};
@@ -285,20 +291,19 @@ const css = `
   @media (max-width: 880px) { .mo-orders-root .mo-grid { grid-template-columns: 1fr; } }
 
   .mo-orders-root .mo-card {
-    background: #fff; border: 1px solid rgba(255, 160, 130, 0.28); border-radius: 18px; overflow: hidden; position: relative;
+    background: #fff;
+    border: 1px solid rgba(255, 160, 130, 0.28);
+    border-left: 3px solid #ff7043;
+    border-radius: 22px; overflow: hidden; position: relative;
     transition: all .28s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column;
     animation: mo-orders-fade .45s both; cursor: pointer;
     box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
   }
   @keyframes mo-orders-fade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
   .mo-orders-root .mo-card:hover {
-    transform: translateY(-3px); border-color: #ffd4bf; box-shadow: 0 18px 40px -16px rgba(232,65,10,.22);
+    transform: translateY(-3px); border-color: #ffd4bf; border-left-color: #ff5722;
+    box-shadow: 0 18px 40px -16px rgba(232,65,10,.22);
   }
-  .mo-orders-root .mo-card::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-    background: linear-gradient(180deg, #ff5722, #ffb74d); opacity: 0; transition: opacity .22s; border-radius: 2px;
-  }
-  .mo-orders-root .mo-card:hover::before { opacity: 1; }
 
   .mo-orders-root .mo-card-top { display: flex; gap: 16px; padding: 20px; align-items: flex-start; }
 
@@ -340,8 +345,8 @@ const css = `
     font-size: 11.5px; font-weight: 800; white-space: nowrap; flex-shrink: 0;
   }
   .mo-orders-root .mo-status .dot { width: 6px; height: 6px; border-radius: 50%; }
-  .mo-orders-root .mo-status.open { background: rgba(74, 222, 128, 0.16); color: #15803d; }
-  .mo-orders-root .mo-status.open .dot { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.2); }
+  .mo-orders-root .mo-status.open { background: #e8f7ed; color: #22c55e; }
+  .mo-orders-root .mo-status.open .dot { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.2); }
   .mo-orders-root .mo-status.wait { background: rgba(254, 240, 138, 0.45); color: #92400e; }
   .mo-orders-root .mo-status.wait .dot { background: #d97706; box-shadow: 0 0 0 3px rgba(245,158,11,.22); }
   .mo-orders-root .mo-status.work { background: #dbeafe; color: #1d4ed8; }
@@ -354,7 +359,7 @@ const css = `
   .mo-orders-root .mo-cat.plumb { background: #fef3c7; color: #92400e; }
   .mo-orders-root .mo-cat.beauty { background: #f3e8ff; color: #7c3aed; }
   .mo-orders-root .mo-cat.hair { background: #fef9c3; color: #a16207; }
-  .mo-orders-root .mo-cat.repair { background: #fff7ed; color: #c2410c; }
+  .mo-orders-root .mo-cat.repair { background: #fff2e6; color: #d97706; }
 
   .mo-orders-root .mo-price-row { margin-top: 16px; display: flex; align-items: baseline; justify-content: flex-start; gap: 10px; flex-wrap: wrap; }
   .mo-orders-root .mo-price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -656,6 +661,30 @@ function moCatClassFromLabel(name) {
   return 'repair';
 }
 
+/** Нормализация полей заявки с бэка (snake_case, вложенный category) для списка и карточек. */
+function normalizeCustomerJobRequestFromApi(r) {
+  if (!r || typeof r !== 'object') return r;
+  const cat = r.category && typeof r.category === 'object' ? r.category : null;
+  const viewsRaw =
+    r.viewsCount
+    ?? r.views_count
+    ?? r.views
+    ?? r.viewCount
+    ?? r.view_count;
+  const nestedId = cat ? (pickCategoryId(cat) ?? cat.id ?? cat.categoryId) : null;
+  const next = {
+    ...r,
+    categoryId: r.categoryId ?? r.category_id ?? nestedId,
+    categoryName: r.categoryName ?? r.category_name ?? (typeof r.category === 'string' ? r.category : cat?.name),
+    categorySlug: r.categorySlug ?? r.category_slug ?? cat?.slug,
+  };
+  if (viewsRaw != null && viewsRaw !== '') {
+    const n = Number(viewsRaw);
+    if (Number.isFinite(n) && n >= 0) next.viewsCount = Math.floor(n);
+  }
+  return next;
+}
+
 function formatJobRequestRelativeRu(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
@@ -731,7 +760,7 @@ export default function MyOrdersPage() {
 
   /* ── helpers ── */
   function getCategoryName(catId, categorySlug) {
-    const idStr = String(catId || '');
+    const idStr = String(catId ?? '').trim();
     if (!idStr) return '';
     const slugStr = String(categorySlug || '').trim().toLowerCase();
     if (slugStr) {
@@ -743,7 +772,12 @@ export default function MyOrdersPage() {
       const loose = categories.find((x) => String(x.slug || '').trim().toLowerCase() === slugStr);
       if (loose?.name) return loose.name;
     }
-    const c = categories.find((x) => String(pickCategoryId(x) || x.id) === idStr);
+    const c = categories.find((x) => {
+      const pid = pickCategoryId(x);
+      if (pid != null && String(pid) === idStr) return true;
+      if (x.id != null && String(x.id) === idStr) return true;
+      return false;
+    });
     return c ? c.name : '';
   }
 
@@ -752,17 +786,37 @@ export default function MyOrdersPage() {
     return getCategoryName(form.categoryId, form.categorySlug);
   }
 
-  /** Подпись в списке/деталке: categorySlug с бэка → имя из каталога; иначе categoryName; иначе по id. */
+  /** Подпись в списке/деталке: slug → каталог; имя с бэка; id → merged или сырой /categories. */
   function jobRequestCategoryLabel(req) {
     if (!req) return '';
+    const idNorm = req.categoryId != null && String(req.categoryId).trim() !== '' ? String(req.categoryId).trim() : '';
+
     const slug = String(req.categorySlug || req.category_slug || '').trim().toLowerCase();
     if (slug) {
       const row = categories.find((x) => String(x.slug || '').trim().toLowerCase() === slug);
       if (row?.name) return row.name;
     }
-    const cn = String(req.categoryName || req.category || '').trim();
+    const cn = String(req.categoryName || req.category || req.categoryTitle || '').trim();
     if (cn) return cn;
-    return getCategoryName(req.categoryId, '');
+    const nested = req.category?.name;
+    if (nested && String(nested).trim()) return String(nested).trim();
+
+    if (idNorm) {
+      const fromMerged = categories.find((x) => {
+        const pid = pickCategoryId(x);
+        return (pid != null && String(pid) === idNorm) || (x.id != null && String(x.id) === idNorm);
+      });
+      if (fromMerged?.name) return fromMerged.name;
+
+      const rawList = Array.isArray(categoriesRaw) ? categoriesRaw : [];
+      const fromRaw = rawList.find((x) => {
+        const pid = pickCategoryId(x);
+        return (pid != null && String(pid) === idNorm) || (x.id != null && String(x.id) === idNorm);
+      });
+      if (fromRaw?.name) return String(fromRaw.name).trim();
+    }
+
+    return getCategoryName(req.categoryId, req.categorySlug || req.category_slug);
   }
 
   /* ── load ── */
@@ -776,7 +830,7 @@ export default function MyOrdersPage() {
       ]);
       const merged = mergeRequestStatusesFromCustomerDeals(reqs || [], deals, userId);
       pruneLocalJobRequestCatSlugs(userId, merged.map((r) => r.id));
-      const hydrated = mergeLocalCatSlugsIntoRequests(userId, merged);
+      const hydrated = mergeLocalCatSlugsIntoRequests(userId, merged).map(normalizeCustomerJobRequestFromApi);
       setRequests(hydrated);
       const raw = normalizeCategoriesApiResponse(cats);
       setCategoriesRaw(raw);
@@ -785,7 +839,7 @@ export default function MyOrdersPage() {
         if (!prev) return null;
         const found = hydrated.find((r) => r.id === prev.id);
         if (found) return found;
-        const [one] = mergeLocalCatSlugsIntoRequests(userId, [prev]);
+        const [one] = mergeLocalCatSlugsIntoRequests(userId, [prev]).map(normalizeCustomerJobRequestFromApi);
         return one || prev;
       });
     } catch (e) {
@@ -797,6 +851,21 @@ export default function MyOrdersPage() {
   useEffect(() => { if (userId) load(); }, [userId, load]);
 
   useSameRouteRefetch('/my-requests', load);
+
+  /** Обновить счётчики просмотров (и заявки) при возврате на вкладку — не чаще раз в 25 с. */
+  const lastListRefreshRef = useRef(0);
+  useEffect(() => {
+    if (!userId) return undefined;
+    const onVis = () => {
+      if (document.visibilityState !== 'visible') return;
+      const now = Date.now();
+      if (now - lastListRefreshRef.current < 25000) return;
+      lastListRefreshRef.current = now;
+      load();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [userId, load]);
 
   /** Мастер «Найти работу» подгружает категории отдельно; у заказчика список заявок мог прийти раньше /categories — добираем при открытии мастера. */
   useEffect(() => {
