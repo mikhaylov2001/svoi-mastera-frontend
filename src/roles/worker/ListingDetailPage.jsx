@@ -19,9 +19,9 @@ const listingViewPostedIds = new Set();
 const COLLAPSE = 420;
 
 const listingPageExtraCss = `
-/* Узкий сайдбар и компактные карточки (стоимость / мастер и др.) */
+/* Сетка чуть ровнее: галерея уже, сайдбар шире; карточки чуть просторнее */
 .ed--listing-detail .ed-grid {
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 340px);
   gap: 18px;
 }
 @media (max-width: 1020px) {
@@ -29,11 +29,11 @@ const listingPageExtraCss = `
 }
 .ed--listing-detail .ed-side { gap: 12px; min-width: 0; }
 .ed--listing-detail .ed-side .ed-card {
-  padding: 14px 16px;
+  padding: 15px 18px;
   border-radius: 14px;
 }
-.ed--listing-detail .ed-price-num { font-size: 26px; margin-top: 6px; letter-spacing: -0.03em; }
-.ed--listing-detail .ed-price-num small { font-size: 15px; }
+.ed--listing-detail .ed-price-num { font-size: 28px; margin-top: 6px; letter-spacing: -0.03em; }
+.ed--listing-detail .ed-price-num small { font-size: 16px; }
 .ed--listing-detail .ed-price-sub { margin-top: 6px; font-size: 12px; line-height: 1.45; }
 .ed--listing-detail .ed-actions { margin-top: 10px; gap: 6px; }
 .ed--listing-detail .ed-btn,
