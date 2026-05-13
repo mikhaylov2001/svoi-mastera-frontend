@@ -3,13 +3,13 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { acceptListingDeal, recordListingView, getMyDeals, workerStartDeal } from '../../api';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
-import { listingsDetailJdCss, listingDetailLightboxCss } from '../shared/dealsWdStyles';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
   getCategorySlugFromLabel,
 } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import './listingDetailLovable.css';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -29,58 +29,51 @@ function reviewsCountLabel(n) {
 }
 
 const Icon = {
-  back: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M15 19l-7-7 7-7" />
-    </svg>
-  ),
-  next: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M9 5l7 7-7 7" />
-    </svg>
-  ),
-  search: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
-      <circle cx="11" cy="11" r="7" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.3-4.3" />
-    </svg>
-  ),
-  more: () => (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <circle cx="12" cy="6" r="1.35" />
-      <circle cx="12" cy="12" r="1.35" />
-      <circle cx="12" cy="18" r="1.35" />
-    </svg>
-  ),
-};
-
-const MetaIco = {
-  folder: () => (
-    <svg className="jd-meta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M3 7V5a2 2 0 012-2h5.5l1.7 2.2a1 1 0 00.8.4H20a2 2 0 012 2V19a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
-      />
-    </svg>
-  ),
   pin: () => (
-    <svg className="jd-meta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s7-7.5 7-13a7 7 0 10-14 0c0 5.5 7 13 7 13z" />
-      <circle cx="12" cy="10" r="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="12" cy="9" r="2.5" fill="none" stroke="currentColor" />
     </svg>
   ),
   cal: () => (
-    <svg className="jd-meta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <path strokeLinecap="round" d="M3 10h18M8 2v4M16 2v4" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+      <rect x="3" y="5" width="18" height="16" rx="2" strokeWidth="1.5" />
+      <path strokeLinecap="round" d="M3 10h18M8 3v4M16 3v4" />
+    </svg>
+  ),
+  clock: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+      <circle cx="12" cy="12" r="9" />
+      <path strokeLinecap="round" d="M12 7v5l3 2" />
+    </svg>
+  ),
+  msg: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21 12a8 8 0 01-11.5 7.2L4 21l1.8-5.5A8 8 0 1121 12z"
+      />
+    </svg>
+  ),
+  arrL: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+  ),
+  arrR: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+    </svg>
+  ),
+  zoom: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 9V4h5M20 15v5h-5M20 9V4h-5M4 15v5h5" />
     </svg>
   ),
 };
 
 const TERMINAL_DEAL_STATUSES = ['CANCELLED', 'REFUNDED'];
-
-const listingStyles = `${listingsDetailJdCss}\n${listingDetailLightboxCss}`;
 
 export default function ListingDetailPage() {
   const { id } = useParams();
@@ -199,7 +192,7 @@ export default function ListingDetailPage() {
   const photos = listing?.photos?.length ? listing.photos : [];
   const fallbackPhoto = getCategoryPlaceholderPhotoUrlOrDefault({ category: listing?.category });
   const allPhotos = photos.length ? photos : [fallbackPhoto];
-  const catSlug = getCategorySlugFromLabel(listing?.category);
+  const catSlug = getCategorySlugFromLabel(listing?.category) || '';
 
   const { bodyText, urgencyLabel } = useMemo(
     () => parseListingDescription(listing?.description || ''),
@@ -219,7 +212,7 @@ export default function ListingDetailPage() {
   );
 
   useEffect(() => {
-    if (allPhotos.length <= 1) return;
+    if (!lightbox || allPhotos.length <= 1) return;
     const onKey = e => {
       if (e.key === 'Escape') setLightbox(false);
       if (e.key === 'ArrowRight') nextPhoto();
@@ -290,18 +283,15 @@ export default function ListingDetailPage() {
 
   if (loading) {
     return (
-      <div className="jd">
-        <style>{listingStyles}</style>
-        <div className="jd-wrap">
-          <div className="jd-grid">
-            <div className="jd-col">
-              <div className="jd-skel" style={{ height: 22, width: 180, marginBottom: 12 }} />
-              <div className="jd-skel" style={{ height: 360, borderRadius: 16, marginBottom: 16 }} />
-              <div className="jd-skel" style={{ height: 140, borderRadius: 16 }} />
-            </div>
-            <div className="jd-side">
-              <div className="jd-skel" style={{ height: 220, borderRadius: 16 }} />
-            </div>
+      <div className="ld">
+        <div className="ld-page">
+          <div className="ld-left">
+            <div className="ld-skel" style={{ height: 22, width: 200, marginBottom: 12 }} />
+            <div className="ld-skel" style={{ height: 280, borderRadius: 14, marginBottom: 16 }} />
+            <div className="ld-skel" style={{ height: 120, borderRadius: 14 }} />
+          </div>
+          <div className="ld-right">
+            <div className="ld-skel" style={{ height: 200, borderRadius: 14 }} />
           </div>
         </div>
       </div>
@@ -310,12 +300,11 @@ export default function ListingDetailPage() {
 
   if (!listing) {
     return (
-      <div className="jd">
-        <style>{listingStyles}</style>
-        <div className="jd-wrap" style={{ textAlign: 'center', padding: '80px 24px' }}>
+      <div className="ld">
+        <div className="ld-page" style={{ display: 'block', textAlign: 'center', paddingTop: 80 }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>😕</div>
           <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Объявление не найдено</h2>
-          <Link to="/find-master" className="jd-own-link">
+          <Link to="/find-master" className="ld-own-link">
             ← Вернуться к поиску
           </Link>
         </div>
@@ -343,12 +332,8 @@ export default function ListingDetailPage() {
     ? `${priceNum.toLocaleString('ru-RU')}`
     : listing.priceUnit || 'Договорная';
   const priceSubLine = priceHasAmount
-    ? priceUnitTrim || 'за работу'
+    ? `${priceUnitTrim || 'за работу'} · оплата по договорённости`
     : listing.priceUnit || null;
-
-  const budgetDetailVal = priceHasAmount
-    ? `${priceNum.toLocaleString('ru-RU')} ₽${priceUnitTrim ? ` ${priceUnitTrim}` : ' за работу'}`
-    : listing.priceUnit || 'Договорная';
 
   const pubStr = listing.createdAt
     ? new Date(listing.createdAt).toLocaleDateString('ru-RU', {
@@ -359,6 +344,9 @@ export default function ListingDetailPage() {
     : '—';
 
   const addressLine = (listing.address || 'Йошкар-Ола, выезд по договорённости').replace(/\s*·\s*/g, ', ');
+  const listingCity =
+    (listing.city && String(listing.city).trim()) ||
+    (addressLine.includes(',') ? addressLine.split(',')[0].trim() : '—');
 
   const goBack = () => {
     if (isOwnListing) {
@@ -373,21 +361,26 @@ export default function ListingDetailPage() {
     else navigate('/my-orders');
   };
 
-  return (
-    <div className="jd">
-      <style>{listingStyles}</style>
+  const listingsHubPath = !userId ? '/find-master' : userRole === 'WORKER' ? '/find-work' : '/my-orders';
+  const listingsHubLabel = !userId ? 'Объявления' : userRole === 'WORKER' ? 'Заявки' : 'Мои заказы';
 
+  const breadTitle =
+    (listing.title || '').length > 35 ? `${(listing.title || '').slice(0, 35)}…` : listing.title || '';
+
+  const catLink = catSlug ? `/find-master/${catSlug}` : '/find-master';
+
+  return (
+    <div className="ld">
       {lightbox && allPhotos.length > 0 && (
-        <div className="jd-lightbox">
-          <button type="button" className="jd-lb-close" onClick={() => setLightbox(false)}>
+        <div className="ld-lightbox" onClick={() => setLightbox(false)} role="presentation">
+          <button type="button" className="ld-lb-close" onClick={e => { e.stopPropagation(); setLightbox(false); }}>
             ✕
           </button>
-
           {allPhotos.length > 1 && (
             <>
               <button
                 type="button"
-                className="jd-lb-nav jd-lb-prev"
+                className="ld-lb-nav ld-lb-prev"
                 onClick={e => {
                   e.stopPropagation();
                   prevPhoto();
@@ -397,7 +390,7 @@ export default function ListingDetailPage() {
               </button>
               <button
                 type="button"
-                className="jd-lb-nav jd-lb-next"
+                className="ld-lb-nav ld-lb-next"
                 onClick={e => {
                   e.stopPropagation();
                   nextPhoto();
@@ -407,12 +400,11 @@ export default function ListingDetailPage() {
               </button>
             </>
           )}
-
-          <div className="jd-lightbox-img-wrap">
+          <div className="ld-lightbox-img-wrap" onClick={e => e.stopPropagation()}>
             {allPhotos.length > 1 && (
               <>
-                <div className="jd-lb-zone jd-lb-zone-prev" onClick={prevPhoto} role="presentation" />
-                <div className="jd-lb-zone jd-lb-zone-next" onClick={nextPhoto} role="presentation" />
+                <div className="ld-lb-zone ld-lb-zone-prev" onClick={prevPhoto} role="presentation" />
+                <div className="ld-lb-zone ld-lb-zone-next" onClick={nextPhoto} role="presentation" />
               </>
             )}
             <img
@@ -421,116 +413,149 @@ export default function ListingDetailPage() {
               onClick={() => allPhotos.length <= 1 && setLightbox(false)}
             />
           </div>
-
           {allPhotos.length > 1 && (
-            <div className="jd-lb-counter">
+            <div className="ld-lb-counter">
               {activePhoto + 1} / {allPhotos.length}
             </div>
           )}
-          <div className="jd-lb-hint">← → клавиши или клик по краям · Esc — закрыть</div>
+          <div className="ld-lb-hint">← → по краям · Esc — закрыть</div>
         </div>
       )}
 
-      <div className="jd-wrap">
-        <button type="button" className="jd-back" onClick={goBack}>
-          {isOwnListing ? '← Назад к моим объявлениям' : userId ? '← Назад к заявкам' : '← Назад'}
-        </button>
-
-        <div className="jd-head">
-          <h1 className="jd-title">{listing.title}</h1>
-          <FavoriteHeartButton kind="listing" id={listing.id} className="jd-fav-btn" />
-        </div>
-
-        <div className="jd-meta-lw">
-          {listing.category && (
-            <span className="jd-meta-item">
-              {MetaIco.folder()}
-              <span>{listing.category}</span>
+      <div className="ld-bread">
+        <div className="ld-bread-inner">
+          <button type="button" className="ld-back-btn" onClick={goBack} aria-label="Назад">
+            <span className="ld-back-ico" aria-hidden>
+              ←
             </span>
-          )}
-          <span className="jd-meta-item">
-            {MetaIco.pin()}
-            <span>{addressLine}</span>
+            Назад
+          </button>
+          <span className="ld-bread-sep" style={{ color: '#e5e5e5' }}>
+            |
           </span>
-          {listing.createdAt && (
-            <span className="jd-meta-item">
-              {MetaIco.cal()}
-              <span>{pubStr}</span>
-            </span>
-          )}
+          <Link to="/">Главная</Link>
+          <span className="ld-bread-sep">›</span>
+          <Link to={listingsHubPath}>{listingsHubLabel}</Link>
+          <span className="ld-bread-sep">›</span>
+          <Link to={catLink}>{listing.category || 'Категория'}</Link>
+          <span className="ld-bread-sep">›</span>
+          <span className="ld-bread-cur">{breadTitle}</span>
         </div>
+      </div>
 
-        <div className="jd-grid">
-          <div className="jd-col">
-            <div className="jd-gallery">
-              <div className="jd-main" onClick={() => allPhotos.length && setLightbox(true)} role="presentation">
+      <div className="ld-page">
+        <div className="ld-left">
+          <div className="ld-fw-head">
+            <div className="ld-fw-title-row">
+              <h1 className="ld-fw-title">{listing.title}</h1>
+              <div className="ld-actions-row">
+                <FavoriteHeartButton kind="listing" id={listing.id} />
+              </div>
+            </div>
+            <div className="ld-fw-meta">
+              {listing.category && <span className="ld-cat-chip">{listing.category}</span>}
+              <span className="meta-item">
+                {Icon.pin()}
+                {addressLine}
+              </span>
+              {listing.createdAt && (
+                <span className="meta-item">
+                  {Icon.cal()}
+                  {pubStr}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="ld-fw-gallery-card">
+            <div className="ld-gallery-wrap">
+              <div
+                className="ld-gallery-main"
+                onClick={() => allPhotos.length && setLightbox(true)}
+                role="presentation"
+              >
                 {allPhotos[activePhoto] ? (
-                  <img src={allPhotos[activePhoto]} alt={listing.title} key={activePhoto} />
+                  <img src={allPhotos[activePhoto]} alt={listing.title || ''} key={activePhoto} />
                 ) : (
-                  <div className="jd-main-ph">📷</div>
+                  <div className="ld-gallery-ph">📷</div>
                 )}
+
+                <div className="ld-floats">
+                  {listing.active !== false ? (
+                    <div className="ld-chip">
+                      <span className="pulse" aria-hidden />
+                      Активна
+                    </div>
+                  ) : (
+                    <div className="ld-chip ld-chip--muted">
+                      <span className="pulse" aria-hidden />
+                      В архиве
+                    </div>
+                  )}
+                </div>
+
                 {allPhotos.length > 1 && (
                   <>
                     <button
                       type="button"
-                      className="jd-arrow l"
+                      className="ld-gallery-nav-btn prev"
                       onClick={e => {
                         e.stopPropagation();
                         prevPhoto();
                       }}
                       aria-label="Предыдущее фото"
                     >
-                      {Icon.back()}
+                      {Icon.arrL()}
                     </button>
                     <button
                       type="button"
-                      className="jd-arrow r"
+                      className="ld-gallery-nav-btn next"
                       onClick={e => {
                         e.stopPropagation();
                         nextPhoto();
                       }}
                       aria-label="Следующее фото"
                     >
-                      {Icon.next()}
+                      {Icon.arrR()}
                     </button>
                   </>
                 )}
+
                 {allPhotos.length > 0 && (
-                  <div className="jd-img-tools">
-                    <button
-                      type="button"
-                      className="jd-img-tool"
-                      aria-label="Увеличить"
-                      onClick={e => {
-                        e.stopPropagation();
-                        setLightbox(true);
-                      }}
-                    >
-                      {Icon.search()}
-                    </button>
-                    <button
-                      type="button"
-                      className="jd-img-tool"
-                      aria-label="Меню"
-                      onClick={e => {
-                        e.stopPropagation();
-                        const url = typeof window !== 'undefined' ? window.location.href : '';
-                        if (url && navigator.clipboard?.writeText) {
-                          navigator.clipboard.writeText(url).catch(() => {});
-                        }
-                      }}
-                    >
-                      {Icon.more()}
-                    </button>
+                  <button
+                    type="button"
+                    className="ld-gallery-zoom"
+                    onClick={e => {
+                      e.stopPropagation();
+                      setLightbox(true);
+                    }}
+                    title="Открыть полноэкранно"
+                  >
+                    {Icon.zoom()}
+                  </button>
+                )}
+
+                {allPhotos.length > 1 && allPhotos.length <= 8 && (
+                  <div className="ld-gallery-dots">
+                    {allPhotos.map((_, i) => (
+                      <div key={i} className={`ld-gallery-dot${i === activePhoto ? ' active' : ''}`} />
+                    ))}
+                  </div>
+                )}
+
+                {allPhotos.length > 8 && (
+                  <div className="ld-gallery-count">
+                    {activePhoto + 1} / {allPhotos.length}
                   </div>
                 )}
               </div>
+
               {allPhotos.length > 1 && (
-                <div className="jd-thumbs">
+                <div className="ld-thumbs">
                   {allPhotos.map((p, i) => (
                     <div
                       key={i}
-                      className={`jd-thumb${i === activePhoto ? ' on' : ''}`}
+                      className={`ld-thumb${i === activePhoto ? ' active' : ''}`}
                       onClick={() => setActivePhoto(i)}
                       role="presentation"
                     >
@@ -540,253 +565,266 @@ export default function ListingDetailPage() {
                 </div>
               )}
             </div>
-
-            <section className="jd-card jd-card--soft">
-              <h2 className="jd-h2-card">Описание</h2>
-              {bodyText ? (
-                <>
-                  <p className="jd-desc">{visibleBody}</p>
-                  {showDescToggle && (
-                    <button type="button" className="jd-desc-toggle" onClick={() => setDescExpanded(x => !x)}>
-                      {descExpanded ? 'Свернуть ↑' : 'Читать полностью ↓'}
-                    </button>
-                  )}
-                  {urgencyLabel && (
-                    <p className="jd-urgency-line">
-                      <span className="jd-urgency-ico" aria-hidden>
-                        ⏰
-                      </span>
-                      <strong>Срочность:</strong> {urgencyLabel.replace(/^📅\s*/, '')}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <p className="jd-empty-desc">Описание не добавлено</p>
-              )}
-            </section>
-
-            <section className="jd-card jd-card--soft">
-              <h2 className="jd-h2-card">Подробности</h2>
-              <dl className="jd-rows">
-                <div className="jd-row2">
-                  <dt className="k">Категория</dt>
-                  <dd className="v">{listing.category || '—'}</dd>
-                </div>
-                <div className="jd-row2">
-                  <dt className="k">Адрес</dt>
-                  <dd className="v">{addressLine}</dd>
-                </div>
-                <div className="jd-row2">
-                  <dt className="k">Стоимость</dt>
-                  <dd className="v">{budgetDetailVal}</dd>
-                </div>
-                <div className="jd-row2">
-                  <dt className="k">Опубликована</dt>
-                  <dd className="v">{pubStr}</dd>
-                </div>
-              </dl>
-            </section>
           </div>
 
-          <aside className="jd-side">
-            <div className="jd-card">
-              <div className="jd-eyebrow">Стоимость</div>
-              {priceHasAmount ? (
-                <div className="jd-price-num">
-                  {priceMainLine}
-                  <span className="jd-price-rub"> ₽</span>
-                </div>
-              ) : (
-                <div className="jd-price-plain">{priceMainLine}</div>
-              )}
-              {priceSubLine && <p className="jd-price-sub">{priceSubLine}</p>}
-
-              {isOwnListing && (
-                <div className="jd-own-banner">
-                  <strong>Ваше объявление.</strong>{' '}
-                  Здесь видите цену так же, как заказчик. Редактировать список — в «Мои объявления».
-                </div>
-              )}
-
-              {!isOwnListing && (
-                <div className="jd-actions">
-                  {customerListingDeal &&
-                  !TERMINAL_DEAL_STATUSES.includes(String(customerListingDeal.status || '')) ? (
-                    <>
-                      {customerListingDeal.status === 'NEW' && (
-                        <>
-                          <div className="jd-banner-ok">🕐 Заявка отправлена мастеру</div>
-                          <div className="jd-banner-info">
-                            ℹ️ Сделка создана и ждёт подтверждения мастера. Как только мастер примет — она станет
-                            активной. Вы можете следить за статусом в разделе «Мои сделки».
-                          </div>
-                        </>
-                      )}
-                      {customerListingDeal.status === 'IN_PROGRESS' && (
-                        <>
-                          <div className="jd-banner-ok">✓ Мастер принял заказ — сделка в работе</div>
-                          <div className="jd-banner-info">
-                            ℹ️ Обсуждайте детали в чате и отслеживайте этапы в «Мои сделки».
-                          </div>
-                        </>
-                      )}
-                      {customerListingDeal.status === 'COMPLETED' && (
-                        <div className="jd-banner-ok">✓ Сделка по этому объявлению завершена</div>
-                      )}
-                      <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="jd-btn jd-btn-ghost">
-                        Написать сообщение
-                      </Link>
-                      <button type="button" className="jd-link-deals" onClick={() => navigate('/deals')}>
-                        Перейти к сделкам →
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button type="button" className="jd-btn jd-btn-primary" onClick={handleAcceptWork} disabled={accepting}>
-                        {accepting ? 'Отправляем…' : 'Откликнуться'}
-                      </button>
-                      <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="jd-btn jd-btn-ghost">
-                        Написать сообщение
-                      </Link>
-                    </>
-                  )}
-                  {actionError && <div className="jd-error">{actionError}</div>}
-                </div>
-              )}
-            </div>
-
-            {isOwnListing && listingDeal?.customerId && (
-              <div className="jd-card">
-                <div className="jd-eyebrow" style={{ marginBottom: 14, display: 'block' }}>
-                  Заказчик
-                </div>
-                <div
-                  className="jd-cust-row"
-                  onClick={() => listingDeal.customerId && navigate(`/customers/${listingDeal.customerId}`)}
-                  role="presentation"
-                >
-                  <div className="jd-ava">
-                    {listingDeal.customerAvatar && listingDeal.customerAvatar.length > 10 && listingDeal.customerAvatar !== 'null' ? (
-                      <img src={listingDeal.customerAvatar} alt="" />
-                    ) : (
-                      <div className="jd-ava-fallback">{(listingDeal.customerName || 'З')[0].toUpperCase()}</div>
-                    )}
-                    <span className="jd-ava-dot" />
-                  </div>
-                  <div className="jd-cust-info">
-                    <div className="jd-cust-name">
-                      {[listingDeal.customerName, listingDeal.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
-                    </div>
-                    <div className="jd-cust-meta">
-                      {listingDeal.status === 'NEW' && 'Ожидает вашего подтверждения'}
-                      {listingDeal.status === 'IN_PROGRESS' && 'Сделка в работе'}
-                      {listingDeal.status === 'COMPLETED' && 'Сделка завершена'}
-                    </div>
-                  </div>
-                  <span className="jd-cust-chevron">›</span>
-                </div>
-
-                <div className="jd-worker-stack">
-                  <button type="button" className="jd-btn jd-btn-primary" onClick={() => navigate(`/chat/${listingDeal.customerId}`)}>
-                    Написать заказчику
+          <section className="ld-card">
+            <span className="ld-eyebrow">Описание</span>
+            {bodyText ? (
+              <>
+                <p className="ld-desc-text">{visibleBody}</p>
+                {showDescToggle && (
+                  <button type="button" className="ld-desc-toggle" onClick={() => setDescExpanded(x => !x)}>
+                    {descExpanded ? 'Свернуть ↑' : 'Читать полностью ↓'}
                   </button>
-                  {listingDeal.status === 'NEW' && (
-                    <button type="button" className="jd-btn jd-btn-ghost" onClick={handleWorkerAcceptOnListing} disabled={workerAccepting}>
-                      {workerAccepting ? 'Отправляем…' : 'Принять'}
-                    </button>
-                  )}
-                  {listingDeal.status === 'IN_PROGRESS' && <div className="jd-inline-wait">✓ Вы приняли заказ — сделка активна</div>}
-                  {workerDealError && <div className="jd-error">{workerDealError}</div>}
-                  <button type="button" className="jd-btn jd-btn-ghost" onClick={() => navigate(`/deals?dealId=${listingDeal.id}`)}>
-                    Открыть сделку
-                  </button>
-                </div>
-              </div>
+                )}
+                {urgencyLabel && (
+                  <div className="ld-urgency">
+                    {Icon.clock()}
+                    Срочность: {urgencyLabel.replace(/^📅\s*/, '')}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="ld-empty-desc">Описание не добавлено</p>
             )}
+          </section>
 
-            {isOwnListing ? (
-              <div className="jd-card">
-                <div className="jd-eyebrow" style={{ marginBottom: 14, display: 'block' }}>
-                  Ваш профиль
-                </div>
-                <div className="jd-cust-row jd-cust-row-static">
-                  <div className="jd-ava jd-ava--round">
-                    {ownerAva ? <img src={ownerAva} alt={ownerFullName} /> : <div className="jd-ava-fallback">{(userName || 'М')[0].toUpperCase()}</div>}
-                    <span className="jd-ava-dot" />
-                  </div>
-                  <div className="jd-cust-info">
-                    <div className="jd-cust-name">{ownerFullName}</div>
-                    <div className="jd-cust-meta">
-                      <span className="green">●</span> Мастер
-                    </div>
-                  </div>
-                </div>
-                <div className="jd-own-foot">
-                  <Link to="/worker-profile" className="jd-own-link">
-                    Редактировать профиль →
-                  </Link>
-                </div>
+          <section className="ld-card">
+            <span className="ld-eyebrow">Подробности</span>
+            <div className="ld-info-grid">
+              <div className="ld-info-row">
+                <span className="ld-info-key">Категория</span>
+                <span className="ld-info-val">{listing.category || '—'}</span>
+              </div>
+              <div className="ld-info-row">
+                <span className="ld-info-key">Город</span>
+                <span className="ld-info-val">{listingCity}</span>
+              </div>
+              <div className="ld-info-row">
+                <span className="ld-info-key">Адрес</span>
+                <span className="ld-info-val">{addressLine}</span>
+              </div>
+              <div className="ld-info-row">
+                <span className="ld-info-key">Опубликована</span>
+                <span className="ld-info-val">{pubStr}</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside className="ld-right">
+          <div className="ld-price-panel">
+            <div className="ld-price-label">Стоимость</div>
+            {priceHasAmount ? (
+              <div className="ld-price-big">
+                {priceMainLine}
+                <small> ₽</small>
               </div>
             ) : (
-              <div className="jd-card">
-                <div className="jd-eyebrow" style={{ marginBottom: 14, display: 'block' }}>
-                  Мастер
-                </div>
-                <Link to={`/workers/${listing.workerId}`} className="jd-cust-row">
-                  <div className="jd-ava jd-ava--round">
-                    {listing.workerAvatar?.length > 10 ? (
-                      <img src={listing.workerAvatar} alt="" />
-                    ) : (
-                      <div className="jd-ava-fallback jd-ava-fallback--neutral">{initials}</div>
-                    )}
-                    <span className="jd-ava-dot" />
-                  </div>
-                  <div className="jd-cust-info">
-                    <div className="jd-cust-name">{workerName}</div>
-                    <div className="jd-cust-meta">
-                      <span className="green">●</span> Активный мастер
-                    </div>
-                  </div>
-                  <span className="jd-cust-chevron">›</span>
-                </Link>
-                <div className="jd-rating-row">
-                  <span className="jd-stars" aria-hidden>
-                    <span className="jd-stars-fill">{'★'.repeat(workerStars)}</span>
-                    <span className="jd-stars-empty">{'☆'.repeat(5 - workerStars)}</span>
-                  </span>
-                  <span className="jd-rating-num">{workerRating.toFixed(1)}</span>
-                  <span className="jd-rating-sub">({reviewsCountLabel(workerReviews)})</span>
-                </div>
+              <div className="ld-price-plain">{priceMainLine}</div>
+            )}
+            {priceSubLine && <div className="ld-price-sub">{priceSubLine}</div>}
+
+            {isOwnListing && (
+              <div className="ld-own-banner">
+                <strong>Ваше объявление.</strong> Здесь видите цену так же, как заказчик. Редактировать список — в
+                «Мои объявления».
               </div>
             )}
 
-            {similar.length > 0 && (
-              <div className="jd-similar">
-                <div className="jd-similar-head">
-                  Похожие объявления
-                  <Link to={`/find-master/${catSlug}`}>Все →</Link>
-                </div>
-                <div className="jd-similar-list">
-                  {similar.map(s => {
-                    const sPhoto = s.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category });
-                    const sp = getListingPublishedPriceNumber(s);
-                    return (
-                      <Link key={s.id} to={`/listings/${s.id}`} className="jd-sim-item">
-                        <div className="jd-sim-img">
-                          <img src={sPhoto} alt="" />
+            {!isOwnListing && (
+              <div className="ld-price-btns">
+                {customerListingDeal &&
+                !TERMINAL_DEAL_STATUSES.includes(String(customerListingDeal.status || '')) ? (
+                  <>
+                    {customerListingDeal.status === 'NEW' && (
+                      <>
+                        <div className="ld-banner-ok">🕐 Заявка отправлена мастеру</div>
+                        <div className="ld-banner-info">
+                          Сделка создана и ждёт подтверждения мастера. Статус — в «Мои сделки».
                         </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div className="jd-sim-title">{s.title}</div>
-                          <div className="jd-sim-price">{sp ? `${sp.toLocaleString('ru-RU')} ₽` : '—'}</div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
+                      </>
+                    )}
+                    {customerListingDeal.status === 'IN_PROGRESS' && (
+                      <>
+                        <div className="ld-banner-ok">✓ Мастер принял заказ — сделка в работе</div>
+                        <div className="ld-banner-info">Обсуждайте детали в чате и отслеживайте этапы в «Мои сделки».</div>
+                      </>
+                    )}
+                    {customerListingDeal.status === 'COMPLETED' && (
+                      <div className="ld-banner-ok">✓ Сделка по этому объявлению завершена</div>
+                    )}
+                    <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ld-btn-contact">
+                      {Icon.msg()}
+                      Написать сообщение
+                    </Link>
+                    <button type="button" className="ld-link-deals" onClick={() => navigate('/deals')}>
+                      Перейти к сделкам →
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="ld-btn-msg"
+                      onClick={handleAcceptWork}
+                      disabled={accepting}
+                    >
+                      {accepting ? 'Отправляем…' : 'Откликнуться'}
+                    </button>
+                    <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ld-btn-contact">
+                      {Icon.msg()}
+                      Написать сообщение
+                    </Link>
+                  </>
+                )}
+                {actionError && <div className="ld-error">{actionError}</div>}
               </div>
             )}
-          </aside>
-        </div>
+          </div>
+
+          {isOwnListing && listingDeal?.customerId && (
+            <div className="ld-fw-person-card">
+              <div className="ld-fw-person-label">Заказчик</div>
+              <div
+                className="ld-fw-person-row"
+                onClick={() => listingDeal.customerId && navigate(`/customers/${listingDeal.customerId}`)}
+                role="presentation"
+              >
+                <div className="ld-fw-person-ava">
+                  {listingDeal.customerAvatar &&
+                  listingDeal.customerAvatar.length > 10 &&
+                  listingDeal.customerAvatar !== 'null' ? (
+                    <img className="ld-fw-person-ava-img" src={listingDeal.customerAvatar} alt="" />
+                  ) : (
+                    <div className="ld-fw-person-ava-fallback">
+                      {(listingDeal.customerName || 'З')[0].toUpperCase()}
+                    </div>
+                  )}
+                  <span className="ld-fw-person-ava-dot" />
+                </div>
+                <div className="ld-fw-person-info">
+                  <div className="ld-fw-person-name">
+                    {[listingDeal.customerName, listingDeal.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
+                  </div>
+                  <div className="ld-fw-person-meta">
+                    {listingDeal.status === 'NEW' && 'Ожидает вашего подтверждения'}
+                    {listingDeal.status === 'IN_PROGRESS' && 'Сделка в работе'}
+                    {listingDeal.status === 'COMPLETED' && 'Сделка завершена'}
+                  </div>
+                </div>
+                <div className="ld-fw-person-chevron">›</div>
+              </div>
+
+              <div className="ld-worker-stack">
+                <button type="button" className="ld-btn-msg" onClick={() => navigate(`/chat/${listingDeal.customerId}`)}>
+                  Написать заказчику
+                </button>
+                {listingDeal.status === 'NEW' && (
+                  <button
+                    type="button"
+                    className="ld-btn-contact"
+                    onClick={handleWorkerAcceptOnListing}
+                    disabled={workerAccepting}
+                  >
+                    {workerAccepting ? 'Отправляем…' : 'Принять'}
+                  </button>
+                )}
+                {listingDeal.status === 'IN_PROGRESS' && (
+                  <div className="ld-inline-wait">✓ Вы приняли заказ — сделка активна</div>
+                )}
+                {workerDealError && <div className="ld-error">{workerDealError}</div>}
+                <button type="button" className="ld-btn-contact" onClick={() => navigate(`/deals?dealId=${listingDeal.id}`)}>
+                  Открыть сделку
+                </button>
+              </div>
+            </div>
+          )}
+
+          {isOwnListing ? (
+            <div className="ld-fw-person-card">
+              <div className="ld-fw-person-label">Ваш профиль</div>
+              <div className="ld-fw-person-row ld-fw-person-row--static">
+                <div className="ld-fw-person-ava">
+                  {ownerAva ? (
+                    <img className="ld-fw-person-ava-img" src={ownerAva} alt={ownerFullName} />
+                  ) : (
+                    <div className="ld-fw-person-ava-fallback">{(userName || 'М')[0].toUpperCase()}</div>
+                  )}
+                  <span className="ld-fw-person-ava-dot" />
+                </div>
+                <div className="ld-fw-person-info">
+                  <div className="ld-fw-person-name">{ownerFullName}</div>
+                  <div className="ld-fw-person-meta">
+                    <span className="green">●</span> Мастер
+                  </div>
+                </div>
+              </div>
+              <div className="ld-own-foot">
+                <Link to="/worker-profile" className="ld-own-link">
+                  Редактировать профиль →
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="ld-fw-person-card">
+              <div className="ld-fw-person-label">Мастер</div>
+              <Link to={`/workers/${listing.workerId}`} className="ld-fw-person-link">
+                <div className="ld-fw-person-ava">
+                  {listing.workerAvatar?.length > 10 ? (
+                    <img className="ld-fw-person-ava-img" src={listing.workerAvatar} alt="" />
+                  ) : (
+                    <div className="ld-fw-person-ava-fallback ld-fw-person-ava-fallback--neutral">{initials}</div>
+                  )}
+                  <span className="ld-fw-person-ava-dot" />
+                </div>
+                <div className="ld-fw-person-info">
+                  <div className="ld-fw-person-name">{workerName}</div>
+                  <div className="ld-fw-person-meta">
+                    <span className="green">●</span> Активный мастер
+                  </div>
+                </div>
+                <div className="ld-fw-person-chevron">›</div>
+              </Link>
+              <div className="ld-rating-row">
+                <span className="ld-stars" aria-hidden>
+                  <span className="ld-stars-fill">{'★'.repeat(workerStars)}</span>
+                  <span className="ld-stars-empty">{'☆'.repeat(5 - workerStars)}</span>
+                </span>
+                <span>
+                  <span className="ld-rating-num">{workerRating.toFixed(1)}</span>
+                  <span className="ld-rating-sub">({reviewsCountLabel(workerReviews)})</span>
+                </span>
+              </div>
+            </div>
+          )}
+
+          {similar.length > 0 && (
+            <div className="ld-similar">
+              <div className="ld-similar-head">
+                Похожие объявления
+                <Link to={catSlug ? `/find-master/${catSlug}` : '/find-master'}>Все →</Link>
+              </div>
+              <div className="ld-similar-list">
+                {similar.map(s => {
+                  const sPhoto = s.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category });
+                  const sp = getListingPublishedPriceNumber(s);
+                  return (
+                    <Link key={s.id} to={`/listings/${s.id}`} className="ld-sim-item">
+                      <div className="ld-sim-img">
+                        <img src={sPhoto} alt="" />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="ld-sim-title">{s.title}</div>
+                        <div className="ld-sim-price">{sp ? `${sp.toLocaleString('ru-RU')} ₽` : '—'}</div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </aside>
       </div>
     </div>
   );
