@@ -11,7 +11,7 @@ import {
   cancelJobRequest,
 } from '../../api';
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
-import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
+import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
@@ -29,6 +29,10 @@ Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
 });
 
 const DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
+
+/** Hero страницы «Мои заявки»: кухня / пара с инструментами (как в макете Lovable). */
+const MY_ORDERS_HERO_PHOTO =
+  'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=max&w=2400&q=86';
 
 const MAX_ORDER_TITLE = 80;
 
@@ -220,34 +224,48 @@ const css = `
 
   .ml-page { background: #f5f5f7; min-height: 100vh; font-family: 'Manrope', Inter, system-ui, sans-serif; color: #0f172a; }
 
-  .mo-orders-root { padding-bottom: 80px; }
+  .mo-orders-root { padding-bottom: 80px; background: #f5f5f7; }
 
-  /* === Hero (макет mo-hero) === */
-  .mo-orders-root .mo-hero { position: relative; height: 220px; overflow: hidden; }
-  @media (max-width: 768px) { .mo-orders-root .mo-hero { height: 180px; } }
+  /* === Hero: скруглённый баннер + градиент как в Lovable === */
+  .mo-orders-root .mo-hero-shell {
+    max-width: 1200px; margin: 0 auto; padding: 20px 28px 0;
+  }
+  .mo-orders-root .mo-hero {
+    position: relative; height: 220px; overflow: hidden;
+    border-radius: 16px;
+    box-shadow: 0 10px 32px rgba(15, 23, 42, 0.12);
+  }
+  @media (max-width: 768px) {
+    .mo-orders-root .mo-hero-shell { padding: 16px 16px 0; }
+    .mo-orders-root .mo-hero { height: 180px; border-radius: 14px; }
+  }
   .mo-orders-root .mo-hero img {
     position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: ${PAGE_HERO_OBJECT_FIT}; object-position: ${PAGE_HERO_OBJECT_POSITION};
-    filter: ${PAGE_HERO_IMG_FILTER};
+    object-fit: cover; object-position: center 42%;
+    filter: saturate(1.06) contrast(1.02);
   }
   .mo-orders-root .mo-hero::after {
     content: ''; position: absolute; inset: 0; z-index: 0;
-    background: linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.25) 50%, rgba(0,0,0,.15) 100%);
+    background: linear-gradient(90deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.32) 48%, rgba(0,0,0,.1) 100%);
   }
   .mo-orders-root .mo-hero-inner {
-    position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 28px; height: 100%;
+    position: relative; z-index: 1; height: 100%; max-width: 100%; margin: 0; padding: 0 32px;
     display: flex; align-items: center; justify-content: space-between; gap: 24px; color: #fff;
   }
-  .mo-orders-root .mo-hero h1 { margin: 0 0 6px; font-size: 32px; font-weight: 900; letter-spacing: -0.02em; }
-  .mo-orders-root .mo-hero p { margin: 0; color: rgba(255,255,255,.85); font-size: 14px; }
-  .mo-orders-root .mo-cta {
-    background: #e8410a; color: #fff; border: none; padding: 14px 24px; border-radius: 12px;
-    font: inherit; font-weight: 800; font-size: 14px; cursor: pointer;
-    box-shadow: 0 10px 28px rgba(232,65,10,.4); transition: transform .2s; white-space: nowrap;
+  @media (max-width: 600px) {
+    .mo-orders-root .mo-hero-inner { flex-direction: column; align-items: flex-start; justify-content: center; gap: 14px; padding: 0 20px; }
+    .mo-orders-root .mo-cta { align-self: stretch; text-align: center; justify-content: center; }
   }
-  .mo-orders-root .mo-cta:hover { transform: translateY(-2px); }
+  .mo-orders-root .mo-hero h1 { margin: 0 0 6px; font-size: 32px; font-weight: 900; letter-spacing: -0.02em; color: #fff; }
+  .mo-orders-root .mo-hero p { margin: 0; color: rgba(255,255,255,.92); font-size: 14px; font-weight: 500; }
+  .mo-orders-root .mo-cta {
+    background: #ff5722; color: #fff; border: none; padding: 13px 26px; border-radius: 999px;
+    font: inherit; font-weight: 800; font-size: 14px; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(255, 87, 34, 0.42); transition: transform .2s, box-shadow .2s; white-space: nowrap;
+  }
+  .mo-orders-root .mo-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(255, 87, 34, 0.5); }
 
-  .mo-orders-root .mo-main { max-width: 1200px; margin: 0 auto; padding: 24px 28px; }
+  .mo-orders-root .mo-main { max-width: 1200px; margin: 0 auto; padding: 20px 28px 24px; }
 
   .mo-orders-root .mo-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 22px; }
   .mo-orders-root .mo-tabs { display: flex; gap: 4px; padding: 6px; background: #fff; border-radius: 14px; box-shadow: 0 4px 14px rgba(15,15,30,.05); }
@@ -255,7 +273,7 @@ const css = `
     background: none; border: none; padding: 10px 18px; border-radius: 10px; font: inherit; font-weight: 700; font-size: 14px;
     color: #64748b; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all .15s;
   }
-  .mo-orders-root .mo-tab.active { background: linear-gradient(135deg, #e8410a, #ff6b3d); color: #fff; box-shadow: 0 4px 12px rgba(232,65,10,.32); }
+  .mo-orders-root .mo-tab.active { background: linear-gradient(135deg, #ff5722, #ff7043); color: #fff; box-shadow: 0 4px 14px rgba(255, 87, 34, 0.35); }
   .mo-orders-root .mo-tab-count { background: rgba(0,0,0,.08); padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }
   .mo-orders-root .mo-tab.active .mo-tab-count { background: rgba(255,255,255,.28); }
 
@@ -264,17 +282,17 @@ const css = `
     width: 100%; padding: 13px 16px 13px 44px; border: 1.5px solid #ececec; background: #fff; border-radius: 14px;
     font: inherit; font-size: 14px; outline: none; transition: all .2s; font-weight: 500;
   }
-  .mo-orders-root .mo-search input:focus { border-color: #e8410a; box-shadow: 0 0 0 4px rgba(232,65,10,.1); }
+  .mo-orders-root .mo-search input:focus { border-color: #ff5722; box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.12); }
   .mo-orders-root .mo-search svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #94a3b8; }
 
-  .mo-orders-root .mo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .mo-orders-root .mo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
   @media (max-width: 880px) { .mo-orders-root .mo-grid { grid-template-columns: 1fr; } }
 
   .mo-orders-root .mo-card {
-    background: #fff; border: 1px solid #ececec; border-radius: 18px; overflow: hidden; position: relative;
+    background: #fff; border: 1px solid rgba(255, 160, 130, 0.28); border-radius: 18px; overflow: hidden; position: relative;
     transition: all .28s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column;
     animation: mo-orders-fade .45s both; cursor: pointer;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
   }
   @keyframes mo-orders-fade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
   .mo-orders-root .mo-card:hover {
@@ -282,20 +300,20 @@ const css = `
   }
   .mo-orders-root .mo-card::before {
     content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-    background: linear-gradient(180deg, #ff4d2d, #ff8a5b); opacity: 0; transition: opacity .22s; border-radius: 2px;
+    background: linear-gradient(180deg, #ff5722, #ffb74d); opacity: 0; transition: opacity .22s; border-radius: 2px;
   }
   .mo-orders-root .mo-card:hover::before { opacity: 1; }
 
-  .mo-orders-root .mo-card-top { display: flex; gap: 14px; padding: 20px; align-items: flex-start; }
+  .mo-orders-root .mo-card-top { display: flex; gap: 16px; padding: 20px; align-items: flex-start; }
 
   .mo-orders-root .mo-card-photo {
-    width: 112px; height: 112px; border-radius: 16px; overflow: hidden; flex-shrink: 0;
-    background: linear-gradient(145deg, #fff7f0 0%, #ffe8dc 100%); display: flex; align-items: center; justify-content: center;
-    position: relative; box-shadow: inset 0 0 0 1px rgba(255, 77, 45, 0.07);
+    width: 112px; height: 112px; border-radius: 12px; overflow: hidden; flex-shrink: 0;
+    background: linear-gradient(160deg, #fff5ed 0%, #ffe4d4 100%); display: flex; align-items: center; justify-content: center;
+    position: relative; box-shadow: inset 0 0 0 1px rgba(255, 140, 100, 0.12);
   }
   .mo-orders-root .mo-card-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
   .mo-orders-root .mo-card:hover .mo-card-photo img { transform: scale(1.08); }
-  .mo-orders-root .mo-card-photo .emoji { font-size: 48px; line-height: 1; filter: drop-shadow(0 4px 10px rgba(255,77,45,.2)); }
+  .mo-orders-root .mo-card-photo .emoji { font-size: 52px; line-height: 1; filter: drop-shadow(0 4px 12px rgba(255, 140, 80, 0.35)); }
 
   .mo-orders-root .mo-card-photo::after {
     content: ''; position: absolute; inset: 0;
@@ -327,34 +345,34 @@ const css = `
     font-size: 11.5px; font-weight: 800; white-space: nowrap; flex-shrink: 0;
   }
   .mo-orders-root .mo-status .dot { width: 6px; height: 6px; border-radius: 50%; }
-  .mo-orders-root .mo-status.open { background: #dcfce7; color: #16a34a; }
-  .mo-orders-root .mo-status.open .dot { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.18); }
-  .mo-orders-root .mo-status.wait { background: #fef3c7; color: #b45309; }
-  .mo-orders-root .mo-status.wait .dot { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.18); }
+  .mo-orders-root .mo-status.open { background: rgba(74, 222, 128, 0.16); color: #15803d; }
+  .mo-orders-root .mo-status.open .dot { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.2); }
+  .mo-orders-root .mo-status.wait { background: rgba(254, 240, 138, 0.45); color: #92400e; }
+  .mo-orders-root .mo-status.wait .dot { background: #d97706; box-shadow: 0 0 0 3px rgba(245,158,11,.22); }
   .mo-orders-root .mo-status.work { background: #dbeafe; color: #1d4ed8; }
   .mo-orders-root .mo-status.work .dot { background: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.18); }
   .mo-orders-root .mo-status.neutral { background: #f1f5f9; color: #64748b; }
   .mo-orders-root .mo-status.neutral .dot { background: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,.2); }
 
-  .mo-orders-root .mo-cat { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
-  .mo-orders-root .mo-cat.elec { background: #cffafe; color: #0e7490; }
+  .mo-orders-root .mo-cat { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+  .mo-orders-root .mo-cat.elec { background: #e0f2fe; color: #0e7490; }
   .mo-orders-root .mo-cat.plumb { background: #fef3c7; color: #92400e; }
   .mo-orders-root .mo-cat.beauty { background: #f3e8ff; color: #7c3aed; }
   .mo-orders-root .mo-cat.hair { background: #fef9c3; color: #a16207; }
-  .mo-orders-root .mo-cat.repair { background: #ffedd5; color: #c2410c; }
+  .mo-orders-root .mo-cat.repair { background: #ffedd5; color: #ea580c; }
 
   .mo-orders-root .mo-price-row { margin-top: 14px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
   .mo-orders-root .mo-price { display: flex; align-items: baseline; gap: 8px; }
   .mo-orders-root .mo-price-num {
-    font-size: 25px; font-weight: 900;
-    background: linear-gradient(135deg, #ff4d2d, #ff6b3d);
+    font-size: 26px; font-weight: 900;
+    background: linear-gradient(135deg, #ff5722, #ff7043);
     -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -0.03em; line-height: 1;
   }
   .mo-orders-root .mo-price-lbl { font-size: 12px; color: #94a3b8; font-weight: 600; }
 
   .mo-orders-root .mo-meta {
     display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-    padding: 12px 20px; border-top: 1px dashed #e8e8e8; color: #64748b; font-size: 12.5px; font-weight: 600;
+    padding: 12px 20px; border-top: 1px dashed #e2e8f0; color: #64748b; font-size: 12.5px; font-weight: 600;
     background: linear-gradient(180deg, #fafafb, #fff);
   }
   .mo-orders-root .mo-meta-start { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
@@ -364,14 +382,14 @@ const css = `
   .mo-orders-root .mo-meta-item { display: inline-flex; align-items: center; gap: 6px; }
   .mo-orders-root .mo-meta-item svg { width: 14px; height: 14px; opacity: .72; flex-shrink: 0; }
   .mo-orders-root .mo-offers { font-weight: 800; display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .mo-orders-root .mo-offers--has { color: #e8410a; }
-  .mo-orders-root .mo-offers--wait { color: #64748b; font-weight: 600; gap: 5px; }
-  .mo-orders-root .mo-offers--wait svg { flex-shrink: 0; opacity: 0.75; }
+  .mo-orders-root .mo-offers--has { color: #ff5722; font-weight: 800; }
+  .mo-orders-root .mo-offers--wait { color: #92400e; font-weight: 600; gap: 5px; }
+  .mo-orders-root .mo-offers--wait svg { flex-shrink: 0; opacity: 0.85; }
 
   .mo-orders-root .mo-avatars { display: inline-flex; margin-right: 4px; }
   .mo-orders-root .mo-avatars span {
     width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff;
-    background: linear-gradient(135deg, #e8410a, #ff8a5b); margin-left: -7px;
+    background: linear-gradient(135deg, #ff5722, #ff8a65); margin-left: -7px;
     display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 800;
     box-shadow: 0 2px 6px rgba(232,65,10,.25);
   }
@@ -383,9 +401,9 @@ const css = `
     cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   }
   .mo-orders-root .mo-btn-primary {
-    background: linear-gradient(135deg, #e8410a, #ff6b3d); color: #fff; box-shadow: 0 8px 20px rgba(232,65,10,.32);
+    background: linear-gradient(135deg, #ff5722, #ff7043); color: #fff; box-shadow: 0 8px 22px rgba(255, 87, 34, 0.35);
   }
-  .mo-orders-root .mo-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(232,65,10,.45); }
+  .mo-orders-root .mo-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(255, 87, 34, 0.45); }
   .mo-orders-root .mo-btn-ghost { background: #f3f4f6; color: #374151; }
   .mo-orders-root .mo-btn-ghost:hover { background: #e5e7eb; color: #0f172a; }
   .mo-orders-root .mo-btn-icon { flex: 0 0 auto; width: 42px; padding: 0; font-size: 15px; }
@@ -1876,16 +1894,18 @@ export default function MyOrdersPage() {
     <div className="ml-page ml-list-shell mo-orders-root">
       <style>{css}</style>
 
-      <header className="mo-hero">
-        <img src={DEFAULT_BG} alt="" />
-        <div className="mo-hero-inner">
-          <div>
-            <h1>Мои заявки</h1>
-            <p>Управляйте заявками и откликами мастеров</p>
+      <div className="mo-hero-shell">
+        <header className="mo-hero">
+          <img src={MY_ORDERS_HERO_PHOTO} alt="" />
+          <div className="mo-hero-inner">
+            <div>
+              <h1>Мои заявки</h1>
+              <p>Управляйте заявками и откликами мастеров</p>
+            </div>
+            <button type="button" className="mo-cta" onClick={openCreate}>+ Разместить заявку</button>
           </div>
-          <button type="button" className="mo-cta" onClick={openCreate}>+ Разместить заявку</button>
-        </div>
-      </header>
+        </header>
+      </div>
 
       <main className="mo-main">
         <div className="mo-toolbar">
@@ -1960,14 +1980,6 @@ export default function MyOrdersPage() {
           <div className="mo-grid">
             {shownFiltered.map((req) => {
               const catName = jobRequestCategoryLabel(req);
-              const categoryPhoto = getCategoryPlaceholderPhotoUrlOrDefault(
-                {
-                  categoryName: catName,
-                  categoryId: req.categoryId,
-                  categorySlug: req.categorySlug || req.category_slug,
-                },
-                categories,
-              );
               const pillClass = moCardStatusPillClass(req.status);
               const stPillLabel = moCardStatusPillLabel(req.status);
               const budget = getJobRequestPublishedBudgetNumber(req);
@@ -2007,7 +2019,7 @@ export default function MyOrdersPage() {
                       {req.photos?.length ? (
                         <img src={req.photos[0]} alt="" />
                       ) : (
-                        <img src={categoryPhoto} alt="" />
+                        <span className="emoji" aria-hidden>{categoryEmoji(catName)}</span>
                       )}
                     </div>
                     <div className="mo-card-body">
@@ -2018,12 +2030,12 @@ export default function MyOrdersPage() {
                           {stPillLabel}
                         </span>
                       </div>
+                      {!!desc && <div className="mo-card-desc">{desc}</div>}
                       {!!catName && (
                         <span className={`mo-cat ${moCatClassFromLabel(catName)}`}>
                           {categoryEmoji(catName)} {catName}
                         </span>
                       )}
-                      {!!desc && <div className="mo-card-desc">{desc}</div>}
                       <div className="mo-price-row">
                         <div className="mo-price">
                           {budget && Number(budget) > 0 ? (
