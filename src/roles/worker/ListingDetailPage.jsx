@@ -39,6 +39,43 @@ const Icon = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
     </svg>
   ),
+  search: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <circle cx="11" cy="11" r="7" />
+      <path strokeLinecap="round" d="M21 21l-4.3-4.3" />
+    </svg>
+  ),
+  more: () => (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <circle cx="12" cy="6" r="1.5" />
+      <circle cx="12" cy="12" r="1.5" />
+      <circle cx="12" cy="18" r="1.5" />
+    </svg>
+  ),
+};
+
+const MetaIco = {
+  folder: () => (
+    <svg className="jd-meta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 7V5a2 2 0 012-2h5.5l1.7 2.2a1 1 0 00.8.4H20a2 2 0 012 2V19a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+      />
+    </svg>
+  ),
+  pin: () => (
+    <svg className="jd-meta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s7-7.5 7-13a7 7 0 10-14 0c0 5.5 7 13 7 13z" />
+      <circle cx="12" cy="10" r="2" fill="none" />
+    </svg>
+  ),
+  cal: () => (
+    <svg className="jd-meta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path strokeLinecap="round" d="M3 10h18M8 2v4M16 2v4" />
+    </svg>
+  ),
 };
 
 const TERMINAL_DEAL_STATUSES = ['CANCELLED', 'REFUNDED'];
@@ -47,7 +84,7 @@ const listingStyles = `${listingsDetailJdCss}\n${listingDetailLightboxCss}`;
 
 export default function ListingDetailPage() {
   const { id } = useParams();
-  const { userId, userName, userLastName, userAvatar } = useAuth();
+  const { userId, userName, userLastName, userAvatar, userRole } = useAuth();
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
   const [listingDeal, setListingDeal] = useState(null);
@@ -321,12 +358,19 @@ export default function ListingDetailPage() {
       })
     : '—';
 
-  const addressLine = (listing.address || 'Йошкар-Ола • выезд по договорённости').replace(/\s*·\s*/g, ' • ');
-  const crumbTitle = `${listing.title?.slice(0, 48) || ''}${listing.title?.length > 48 ? '…' : ''}`;
+  const addressLine = (listing.address || 'Йошкар-Ола, выезд по договорённости').replace(/\s*·\s*/g, ', ');
 
   const goBack = () => {
-    if (isOwnListing) navigate('/my-listings');
-    else navigate(catSlug ? `/find-master/${catSlug}` : '/find-master');
+    if (isOwnListing) {
+      navigate('/my-listings');
+      return;
+    }
+    if (!userId) {
+      navigate(catSlug ? `/find-master/${catSlug}` : '/find-master');
+      return;
+    }
+    if (userRole === 'WORKER') navigate('/find-work');
+    else navigate('/my-orders');
   };
 
   return (
@@ -389,28 +433,8 @@ export default function ListingDetailPage() {
 
       <div className="jd-wrap">
         <button type="button" className="jd-back" onClick={goBack}>
-          {isOwnListing ? '← Назад к моим объявлениям' : '← Назад'}
+          {isOwnListing ? '← Назад к моим объявлениям' : userId ? '← Назад к заявкам' : '← Назад'}
         </button>
-
-        <nav className="jd-crumbs">
-          <Link to="/">Главная</Link>
-          <span className="sep"> / </span>
-          {isOwnListing ? (
-            <Link to="/my-listings">Мои объявления</Link>
-          ) : (
-            <>
-              <Link to="/find-master">Мастера</Link>
-              {listing.category && (
-                <>
-                  <span className="sep"> / </span>
-                  <Link to={`/find-master/${catSlug}`}>{listing.category}</Link>
-                </>
-              )}
-            </>
-          )}
-          <span className="sep"> / </span>
-          <span className="cur">{crumbTitle}</span>
-        </nav>
 
         <div className="jd-head">
           <h1 className="jd-title">{listing.title}</h1>
@@ -420,23 +444,17 @@ export default function ListingDetailPage() {
         <div className="jd-meta-lw">
           {listing.category && (
             <span className="jd-meta-item">
-              <span className="jd-meta-emoji" aria-hidden>
-                📁
-              </span>
+              {MetaIco.folder()}
               <span>{listing.category}</span>
             </span>
           )}
           <span className="jd-meta-item">
-            <span className="jd-meta-emoji" aria-hidden>
-              📍
-            </span>
+            {MetaIco.pin()}
             <span>{addressLine}</span>
           </span>
           {listing.createdAt && (
             <span className="jd-meta-item">
-              <span className="jd-meta-emoji" aria-hidden>
-                📅
-              </span>
+              {MetaIco.cal()}
               <span>{pubStr}</span>
             </span>
           )}
@@ -479,6 +497,35 @@ export default function ListingDetailPage() {
                       {String(activePhoto + 1).padStart(2, '0')} / {String(allPhotos.length).padStart(2, '0')}
                     </div>
                   </>
+                )}
+                {allPhotos.length > 0 && (
+                  <div className="jd-img-tools">
+                    <button
+                      type="button"
+                      className="jd-img-tool"
+                      aria-label="Увеличить"
+                      onClick={e => {
+                        e.stopPropagation();
+                        setLightbox(true);
+                      }}
+                    >
+                      {Icon.search()}
+                    </button>
+                    <button
+                      type="button"
+                      className="jd-img-tool"
+                      aria-label="Меню"
+                      onClick={e => {
+                        e.stopPropagation();
+                        const url = typeof window !== 'undefined' ? window.location.href : '';
+                        if (url && navigator.clipboard?.writeText) {
+                          navigator.clipboard.writeText(url).catch(() => {});
+                        }
+                      }}
+                    >
+                      {Icon.more()}
+                    </button>
+                  </div>
                 )}
               </div>
               {allPhotos.length > 1 && (
