@@ -19,9 +19,6 @@ const listingViewPostedIds = new Set();
 const COLLAPSE = 420;
 
 const listingPageExtraCss = `
-/* Одна вертикаль с заголовком и шапкой (.container = 1200px): без лишнего сдвига галереи */
-.ed--listing-detail .ed-wrap { max-width: 1200px; }
-.ed--listing-detail .ed-gallery { padding-left: 0; }
 .ed-head { align-items: flex-start; }
 .ed-head-right { display: flex; align-items: flex-start; gap: 10px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
 .ed-fav.ulc-fav-heart {
@@ -293,7 +290,7 @@ export default function ListingDetailPage() {
 
   if (loading) {
     return (
-      <div className="ed ed--listing-detail">
+      <div className="ed">
         <style>{listingStyles}</style>
         <div className="ed-wrap">
           <div
@@ -330,7 +327,7 @@ export default function ListingDetailPage() {
 
   if (!listing) {
     return (
-      <div className="ed ed--listing-detail">
+      <div className="ed">
         <style>{listingStyles}</style>
         <div className="ed-wrap" style={{ textAlign: 'center', padding: '80px 24px' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>😕</div>
@@ -416,7 +413,7 @@ export default function ListingDetailPage() {
   const lbIdx = hasUploadedPhotos ? activePhoto : 0;
 
   return (
-    <div className="ed ed--listing-detail">
+    <div className="ed">
       <style>{listingStyles}</style>
 
       {lightbox && (

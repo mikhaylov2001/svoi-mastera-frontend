@@ -563,7 +563,7 @@ export const dealsDetailEdCss = `
 .ed :where(button, input, textarea, select) {
   font-family: inherit;
 }
-.ed-wrap { max-width: 1180px; margin: 0 auto; }
+.ed-wrap { max-width: 1200px; margin: 0 auto; }
 
 .ed-back {
   display: inline-flex;
@@ -610,7 +610,8 @@ export const dealsDetailEdCss = `
   background: #fff;
   border-radius: 16px;
   border: 1px solid #ececef;
-  padding: 10px;
+  /* Без левого внутреннего отступа: край фото совпадает с заголовком, «назад» и карточками колонки */
+  padding: 10px 10px 10px 0;
   box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
 }
 .ed-main { position: relative; aspect-ratio: 16 / 10; min-height: clamp(280px, 44vw, 520px); border-radius: 10px; overflow: hidden; background: #f4f4f5; }
