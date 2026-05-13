@@ -226,30 +226,26 @@ const css = `
 
   .mo-orders-root { padding-bottom: 80px; background: #f5f5f7; }
 
-  /* === Hero: скруглённый баннер + градиент как в Lovable === */
-  .mo-orders-root .mo-hero-shell {
-    max-width: 1200px; margin: 0 auto; padding: 20px 28px 0;
-  }
+  /* === Hero: на всю ширину экрана, контент по центру в 1200px === */
   .mo-orders-root .mo-hero {
-    position: relative; height: 220px; overflow: hidden;
-    border-radius: 16px;
-    box-shadow: 0 10px 32px rgba(15, 23, 42, 0.12);
+    position: relative; width: 100%; height: 240px; overflow: hidden;
+    border-radius: 0; box-shadow: none;
   }
   @media (max-width: 768px) {
-    .mo-orders-root .mo-hero-shell { padding: 16px 16px 0; }
-    .mo-orders-root .mo-hero { height: 180px; border-radius: 14px; }
+    .mo-orders-root .mo-hero { height: 200px; }
   }
   .mo-orders-root .mo-hero img {
     position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; object-position: center 42%;
+    object-fit: cover; object-position: center 40%;
     filter: saturate(1.06) contrast(1.02);
   }
   .mo-orders-root .mo-hero::after {
     content: ''; position: absolute; inset: 0; z-index: 0;
-    background: linear-gradient(90deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.32) 48%, rgba(0,0,0,.1) 100%);
+    background: linear-gradient(90deg, rgba(0,0,0,.65) 0%, rgba(0,0,0,.34) 50%, rgba(0,0,0,.12) 100%);
   }
   .mo-orders-root .mo-hero-inner {
-    position: relative; z-index: 1; height: 100%; max-width: 100%; margin: 0; padding: 0 32px;
+    position: relative; z-index: 1; height: 100%; max-width: 1200px; margin: 0 auto;
+    padding: 0 clamp(24px, 5vw, 52px);
     display: flex; align-items: center; justify-content: space-between; gap: 24px; color: #fff;
   }
   @media (max-width: 600px) {
@@ -265,7 +261,7 @@ const css = `
   }
   .mo-orders-root .mo-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(255, 87, 34, 0.5); }
 
-  .mo-orders-root .mo-main { max-width: 1200px; margin: 0 auto; padding: 20px 28px 24px; }
+  .mo-orders-root .mo-main { max-width: 1200px; margin: 0 auto; padding: 24px 28px 28px; }
 
   .mo-orders-root .mo-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 22px; }
   .mo-orders-root .mo-tabs { display: flex; gap: 4px; padding: 6px; background: #fff; border-radius: 14px; box-shadow: 0 4px 14px rgba(15,15,30,.05); }
@@ -307,13 +303,12 @@ const css = `
   .mo-orders-root .mo-card-top { display: flex; gap: 16px; padding: 20px; align-items: flex-start; }
 
   .mo-orders-root .mo-card-photo {
-    width: 112px; height: 112px; border-radius: 12px; overflow: hidden; flex-shrink: 0;
-    background: linear-gradient(160deg, #fff5ed 0%, #ffe4d4 100%); display: flex; align-items: center; justify-content: center;
-    position: relative; box-shadow: inset 0 0 0 1px rgba(255, 140, 100, 0.12);
+    width: 120px; height: 120px; border-radius: 12px; overflow: hidden; flex-shrink: 0;
+    background: #fff7ed; display: flex; align-items: center; justify-content: center;
+    position: relative; box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
   }
   .mo-orders-root .mo-card-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
   .mo-orders-root .mo-card:hover .mo-card-photo img { transform: scale(1.08); }
-  .mo-orders-root .mo-card-photo .emoji { font-size: 52px; line-height: 1; filter: drop-shadow(0 4px 12px rgba(255, 140, 80, 0.35)); }
 
   .mo-orders-root .mo-card-photo::after {
     content: ''; position: absolute; inset: 0;
@@ -334,7 +329,7 @@ const css = `
 
   .mo-orders-root .mo-card-body { flex: 1; min-width: 0; }
   .mo-orders-root .mo-card-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-  .mo-orders-root .mo-card-title { margin: 0; font-size: 17px; font-weight: 800; color: #0a0a0a; letter-spacing: -0.02em; line-height: 1.28; }
+  .mo-orders-root .mo-card-title { margin: 0; font-size: 17px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; line-height: 1.3; }
   .mo-orders-root .mo-card-desc {
     margin-top: 6px; font-size: 13px; color: #64748b; line-height: 1.45;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -359,16 +354,14 @@ const css = `
   .mo-orders-root .mo-cat.plumb { background: #fef3c7; color: #92400e; }
   .mo-orders-root .mo-cat.beauty { background: #f3e8ff; color: #7c3aed; }
   .mo-orders-root .mo-cat.hair { background: #fef9c3; color: #a16207; }
-  .mo-orders-root .mo-cat.repair { background: #ffedd5; color: #ea580c; }
+  .mo-orders-root .mo-cat.repair { background: #fff7ed; color: #c2410c; }
 
-  .mo-orders-root .mo-price-row { margin-top: 14px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-  .mo-orders-root .mo-price { display: flex; align-items: baseline; gap: 8px; }
+  .mo-orders-root .mo-price-row { margin-top: 16px; display: flex; align-items: baseline; justify-content: flex-start; gap: 10px; flex-wrap: wrap; }
+  .mo-orders-root .mo-price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
   .mo-orders-root .mo-price-num {
-    font-size: 26px; font-weight: 900;
-    background: linear-gradient(135deg, #ff5722, #ff7043);
-    -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -0.03em; line-height: 1;
+    font-size: 26px; font-weight: 800; color: #f97316; letter-spacing: -0.03em; line-height: 1;
   }
-  .mo-orders-root .mo-price-lbl { font-size: 12px; color: #94a3b8; font-weight: 600; }
+  .mo-orders-root .mo-price-lbl { font-size: 12px; color: #64748b; font-weight: 600; }
 
   .mo-orders-root .mo-meta {
     display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
@@ -382,7 +375,7 @@ const css = `
   .mo-orders-root .mo-meta-item { display: inline-flex; align-items: center; gap: 6px; }
   .mo-orders-root .mo-meta-item svg { width: 14px; height: 14px; opacity: .72; flex-shrink: 0; }
   .mo-orders-root .mo-offers { font-weight: 800; display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .mo-orders-root .mo-offers--has { color: #ff5722; font-weight: 800; }
+  .mo-orders-root .mo-offers--has { color: #f97316; font-weight: 800; }
   .mo-orders-root .mo-offers--wait { color: #92400e; font-weight: 600; gap: 5px; }
   .mo-orders-root .mo-offers--wait svg { flex-shrink: 0; opacity: 0.85; }
 
@@ -401,12 +394,13 @@ const css = `
     cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   }
   .mo-orders-root .mo-btn-primary {
-    background: linear-gradient(135deg, #ff5722, #ff7043); color: #fff; box-shadow: 0 8px 22px rgba(255, 87, 34, 0.35);
+    background: linear-gradient(135deg, #ff5c35, #ff7043); color: #fff; border: none;
+    box-shadow: 0 8px 22px rgba(255, 92, 53, 0.32);
   }
-  .mo-orders-root .mo-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(255, 87, 34, 0.45); }
-  .mo-orders-root .mo-btn-ghost { background: #f3f4f6; color: #374151; }
-  .mo-orders-root .mo-btn-ghost:hover { background: #e5e7eb; color: #0f172a; }
-  .mo-orders-root .mo-btn-icon { flex: 0 0 auto; width: 42px; padding: 0; font-size: 15px; }
+  .mo-orders-root .mo-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(255, 92, 53, 0.42); }
+  .mo-orders-root .mo-btn-ghost { background: #fff; color: #374151; border: 1px solid #e5e7eb; }
+  .mo-orders-root .mo-btn-ghost:hover { background: #f9fafb; color: #0f172a; border-color: #d1d5db; }
+  .mo-orders-root .mo-btn-icon { flex: 0 0 auto; width: 42px; padding: 0; font-size: 15px; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05); }
 
   .mo-orders-root .mo-empty { text-align: center; padding: 70px 20px; background: #fff; border-radius: 22px; border: 1.5px solid #ececec; }
   .mo-orders-root .mo-empty-emoji { font-size: 56px; margin-bottom: 14px; }
@@ -1894,18 +1888,16 @@ export default function MyOrdersPage() {
     <div className="ml-page ml-list-shell mo-orders-root">
       <style>{css}</style>
 
-      <div className="mo-hero-shell">
-        <header className="mo-hero">
-          <img src={MY_ORDERS_HERO_PHOTO} alt="" />
-          <div className="mo-hero-inner">
-            <div>
-              <h1>Мои заявки</h1>
-              <p>Управляйте заявками и откликами мастеров</p>
-            </div>
-            <button type="button" className="mo-cta" onClick={openCreate}>+ Разместить заявку</button>
+      <header className="mo-hero">
+        <img src={MY_ORDERS_HERO_PHOTO} alt="" />
+        <div className="mo-hero-inner">
+          <div>
+            <h1>Мои заявки</h1>
+            <p>Управляйте заявками и откликами мастеров</p>
           </div>
-        </header>
-      </div>
+          <button type="button" className="mo-cta" onClick={openCreate}>+ Разместить заявку</button>
+        </div>
+      </header>
 
       <main className="mo-main">
         <div className="mo-toolbar">
@@ -1980,6 +1972,15 @@ export default function MyOrdersPage() {
           <div className="mo-grid">
             {shownFiltered.map((req) => {
               const catName = jobRequestCategoryLabel(req);
+              const categoryPhoto = getCategoryPlaceholderPhotoUrlOrDefault(
+                {
+                  categoryName: catName,
+                  categoryId: req.categoryId,
+                  categorySlug: req.categorySlug || req.category_slug,
+                },
+                categories,
+              );
+              const thumbSrc = req.photos?.length ? req.photos[0] : categoryPhoto;
               const pillClass = moCardStatusPillClass(req.status);
               const stPillLabel = moCardStatusPillLabel(req.status);
               const budget = getJobRequestPublishedBudgetNumber(req);
@@ -2016,11 +2017,7 @@ export default function MyOrdersPage() {
                   <div className="mo-card-top">
                     <div className="mo-card-photo">
                       {urgent && <span className="mo-card-urgent">⚡ Срочно</span>}
-                      {req.photos?.length ? (
-                        <img src={req.photos[0]} alt="" />
-                      ) : (
-                        <span className="emoji" aria-hidden>{categoryEmoji(catName)}</span>
-                      )}
+                      <img src={thumbSrc} alt="" />
                     </div>
                     <div className="mo-card-body">
                       <div className="mo-card-row">
