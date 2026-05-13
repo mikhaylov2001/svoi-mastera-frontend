@@ -250,7 +250,7 @@ const css = `
   .ml-list-shell .ml-list.mrq-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
+    gap: 16px;
     padding: 2px 0 8px;
   }
   @media (max-width: 880px) {
@@ -259,34 +259,35 @@ const css = `
   .ml-list-shell .ml-list.mrq-grid .ml-row {
     flex-direction: column;
     align-items: stretch;
-    border-radius: 18px;
-    border: 1.5px solid #ececec;
+    border-radius: 16px;
+    border: 1px solid #e8e8e8;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
     position: relative;
+    overflow: hidden;
   }
-  .ml-list-shell .ml-list.mrq-grid .ml-row::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-    background: linear-gradient(180deg, #e8410a, #ff8a5b);
-    opacity: 0; transition: opacity .2s; pointer-events: none; border-radius: 18px 0 0 18px;
-  }
-  .ml-list-shell .ml-list.mrq-grid .ml-row:hover::before { opacity: 1; }
   .ml-list-shell .ml-list.mrq-grid .ml-row:hover {
-    transform: translateY(-3px);
-    border-color: #ffd4bf;
-    box-shadow: 0 16px 40px -12px rgba(232,65,10,.18);
+    transform: translateY(-2px);
+    border-color: #e5e5e5;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.1);
   }
   .ml-list-shell .ml-list.mrq-grid .ml-row-img {
     width: 100%;
-    height: 160px;
-    min-height: 160px;
-    max-height: 160px;
+    height: 168px;
+    min-height: 168px;
+    max-height: 168px;
     align-self: stretch;
-    border-radius: 0;
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
   }
   .ml-list-shell .ml-list.mrq-grid .ml-row-img img { min-height: 100%; }
   .ml-list-shell .ml-list.mrq-grid .ml-row-body {
-    padding: 14px 14px 10px;
+    padding: 16px 16px 12px;
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-desc { display: none; }
   .ml-list-shell .ml-list.mrq-grid .mrq-card-head {
     display: flex;
     align-items: flex-start;
@@ -326,64 +327,96 @@ const css = `
   .ml-list-shell .ml-list.mrq-grid .mrq-st-neutral { background: #f1f5f9; color: #64748b; }
   .ml-list-shell .ml-list.mrq-grid .mrq-st-neutral .mrq-st-dot { background: #94a3b8; }
   .ml-list-shell .ml-list.mrq-grid .ml-row-price {
-    margin-top: 6px;
-    margin-bottom: 6px;
+    margin-top: 8px;
+    margin-bottom: 0;
     font-size: 22px;
     font-weight: 900;
-    background: linear-gradient(135deg, #e8410a, #ff6b3d);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: #ff5a2d;
     letter-spacing: -0.02em;
+    line-height: 1.2;
   }
   .ml-list-shell .ml-list.mrq-grid .ml-row-price:not(:has(.ml-row-unit)) {
-    background: none;
-    -webkit-background-clip: unset;
-    background-clip: border-box;
     color: #64748b;
     font-size: 14px;
     font-weight: 700;
   }
-  .ml-list-shell .ml-list.mrq-grid .ml-row-unit { font-size: 12px; color: #94a3b8; font-weight: 600; }
-  .ml-list-shell .ml-list.mrq-grid .ml-row-stats {
-    padding-top: 8px;
-    margin-top: 4px;
-    border-top: 1px dashed #ececec;
+  .ml-list-shell .ml-list.mrq-grid .ml-row-unit { font-size: 12px; color: #94a3b8; font-weight: 600; margin-left: 6px; }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-cat { margin-top: 10px; margin-bottom: 0; }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-date {
+    margin-top: 8px;
+    margin-bottom: 0;
+    font-size: 12px;
+    color: #94a3b8;
   }
-  .ml-list-shell .ml-list.mrq-grid .ml-row-actions {
+  .ml-list-shell .ml-list.mrq-grid .ml-row-stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
+    padding: 12px 16px;
+    margin: 0;
+    border-top: 1px dashed #e5e5e5;
+    background: #fff;
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-stat-offers { margin: 0; padding: 0; color: #64748b; font-weight: 600; font-size: 13px; }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-stat-num { color: #0f172a; font-weight: 800; }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-stat-status-active { font-size: 13px; font-weight: 700; color: #22c55e; }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-stat-status-arch { font-size: 13px; font-weight: 700; color: #64748b; }
+
+  .ml-list-shell .ml-list.mrq-grid .ml-row-actions.mrq-card-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 16px 16px;
     border-left: none;
     border-top: 1px solid #ececec;
-    padding: 10px 14px 14px;
-    gap: 8px;
     align-items: stretch;
   }
-  .ml-list-shell .ml-list.mrq-grid .ml-row-actions .ml-btn-edit {
-    flex: 1 1 120px;
-    border-radius: 11px;
-    min-height: 42px;
+  .ml-list-shell .ml-list.mrq-grid .mrq-card-actions .ml-actions-divider { display: none !important; }
+  .ml-list-shell .ml-list.mrq-grid .mrq-card-actions .ml-btn-outline-neutral {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 0;
+  }
+  .ml-list-shell .ml-list.mrq-grid .mrq-card-actions.mrq-card-actions--noedit .ml-btn-copy {
+    grid-column: 1 / -1;
+  }
+  .ml-list-shell .ml-list.mrq-grid .mrq-card-actions.mrq-card-actions--noedit .ml-btn-outline-neutral {
+    grid-column: 1 / -1;
+  }
+  .ml-list-shell .ml-list.mrq-grid .mrq-card-actions .ml-btn-edit {
+    width: 100%;
+    min-height: 44px;
+    border-radius: 10px;
     font-size: 13px;
     font-weight: 700;
-    background: linear-gradient(135deg, #e8410a, #ff6b3d);
-    box-shadow: 0 4px 12px rgba(232,65,10,.25);
+    background: #ff5a2d;
+    box-shadow: none;
   }
-  .ml-list-shell .ml-list.mrq-grid .ml-row-actions .ml-btn-copy {
-    flex: 1 1 100px;
-    border-radius: 11px;
-    min-height: 42px;
-    font-size: 12px;
-    font-weight: 700;
+  .ml-list-shell .ml-list.mrq-grid .mrq-card-actions .ml-btn-edit:hover {
+    background: #e8410a;
+    transform: none;
+    box-shadow: 0 4px 14px rgba(255, 90, 45, 0.35);
   }
-  .ml-list-shell .ml-list.mrq-grid .ml-row-actions .ml-btn-outline-neutral {
-    flex: 1 1 100%;
-    border-radius: 11px;
-    min-height: 40px;
+  .ml-list-shell .ml-list.mrq-grid .mrq-card-actions .ml-btn-copy {
+    width: 100%;
+    min-height: 44px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #d4d4d8;
+    background: #fff;
+    color: #111827;
   }
-  .ml-list-shell .ml-list.mrq-grid .ml-actions-divider {
-    flex: 1 1 100%;
-    margin: 0;
+  .ml-list-shell .ml-list.mrq-grid .mrq-card-actions .ml-btn-outline-neutral {
+    min-height: 44px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #d4d4d8;
+    background: #fff;
+    color: #111827;
   }
 
   .ml-tabs { display: flex; gap: 6px; padding: 4px; background: rgba(255,255,255,.85); border: 1px solid #e8e8e8; border-radius: 12px; margin-bottom: 14px; width: fit-content; }
@@ -1913,11 +1946,9 @@ export default function MyOrdersPage() {
                         }
                       </div>
                       {catName && <span className={`ml-row-cat ${categoryChipToneClass(catName)}`}>{catName}</span>}
-                      {req.description && req.description !== 'Без описания' && (
-                        <div className="ml-row-desc">{formatListingOriginDescription('CUSTOMER', req.description)}</div>
-                      )}
                       <div className="ml-row-date">{req.createdAt ? new Date(req.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) : '—'}</div>
-                      <div className="ml-row-stats">
+                    </div>
+                    <div className="ml-row-stats mrq-card-stats">
                         <div
                           className="ml-row-stat ml-row-stat-offers"
                           role="button"
@@ -1946,8 +1977,10 @@ export default function MyOrdersPage() {
                           {stLabel}
                         </div>
                       </div>
-                    </div>
-                    <div className="ml-row-actions" onClick={e => e.stopPropagation()}>
+                    <div
+                      className={`ml-row-actions mrq-card-actions${!requestIsEditable(req) ? ' mrq-card-actions--noedit' : ''}`}
+                      onClick={e => e.stopPropagation()}
+                    >
                       {requestIsEditable(req) && (
                         <button type="button" className="ml-btn-edit" onClick={e => openEdit(req, e)}>Редактировать</button>
                       )}
