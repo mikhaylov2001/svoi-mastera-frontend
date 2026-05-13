@@ -39,15 +39,6 @@ const Icon = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
     </svg>
   ),
-  msg: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 12a8 8 0 01-11.5 7.2L4 21l1.8-5.5A8 8 0 1121 12z"
-      />
-    </svg>
-  ),
 };
 
 const TERMINAL_DEAL_STATUSES = ['CANCELLED', 'REFUNDED'];
@@ -489,19 +480,6 @@ export default function ListingDetailPage() {
                     </div>
                   </>
                 )}
-                {allPhotos.length > 0 && (
-                  <div
-                    className="jd-zoom"
-                    onClick={e => {
-                      e.stopPropagation();
-                      setLightbox(true);
-                    }}
-                    role="button"
-                    title="Открыть полноэкранно"
-                  >
-                    ⤢
-                  </div>
-                )}
               </div>
               {allPhotos.length > 1 && (
                 <div className="jd-thumbs">
@@ -612,7 +590,6 @@ export default function ListingDetailPage() {
                         <div className="jd-banner-ok">✓ Сделка по этому объявлению завершена</div>
                       )}
                       <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="jd-btn jd-btn-ghost">
-                        <Icon.msg />
                         Написать сообщение
                       </Link>
                       <button type="button" className="jd-link-deals" onClick={() => navigate('/deals')}>
@@ -625,7 +602,6 @@ export default function ListingDetailPage() {
                         {accepting ? 'Отправляем…' : 'Откликнуться'}
                       </button>
                       <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="jd-btn jd-btn-ghost">
-                        <Icon.msg />
                         Написать сообщение
                       </Link>
                     </>
@@ -668,7 +644,6 @@ export default function ListingDetailPage() {
 
                 <div className="jd-worker-stack">
                   <button type="button" className="jd-btn jd-btn-primary" onClick={() => navigate(`/chat/${listingDeal.customerId}`)}>
-                    <Icon.msg />
                     Написать заказчику
                   </button>
                   {listingDeal.status === 'NEW' && (

@@ -855,8 +855,8 @@ export const listingsDetailJdCss = `
 .jd-eyebrow { font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; letter-spacing: .1em; }
 .jd-h2-card { font-size: 17px; font-weight: 700; color: #0a0a0a; margin: 0 0 2px; letter-spacing: -.02em; line-height: 1.25; }
 
-.jd-gallery { background: #fff; border-radius: 14px; border: 1px solid #e8e8ec; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.04), 0 12px 40px rgba(0,0,0,.05); }
-.jd-main { position: relative; aspect-ratio: 16/10; border-radius: 12px; overflow: hidden; background: #f4f4f5; cursor: pointer; }
+.jd-gallery { background: #fff; border-radius: 14px; border: 1px solid #e8e8ec; padding: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.04), 0 12px 40px rgba(0,0,0,.05); }
+.jd-main { position: relative; aspect-ratio: 16 / 9; min-height: clamp(220px, 48vw, 460px); border-radius: 12px; overflow: hidden; background: #f4f4f5; cursor: pointer; }
 .jd-main img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
 .jd-main-ph { display: flex; align-items: center; justify-content: center; font-size: 64px; color: #d4d4d8; width: 100%; height: 100%; }
 .jd-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.95); border: 1px solid rgba(0,0,0,.04); color: #0a0a0a; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform .15s; z-index: 3; box-shadow: 0 4px 12px rgba(0,0,0,.08); }
@@ -864,14 +864,14 @@ export const listingsDetailJdCss = `
 .jd-arrow.l { left: 14px; } .jd-arrow.r { right: 14px; }
 .jd-arrow svg { width: 14px; height: 14px; stroke-width: 2.5; }
 .jd-counter { position: absolute; bottom: 14px; right: 14px; backdrop-filter: blur(20px); background: rgba(255,255,255,.85); color: #18181b; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 999px; font-variant-numeric: tabular-nums; z-index: 3; }
-.jd-zoom { position: absolute; bottom: 14px; left: 14px; z-index: 4; width: 34px; height: 34px; background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.35); border-radius: 8px; color: #fff; font-size: 15px; display: flex; align-items: center; justify-content: center; cursor: zoom-in; transition: background .15s; }
-.jd-zoom:hover { background: rgba(0,0,0,.55); }
-.jd-thumbs { display: flex; gap: 6px; margin-top: 6px; }
-.jd-thumb { flex: 1; aspect-ratio: 1.5; border-radius: 8px; overflow: hidden; cursor: pointer; transition: opacity .2s; opacity: .55; position: relative; background: #f4f4f5; }
+.jd-thumbs { display: flex; gap: 8px; margin-top: 8px; padding: 2px 0; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: thin; }
+.jd-thumbs::-webkit-scrollbar { height: 4px; }
+.jd-thumbs::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 4px; }
+.jd-thumb { width: 64px; height: 44px; flex: 0 0 auto; border-radius: 6px; overflow: hidden; cursor: pointer; transition: opacity .2s; opacity: .55; position: relative; background: #f4f4f5; }
 .jd-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .jd-thumb:hover { opacity: .85; }
 .jd-thumb.on { opacity: 1; }
-.jd-thumb.on::after { content:''; position:absolute; inset:0; border-radius: 8px; box-shadow: inset 0 0 0 3px var(--jd-accent); }
+.jd-thumb.on::after { content:''; position:absolute; inset:0; border-radius: 6px; box-shadow: inset 0 0 0 2px var(--jd-accent); }
 
 .jd-desc { margin: 14px 0 0; color: #3f3f46; font-size: 15px; line-height: 1.75; font-weight: 400; white-space: pre-wrap; word-break: break-word; }
 .jd-desc-toggle { margin-top: 10px; background: none; border: none; color: var(--jd-accent); font-size: 13px; font-weight: 600; cursor: pointer; padding: 0; font-family: inherit; }
