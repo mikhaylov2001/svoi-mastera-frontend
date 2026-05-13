@@ -38,7 +38,7 @@ export default function DealDetailEdProgress({
           ) : (
             <>
               <b>{pct}%</b>
-              {' · '}
+              {'\u00a0\u00b7\u00a0'}
               этап {stageNum} из {stageTotal}
             </>
           )}
