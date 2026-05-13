@@ -12,3 +12,8 @@ export function getJobRequestViewsCount(req) {
   if (!Number.isFinite(n) || n < 0) return 0;
   return Math.min(Math.floor(n), Number.MAX_SAFE_INTEGER);
 }
+
+/** Счётчик просмотров объявления (те же поля camel/snake, что у заявок). */
+export function getListingViewsCount(listing) {
+  return getJobRequestViewsCount(listing);
+}
