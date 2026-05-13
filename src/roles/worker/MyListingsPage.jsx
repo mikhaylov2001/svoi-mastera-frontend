@@ -205,32 +205,6 @@ const css = `
     color: #0f172a;
   }
 
-  .mo-orders-root.mo-worker-listings .mo-grid { grid-template-columns: 1fr; gap: 18px; }
-  .mo-orders-root.mo-worker-listings .mo-worker-listing-row { display: flex; gap: 16px; align-items: flex-start; width: 100%; }
-  .mo-orders-root.mo-worker-listings .mo-listing-aside {
-    display: flex; flex-direction: column; gap: 8px; min-width: 200px; max-width: 240px; flex-shrink: 0;
-  }
-  .mo-orders-root.mo-worker-listings .mo-listing-aside .mo-btn,
-  .mo-orders-root.mo-worker-listings .mo-listing-aside .ml-btn-review-customer {
-    flex: none; width: 100%;
-  }
-  .mo-orders-root.mo-worker-listings .mo-worker-photo-cnt {
-    position: absolute; bottom: 6px; right: 6px; z-index: 2;
-    font-size: 10px; font-weight: 800; color: #fff; background: rgba(0,0,0,.52);
-    padding: 3px 8px; border-radius: 8px; pointer-events: none;
-  }
-  .mo-orders-root.mo-worker-listings .mo-btn-ghost.copied {
-    color: #166534; border: 1px solid #bbf7d0; background: #f0fdf4;
-  }
-  @media (max-width: 900px) {
-    .mo-orders-root.mo-worker-listings .mo-worker-listing-row { flex-wrap: wrap; }
-    .mo-orders-root.mo-worker-listings .mo-listing-aside { max-width: none; width: 100%; flex-direction: row; flex-wrap: wrap; }
-    .mo-orders-root.mo-worker-listings .mo-listing-aside .mo-btn,
-    .mo-orders-root.mo-worker-listings .mo-listing-aside .ml-btn-review-customer {
-      flex: 1 1 160px;
-    }
-  }
-
   /* .ml-list, .ml-row — unifiedListingCards.css */
 
   .ml-btn-edit {
@@ -1753,7 +1727,7 @@ export default function MyListingsPage() {
 
   // ══ СПИСОК ══
   return (
-    <div className="ml-page ml-list-shell mo-orders-root mo-worker-listings">
+    <div className="ml-page ml-list-shell mo-orders-root">
       <style>{css}</style>
 
       <header className="mo-hero">
@@ -1791,25 +1765,25 @@ export default function MyListingsPage() {
 
         {loading ? (
           <div className="mo-grid">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3, 4].map((i) => (
               <div key={i} className="mo-card mo-card--sk" aria-hidden>
-                <div className="mo-worker-listing-row">
-                  <div className="mo-card-photo"><div className="ml-sk" style={{ width: '100%', height: '100%', borderRadius: 12 }} /></div>
-                  <div className="mo-card-body" style={{ flex: 1 }}>
+                <div className="mo-card-top">
+                  <div className="mo-card-photo"><div className="ml-sk" style={{ width: '100%', height: '100%', borderRadius: 14 }} /></div>
+                  <div className="mo-card-body">
                     <div className="ml-sk" style={{ height: 16, width: '70%' }} />
                     <div className="ml-sk" style={{ height: 12, width: '90%', marginTop: 8 }} />
                     <div className="ml-sk" style={{ height: 12, width: '40%', marginTop: 8 }} />
                     <div className="ml-sk" style={{ height: 28, width: '45%', marginTop: 12 }} />
                   </div>
-                  <div className="mo-listing-aside" style={{ minWidth: 200 }}>
-                    <div className="ml-sk" style={{ height: 44, borderRadius: 13 }} />
-                    <div className="ml-sk" style={{ height: 44, borderRadius: 13 }} />
-                    <div className="ml-sk" style={{ height: 44, borderRadius: 13 }} />
-                  </div>
                 </div>
                 <div className="mo-meta">
                   <div className="ml-sk" style={{ height: 12, width: 80 }} />
                   <div className="ml-sk" style={{ height: 12, width: 100, marginLeft: 'auto' }} />
+                </div>
+                <div className="mo-actions">
+                  <div className="ml-sk mo-btn" style={{ flex: 1, minHeight: 44, borderRadius: 13 }} />
+                  <div className="ml-sk mo-btn mo-btn-icon" style={{ width: 42, height: 42, borderRadius: 13 }} />
+                  <div className="ml-sk mo-btn mo-btn-icon" style={{ width: 42, height: 42, borderRadius: 13 }} />
                 </div>
               </div>
             ))}
@@ -1846,9 +1820,26 @@ export default function MyListingsPage() {
               const desc = (l.description && String(l.description).trim()) ? l.description : '';
               const locked = listingLockedAfterDeal(l);
               const statusOpen = !!(l.active && !locked);
+              const pillClass = statusOpen ? 'open' : 'neutral';
+              const stPillLabel = statusOpen ? 'Открыта' : 'В архиве';
               const priceNum = getListingPublishedPriceNumber(l);
               const negotiable =
                 priceKindFromListing(l) === 'negotiable' || priceNum == null;
+              const openDetail = () => {
+                setDetail(l);
+                setPhotoIdx(0);
+              };
+              const primaryLabel = locked ? 'Открыть' : (l.active ? 'Редактировать' : 'Открыть');
+              const onPrimary = (e) => {
+                e.stopPropagation();
+                if (locked) {
+                  openDetail();
+                  return;
+                }
+                if (l.active) openEdit(l, e);
+                else openDetail();
+              };
+              const showArchiveBtn = !locked;
 
               return (
                 <article
@@ -1856,28 +1847,24 @@ export default function MyListingsPage() {
                   className="mo-card"
                   role="button"
                   tabIndex={0}
-                  onClick={() => { setDetail(l); setPhotoIdx(0); }}
+                  onClick={openDetail}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      setDetail(l);
-                      setPhotoIdx(0);
+                      openDetail();
                     }
                   }}
                 >
-                  <div className="mo-worker-listing-row">
+                  <div className="mo-card-top">
                     <div className="mo-card-photo">
                       <img src={thumbSrc} alt="" />
-                      {l.photos?.length > 1 && (
-                        <span className="mo-worker-photo-cnt" aria-hidden>📷{l.photos.length}</span>
-                      )}
                     </div>
-                    <div className="mo-card-body mo-listing-mid">
+                    <div className="mo-card-body">
                       <div className="mo-card-row">
                         <h3 className="mo-card-title">{l.title}</h3>
-                        <span className={`mo-status ${statusOpen ? 'open' : 'neutral'}`}>
+                        <span className={`mo-status ${pillClass}`}>
                           <span className="dot" aria-hidden />
-                          {statusOpen ? 'Активно' : 'В архиве'}
+                          {stPillLabel}
                         </span>
                       </div>
                       {!!desc && <div className="mo-card-desc">{desc}</div>}
@@ -1899,38 +1886,6 @@ export default function MyListingsPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="mo-listing-aside" onClick={(e) => e.stopPropagation()}>
-                      {!locked && (
-                        <button type="button" className="mo-btn mo-btn-primary" onClick={(e) => openEdit(l, e)}>
-                          Редактировать
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        className={`mo-btn mo-btn-ghost${copyFlashId === l.id ? ' copied' : ''}`}
-                        onClick={(e) => copyListingPublicLink(l.id, e)}
-                      >
-                        {copyFlashId === l.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
-                      </button>
-                      {showWorkerReviewForListing(l.id) && (
-                        <button
-                          type="button"
-                          className="ml-btn-review-customer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const d = completedDealForListing(l.id);
-                            if (d) setWorkerReviewDealId(d.id);
-                          }}
-                        >
-                          Отзыв о заказчике
-                        </button>
-                      )}
-                      {!locked && (
-                        <button type="button" className="mo-btn mo-btn-ghost" onClick={(e) => handleToggle(l, e)}>
-                          {l.active ? 'Снять с публикации' : 'Восстановить'}
-                        </button>
-                      )}
-                    </div>
                   </div>
 
                   <div className="mo-meta">
@@ -1944,6 +1899,60 @@ export default function MyListingsPage() {
                         {views}
                       </span>
                     </div>
+                    {statusOpen ? (
+                      <span className="mo-meta-trail mo-offers mo-offers--wait">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                          <path d="M5 2h14v3l-4 5 4 5v3H5v-3l4-5-4-5V2z" />
+                          <path d="M9 12h6" />
+                        </svg>
+                        Ждём заказчиков
+                      </span>
+                    ) : (
+                      <span className="mo-meta-trail mo-offers mo-offers--wait" style={{ color: '#64748b', fontWeight: 600 }}>
+                        В архиве
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mo-actions" onClick={(e) => e.stopPropagation()}>
+                    <button type="button" className="mo-btn mo-btn-primary" onClick={onPrimary}>
+                      {primaryLabel}
+                    </button>
+                    <button
+                      type="button"
+                      className={`mo-btn mo-btn-ghost mo-btn-icon${copyFlashId === l.id ? ' copied' : ''}`}
+                      title={copyFlashId === l.id ? 'Скопировано' : 'Копировать ссылку'}
+                      aria-label="Копировать ссылку"
+                      onClick={(e) => copyListingPublicLink(l.id, e)}
+                    >
+                      🔗
+                    </button>
+                    {showWorkerReviewForListing(l.id) && (
+                      <button
+                        type="button"
+                        className="mo-btn mo-btn-ghost mo-btn-icon"
+                        title="Отзыв о заказчике"
+                        aria-label="Отзыв о заказчике"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const d = completedDealForListing(l.id);
+                          if (d) setWorkerReviewDealId(d.id);
+                        }}
+                      >
+                        ⭐
+                      </button>
+                    )}
+                    {showArchiveBtn && (
+                      <button
+                        type="button"
+                        className="mo-btn mo-btn-ghost mo-btn-icon"
+                        title={l.active ? 'Снять с публикации' : 'Восстановить'}
+                        aria-label={l.active ? 'Снять с публикации' : 'Восстановить'}
+                        onClick={(e) => handleToggle(l, e)}
+                      >
+                        📦
+                      </button>
+                    )}
                   </div>
                 </article>
               );
