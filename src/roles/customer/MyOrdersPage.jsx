@@ -215,11 +215,12 @@ const MAX_DESC = 2000;
 /* ══ CSS: список/карточки — src/styles/unifiedListingCards.css ══ */
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
   *, *::before, *::after { box-sizing: border-box; }
 
-  .ml-page { background: #f2f2f2; min-height: 100vh; font-family: Inter, Arial, sans-serif; color: #1a1a1a; }
+  .ml-page { background: #f5f5f7; min-height: 100vh; font-family: 'Manrope', Inter, system-ui, sans-serif; color: #0f172a; }
 
-  .ml-list-shell { background: #f2f2f2; min-height: 100vh; }
+  .ml-list-shell { background: #f5f5f7; min-height: 100vh; }
   .ml-list-hero {
     position: relative; height: var(--page-hero-h-desktop); overflow: hidden;
   }
@@ -235,7 +236,7 @@ const css = `
   }
   .ml-list-hero-body {
     position: relative; z-index: 1; height: 100%;
-    max-width: 1000px; margin: 0 auto; padding: 0 20px;
+    max-width: 1180px; margin: 0 auto; padding: 0 24px;
     display: flex; align-items: flex-end; justify-content: space-between;
     padding-bottom: 32px; gap: 16px; flex-wrap: wrap;
   }
@@ -243,7 +244,147 @@ const css = `
   .ml-h-sub { font-size: 14px; color: rgba(255,255,255,.75); margin: 6px 0 0; font-weight: 500; }
   .ml-new-btn { background: #e8410a; border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700; padding: 12px 24px; cursor: pointer; font-family: inherit; transition: background .15s, box-shadow .15s; box-shadow: 0 4px 14px rgba(232,65,10,.3); white-space: nowrap; }
   .ml-new-btn:hover { background: #c73208; box-shadow: 0 6px 20px rgba(232,65,10,.38); }
-  .ml-wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px 60px; }
+  .ml-wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px 60px; }
+
+  /* Сетка карточек (фрагмент из mo-grid / mo-card) — без тёмного hero и без mo-tabs */
+  .ml-list-shell .ml-list.mrq-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    padding: 2px 0 8px;
+  }
+  @media (max-width: 880px) {
+    .ml-list-shell .ml-list.mrq-grid { grid-template-columns: 1fr; }
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row {
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 18px;
+    border: 1.5px solid #ececec;
+    position: relative;
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(180deg, #e8410a, #ff8a5b);
+    opacity: 0; transition: opacity .2s; pointer-events: none; border-radius: 18px 0 0 18px;
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row:hover::before { opacity: 1; }
+  .ml-list-shell .ml-list.mrq-grid .ml-row:hover {
+    transform: translateY(-3px);
+    border-color: #ffd4bf;
+    box-shadow: 0 16px 40px -12px rgba(232,65,10,.18);
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-img {
+    width: 100%;
+    height: 160px;
+    min-height: 160px;
+    max-height: 160px;
+    align-self: stretch;
+    border-radius: 0;
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-img img { min-height: 100%; }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-body {
+    padding: 14px 14px 10px;
+    flex: 1;
+  }
+  .ml-list-shell .ml-list.mrq-grid .mrq-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-title {
+    font-size: 16px;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    margin: 0;
+    line-height: 1.25;
+  }
+  .ml-list-shell .ml-list.mrq-grid .mrq-st {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .ml-list-shell .ml-list.mrq-grid .mrq-st-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .ml-list-shell .ml-list.mrq-grid .mrq-st-open { background: #dcfce7; color: #16a34a; }
+  .ml-list-shell .ml-list.mrq-grid .mrq-st-open .mrq-st-dot { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.18); }
+  .ml-list-shell .ml-list.mrq-grid .mrq-st-wait { background: #fef3c7; color: #b45309; }
+  .ml-list-shell .ml-list.mrq-grid .mrq-st-wait .mrq-st-dot { background: #f59e0b; }
+  .ml-list-shell .ml-list.mrq-grid .mrq-st-work { background: #dbeafe; color: #1d4ed8; }
+  .ml-list-shell .ml-list.mrq-grid .mrq-st-work .mrq-st-dot { background: #2563eb; }
+  .ml-list-shell .ml-list.mrq-grid .mrq-st-neutral { background: #f1f5f9; color: #64748b; }
+  .ml-list-shell .ml-list.mrq-grid .mrq-st-neutral .mrq-st-dot { background: #94a3b8; }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-price {
+    margin-top: 6px;
+    margin-bottom: 6px;
+    font-size: 22px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #e8410a, #ff6b3d);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.02em;
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-price:not(:has(.ml-row-unit)) {
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: border-box;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-unit { font-size: 12px; color: #94a3b8; font-weight: 600; }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-stats {
+    padding-top: 8px;
+    margin-top: 4px;
+    border-top: 1px dashed #ececec;
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-actions {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-left: none;
+    border-top: 1px solid #ececec;
+    padding: 10px 14px 14px;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-actions .ml-btn-edit {
+    flex: 1 1 120px;
+    border-radius: 11px;
+    min-height: 42px;
+    font-size: 13px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #e8410a, #ff6b3d);
+    box-shadow: 0 4px 12px rgba(232,65,10,.25);
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-actions .ml-btn-copy {
+    flex: 1 1 100px;
+    border-radius: 11px;
+    min-height: 42px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-row-actions .ml-btn-outline-neutral {
+    flex: 1 1 100%;
+    border-radius: 11px;
+    min-height: 40px;
+  }
+  .ml-list-shell .ml-list.mrq-grid .ml-actions-divider {
+    flex: 1 1 100%;
+    margin: 0;
+  }
 
   .ml-tabs { display: flex; gap: 6px; padding: 4px; background: rgba(255,255,255,.85); border: 1px solid #e8e8e8; border-radius: 12px; margin-bottom: 14px; width: fit-content; }
   .ml-tab { background: none; border: none; border-radius: 10px; padding: 10px 18px; font-size: 14px; font-weight: 600; color: #6b7280; cursor: pointer; font-family: inherit; transition: all .15s; }
@@ -467,6 +608,14 @@ const STATUS_LABELS = {
   ASSIGNED: 'Назначена', IN_PROGRESS: 'В работе',
   COMPLETED: 'Выполнена', CANCELLED: 'Отменена', EXPIRED: 'Истекла',
 };
+
+/** Плашка статуса в сетке карточек (как в макете mo-status). */
+function mrqJobRequestStatusClass(status) {
+  if (status === 'OPEN') return 'mrq-st-open';
+  if (status === 'IN_PROGRESS') return 'mrq-st-work';
+  if (status === 'IN_NEGOTIATION' || status === 'ASSIGNED') return 'mrq-st-wait';
+  return 'mrq-st-neutral';
+}
 
 function isActiveStatus(s) {
   return ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'].includes(s);
@@ -1699,7 +1848,7 @@ export default function MyOrdersPage() {
         </div>
 
         {loading ? (
-          <div className="ml-list">
+          <div className="ml-list mrq-grid">
             {[1,2,3].map(i => (
               <div key={i} className="ml-row" style={{ cursor: 'default', pointerEvents: 'none' }}>
                 <div className="ml-row-img"><div className="ml-sk" style={{ width: '100%', height: '100%', borderRadius: 0 }} /></div>
@@ -1723,7 +1872,7 @@ export default function MyOrdersPage() {
             {tab === 'active' && <button type="button" className="ml-new-btn" onClick={openCreate}>+ Разместить заявку</button>}
           </div>
         ) : (
-          <div className="ml-list">
+          <div className="ml-list mrq-grid">
             {shown.map(req => {
               const catName  = jobRequestCategoryLabel(req);
               const rowFallback = getCategoryPlaceholderPhotoUrlOrDefault(
@@ -1750,7 +1899,13 @@ export default function MyOrdersPage() {
                       }
                     </div>
                     <div className="ml-row-body">
-                      <div className="ml-row-title">{req.title}</div>
+                      <div className="mrq-card-head">
+                        <div className="ml-row-title">{req.title}</div>
+                        <span className={`mrq-st ${mrqJobRequestStatusClass(req.status)}`}>
+                          <span className="mrq-st-dot" aria-hidden />
+                          {stLabel}
+                        </span>
+                      </div>
                       <div className="ml-row-price">
                         {budget && Number(budget) > 0
                           ? <>{Number(budget).toLocaleString('ru-RU')} ₽<span className="ml-row-unit">в заявке</span></>
