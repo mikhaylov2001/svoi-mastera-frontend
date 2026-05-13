@@ -613,7 +613,7 @@ export const dealsDetailEdCss = `
   padding: 10px;
   box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
 }
-.ed-main { position: relative; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: #f4f4f5; }
+.ed-main { position: relative; aspect-ratio: 16 / 10; min-height: clamp(280px, 44vw, 520px); border-radius: 10px; overflow: hidden; background: #f4f4f5; }
 .ed-main img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
 .ed-main-placeholder { display: flex; align-items: center; justify-content: center; font-size: 64px; color: #d4d4d8; }
 .ed-floats { position: absolute; top: 14px; left: 14px; display: flex; flex-wrap: wrap; gap: 6px; z-index: 3; }

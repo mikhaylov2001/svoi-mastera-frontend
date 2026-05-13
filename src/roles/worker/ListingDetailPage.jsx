@@ -3,20 +3,55 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { acceptListingDeal, recordListingView, getMyDeals, workerStartDeal } from '../../api';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
+import { dealsDetailEdCss, listingDetailLightboxCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
+import DealDetailEdProgress from '../shared/DealDetailEdProgress';
+import { getDealEdProgress } from '../../utils/dealDetailEdProgress';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
   getCategorySlugFromLabel,
 } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
-import './listingDetailLovable.css';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
-/** Одна отправка просмотра на id за сессию (React StrictMode и повторные fetch) */
 const listingViewPostedIds = new Set();
-
 const COLLAPSE = 420;
+
+const listingPageExtraCss = `
+.ed-head { align-items: flex-start; }
+.ed-head-right { display: flex; align-items: flex-start; gap: 10px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+.ed-fav.ulc-fav-heart {
+  width: 40px; height: 40px; border-radius: 10px; border: 1px solid #ececef; background: #fff; color: #71717a;
+  display: flex; align-items: center; justify-content: center; padding: 0; box-shadow: none; cursor: pointer;
+}
+.ed-fav.ulc-fav-heart:hover,
+.ed-fav.ulc-fav-heart--on { color: #f45b31; border-color: #ffd4c2; background: #fff7f3; }
+.ed-fav.ulc-fav-heart svg { width: 18px; height: 18px; }
+.ed-listing-meta { margin-top: 10px; font-size: 13px; color: #71717a; line-height: 1.5; display: flex; flex-wrap: wrap; gap: 10px 16px; }
+.ed-listing-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.ed-ava-fallback.neutral { background: #e4e4e8 !important; color: #52525b !important; }
+.ed-rating-line { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f4f4f5; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 13px; }
+.ed-rating-stars { letter-spacing: 2px; font-size: 14px; }
+.ed-rating-stars .on { color: #f45b31; }
+.ed-rating-stars .off { color: #d4d4d8; }
+.ed-rating-num { font-weight: 700; color: #0a0a0a; }
+.ed-rating-sub { color: #a1a1aa; font-size: 12px; margin-left: 4px; }
+.ed-similar-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.ed-similar-head strong { font-size: 15px; font-weight: 600; color: #0a0a0a; letter-spacing: -.02em; }
+.ed-similar-head a { font-size: 12px; color: #f45b31; font-weight: 600; text-decoration: none; }
+.ed-similar-head a:hover { text-decoration: underline; }
+.ed-sim-item { display: flex; gap: 12px; text-decoration: none; color: inherit; padding: 10px 8px; border-radius: 10px; transition: background .15s; }
+.ed-sim-item:hover { background: #fafafa; }
+.ed-sim-img { width: 58px; height: 44px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #f4f4f5; }
+.ed-sim-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ed-sim-title { font-size: 13px; font-weight: 500; color: #52525b; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ed-sim-price { font-size: 13px; font-weight: 700; color: #0a0a0a; margin-top: 2px; }
+.ed-error { font-size: 12px; color: #ef4444; font-weight: 600; padding: 4px 0; }
+.ed-link-deals { display: block; text-align: center; font-size: 13px; color: #f45b31; font-weight: 600; background: none; border: none; cursor: pointer; font-family: inherit; padding: 8px 0 0; }
+.ed-link-deals:hover { text-decoration: underline; }
+.ed-own-note { margin-top: 14px; padding: 12px 14px; background: #fafafa; border-radius: 10px; font-size: 13px; color: #52525b; line-height: 1.5; border: 1px solid #ececef; }
+`;
 
 function reviewsCountLabel(n) {
   const x = Number(n) || 0;
@@ -28,52 +63,21 @@ function reviewsCountLabel(n) {
   return `${x} отзывов`;
 }
 
-const Icon = {
-  pin: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s7-7.5 7-13a7 7 0 10-14 0c0 5.5 7 13 7 13z" />
-      <circle cx="12" cy="9" r="2.5" fill="none" stroke="currentColor" />
-    </svg>
-  ),
-  cal: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <rect x="3" y="5" width="18" height="16" rx="2" strokeWidth="1.5" />
-      <path strokeLinecap="round" d="M3 10h18M8 3v4M16 3v4" />
-    </svg>
-  ),
-  clock: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <circle cx="12" cy="12" r="9" />
-      <path strokeLinecap="round" d="M12 7v5l3 2" />
-    </svg>
-  ),
-  msg: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 12a8 8 0 01-11.5 7.2L4 21l1.8-5.5A8 8 0 1121 12z"
-      />
-    </svg>
-  ),
-  arrL: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-    </svg>
-  ),
-  arrR: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-    </svg>
-  ),
-  zoom: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 9V4h5M20 15v5h-5M20 9V4h-5M4 15v5h5" />
-    </svg>
-  ),
-};
+function timeAgo(d) {
+  if (!d) return '';
+  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (m < 1) return 'только что';
+  if (m < 60) return `${m} мин. назад`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} ч. назад`;
+  const days = Math.floor(h / 24);
+  if (days < 30) return `${days} дн. назад`;
+  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+}
 
 const TERMINAL_DEAL_STATUSES = ['CANCELLED', 'REFUNDED'];
+
+const listingStyles = `${dealsDetailEdCss}\n${listingDetailLightboxCss}\n${listingPageExtraCss}`;
 
 export default function ListingDetailPage() {
   const { id } = useParams();
@@ -191,7 +195,9 @@ export default function ListingDetailPage() {
 
   const photos = listing?.photos?.length ? listing.photos : [];
   const fallbackPhoto = getCategoryPlaceholderPhotoUrlOrDefault({ category: listing?.category });
-  const allPhotos = photos.length ? photos : [fallbackPhoto];
+  const hasUploadedPhotos = photos.length > 0;
+  const photoList = hasUploadedPhotos ? photos : [];
+  const displayPhoto = hasUploadedPhotos ? photos[activePhoto] : fallbackPhoto;
   const catSlug = getCategorySlugFromLabel(listing?.category) || '';
 
   const { bodyText, urgencyLabel } = useMemo(
@@ -202,17 +208,18 @@ export default function ListingDetailPage() {
   const visibleBody =
     !descExpanded && showDescToggle ? `${bodyText.slice(0, COLLAPSE).trim()}…` : bodyText;
 
+  const photoCount = photoList.length;
   const nextPhoto = useCallback(
-    () => setActivePhoto(i => (allPhotos.length > 1 ? (i + 1) % allPhotos.length : i)),
-    [allPhotos.length],
+    () => setActivePhoto(i => (photoCount > 1 ? (i + 1) % photoCount : i)),
+    [photoCount],
   );
   const prevPhoto = useCallback(
-    () => setActivePhoto(i => (allPhotos.length > 1 ? (i - 1 + allPhotos.length) % allPhotos.length : i)),
-    [allPhotos.length],
+    () => setActivePhoto(i => (photoCount > 1 ? (i - 1 + photoCount) % photoCount : i)),
+    [photoCount],
   );
 
   useEffect(() => {
-    if (!lightbox || allPhotos.length <= 1) return;
+    if (!lightbox || photoCount <= 1) return;
     const onKey = e => {
       if (e.key === 'Escape') setLightbox(false);
       if (e.key === 'ArrowRight') nextPhoto();
@@ -220,7 +227,7 @@ export default function ListingDetailPage() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [lightbox, allPhotos.length, nextPhoto, prevPhoto]);
+  }, [lightbox, photoCount, nextPhoto, prevPhoto]);
 
   const handleAcceptWork = async () => {
     if (!userId) {
@@ -283,16 +290,36 @@ export default function ListingDetailPage() {
 
   if (loading) {
     return (
-      <div className="ld">
-        <div className="ld-page">
-          <div className="ld-left">
-            <div className="ld-skel" style={{ height: 22, width: 200, marginBottom: 12 }} />
-            <div className="ld-skel" style={{ height: 280, borderRadius: 14, marginBottom: 16 }} />
-            <div className="ld-skel" style={{ height: 120, borderRadius: 14 }} />
-          </div>
-          <div className="ld-right">
-            <div className="ld-skel" style={{ height: 200, borderRadius: 14 }} />
-          </div>
+      <div className="ed">
+        <style>{listingStyles}</style>
+        <div className="ed-wrap">
+          <div
+            style={{
+              height: 40,
+              width: 160,
+              borderRadius: 10,
+              background: 'linear-gradient(90deg,#f4f4f4 25%,#eaeaea 50%,#f4f4f4 75%)',
+              backgroundSize: '200% 100%',
+              marginBottom: 20,
+            }}
+          />
+          <div
+            style={{
+              height: 320,
+              borderRadius: 16,
+              background: 'linear-gradient(90deg,#f4f4f4 25%,#eaeaea 50%,#f4f4f4 75%)',
+              backgroundSize: '200% 100%',
+              marginBottom: 16,
+            }}
+          />
+          <div
+            style={{
+              height: 120,
+              borderRadius: 16,
+              background: 'linear-gradient(90deg,#f4f4f4 25%,#eaeaea 50%,#f4f4f4 75%)',
+              backgroundSize: '200% 100%',
+            }}
+          />
         </div>
       </div>
     );
@@ -300,11 +327,12 @@ export default function ListingDetailPage() {
 
   if (!listing) {
     return (
-      <div className="ld">
-        <div className="ld-page" style={{ display: 'block', textAlign: 'center', paddingTop: 80 }}>
+      <div className="ed">
+        <style>{listingStyles}</style>
+        <div className="ed-wrap" style={{ textAlign: 'center', padding: '80px 24px' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>😕</div>
           <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Объявление не найдено</h2>
-          <Link to="/find-master" className="ld-own-link">
+          <Link to="/find-master" style={{ color: '#f45b31', fontWeight: 600 }}>
             ← Вернуться к поиску
           </Link>
         </div>
@@ -361,26 +389,43 @@ export default function ListingDetailPage() {
     else navigate('/my-orders');
   };
 
-  const listingsHubPath = !userId ? '/find-master' : userRole === 'WORKER' ? '/find-work' : '/my-orders';
-  const listingsHubLabel = !userId ? 'Объявления' : userRole === 'WORKER' ? 'Заявки' : 'Мои заказы';
+  const backLabel = isOwnListing
+    ? 'Мои объявления'
+    : !userId
+      ? 'К поиску'
+      : userRole === 'WORKER'
+        ? 'Заявки'
+        : 'Мои заказы';
 
-  const breadTitle =
-    (listing.title || '').length > 35 ? `${(listing.title || '').slice(0, 35)}…` : listing.title || '';
+  const listingActive = listing.active !== false;
+  const statusPill = listingActive
+    ? { label: 'Активна', dot: '#22c55e', shadow: '0 0 0 3px rgba(34,197,94,.2)' }
+    : { label: 'В архиве', dot: '#a1a1aa', shadow: '0 0 0 3px rgba(161,161,161,.2)' };
 
-  const catLink = catSlug ? `/find-master/${catSlug}` : '/find-master';
+  const progressDeal =
+    customerListingDeal && !TERMINAL_DEAL_STATUSES.includes(String(customerListingDeal.status || ''))
+      ? { deal: customerListingDeal, role: 'customer' }
+      : isOwnListing && listingDeal && !TERMINAL_DEAL_STATUSES.includes(String(listingDeal.status || ''))
+        ? { deal: listingDeal, role: 'worker' }
+        : null;
+
+  const lightboxPhotos = hasUploadedPhotos ? photoList : [fallbackPhoto];
+  const lbIdx = hasUploadedPhotos ? activePhoto : 0;
 
   return (
-    <div className="ld">
-      {lightbox && allPhotos.length > 0 && (
-        <div className="ld-lightbox" onClick={() => setLightbox(false)} role="presentation">
-          <button type="button" className="ld-lb-close" onClick={e => { e.stopPropagation(); setLightbox(false); }}>
+    <div className="ed">
+      <style>{listingStyles}</style>
+
+      {lightbox && (
+        <div className="jd-lightbox" onClick={() => setLightbox(false)} role="presentation">
+          <button type="button" className="jd-lb-close" onClick={e => { e.stopPropagation(); setLightbox(false); }}>
             ✕
           </button>
-          {allPhotos.length > 1 && (
+          {lightboxPhotos.length > 1 && (
             <>
               <button
                 type="button"
-                className="ld-lb-nav ld-lb-prev"
+                className="jd-lb-nav jd-lb-prev"
                 onClick={e => {
                   e.stopPropagation();
                   prevPhoto();
@@ -390,7 +435,7 @@ export default function ListingDetailPage() {
               </button>
               <button
                 type="button"
-                className="ld-lb-nav ld-lb-next"
+                className="jd-lb-nav jd-lb-next"
                 onClick={e => {
                   e.stopPropagation();
                   nextPhoto();
@@ -400,162 +445,129 @@ export default function ListingDetailPage() {
               </button>
             </>
           )}
-          <div className="ld-lightbox-img-wrap" onClick={e => e.stopPropagation()}>
-            {allPhotos.length > 1 && (
+          <div className="jd-lightbox-img-wrap" onClick={e => e.stopPropagation()}>
+            {lightboxPhotos.length > 1 && (
               <>
-                <div className="ld-lb-zone ld-lb-zone-prev" onClick={prevPhoto} role="presentation" />
-                <div className="ld-lb-zone ld-lb-zone-next" onClick={nextPhoto} role="presentation" />
+                <div className="jd-lb-zone jd-lb-zone-prev" onClick={prevPhoto} role="presentation" />
+                <div className="jd-lb-zone jd-lb-zone-next" onClick={nextPhoto} role="presentation" />
               </>
             )}
             <img
-              src={allPhotos[activePhoto]}
+              src={lightboxPhotos[lbIdx]}
               alt={listing.title || ''}
-              onClick={() => allPhotos.length <= 1 && setLightbox(false)}
+              onClick={() => lightboxPhotos.length <= 1 && setLightbox(false)}
             />
           </div>
-          {allPhotos.length > 1 && (
-            <div className="ld-lb-counter">
-              {activePhoto + 1} / {allPhotos.length}
+          {lightboxPhotos.length > 1 && (
+            <div className="jd-lb-counter">
+              {lbIdx + 1} / {lightboxPhotos.length}
             </div>
           )}
-          <div className="ld-lb-hint">← → по краям · Esc — закрыть</div>
+          <div className="jd-lb-hint">← → по краям · Esc — закрыть</div>
         </div>
       )}
 
-      <div className="ld-bread">
-        <div className="ld-bread-inner">
-          <button type="button" className="ld-back-btn" onClick={goBack} aria-label="Назад">
-            <span className="ld-back-ico" aria-hidden>
-              ←
-            </span>
-            Назад
-          </button>
-          <span className="ld-bread-sep" style={{ color: '#e5e5e5' }}>
-            |
-          </span>
-          <Link to="/">Главная</Link>
-          <span className="ld-bread-sep">›</span>
-          <Link to={listingsHubPath}>{listingsHubLabel}</Link>
-          <span className="ld-bread-sep">›</span>
-          <Link to={catLink}>{listing.category || 'Категория'}</Link>
-          <span className="ld-bread-sep">›</span>
-          <span className="ld-bread-cur">{breadTitle}</span>
-        </div>
-      </div>
+      <div className="ed-wrap">
+        <button type="button" className="ed-back" onClick={goBack}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          {backLabel}
+        </button>
 
-      <div className="ld-page">
-        <div className="ld-left">
-          <div className="ld-fw-head">
-            <div className="ld-fw-title-row">
-              <h1 className="ld-fw-title">{listing.title}</h1>
-              <div className="ld-actions-row">
-                <FavoriteHeartButton kind="listing" id={listing.id} />
-              </div>
+        <div className="ed-head">
+          <div className="ed-head-left" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <h1>{listing.title || 'Объявление'}</h1>
+              <span className="ed-head-id">#{listing.id}</span>
             </div>
-            <div className="ld-fw-meta">
-              {listing.category && <span className="ld-cat-chip">{listing.category}</span>}
-              <span className="meta-item">
-                {Icon.pin()}
-                {addressLine}
-              </span>
-              {listing.createdAt && (
-                <span className="meta-item">
-                  {Icon.cal()}
-                  {pubStr}
+            <div className="ed-listing-meta">
+              {listing.category && (
+                <span>
+                  {dealCategoryEmoji(listing.category)} {listing.category}
                 </span>
               )}
+              <span>📍 {addressLine}</span>
+              {listing.createdAt && <span>📅 {pubStr}</span>}
             </div>
           </div>
+          <div className="ed-head-right">
+            <FavoriteHeartButton kind="listing" id={listing.id} className="ulc-fav-heart ed-fav" />
+            <span className="ed-status-pill">
+              <span className="dot" style={{ background: statusPill.dot, boxShadow: statusPill.shadow }} />
+              {statusPill.label}
+            </span>
+          </div>
+        </div>
 
-          <div className="ld-fw-gallery-card">
-            <div className="ld-gallery-wrap">
+        <div className="ed-grid">
+          <div className="ed-col">
+            <div className="ed-gallery">
               <div
-                className="ld-gallery-main"
-                onClick={() => allPhotos.length && setLightbox(true)}
+                className="ed-main"
+                onClick={() => (hasUploadedPhotos || displayPhoto) && setLightbox(true)}
                 role="presentation"
               >
-                {allPhotos[activePhoto] ? (
-                  <img src={allPhotos[activePhoto]} alt={listing.title || ''} key={activePhoto} />
+                {displayPhoto ? (
+                  <img src={displayPhoto} alt={listing.title || ''} key={`${hasUploadedPhotos}-${activePhoto}`} />
                 ) : (
-                  <div className="ld-gallery-ph">📷</div>
+                  <div className="ed-main-placeholder" aria-hidden>
+                    🔨
+                  </div>
                 )}
-
-                <div className="ld-floats">
-                  {listing.active !== false ? (
-                    <div className="ld-chip">
-                      <span className="pulse" aria-hidden />
-                      Активна
+                <div className="ed-floats">
+                  <div className="ed-chip">
+                    <span className="pulse" style={{ background: statusPill.dot, boxShadow: statusPill.shadow }} />
+                    <span className="ed-chip-text">{statusPill.label}</span>
+                  </div>
+                  {listing.category ? (
+                    <div className="ed-chip">
+                      <span className="ed-chip-text">
+                        {dealCategoryEmoji(listing.category)} {listing.category}
+                      </span>
                     </div>
-                  ) : (
-                    <div className="ld-chip ld-chip--muted">
-                      <span className="pulse" aria-hidden />
-                      В архиве
-                    </div>
-                  )}
+                  ) : null}
                 </div>
-
-                {allPhotos.length > 1 && (
+                {hasUploadedPhotos && photoCount > 1 ? (
                   <>
                     <button
                       type="button"
-                      className="ld-gallery-nav-btn prev"
+                      className="ed-arrow l"
+                      aria-label="Предыдущее фото"
                       onClick={e => {
                         e.stopPropagation();
                         prevPhoto();
                       }}
-                      aria-label="Предыдущее фото"
                     >
-                      {Icon.arrL()}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
                     </button>
                     <button
                       type="button"
-                      className="ld-gallery-nav-btn next"
+                      className="ed-arrow r"
+                      aria-label="Следующее фото"
                       onClick={e => {
                         e.stopPropagation();
                         nextPhoto();
                       }}
-                      aria-label="Следующее фото"
                     >
-                      {Icon.arrR()}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
                     </button>
+                    <div className="ed-counter">
+                      {String(activePhoto + 1).padStart(2, '0')} / {String(photoCount).padStart(2, '0')}
+                    </div>
                   </>
-                )}
-
-                {allPhotos.length > 0 && (
-                  <button
-                    type="button"
-                    className="ld-gallery-zoom"
-                    onClick={e => {
-                      e.stopPropagation();
-                      setLightbox(true);
-                    }}
-                    title="Открыть полноэкранно"
-                  >
-                    {Icon.zoom()}
-                  </button>
-                )}
-
-                {allPhotos.length > 1 && allPhotos.length <= 8 && (
-                  <div className="ld-gallery-dots">
-                    {allPhotos.map((_, i) => (
-                      <div key={i} className={`ld-gallery-dot${i === activePhoto ? ' active' : ''}`} />
-                    ))}
-                  </div>
-                )}
-
-                {allPhotos.length > 8 && (
-                  <div className="ld-gallery-count">
-                    {activePhoto + 1} / {allPhotos.length}
-                  </div>
-                )}
+                ) : null}
               </div>
-
-              {allPhotos.length > 1 && (
-                <div className="ld-thumbs">
-                  {allPhotos.map((p, i) => (
+              {hasUploadedPhotos && photoCount > 1 ? (
+                <div className="ed-thumbs">
+                  {photoList.map((p, i) => (
                     <div
                       key={i}
-                      className={`ld-thumb${i === activePhoto ? ' active' : ''}`}
+                      className={`ed-thumb${i === activePhoto ? ' on' : ''}`}
                       onClick={() => setActivePhoto(i)}
                       role="presentation"
                     >
@@ -563,268 +575,310 @@ export default function ListingDetailPage() {
                     </div>
                   ))}
                 </div>
-              )}
+              ) : null}
             </div>
-          </div>
 
-          <section className="ld-card">
-            <span className="ld-eyebrow">Описание</span>
+            {progressDeal ? (
+              <DealDetailEdProgress {...getDealEdProgress(progressDeal.deal, progressDeal.role, timeAgo)} />
+            ) : null}
+
             {bodyText ? (
-              <>
-                <p className="ld-desc-text">{visibleBody}</p>
+              <section className="ed-card">
+                <div className="ed-eyebrow">Описание</div>
+                <p className="ed-desc">{visibleBody}</p>
                 {showDescToggle && (
-                  <button type="button" className="ld-desc-toggle" onClick={() => setDescExpanded(x => !x)}>
+                  <button
+                    type="button"
+                    className="ed-btn ed-btn-ghost"
+                    style={{ marginTop: 12, width: 'auto', alignSelf: 'flex-start' }}
+                    onClick={() => setDescExpanded(x => !x)}
+                  >
                     {descExpanded ? 'Свернуть ↑' : 'Читать полностью ↓'}
                   </button>
                 )}
-                {urgencyLabel && (
-                  <div className="ld-urgency">
-                    {Icon.clock()}
-                    Срочность: {urgencyLabel.replace(/^📅\s*/, '')}
-                  </div>
-                )}
-              </>
+                {urgencyLabel ? (
+                  <p className="ed-desc" style={{ marginTop: 14, color: '#c2410c', fontWeight: 600 }}>
+                    ⏰ Срочность: {urgencyLabel.replace(/^📅\s*/, '')}
+                  </p>
+                ) : null}
+              </section>
             ) : (
-              <p className="ld-empty-desc">Описание не добавлено</p>
-            )}
-          </section>
-
-          <section className="ld-card">
-            <span className="ld-eyebrow">Подробности</span>
-            <div className="ld-info-grid">
-              <div className="ld-info-row">
-                <span className="ld-info-key">Категория</span>
-                <span className="ld-info-val">{listing.category || '—'}</span>
-              </div>
-              <div className="ld-info-row">
-                <span className="ld-info-key">Город</span>
-                <span className="ld-info-val">{listingCity}</span>
-              </div>
-              <div className="ld-info-row">
-                <span className="ld-info-key">Адрес</span>
-                <span className="ld-info-val">{addressLine}</span>
-              </div>
-              <div className="ld-info-row">
-                <span className="ld-info-key">Опубликована</span>
-                <span className="ld-info-val">{pubStr}</span>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <aside className="ld-right">
-          <div className="ld-price-panel">
-            <div className="ld-price-label">Стоимость</div>
-            {priceHasAmount ? (
-              <div className="ld-price-big">
-                {priceMainLine}
-                <small> ₽</small>
-              </div>
-            ) : (
-              <div className="ld-price-plain">{priceMainLine}</div>
-            )}
-            {priceSubLine && <div className="ld-price-sub">{priceSubLine}</div>}
-
-            {isOwnListing && (
-              <div className="ld-own-banner">
-                <strong>Ваше объявление.</strong> Здесь видите цену так же, как заказчик. Редактировать список — в
-                «Мои объявления».
-              </div>
+              <section className="ed-card">
+                <div className="ed-eyebrow">Описание</div>
+                <p className="ed-desc" style={{ color: '#a1a1aa', fontStyle: 'italic' }}>
+                  Описание не добавлено
+                </p>
+              </section>
             )}
 
-            {!isOwnListing && (
-              <div className="ld-price-btns">
-                {customerListingDeal &&
-                !TERMINAL_DEAL_STATUSES.includes(String(customerListingDeal.status || '')) ? (
-                  <>
-                    {customerListingDeal.status === 'NEW' && (
-                      <>
-                        <div className="ld-banner-ok">🕐 Заявка отправлена мастеру</div>
-                        <div className="ld-banner-info">
-                          Сделка создана и ждёт подтверждения мастера. Статус — в «Мои сделки».
-                        </div>
-                      </>
-                    )}
-                    {customerListingDeal.status === 'IN_PROGRESS' && (
-                      <>
-                        <div className="ld-banner-ok">✓ Мастер принял заказ — сделка в работе</div>
-                        <div className="ld-banner-info">Обсуждайте детали в чате и отслеживайте этапы в «Мои сделки».</div>
-                      </>
-                    )}
-                    {customerListingDeal.status === 'COMPLETED' && (
-                      <div className="ld-banner-ok">✓ Сделка по этому объявлению завершена</div>
-                    )}
-                    <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ld-btn-contact">
-                      {Icon.msg()}
-                      Написать сообщение
-                    </Link>
-                    <button type="button" className="ld-link-deals" onClick={() => navigate('/deals')}>
-                      Перейти к сделкам →
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      className="ld-btn-msg"
-                      onClick={handleAcceptWork}
-                      disabled={accepting}
-                    >
-                      {accepting ? 'Отправляем…' : 'Откликнуться'}
-                    </button>
-                    <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ld-btn-contact">
-                      {Icon.msg()}
-                      Написать сообщение
-                    </Link>
-                  </>
-                )}
-                {actionError && <div className="ld-error">{actionError}</div>}
-              </div>
-            )}
+            <section className="ed-card">
+              <div className="ed-eyebrow">Условия</div>
+              <dl className="ed-rows">
+                {[
+                  listing.category && ['Категория', listing.category],
+                  ['Город', listingCity],
+                  ['Адрес', addressLine],
+                  priceHasAmount && ['Стоимость', `${priceMainLine} ₽${priceUnitTrim ? ` ${priceUnitTrim}` : ''}`],
+                  !priceHasAmount && listing.priceUnit && ['Стоимость', listing.priceUnit],
+                  listing.createdAt && ['Опубликована', timeAgo(listing.createdAt) || pubStr],
+                ]
+                  .filter(Boolean)
+                  .map(([label, value]) => (
+                    <div key={label} className="ed-row">
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+              </dl>
+            </section>
           </div>
 
-          {isOwnListing && listingDeal?.customerId && (
-            <div className="ld-fw-person-card">
-              <div className="ld-fw-person-label">Заказчик</div>
-              <div
-                className="ld-fw-person-row"
-                onClick={() => listingDeal.customerId && navigate(`/customers/${listingDeal.customerId}`)}
-                role="presentation"
-              >
-                <div className="ld-fw-person-ava">
-                  {listingDeal.customerAvatar &&
-                  listingDeal.customerAvatar.length > 10 &&
-                  listingDeal.customerAvatar !== 'null' ? (
-                    <img className="ld-fw-person-ava-img" src={listingDeal.customerAvatar} alt="" />
-                  ) : (
-                    <div className="ld-fw-person-ava-fallback">
-                      {(listingDeal.customerName || 'З')[0].toUpperCase()}
-                    </div>
-                  )}
-                  <span className="ld-fw-person-ava-dot" />
+          <aside className="ed-side">
+            <div className="ed-card">
+              <div className="ed-eyebrow">Стоимость</div>
+              {priceHasAmount ? (
+                <div className="ed-price-num">
+                  {priceMainLine}
+                  <small> ₽</small>
                 </div>
-                <div className="ld-fw-person-info">
-                  <div className="ld-fw-person-name">
-                    {[listingDeal.customerName, listingDeal.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
-                  </div>
-                  <div className="ld-fw-person-meta">
-                    {listingDeal.status === 'NEW' && 'Ожидает вашего подтверждения'}
-                    {listingDeal.status === 'IN_PROGRESS' && 'Сделка в работе'}
-                    {listingDeal.status === 'COMPLETED' && 'Сделка завершена'}
-                  </div>
+              ) : (
+                <div className="ed-price-num" style={{ fontSize: 22, fontWeight: 700 }}>
+                  {priceMainLine}
                 </div>
-                <div className="ld-fw-person-chevron">›</div>
-              </div>
+              )}
+              {priceSubLine ? <p className="ed-price-sub">{priceSubLine}</p> : null}
 
-              <div className="ld-worker-stack">
-                <button type="button" className="ld-btn-msg" onClick={() => navigate(`/chat/${listingDeal.customerId}`)}>
+              {isOwnListing && (
+                <div className="ed-own-note">
+                  <strong>Ваше объявление.</strong> Цена так же видна заказчику. Редактировать список — в «Мои объявления».
+                </div>
+              )}
+
+              {!isOwnListing && (
+                <div className="ed-actions">
+                  {customerListingDeal &&
+                  !TERMINAL_DEAL_STATUSES.includes(String(customerListingDeal.status || '')) ? (
+                    <>
+                      {customerListingDeal.status === 'NEW' && (
+                        <div className="ed-callout ed-callout-warn" style={{ marginTop: 12 }}>
+                          Заявка отправлена мастеру. Сделка ждёт подтверждения.
+                        </div>
+                      )}
+                      {customerListingDeal.status === 'IN_PROGRESS' && (
+                        <div className="ed-callout ed-callout-warn" style={{ marginTop: 12 }}>
+                          Сделка в работе. Обсуждайте детали в чате.
+                        </div>
+                      )}
+                      {customerListingDeal.status === 'COMPLETED' && (
+                        <div className="ed-inline-wait" style={{ marginTop: 12 }}>
+                          ✓ Сделка по объявлению завершена
+                        </div>
+                      )}
+                      <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-msg-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                          />
+                        </svg>
+                        Написать сообщение
+                      </Link>
+                      <button type="button" className="ed-link-deals" onClick={() => navigate('/deals')}>
+                        Перейти к сделкам →
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="ed-btn ed-btn-confirm"
+                        onClick={handleAcceptWork}
+                        disabled={accepting}
+                      >
+                        {accepting ? 'Отправляем…' : 'Откликнуться'}
+                      </button>
+                      <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-btn ed-btn-ghost">
+                        Написать сообщение
+                      </Link>
+                    </>
+                  )}
+                  {actionError ? <div className="ed-error">{actionError}</div> : null}
+                </div>
+              )}
+            </div>
+
+            {isOwnListing && listingDeal?.customerId ? (
+              <div className="ed-card">
+                <div className="ed-eyebrow" style={{ marginBottom: 14, display: 'block' }}>
+                  Заказчик
+                </div>
+                <div
+                  className="ed-cust-row"
+                  onClick={() => listingDeal.customerId && navigate(`/customers/${listingDeal.customerId}`)}
+                  role="presentation"
+                >
+                  <div className="ed-ava">
+                    {listingDeal.customerAvatar &&
+                    listingDeal.customerAvatar.length > 10 &&
+                    listingDeal.customerAvatar !== 'null' ? (
+                      <img src={listingDeal.customerAvatar} alt="" />
+                    ) : (
+                      <div className="ed-ava-fallback">{(listingDeal.customerName || 'З')[0].toUpperCase()}</div>
+                    )}
+                    <span className="ed-ava-dot" />
+                  </div>
+                  <div className="ed-cust-info">
+                    <div className="ed-cust-name">
+                      {[listingDeal.customerName, listingDeal.customerLastName].filter(Boolean).join(' ') || 'Заказчик'}
+                    </div>
+                    <div className="ed-cust-meta">
+                      {listingDeal.status === 'NEW' && 'Ожидает вашего подтверждения'}
+                      {listingDeal.status === 'IN_PROGRESS' && 'Сделка в работе'}
+                      {listingDeal.status === 'COMPLETED' && 'Сделка завершена'}
+                    </div>
+                  </div>
+                  <div className="ed-cust-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+                <button type="button" className="ed-msg-btn" onClick={() => navigate(`/chat/${listingDeal.customerId}`)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                    />
+                  </svg>
                   Написать заказчику
                 </button>
                 {listingDeal.status === 'NEW' && (
                   <button
                     type="button"
-                    className="ld-btn-contact"
+                    className="ed-btn ed-btn-ghost"
+                    style={{ marginTop: 8 }}
                     onClick={handleWorkerAcceptOnListing}
                     disabled={workerAccepting}
                   >
-                    {workerAccepting ? 'Отправляем…' : 'Принять'}
+                    {workerAccepting ? 'Отправляем…' : 'Принять заказ'}
                   </button>
                 )}
                 {listingDeal.status === 'IN_PROGRESS' && (
-                  <div className="ld-inline-wait">✓ Вы приняли заказ — сделка активна</div>
+                  <div className="ed-inline-wait" style={{ marginTop: 10 }}>
+                    ✓ Вы приняли заказ — сделка активна
+                  </div>
                 )}
-                {workerDealError && <div className="ld-error">{workerDealError}</div>}
-                <button type="button" className="ld-btn-contact" onClick={() => navigate(`/deals?dealId=${listingDeal.id}`)}>
+                {workerDealError ? <div className="ed-error">{workerDealError}</div> : null}
+                <button
+                  type="button"
+                  className="ed-btn ed-btn-ghost"
+                  style={{ marginTop: 8 }}
+                  onClick={() => navigate(`/deals?dealId=${listingDeal.id}`)}
+                >
                   Открыть сделку
                 </button>
               </div>
-            </div>
-          )}
+            ) : null}
 
-          {isOwnListing ? (
-            <div className="ld-fw-person-card">
-              <div className="ld-fw-person-label">Ваш профиль</div>
-              <div className="ld-fw-person-row ld-fw-person-row--static">
-                <div className="ld-fw-person-ava">
-                  {ownerAva ? (
-                    <img className="ld-fw-person-ava-img" src={ownerAva} alt={ownerFullName} />
-                  ) : (
-                    <div className="ld-fw-person-ava-fallback">{(userName || 'М')[0].toUpperCase()}</div>
-                  )}
-                  <span className="ld-fw-person-ava-dot" />
+            {isOwnListing ? (
+              <div className="ed-card">
+                <div className="ed-eyebrow" style={{ marginBottom: 14, display: 'block' }}>
+                  Ваш профиль
                 </div>
-                <div className="ld-fw-person-info">
-                  <div className="ld-fw-person-name">{ownerFullName}</div>
-                  <div className="ld-fw-person-meta">
-                    <span className="green">●</span> Мастер
+                <div className="ed-cust-row ed-cust-row-static" onClick={() => navigate('/worker-profile')} role="presentation">
+                  <div className="ed-ava">
+                    {ownerAva ? <img src={ownerAva} alt={ownerFullName} /> : (
+                      <div className="ed-ava-fallback">{(userName || 'М')[0].toUpperCase()}</div>
+                    )}
+                    <span className="ed-ava-dot" />
+                  </div>
+                  <div className="ed-cust-info">
+                    <div className="ed-cust-name">{ownerFullName}</div>
+                    <div className="ed-cust-meta">Мастер</div>
                   </div>
                 </div>
               </div>
-              <div className="ld-own-foot">
-                <Link to="/worker-profile" className="ld-own-link">
-                  Редактировать профиль →
+            ) : (
+              <div className="ed-card">
+                <div className="ed-eyebrow" style={{ marginBottom: 14, display: 'block' }}>
+                  Мастер
+                </div>
+                <div
+                  className="ed-cust-row"
+                  onClick={() => navigate(`/workers/${listing.workerId}`)}
+                  role="presentation"
+                >
+                  <div className="ed-ava">
+                    {listing.workerAvatar?.length > 10 ? (
+                      <img src={listing.workerAvatar} alt="" />
+                    ) : (
+                      <div className="ed-ava-fallback neutral">{initials}</div>
+                    )}
+                    <span className="ed-ava-dot" />
+                  </div>
+                  <div className="ed-cust-info">
+                    <div className="ed-cust-name">{workerName}</div>
+                    <div className="ed-cust-meta">Активный мастер</div>
+                  </div>
+                  <div className="ed-cust-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+                <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-msg-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                    />
+                  </svg>
+                  Написать мастеру
                 </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="ld-fw-person-card">
-              <div className="ld-fw-person-label">Мастер</div>
-              <Link to={`/workers/${listing.workerId}`} className="ld-fw-person-link">
-                <div className="ld-fw-person-ava">
-                  {listing.workerAvatar?.length > 10 ? (
-                    <img className="ld-fw-person-ava-img" src={listing.workerAvatar} alt="" />
-                  ) : (
-                    <div className="ld-fw-person-ava-fallback ld-fw-person-ava-fallback--neutral">{initials}</div>
-                  )}
-                  <span className="ld-fw-person-ava-dot" />
+                <div className="ed-rating-line">
+                  <span className="ed-rating-stars" aria-hidden>
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <span key={i} className={i < workerStars ? 'on' : 'off'}>
+                        {i < workerStars ? '★' : '☆'}
+                      </span>
+                    ))}
+                  </span>
+                  <span>
+                    <span className="ed-rating-num">{workerRating.toFixed(1)}</span>
+                    <span className="ed-rating-sub">({reviewsCountLabel(workerReviews)})</span>
+                  </span>
                 </div>
-                <div className="ld-fw-person-info">
-                  <div className="ld-fw-person-name">{workerName}</div>
-                  <div className="ld-fw-person-meta">
-                    <span className="green">●</span> Активный мастер
-                  </div>
-                </div>
-                <div className="ld-fw-person-chevron">›</div>
-              </Link>
-              <div className="ld-rating-row">
-                <span className="ld-stars" aria-hidden>
-                  <span className="ld-stars-fill">{'★'.repeat(workerStars)}</span>
-                  <span className="ld-stars-empty">{'☆'.repeat(5 - workerStars)}</span>
-                </span>
-                <span>
-                  <span className="ld-rating-num">{workerRating.toFixed(1)}</span>
-                  <span className="ld-rating-sub">({reviewsCountLabel(workerReviews)})</span>
-                </span>
               </div>
-            </div>
-          )}
+            )}
 
-          {similar.length > 0 && (
-            <div className="ld-similar">
-              <div className="ld-similar-head">
-                Похожие объявления
-                <Link to={catSlug ? `/find-master/${catSlug}` : '/find-master'}>Все →</Link>
-              </div>
-              <div className="ld-similar-list">
+            {similar.length > 0 ? (
+              <div className="ed-card">
+                <div className="ed-similar-head">
+                  <strong>Похожие объявления</strong>
+                  <Link to={catSlug ? `/find-master/${catSlug}` : '/find-master'}>Все →</Link>
+                </div>
                 {similar.map(s => {
                   const sPhoto = s.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category });
                   const sp = getListingPublishedPriceNumber(s);
                   return (
-                    <Link key={s.id} to={`/listings/${s.id}`} className="ld-sim-item">
-                      <div className="ld-sim-img">
+                    <Link key={s.id} to={`/listings/${s.id}`} className="ed-sim-item">
+                      <div className="ed-sim-img">
                         <img src={sPhoto} alt="" />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div className="ld-sim-title">{s.title}</div>
-                        <div className="ld-sim-price">{sp ? `${sp.toLocaleString('ru-RU')} ₽` : '—'}</div>
+                        <div className="ed-sim-title">{s.title}</div>
+                        <div className="ed-sim-price">{sp ? `${sp.toLocaleString('ru-RU')} ₽` : '—'}</div>
                       </div>
                     </Link>
                   );
                 })}
               </div>
-            </div>
-          )}
-        </aside>
+            ) : null}
+          </aside>
+        </div>
       </div>
     </div>
   );
