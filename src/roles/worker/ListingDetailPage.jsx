@@ -39,24 +39,6 @@ const Icon = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
     </svg>
   ),
-  pin: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s7-7.5 7-13a7 7 0 10-14 0c0 5.5 7 13 7 13z" />
-      <circle cx="12" cy="9" r="2.5" />
-    </svg>
-  ),
-  cal: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <rect x="3" y="5" width="18" height="16" rx="2" />
-      <path strokeLinecap="round" d="M3 10h18M8 3v4M16 3v4" />
-    </svg>
-  ),
-  clock: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
-      <circle cx="12" cy="12" r="9" />
-      <path strokeLinecap="round" d="M12 7v5l3 2" />
-    </svg>
-  ),
   msg: () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
       <path
@@ -349,7 +331,6 @@ export default function ListingDetailPage() {
     : '—';
 
   const addressLine = (listing.address || 'Йошкар-Ола • выезд по договорённости').replace(/\s*·\s*/g, ' • ');
-  const listingActive = listing.active !== false;
   const crumbTitle = `${listing.title?.slice(0, 48) || ''}${listing.title?.length > 48 ? '…' : ''}`;
 
   const goBack = () => {
@@ -417,8 +398,7 @@ export default function ListingDetailPage() {
 
       <div className="jd-wrap">
         <button type="button" className="jd-back" onClick={goBack}>
-          <Icon.back />
-          {isOwnListing ? 'Назад к моим объявлениям' : 'Назад'}
+          {isOwnListing ? '← Назад к моим объявлениям' : '← Назад'}
         </button>
 
         <nav className="jd-crumbs">
@@ -446,20 +426,28 @@ export default function ListingDetailPage() {
           <FavoriteHeartButton kind="listing" id={listing.id} className="jd-fav-btn" />
         </div>
 
-        <div className="jd-meta">
-          {listing.category && <span className="jd-tag">{listing.category}</span>}
-          <span className="jd-meta-dot">
-            <Icon.pin />
-            {addressLine}
+        <div className="jd-meta-lw">
+          {listing.category && (
+            <span className="jd-meta-item">
+              <span className="jd-meta-emoji" aria-hidden>
+                📁
+              </span>
+              <span>{listing.category}</span>
+            </span>
+          )}
+          <span className="jd-meta-item">
+            <span className="jd-meta-emoji" aria-hidden>
+              📍
+            </span>
+            <span>{addressLine}</span>
           </span>
           {listing.createdAt && (
-            <>
-              <span className="jd-meta-sep">·</span>
-              <span className="jd-meta-dot">
-                <Icon.cal />
-                {pubStr}
+            <span className="jd-meta-item">
+              <span className="jd-meta-emoji" aria-hidden>
+                📅
               </span>
-            </>
+              <span>{pubStr}</span>
+            </span>
           )}
         </div>
 
@@ -472,15 +460,6 @@ export default function ListingDetailPage() {
                 ) : (
                   <div className="jd-main-ph">📷</div>
                 )}
-                <div className="jd-floats">
-                  {listingActive && (
-                    <div className="jd-chip jd-chip--live">
-                      <span className="pulse" />
-                      Активна
-                    </div>
-                  )}
-                  {listing.category && <div className="jd-chip">{listing.category}</div>}
-                </div>
                 {allPhotos.length > 1 && (
                   <>
                     <button
@@ -540,8 +519,8 @@ export default function ListingDetailPage() {
               )}
             </div>
 
-            <section className="jd-card">
-              <div className="jd-eyebrow">Описание</div>
+            <section className="jd-card jd-card--soft">
+              <h2 className="jd-h2-card">Описание</h2>
               {bodyText ? (
                 <>
                   <p className="jd-desc">{visibleBody}</p>
@@ -551,10 +530,12 @@ export default function ListingDetailPage() {
                     </button>
                   )}
                   {urgencyLabel && (
-                    <div className="jd-urgency">
-                      <Icon.clock />
-                      Срочность: {urgencyLabel.replace(/^📅\s*/, '')}
-                    </div>
+                    <p className="jd-urgency-line">
+                      <span className="jd-urgency-ico" aria-hidden>
+                        ⏰
+                      </span>
+                      <strong>Срочность:</strong> {urgencyLabel.replace(/^📅\s*/, '')}
+                    </p>
                   )}
                 </>
               ) : (
@@ -562,8 +543,8 @@ export default function ListingDetailPage() {
               )}
             </section>
 
-            <section className="jd-card">
-              <div className="jd-eyebrow">Подробности</div>
+            <section className="jd-card jd-card--soft">
+              <h2 className="jd-h2-card">Подробности</h2>
               <dl className="jd-rows">
                 <div className="jd-row2">
                   <dt className="k">Категория</dt>
@@ -641,7 +622,7 @@ export default function ListingDetailPage() {
                   ) : (
                     <>
                       <button type="button" className="jd-btn jd-btn-primary" onClick={handleAcceptWork} disabled={accepting}>
-                        {accepting ? 'Отправляем…' : 'Принять'}
+                        {accepting ? 'Отправляем…' : 'Откликнуться'}
                       </button>
                       <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="jd-btn jd-btn-ghost">
                         <Icon.msg />
@@ -737,7 +718,7 @@ export default function ListingDetailPage() {
                     {listing.workerAvatar?.length > 10 ? (
                       <img src={listing.workerAvatar} alt="" />
                     ) : (
-                      <div className="jd-ava-fallback">{initials}</div>
+                      <div className="jd-ava-fallback jd-ava-fallback--neutral">{initials}</div>
                     )}
                     <span className="jd-ava-dot" />
                   </div>
