@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
+import {
+  API_BASE,
+  getUserProfile,
+  getOpenJobRequestsForWorker,
+  getOpenJobRequests,
+  getCategories,
+  getListings,
+} from '../api';
 import { formatJobRequestBudgetLabel, hasJobRequestPublishedPrice } from '../utils/jobRequestBudget';
 import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
 import {
@@ -10,28 +17,21 @@ import {
 } from '../utils/categoryPlaceholderPhoto';
 import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../constants/homePaths';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
+import { HOME_MARKET_CSS } from './homeMarketCss';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
 import FavoriteHeartButton from '../components/FavoriteHeartButton';
 import '../roles/worker/jobListings.css';
 import './customerHomeLovable.css';
 
-const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
-const BACKEND_ORIGIN = 'https://svoi-mastera-backend.onrender.com';
+const BACKEND_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, '');
 const ALL_CATS = Object.values(CATEGORIES_BY_SECTION).flat();
 
-const CHIPS_CUSTOMER = ['💅 Маникюр', '💄 Красота', '📚 Репетиторы', '💻 Компьютеры', '🚗 Автосервис', '🐾 Зоо', '📦 Грузчики', '🎨 Дизайн'];
-const QUICK_CUSTOMER = ['⚡ электрик сегодня', '🧹 уборка 2-к', '🔧 сантехник срочно', '💻 ремонт ноутбука'];
-const FEED_CUSTOMER = [
-  { who: 'Иван', what: 'взял заказ «Замена розеток»', time: '2 мин назад', color: 'linear-gradient(135deg,#e8410a,#ff7043)' },
-  { who: 'Анна', what: 'оставила отзыв ★5', time: '5 мин', color: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
-  { who: 'Дмитрий', what: 'разместил заявку «Поклейка обоев»', time: '8 мин', color: 'linear-gradient(135deg,#0ea5e9,#22d3ee)' },
-];
-const SOCIAL_CUSTOMER = [
-  ['12 480', 'заказов'],
-  ['4.9 ★', 'рейтинг'],
-  ['1 240', 'мастеров'],
-  ['~7 мин', 'отклик'],
-  ['98%', 'довольны'],
+const FEED_AVATAR_GRADIENTS = [
+  'linear-gradient(135deg,#e8410a,#ff7043)',
+  'linear-gradient(135deg,#6366f1,#8b5cf6)',
+  'linear-gradient(135deg,#0ea5e9,#22d3ee)',
+  'linear-gradient(135deg,#10b981,#34d399)',
+  'linear-gradient(135deg,#f59e0b,#fbbf24)',
 ];
 
 const CHIPS_WORKER = ['⚡ Электрика', '🔧 Сантехника', '🧹 Уборка', '💻 IT', '🚚 Перевозки', '🎨 Отделка', '🔨 Ремонт', '✂️ Красота'];
@@ -49,6 +49,53 @@ const SOCIAL_WORKER = [
   ['98%', 'довольны'],
 ];
 
+function timeAgoShort(d) {
+  if (!d) return '';
+  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (m < 1) return 'только что';
+  if (m < 60) return `${m} мин назад`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} ч назад`;
+  const days = Math.floor(h / 24);
+  if (days < 30) return `${days} дн назад`;
+  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+}
+
+function listingRatingValue(l) {
+  if (typeof l?.workerRating === 'number' && !Number.isNaN(l.workerRating)) return l.workerRating;
+  if (typeof l?.rating === 'number' && !Number.isNaN(l.rating)) return l.rating;
+  return null;
+}
+
+function averageListingRating(rows) {
+  const vals = (Array.isArray(rows) ? rows : []).map(listingRatingValue).filter((x) => typeof x === 'number');
+  if (!vals.length) return null;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+function uniqueWorkerCountFromListings(rows) {
+  const keys = new Set();
+  (Array.isArray(rows) ? rows : []).forEach((l) => {
+    if (l?.workerId != null && String(l.workerId).trim()) keys.add(`id:${l.workerId}`);
+    else {
+      const nm = [l?.workerName, l?.workerLastName].filter(Boolean).join(' ').trim();
+      if (nm) keys.add(`n:${nm}`);
+    }
+  });
+  return keys.size;
+}
+
+function openJobRequestsCreatedToday(openRequests) {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const t0 = start.getTime();
+  return (Array.isArray(openRequests) ? openRequests : []).filter((r) => {
+    if (!r?.createdAt) return false;
+    const t = new Date(r.createdAt).getTime();
+    return !Number.isNaN(t) && t >= t0;
+  }).length;
+}
+
 function workerListingPhotoUrl(url) {
   if (!url) return null;
   if (url.startsWith('http') || url.startsWith('data:')) return url;
@@ -58,41 +105,46 @@ function workerListingPhotoUrl(url) {
 export function CustomerHomePage({ userId }) {
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
+  const [openRequests, setOpenRequests] = useState([]);
+  const [categoriesApi, setCategoriesApi] = useState([]);
   const [shown, setShown] = useState(8);
   const [city, setCity] = useState('Йошкар-Ола');
   const [masterListCat, setMasterListCat] = useState('ALL');
+  const [sortBy, setSortBy] = useState('new');
   const [q, setQ] = useState('');
   const [feedIdx, setFeedIdx] = useState(0);
 
-  const reloadListings = useCallback(async () => {
+  const reloadCustomerHome = useCallback(async () => {
     try {
-      const raw = await fetch(`${API}/listings`).then((r) => (r.ok ? r.json() : []));
-      const prof =
-        userId != null
-          ? await getUserProfile(userId).catch(() => null)
-          : null;
-      setListings(Array.isArray(raw) ? raw.filter((l) => l.active) : []);
-      const c = prof?.city && String(prof.city).trim();
-      if (c) setCity(c);
+      const [rawListings, rawOpen, cats] = await Promise.all([
+        getListings().catch(() => []),
+        getOpenJobRequests().catch(() => []),
+        getCategories().catch(() => []),
+      ]);
+      setListings(Array.isArray(rawListings) ? rawListings.filter((l) => l.active) : []);
+      setOpenRequests(Array.isArray(rawOpen) ? rawOpen : []);
+      setCategoriesApi(Array.isArray(cats) ? cats : []);
+
+      if (userId != null) {
+        const prof = await getUserProfile(userId).catch(() => null);
+        const c = prof?.city && String(prof.city).trim();
+        if (c) setCity(c);
+      }
     } catch {
       setListings([]);
+      setOpenRequests([]);
     }
   }, [userId]);
 
   useEffect(() => {
-    reloadListings();
-  }, [reloadListings]);
+    reloadCustomerHome();
+  }, [reloadCustomerHome]);
 
-  useSameRouteRefetch(CUSTOMER_HOME_PATH, reloadListings);
+  useSameRouteRefetch(CUSTOMER_HOME_PATH, reloadCustomerHome);
 
   useEffect(() => {
     setShown(8);
-  }, [masterListCat]);
-
-  useEffect(() => {
-    const t = setInterval(() => setFeedIdx((i) => (i + 1) % FEED_CUSTOMER.length), 3500);
-    return () => clearInterval(t);
-  }, []);
+  }, [masterListCat, sortBy]);
 
   const masterListingCategoryChips = useMemo(() => {
     const s = new Map();
@@ -104,11 +156,31 @@ export function CustomerHomePage({ userId }) {
   }, [listings]);
 
   const visibleMasterListings = useMemo(() => {
-    if (masterListCat === 'ALL') return listings;
-    return listings.filter((l) => (l.category || '').trim() === masterListCat);
-  }, [listings, masterListCat]);
+    const base =
+      masterListCat === 'ALL' ? listings : listings.filter((l) => (l.category || '').trim() === masterListCat);
+    const rows = [...base];
+    if (sortBy === 'new') {
+      rows.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    } else if (sortBy === 'cheap') {
+      rows.sort(
+        (a, b) => (getListingPublishedPriceNumber(a) ?? 1e15) - (getListingPublishedPriceNumber(b) ?? 1e15),
+      );
+    } else if (sortBy === 'rating') {
+      rows.sort((a, b) => (listingRatingValue(b) ?? -1) - (listingRatingValue(a) ?? -1));
+    }
+    return rows;
+  }, [listings, masterListCat, sortBy]);
 
-  const bentoCats = useMemo(() => ALL_CATS.slice(0, 5), []);
+  const bentoCats = useMemo(() => {
+    const raw =
+      categoriesApi.length > 0
+        ? categoriesApi
+            .filter((c) => c && String(c.name || '').trim() && String(c.slug || '').trim())
+            .map((c) => ({ slug: String(c.slug).trim(), name: String(c.name).trim(), emoji: null }))
+        : ALL_CATS.map((c) => ({ slug: c.slug, name: c.name, emoji: c.emoji }));
+    const countName = (name) => listings.filter((l) => (l.category || '').trim() === name).length;
+    return [...raw].sort((a, b) => countName(b.name) - countName(a.name)).slice(0, 5);
+  }, [categoriesApi, listings]);
 
   const countInCategory = useCallback(
     (catName) => listings.filter((l) => (l.category || '').trim() === catName).length,
@@ -123,26 +195,94 @@ export function CustomerHomePage({ userId }) {
       if (!key || seen.has(key)) continue;
       seen.add(key);
       const name = [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
-      const rate =
-        typeof l.workerRating === 'number'
-          ? l.workerRating
-          : typeof l.rating === 'number'
-            ? l.rating
-            : null;
-      rows.push({ name, cat: (l.category || '').trim() || 'Услуга', rate });
+      rows.push({ name, cat: (l.category || '').trim() || 'Услуга', rate: listingRatingValue(l) });
       if (rows.length >= 3) break;
     }
     return rows;
   }, [listings]);
 
-  const visibleFeed = useMemo(
+  const customerFeedCycle = useMemo(() => {
+    const sorted = [...openRequests].sort(
+      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+    );
+    const rows = sorted.slice(0, 24).map((req, idx) => {
+      const full = [req.customerName, req.customerLastName].filter(Boolean).join(' ').trim();
+      const who = full.split(/\s+/)[0] || 'Заказчик';
+      const title = (req.title || 'Заявка').trim();
+      const short = title.length > 44 ? `${title.slice(0, 42)}…` : title;
+      return {
+        key: String(req.id ?? `i-${idx}`),
+        who,
+        what: `ищет мастера «${short}»`,
+        time: timeAgoShort(req.createdAt),
+        color: FEED_AVATAR_GRADIENTS[idx % FEED_AVATAR_GRADIENTS.length],
+      };
+    });
+    if (rows.length) return rows;
+    return [
+      {
+        key: 'placeholder',
+        who: '…',
+        what: 'Пока нет открытых заявок — опубликуйте свою в пару кликов',
+        time: '',
+        color: FEED_AVATAR_GRADIENTS[0],
+      },
+    ];
+  }, [openRequests]);
+
+  const feedCycleMod = Math.max(1, customerFeedCycle.length);
+
+  useEffect(() => {
+    const t = setInterval(() => setFeedIdx((i) => (i + 1) % feedCycleMod), 3500);
+    return () => clearInterval(t);
+  }, [feedCycleMod]);
+
+  const visibleFeed = useMemo(() => {
+    const cycle = customerFeedCycle;
+    const n = Math.max(1, cycle.length);
+    return [0, 1, 2].map((k) => {
+      const row = cycle[(feedIdx + k) % n];
+      return { ...row, _k: `${row.key}-${k}` };
+    });
+  }, [feedIdx, customerFeedCycle]);
+
+  const avgRatingListings = useMemo(() => averageListingRating(listings), [listings]);
+  const masterCount = useMemo(() => uniqueWorkerCountFromListings(listings), [listings]);
+  const openCount = openRequests.length;
+  const todayReqCount = useMemo(() => openJobRequestsCreatedToday(openRequests), [openRequests]);
+
+  const socialCustomerStats = useMemo(
     () => [
-      FEED_CUSTOMER[feedIdx],
-      FEED_CUSTOMER[(feedIdx + 1) % FEED_CUSTOMER.length],
-      FEED_CUSTOMER[(feedIdx + 2) % FEED_CUSTOMER.length],
+      [listings.length ? listings.length.toLocaleString('ru-RU') : '0', 'объявлений'],
+      [avgRatingListings != null ? `${avgRatingListings.toFixed(1)} ★` : '—', 'ср. оценка'],
+      [masterCount ? masterCount.toLocaleString('ru-RU') : '0', 'мастеров'],
+      [openCount ? openCount.toLocaleString('ru-RU') : '0', 'открытых заявок'],
+      [todayReqCount ? todayReqCount.toLocaleString('ru-RU') : '0', 'заявок сегодня'],
     ],
-    [feedIdx],
+    [listings.length, avgRatingListings, masterCount, openCount, todayReqCount],
   );
+
+  const discoveryChips = useMemo(() => {
+    const top = masterListingCategoryChips.slice(0, 10);
+    if (top.length) {
+      return top.map((x) => ({ label: x.name, href: `/find-master?q=${encodeURIComponent(x.name)}` }));
+    }
+    return ALL_CATS.slice(0, 8).map((c) => ({
+      label: c.name,
+      href: `/find-master/${c.slug}`,
+    }));
+  }, [masterListingCategoryChips]);
+
+  const quickSearchChips = useMemo(() => {
+    const sorted = [...openRequests].sort(
+      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+    );
+    return sorted.slice(0, 4).map((r) => {
+      const t = (r.title || '').trim();
+      const label = t.length > 36 ? `${t.slice(0, 34)}…` : t || 'Заявка';
+      return { label, q: t || 'заявка' };
+    });
+  }, [openRequests]);
 
   const onSearch = (e) => {
     e.preventDefault();
@@ -153,13 +293,6 @@ export function CustomerHomePage({ userId }) {
   const quickGo = (text) => {
     navigate(`/find-master?q=${encodeURIComponent(text)}`);
   };
-
-  const listingRating = (l) =>
-    typeof l.workerRating === 'number'
-      ? l.workerRating
-      : typeof l.rating === 'number'
-        ? l.rating
-        : null;
 
   return (
     <div className="chpv">
@@ -199,25 +332,31 @@ export function CustomerHomePage({ userId }) {
             </form>
 
             <div className="chpv-quick">
-              {QUICK_CUSTOMER.map((t) => (
-                <button key={t} type="button" className="chpv-quick-chip" onClick={() => quickGo(t)}>
-                  {t}
+              {quickSearchChips.length ? (
+                quickSearchChips.map((item, idx) => (
+                  <button key={`${item.q}-${idx}`} type="button" className="chpv-quick-chip" onClick={() => quickGo(item.q)}>
+                    {item.label}
+                  </button>
+                ))
+              ) : (
+                <button type="button" className="chpv-quick-chip" onClick={() => navigate('/find-master')}>
+                  Каталог мастеров
                 </button>
-              ))}
+              )}
             </div>
 
             <div className="chpv-trust">
               <div className="chpv-trust-item">
-                <strong>12 480</strong>
-                заказов выполнено
+                <strong>{listings.length.toLocaleString('ru-RU')}</strong>
+                объявлений в каталоге
               </div>
               <div className="chpv-trust-item">
-                <strong>4.9 ★</strong>
-                средний рейтинг
+                <strong>{avgRatingListings != null ? `${avgRatingListings.toFixed(1)} ★` : '—'}</strong>
+                средняя оценка в объявлениях
               </div>
               <div className="chpv-trust-item">
-                <strong>~7 мин</strong>
-                средний отклик
+                <strong>{openCount.toLocaleString('ru-RU')}</strong>
+                открытых заявок
               </div>
             </div>
           </div>
@@ -228,10 +367,10 @@ export function CustomerHomePage({ userId }) {
               <span className="chpv-live-online">Онлайн</span>
             </div>
             <div className="chpv-feed">
-              {visibleFeed.map((f, i) => (
-                <div className="chpv-feed-row" key={`${f.who}-${i}`}>
+              {visibleFeed.map((f) => (
+                <div className="chpv-feed-row" key={f._k}>
                   <div className="chpv-feed-ava" style={{ background: f.color }}>
-                    {f.who[0]}
+                    {(f.who && f.who[0]) || '·'}
                   </div>
                   <div className="chpv-feed-text">
                     <b>{f.who}</b> {f.what}
@@ -242,11 +381,11 @@ export function CustomerHomePage({ userId }) {
             </div>
             <div className="chpv-mini-stats">
               <div className="chpv-mini-stat">
-                <b>1 240</b>
-                <span>мастеров</span>
+                <b>{masterCount.toLocaleString('ru-RU')}</b>
+                <span>мастеров с объявлениями</span>
               </div>
               <div className="chpv-mini-stat">
-                <b>87</b>
+                <b>{todayReqCount.toLocaleString('ru-RU')}</b>
                 <span>заявок сегодня</span>
               </div>
             </div>
@@ -256,8 +395,8 @@ export function CustomerHomePage({ userId }) {
 
       <div className="chpv-social">
         <div className="chpv-social-inner">
-          {SOCIAL_CUSTOMER.map(([bold, lbl], i) => (
-            <React.Fragment key={`soc-${i}`}>
+          {socialCustomerStats.map(([bold, lbl], i) => (
+            <React.Fragment key={`soc-${lbl}-${i}`}>
               {i > 0 ? <div className="chpv-social-divider" /> : null}
               <div className="chpv-social-item">
                 <b>{bold}</b>
@@ -277,7 +416,12 @@ export function CustomerHomePage({ userId }) {
           <div className="chpv-bento">
             {bentoCats.map((cat, i) => {
               const n = countInCategory(cat.name);
-              const img = CAT_PHOTOS[cat.slug];
+              const img =
+                CAT_PHOTOS[cat.slug] ||
+                getCategoryPlaceholderPhotoUrlOrDefault(
+                  { category: cat.name, categorySlug: cat.slug },
+                  categoriesApi,
+                );
               return (
                 <Link key={cat.slug} className={`chpv-bento-tile ${i === 0 ? 'big' : ''}`} to={`/find-master/${cat.slug}`}>
                   {img ? (
@@ -299,9 +443,9 @@ export function CustomerHomePage({ userId }) {
           </div>
 
           <div className="chpv-chips">
-            {CHIPS_CUSTOMER.map((chip) => (
-              <Link key={chip} className="chpv-chip" to={`/find-master?q=${encodeURIComponent(chip)}`}>
-                {chip}
+            {discoveryChips.map((chip, idx) => (
+              <Link key={`${chip.href}-${idx}`} className="chpv-chip" to={chip.href}>
+                {chip.label}
               </Link>
             ))}
           </div>
@@ -334,7 +478,12 @@ export function CustomerHomePage({ userId }) {
                 {c.name} · {c.n}
               </button>
             ))}
-            <select className="chpv-sort" aria-label="Сортировка" defaultValue="new">
+            <select
+              className="chpv-sort"
+              aria-label="Сортировка"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
               <option value="new">Новые</option>
               <option value="cheap">Дешевле</option>
               <option value="rating">Рейтинг</option>
@@ -357,11 +506,12 @@ export function CustomerHomePage({ userId }) {
                 const img0 = l.photos?.[0];
                 const src =
                   workerListingPhotoUrl(img0) ||
-                  getCategoryPlaceholderPhotoUrlOrDefault({ category: l.category });
+                  getCategoryPlaceholderPhotoUrlOrDefault({ category: l.category }, categoriesApi);
                 const wname = [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
                 const priceNum = getListingPublishedPriceNumber(l);
                 const priceStr = priceNum ? `${priceNum.toLocaleString('ru-RU')} ₽` : '— ₽';
-                const rating = listingRating(l);
+                const rating = listingRatingValue(l);
+                const locCity = (l.city && String(l.city).trim()) || city;
                 const detail = `/listings/${l.id}?from=home`;
                 return (
                   <article className="chpv-card" key={l.id}>
@@ -396,7 +546,7 @@ export function CustomerHomePage({ userId }) {
                             <span style={{ color: '#64748b', fontWeight: 600 }}>{wname}</span>
                           )}
                           <span className="chpv-card-verified">✓ На сервисе</span>
-                          <span className="chpv-card-city">📍 {city}</span>
+                          <span className="chpv-card-city">📍 {locCity}</span>
                         </div>
                       </div>
                     </Link>
@@ -920,6 +1070,150 @@ export function WorkerHomePage({ userId, userName }) {
 }
 
 
+/** Витрина для гостя на `/`: прежний макет av-page (без chpv). */
+function GuestCustomerHomePage() {
+  const navigate = useNavigate();
+  const [listings, setListings] = useState([]);
+  const [shown, setShown] = useState(8);
+
+  const reloadListings = useCallback(async () => {
+    try {
+      const raw = await getListings().catch(() => []);
+      setListings(Array.isArray(raw) ? raw.filter((l) => l.active) : []);
+    } catch {
+      setListings([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    reloadListings();
+  }, [reloadListings]);
+
+  useSameRouteRefetch(CUSTOMER_HOME_PATH, reloadListings);
+
+  return (
+    <div className="av-page">
+      <style>{HOME_MARKET_CSS}</style>
+
+      <div className="av-hero-wrap">
+        <div className="av-hero-grid" />
+        <div className="av-hero-glow-top" />
+
+        <div className="av-hero-inner">
+          <div className="av-hero-badge">
+            <span className="av-hero-badge-dot" />
+            <span className="av-hero-badge-text">Йошкар-Ола · Найдите мастера рядом</span>
+          </div>
+          <h1 className="av-hero-h1">
+            <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
+              Найдите мастера в&nbsp;<span className="h1-line2">{cityInLocative('Йошкар-Ола')}</span>
+            </span>
+            <span style={{ display: 'block' }}>рядом с вами</span>
+          </h1>
+          <p className="av-hero-sub">
+            Ремонт, сантехника, красота и другие услуги — разместите заявку или выберите мастера по объявлениям и отзывам.
+          </p>
+          <div className="av-hero-actions">
+            <button type="button" className="av-hero-btn-primary" onClick={() => navigate('/register')}>
+              Разместить заявку →
+            </button>
+            <Link to="/find-master" className="av-hero-btn-ghost">
+              Найти мастера
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="av-body">
+        <div>
+          <div className="av-cats-block">
+            <div className="av-cats-hdr">
+              <span className="av-cats-hdr-title">Популярные категории</span>
+              <Link to="/find-master" className="av-cats-hdr-link">
+                Все категории →
+              </Link>
+            </div>
+            <div className="av-cats-scroll">
+              {ALL_CATS.map((cat) => (
+                <Link key={cat.slug} to={`/find-master/${cat.slug}`} className="av-cat-item">
+                  <div className="av-cat-photo">
+                    {CAT_PHOTOS[cat.slug] ? (
+                      <img src={CAT_PHOTOS[cat.slug]} alt={cat.name} />
+                    ) : (
+                      <div className="av-cat-photo-ph">{cat.emoji || '🛠️'}</div>
+                    )}
+                  </div>
+                  <div className="av-cat-name">{cat.name}</div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="av-recs-hdr av-recs-hdr--solo">
+            <h2 className="av-recs-title">Объявления мастеров</h2>
+          </div>
+
+          {listings.length === 0 ? (
+            <div className="av-empty">
+              <div className="av-empty-ico">🔍</div>
+              <h3>Пока нет объявлений</h3>
+              <p>Мастера скоро появятся!</p>
+            </div>
+          ) : (
+            <>
+              <div className="av-cards-grid">
+                {listings.slice(0, shown).map((l) => {
+                  const img0 = l.photos?.[0];
+                  const src = workerListingPhotoUrl(img0);
+                  const avUrl = workerListingPhotoUrl(l.workerAvatar);
+                  const wname = [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
+                  return (
+                    <Link key={l.id} to={`/listings/${l.id}`} className="av-card">
+                      <div className="av-card-img">
+                        {src ? <img src={src} alt="" /> : '🔧'}
+                        {l.category ? <span className="av-card-cat">{l.category}</span> : null}
+                      </div>
+                      <div className="av-card-body">
+                        <div className="av-card-price">
+                          {l.price ? Number(l.price).toLocaleString('ru-RU') : '—'} ₽
+                          {l.priceUnit ? <span className="av-card-price-unit">{l.priceUnit}</span> : null}
+                        </div>
+                        <div className="av-card-title">{l.title || 'Объявление'}</div>
+                        <div className="av-card-footer">
+                          <div className="av-card-ava">
+                            {avUrl ? <img src={avUrl} alt="" /> : (wname || 'М')[0]}
+                          </div>
+                          <span className="av-card-wname">{wname}</span>
+                          <span className="av-card-city">📍 Йошкар-Ола</span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+              {shown < listings.length ? (
+                <button type="button" className="av-more-btn" onClick={() => setShown((s) => s + 8)}>
+                  Показать ещё · осталось {listings.length - shown}
+                </button>
+              ) : null}
+            </>
+          )}
+        </div>
+
+        <div className="av-side">
+          <div className="av-promo">
+            <h3>Нужен мастер прямо сейчас?</h3>
+            <p>Опишите задачу — мастера пришлют предложения с ценой и сроками.</p>
+            <button type="button" className="av-promo-btn" onClick={() => navigate('/register')}>
+              Разместить заявку →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Главная мастера: только для роли WORKER (отдельный URL `/worker-home`). */
 export function WorkerHomeGate() {
   const { userId, userRole, userName } = useAuth();
@@ -931,5 +1225,8 @@ export function WorkerHomeGate() {
 /** Главная заказчика и гостя — только витрина `/` (редирект мастера — в роутере App). */
 export default function HomePage() {
   const { userId } = useAuth();
+  if (userId == null || String(userId).trim() === '') {
+    return <GuestCustomerHomePage />;
+  }
   return <CustomerHomePage userId={userId} />;
 }
