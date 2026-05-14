@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { FaChevronLeft, FaChevronRight, FaRegClock } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats, recordJobRequestView } from '../../api';
@@ -1330,9 +1330,9 @@ export default function FindWorkPage() {
                     {categoryLabel}
                   </span>
                 )}
-                {addressLine && <span className="jd-fw-meta-item">📍 {addressLine}</span>}
+                {addressLine && <span className="jd-fw-meta-item">{addressLine}</span>}
                 {req.createdAt && (
-                  <span className="jd-fw-meta-item">📅 {jdFmtDateLong(req.createdAt)}</span>
+                  <span className="jd-fw-meta-item">{jdFmtDateLong(req.createdAt)}</span>
                 )}
               </div>
             </header>
@@ -1409,7 +1409,6 @@ export default function FindWorkPage() {
                 </div>
                 {req.urgency && (
                   <div className="jd-urgency">
-                    <FaRegClock aria-hidden />
                     <span>
                       <b>Срочность:</b> {req.urgency}
                     </span>
@@ -1498,9 +1497,6 @@ export default function FindWorkPage() {
                         <span>({reviewsCountLabel(custCnt)})</span>
                       </div>
                     </div>
-                    <span className="jd-person-chevron" aria-hidden>
-                      ›
-                    </span>
                   </Link>
                 ) : (
                   <div className="jd-person-link" style={{ cursor: 'default', pointerEvents: 'none' }}>

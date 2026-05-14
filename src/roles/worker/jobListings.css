@@ -243,8 +243,8 @@
 .jd-person-card {
   background: #fff;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 16px 20px;
+  border-radius: 14px;
+  padding: 15px 18px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
 }
 .jd-person-label {
@@ -323,11 +323,7 @@
   color: #111827;
 }
 .jd-person-chevron {
-  color: #9ca3af;
-  font-size: 18px;
-  flex-shrink: 0;
-  line-height: 1;
-  align-self: center;
+  display: none;
 }
 
 .jd-person-line-status {
@@ -348,7 +344,7 @@
   border-bottom: 1px solid #eaeaea;
 }
 .jd-breadcrumb-inner {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 11px 20px;
   display: flex;
@@ -409,12 +405,12 @@
 }
 
 .jd-detail-page {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px 20px 64px;
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 340px);
+  gap: 18px;
   align-items: flex-start;
 }
 .jd-detail-main {
@@ -454,7 +450,7 @@
 .jd-fw-gallery-card {
   background: #fff;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: 14px;
   overflow: hidden;
   margin-bottom: 16px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
@@ -466,7 +462,7 @@
   user-select: none;
 }
 .jd-fw-gallery-card .jd-gallery-main {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 9;
   background: #f3f4f6;
   cursor: pointer;
   position: relative;
@@ -558,7 +554,7 @@
 }
 
 .jd-detail-card {
-  border-radius: 6px;
+  border-radius: 14px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
   margin-top: 16px;
@@ -577,17 +573,18 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
 }
 
 .jd-price-panel {
   background: #fff;
-  border-radius: 6px;
+  border-radius: 14px;
   border: 1px solid #e5e7eb;
-  padding: 20px;
+  padding: 15px 18px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
 }
 .jd-price-head {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 .jd-price-panel .jd-price-label {
   font-size: 12px;
@@ -598,22 +595,23 @@
   margin-bottom: 4px;
 }
 .jd-price-big {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 900;
   color: #111827;
   letter-spacing: -0.5px;
   line-height: 1.15;
 }
 .jd-price-sub {
-  font-size: 13px;
+  font-size: 12px;
   color: #9ca3af;
   margin-top: 4px;
   font-weight: 500;
+  line-height: 1.45;
 }
 .jd-price-btns {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 button.jd-btn-msg {
@@ -623,15 +621,18 @@ button.jd-btn-msg {
 }
 .jd-btn-msg {
   background: #e8410a;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #fff;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  padding: 14px 18px;
+  padding: 11px 16px;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
   letter-spacing: 0.01em;
   box-shadow: 0 3px 14px rgba(232, 65, 10, 0.3);
   transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
@@ -646,25 +647,35 @@ button.jd-btn-msg {
 }
 
 a.jd-btn-contact {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
 }
 .jd-btn-contact {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 13px 18px;
+  padding: 11px 16px;
   background: #fff;
   border: 1.5px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #374151;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   font-family: inherit;
+  text-align: center;
   text-decoration: none;
+  box-sizing: border-box;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
+}
+.jd-btn-contact:visited,
+.jd-btn-contact:hover,
+.jd-btn-contact:active {
+  color: #374151;
+  text-decoration: none;
 }
 .jd-btn-contact:hover {
   border-color: #374151;
@@ -692,8 +703,7 @@ a.jd-btn-contact {
   color: #555;
   line-height: 1.75;
 }
-.jd-urgency { margin-top: 14px; font-size: 14px; color: #555; display: flex; align-items: flex-start; gap: 8px; }
-.jd-urgency svg { color: #e8410a; width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+.jd-urgency { margin-top: 14px; font-size: 14px; color: #555; line-height: 1.5; }
 
 /* «Назад» как кнопка (тот же вид, что у ссылки) */
 button.jd-back {
