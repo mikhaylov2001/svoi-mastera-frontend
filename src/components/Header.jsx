@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useFavorites } from '../context/FavoritesContext';
 import { getUnreadCount, getListings } from '../api';
 import { rankItemsBySmartMatch, listingHaystack } from '../utils/smartSearch';
 import { dispatchSameRouteRefetch, isSameNavDest } from '../utils/sameRouteRefetch';
@@ -39,7 +38,6 @@ function FavoritesNavIcon() {
 
 function Header() {
   const { userId, userRole, userName, userLastName, userAvatar, logout } = useAuth();
-  const { count: favCount } = useFavorites();
   const BACKEND = 'https://svoi-mastera-backend.onrender.com';
   const fullAvatarUrl = userAvatar
     ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http')
@@ -484,11 +482,6 @@ function Header() {
                   <span className="header-nav-fav-icwrap">
                     <FavoritesNavIcon />
                   </span>
-                  {favCount > 0 && (
-                    <span className="header-nav-fav-badge">
-                      {favCount > 99 ? '99+' : favCount}
-                    </span>
-                  )}
                 </span>
               </NavLink>
             )}
@@ -675,13 +668,14 @@ function Header() {
                     </NavLink>
                     <NavLink
                       to="/favorites"
+                      aria-label="Избранное"
                       className="header-mobile-link header-mobile-favorites"
                       onClick={(e) => { onRepeatNavClick('/favorites')(e); setMobileMenuOpen(false); }}
                     >
                       <span className="header-nav-fav-icwrap" aria-hidden>
                         <FavoritesNavIcon />
                       </span>
-                      <span>Избранное{favCount > 0 ? ` · ${favCount > 99 ? '99+' : favCount}` : ''}</span>
+                      <span>Избранное</span>
                     </NavLink>
                   </>
                 ) : userId ? (
@@ -708,9 +702,7 @@ function Header() {
                       <span className="header-nav-fav-icwrap" aria-hidden>
                         <FavoritesNavIcon />
                       </span>
-                      {favCount > 0 && (
-                        <span className="header-mobile-fav-count">{favCount > 99 ? '99+' : favCount}</span>
-                      )}
+                      <span>Избранное</span>
                     </NavLink>
                   </>
                 ) : (

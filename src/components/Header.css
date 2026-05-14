@@ -314,7 +314,7 @@
 .header-nav-link:hover   { background: var(--gray-100); color: var(--gray-800); }
 .header-nav-link.active  { color: var(--primary); background: var(--primary-light); }
 
-/* Избранное: как колокольчик — без розовой подложки active, бейдж в углу */
+/* Избранное: красное сердце, без счётчика; active — тонкая обводка */
 .header-nav-link.header-nav-favorites {
   gap: 0;
   padding: 4px 6px;
@@ -338,34 +338,19 @@
   width: 32px;
   height: 32px;
 }
-.header-nav-fav-icwrap {
+.header-nav-link.header-nav-favorites .header-nav-fav-icwrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 0;
-  color: currentColor;
+  color: #e8410a;
   flex-shrink: 0;
-  opacity: 0.92;
 }
 .header-nav-link.header-nav-favorites:hover .header-nav-fav-icwrap {
-  opacity: 1;
+  color: #c2410c;
 }
-.header-nav-fav-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 999px;
-  background: #e8410a;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 16px;
-  text-align: center;
-  box-shadow: 0 0 0 2px #fff;
-  pointer-events: none;
+.header-nav-link.header-nav-favorites.active .header-nav-fav-icwrap {
+  color: #e8410a;
 }
 
 .header-mobile-link.header-mobile-favorites {
@@ -374,25 +359,10 @@
   gap: 10px;
 }
 .header-mobile-link.header-mobile-favorites .header-nav-fav-icwrap {
-  color: #cccccc;
+  color: #e8410a;
 }
 .header-mobile-link.header-mobile-favorites:hover .header-nav-fav-icwrap {
-  color: #94a3b8;
-}
-
-.header-mobile-fav-count {
-  min-width: 22px;
-  height: 22px;
-  padding: 0 7px;
-  border-radius: 999px;
-  background: #e8410a;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
+  color: #c2410c;
 }
 
 /* Бейдж непрочитанных */
