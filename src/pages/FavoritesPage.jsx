@@ -40,6 +40,8 @@ const SORT_OPTIONS = [
   { value: 'price-desc', label: 'Цена ↓' },
 ];
 
+const fmt = (n) => Number(n).toLocaleString('ru-RU');
+
 function categoryEmoji(name) {
   const n = String(name || '').toLowerCase();
   if (n.includes('электр')) return '⚡';
