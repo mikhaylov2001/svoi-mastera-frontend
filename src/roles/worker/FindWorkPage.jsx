@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats, recordJobRequestView } from '../../api';
@@ -17,14 +16,15 @@ import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HER
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
-import { categoryChipToneClass } from '../../utils/categoryChipTone';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
 } from '../../utils/categoryPlaceholderPhoto';
 import { mergeApiCategoriesWithCatalog } from '../../utils/mergeApiCategoriesWithCatalog';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import { dealsDetailEdCss, listingDetailLightboxCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
+import { listingDetailSurfaceExtraCss } from '../shared/listingDetailSurfaceExtraCss';
 
-const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
+const JOB_REQUEST_DETAIL_STYLES = `${dealsDetailEdCss}\n${listingDetailLightboxCss}\n${listingDetailSurfaceExtraCss}`;
 
 const JD_BACKEND = 'https://svoi-mastera-backend.onrender.com';
 const jdPhotoUrl = (u) =>
@@ -32,6 +32,18 @@ const jdPhotoUrl = (u) =>
 
 const jdFmtDateLong = (d) =>
   !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+
+function timeAgo(d) {
+  if (!d) return '';
+  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (m < 1) return 'только что';
+  if (m < 60) return `${m} мин. назад`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} ч. назад`;
+  const days = Math.floor(h / 24);
+  if (days < 30) return `${days} дн. назад`;
+  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+}
 
 const CAT_ALL = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
@@ -1278,291 +1290,373 @@ export default function FindWorkPage() {
     const budget = formatJobRequestBudgetLabel(req);
     const priceIsNegotiable = !hasJobRequestPublishedPrice(req);
     const addressLine = (req.addressText || req.address || req.cityName || '').trim();
+    const jobCity =
+      (req.cityName && String(req.cityName).trim()) ||
+      (req.city && String(req.city).trim()) ||
+      (addressLine.includes(',') ? addressLine.split(',')[0].trim() : '—');
     const custRatingStats = req.customerId ? customerStats[String(req.customerId)] : null;
     const custAvg = custRatingStats?.averageRating ?? 0;
     const custCnt = custRatingStats?.reviewsCount ?? 0;
     const custStars = Math.min(5, Math.max(0, Math.round(Number(custAvg) || 0)));
     const custNameFull = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
     const categoryLabel = selectedCategory?.name || req.categoryName;
-    const breadCrumbTitle =
-      (req.title || '').length > 40 ? `${(req.title || '').slice(0, 37)}…` : (req.title || '');
+    const priceNum = getJobRequestPublishedBudgetNumber(req);
+    const photoCount = jdPhotos.length;
+    const hasMultiplePhotos = photoCount > 1;
+    const openStatusPill = { label: 'Открыта', dot: '#22c55e', shadow: '0 0 0 3px rgba(34,197,94,.2)' };
 
     return (
       <>
-      <div className="jd-detail-shell">
-        <div className="jd-breadcrumb-bar">
-          <div className="jd-breadcrumb-inner">
+        <div className="ed ed--listing-detail">
+          <style>{JOB_REQUEST_DETAIL_STYLES}</style>
+
+          {lightbox && (
+            <div className="jd-lightbox" onClick={() => setLightbox(null)} role="presentation">
+              <button
+                type="button"
+                className="jd-lb-close"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightbox(null);
+                }}
+              >
+                ✕
+              </button>
+              {lightbox.photos.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    className="jd-lb-nav jd-lb-prev"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightbox((l) => ({
+                        ...l,
+                        index: l.index > 0 ? l.index - 1 : l.photos.length - 1,
+                      }));
+                    }}
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    className="jd-lb-nav jd-lb-next"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightbox((l) => ({
+                        ...l,
+                        index: l.index < l.photos.length - 1 ? l.index + 1 : 0,
+                      }));
+                    }}
+                  >
+                    ›
+                  </button>
+                </>
+              )}
+              <div className="jd-lightbox-img-wrap" onClick={(e) => e.stopPropagation()}>
+                {lightbox.photos.length > 1 && (
+                  <>
+                    <div
+                      className="jd-lb-zone jd-lb-zone-prev"
+                      onClick={() =>
+                        setLightbox((l) => ({
+                          ...l,
+                          index: l.index > 0 ? l.index - 1 : l.photos.length - 1,
+                        }))
+                      }
+                      role="presentation"
+                    />
+                    <div
+                      className="jd-lb-zone jd-lb-zone-next"
+                      onClick={() =>
+                        setLightbox((l) => ({
+                          ...l,
+                          index: l.index < l.photos.length - 1 ? l.index + 1 : 0,
+                        }))
+                      }
+                      role="presentation"
+                    />
+                  </>
+                )}
+                <img
+                  src={lightbox.photos[lightbox.index]}
+                  alt={req.title || ''}
+                  onClick={() => lightbox.photos.length <= 1 && setLightbox(null)}
+                />
+              </div>
+              {lightbox.photos.length > 1 && (
+                <div className="jd-lb-counter">
+                  {lightbox.index + 1} / {lightbox.photos.length}
+                </div>
+              )}
+              <div className="jd-lb-hint">← → по краям · Esc — закрыть</div>
+            </div>
+          )}
+
+          <div className="ed-wrap">
             <button
               type="button"
-              className="jd-breadcrumb-back"
+              className="ed-back"
               onClick={() => {
                 setSelectedRequest(null);
                 setActivePhotoIdx(0);
               }}
             >
-              <span className="jd-breadcrumb-back-ico" aria-hidden>
-                ←
-              </span>
-              Назад
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              Заявки
             </button>
-            <span className="jd-breadcrumb-sep jd-breadcrumb-sep-bar">|</span>
-            <Link to="/">Главная</Link>
-            <span className="jd-breadcrumb-sep">{">"}</span>
-            <Link to="/find-work">Найти работу</Link>
-            {categoryLabel && (
-              <>
-                <span className="jd-breadcrumb-sep">{">"}</span>
-                <span className="jd-breadcrumb-muted">{categoryLabel}</span>
-              </>
-            )}
-            <span className="jd-breadcrumb-sep">{">"}</span>
-            <span className="jd-breadcrumb-current">{breadCrumbTitle}</span>
-          </div>
-        </div>
 
-        <div className="jd-detail-page">
-          <div className="jd-detail-main">
-            <header className="jd-fw-head">
-              <h1 className="jd-fw-title">{req.title}</h1>
-              <div className="jd-fw-meta">
-                {categoryLabel && (
-                  <span className={`ml-row-cat jd-meta-cat ${categoryChipToneClass(categoryLabel)}`}>
-                    {categoryLabel}
-                  </span>
-                )}
-                {addressLine && <span className="jd-fw-meta-item">{addressLine}</span>}
-                {req.createdAt && (
-                  <span className="jd-fw-meta-item">{jdFmtDateLong(req.createdAt)}</span>
-                )}
-              </div>
-            </header>
-
-            <div className="jd-fw-gallery-card">
-              <div className="jd-gallery-wrap">
-                <div
-                  className="jd-gallery-main"
-                  role="presentation"
-                  onClick={() => jdPhotos.length > 0 && setLightbox({ photos: jdPhotos, index: activePhotoIdx })}
-                  style={{ cursor: jdPhotos.length ? 'pointer' : 'default' }}
-                >
-                  {mainSrc ? (
-                    <img src={mainSrc} alt={req.title || ''} />
-                  ) : (
-                    <div className="jd-gallery-ph">{catStyle.emoji}</div>
-                  )}
-                  {jdPhotos.length > 1 && (
-                    <>
-                      <button
-                        type="button"
-                        className="jd-gallery-nav-btn prev"
-                        aria-label="Предыдущее фото"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActivePhotoIdx((i) => (i > 0 ? i - 1 : jdPhotos.length - 1));
-                        }}
-                      >
-                        <FaChevronLeft />
-                      </button>
-                      <button
-                        type="button"
-                        className="jd-gallery-nav-btn next"
-                        aria-label="Следующее фото"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActivePhotoIdx((i) => (i < jdPhotos.length - 1 ? i + 1 : 0));
-                        }}
-                      >
-                        <FaChevronRight />
-                      </button>
-                    </>
-                  )}
+            <div className="ed-head">
+              <div className="ed-head-left" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                  <h1>{req.title || 'Заявка'}</h1>
+                  <span className="ed-head-id">#{req.id}</span>
                 </div>
-                {jdPhotos.length > 1 && (
-                  <div className="jd-thumbs-strip">
-                    {jdPhotos.map((p, i) => (
-                      <div
-                        key={i}
-                        role="button"
-                        tabIndex={0}
-                        className={`jd-thumb-tile${i === activePhotoIdx ? ' active' : ''}`}
-                        onClick={() => setActivePhotoIdx(i)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            setActivePhotoIdx(i);
-                          }
-                        }}
-                      >
-                        <img src={p} alt="" />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {req.description && req.description !== 'Без описания' && (
-              <div className="jd-card jd-detail-card">
-                <h3 className="jd-desc-head">Описание</h3>
-                <div className="jd-desc-body">
-                  {formatListingOriginDescription('WORKER', req.description)}
-                </div>
-                {req.urgency && (
-                  <div className="jd-urgency">
+                <div className="ed-listing-meta">
+                  {categoryLabel && (
                     <span>
-                      <b>Срочность:</b> {req.urgency}
+                      {dealCategoryEmoji(categoryLabel)} {categoryLabel}
                     </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="jd-card jd-detail-card">
-              <h3 className="jd-details-head">Подробности</h3>
-              {categoryLabel && (
-                <div className="jd-row">
-                  <span className="k">Категория</span>
-                  <span className="v">{categoryLabel}</span>
-                </div>
-              )}
-              {addressLine && (
-                <div className="jd-row">
-                  <span className="k">Адрес</span>
-                  <span className="v">{addressLine}</span>
-                </div>
-              )}
-              <div className="jd-row">
-                <span className="k">Окончательная цена</span>
-                <span className="v">{priceIsNegotiable ? JOB_REQUEST_PRICE_MISSING_LABEL : budget}</span>
-              </div>
-              {req.createdAt && (
-                <div className="jd-row">
-                  <span className="k">Опубликована</span>
-                  <span className="v">{jdFmtDateLong(req.createdAt)}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <aside className="jd-detail-aside">
-            <div className="jd-price-panel">
-              <div className="jd-price-head">
-                <div className="jd-price-label">Стоимость</div>
-                <div className="jd-price-big">{priceIsNegotiable ? JOB_REQUEST_PRICE_MISSING_LABEL : budget}</div>
-                <div className="jd-price-sub">
-                  {priceIsNegotiable
-                    ? 'заказчик не указал сумму — уточните в личных сообщениях'
-                    : 'окончательная цена в заявке; детали — в чате'}
+                  )}
+                  {addressLine ? <span>📍 {addressLine}</span> : null}
+                  {req.createdAt ? <span>📅 {jdFmtDateLong(req.createdAt)}</span> : null}
                 </div>
               </div>
-              <div className="jd-price-btns">
-                <button type="button" className="jd-btn-msg" onClick={() => handleOpenOfferModal(req)}>
-                  Откликнуться
-                </button>
-                {req.customerId && (
-                  <Link
-                    to={`/chat/${req.customerId}?jobRequestId=${req.id}`}
-                    className="jd-btn-contact"
-                  >
-                    Написать сообщение
-                  </Link>
-                )}
+              <div className="ed-head-right">
+                <FavoriteHeartButton kind="jobRequest" id={req.id} className="ulc-fav-heart ed-fav" />
+                <span className="ed-status-pill">
+                  <span className="dot" style={{ background: openStatusPill.dot, boxShadow: openStatusPill.shadow }} />
+                  {openStatusPill.label}
+                </span>
               </div>
             </div>
 
-            {(req.customerName || req.customerId) && (
-              <div className="jd-person-card">
-                <div className="jd-person-label">Заказчик</div>
-                {req.customerId ? (
-                  <Link
-                    to={`/customers/${req.customerId}?name=${encodeURIComponent(custNameFull)}`}
-                    className="jd-person-link"
+            <div className="ed-grid">
+              <div className="ed-col">
+                <div className="ed-gallery">
+                  <div
+                    className="ed-main"
+                    role="presentation"
+                    onClick={() => jdPhotos.length > 0 && setLightbox({ photos: jdPhotos, index: activePhotoIdx })}
                   >
-                    {req.customerAvatar ? (
-                      <img className="jd-person-ava" src={jdPhotoUrl(req.customerAvatar)} alt="" />
+                    {mainSrc ? (
+                      <img src={mainSrc} alt={req.title || ''} key={`${photoCount}-${activePhotoIdx}`} />
                     ) : (
-                      <div className="jd-person-ava jd-person-ava--ph" aria-hidden>
-                        {(custNameFull[0] || '?').toUpperCase()}
+                      <div className="ed-main-placeholder" aria-hidden>
+                        {catStyle.emoji}
                       </div>
                     )}
-                    <div className="jd-person-text">
-                      <div className="jd-person-name">{custNameFull}</div>
-                      <div className="jd-person-line-status">Активный заказчик</div>
-                      <div className="jd-author-rating">
-                        <span className="stars">
-                          {'★'.repeat(custStars)}
-                          {'☆'.repeat(5 - custStars)}
-                        </span>
-                        <span className="jd-rating-val">{custAvg.toFixed(1)}</span>
-                        <span>({reviewsCountLabel(custCnt)})</span>
+                    <div className="ed-floats">
+                      <div className="ed-chip">
+                        <span className="pulse" style={{ background: openStatusPill.dot, boxShadow: openStatusPill.shadow }} />
+                        <span className="ed-chip-text">{openStatusPill.label}</span>
                       </div>
+                      {categoryLabel ? (
+                        <div className="ed-chip">
+                          <span className="ed-chip-text">
+                            {dealCategoryEmoji(categoryLabel)} {categoryLabel}
+                          </span>
+                        </div>
+                      ) : null}
                     </div>
-                  </Link>
+                    {hasMultiplePhotos ? (
+                      <>
+                        <button
+                          type="button"
+                          className="ed-arrow l"
+                          aria-label="Предыдущее фото"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActivePhotoIdx((i) => (i > 0 ? i - 1 : jdPhotos.length - 1));
+                          }}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          className="ed-arrow r"
+                          aria-label="Следующее фото"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActivePhotoIdx((i) => (i < jdPhotos.length - 1 ? i + 1 : 0));
+                          }}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                        <div className="ed-counter">
+                          {String(activePhotoIdx + 1).padStart(2, '0')} / {String(photoCount).padStart(2, '0')}
+                        </div>
+                      </>
+                    ) : null}
+                  </div>
+                  {hasMultiplePhotos ? (
+                    <div className="ed-thumbs">
+                      {jdPhotos.map((p, i) => (
+                        <div
+                          key={i}
+                          className={`ed-thumb${i === activePhotoIdx ? ' on' : ''}`}
+                          onClick={() => setActivePhotoIdx(i)}
+                          role="presentation"
+                        >
+                          <img src={p} alt="" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+
+                {req.description && req.description !== 'Без описания' ? (
+                  <section className="ed-card">
+                    <div className="ed-eyebrow">Описание</div>
+                    <p className="ed-desc">{formatListingOriginDescription('WORKER', req.description)}</p>
+                    {req.urgency ? (
+                      <p className="ed-desc" style={{ marginTop: 14, color: '#c2410c', fontWeight: 600 }}>
+                        <b>Срочность:</b> {req.urgency}
+                      </p>
+                    ) : null}
+                  </section>
                 ) : (
-                  <div className="jd-person-link" style={{ cursor: 'default', pointerEvents: 'none' }}>
-                    <div className="jd-person-ava jd-person-ava--ph" aria-hidden>
-                      {(custNameFull[0] || '?').toUpperCase()}
+                  <section className="ed-card">
+                    <div className="ed-eyebrow">Описание</div>
+                    <p className="ed-desc" style={{ color: '#a1a1aa', fontStyle: 'italic' }}>
+                      Описание не добавлено
+                    </p>
+                  </section>
+                )}
+
+                <section className="ed-card">
+                  <div className="ed-eyebrow">Условия</div>
+                  <dl className="ed-rows">
+                    {[
+                      categoryLabel && ['Категория', categoryLabel],
+                      ['Город', jobCity],
+                      addressLine && ['Адрес', addressLine],
+                      ['Стоимость', priceIsNegotiable ? JOB_REQUEST_PRICE_MISSING_LABEL : budget],
+                      req.createdAt && ['Опубликована', timeAgo(req.createdAt) || jdFmtDateLong(req.createdAt)],
+                    ]
+                      .filter(Boolean)
+                      .map(([label, value]) => (
+                        <div key={String(label)} className="ed-row">
+                          <dt>{label}</dt>
+                          <dd>{value}</dd>
+                        </div>
+                      ))}
+                  </dl>
+                </section>
+              </div>
+
+              <aside className="ed-side">
+                <div className="ed-card">
+                  <div className="ed-eyebrow">Стоимость</div>
+                  {priceNum != null ? (
+                    <div className="ed-price-num">
+                      {priceNum.toLocaleString('ru-RU')}
+                      <small> ₽</small>
                     </div>
-                    <div className="jd-person-text">
-                      <div className="jd-person-name">{custNameFull}</div>
-                      <div className="jd-person-line-status">Активный заказчик</div>
-                      <div className="jd-author-rating">
-                        <span className="stars">
-                          {'★'.repeat(custStars)}
-                          {'☆'.repeat(5 - custStars)}
-                        </span>
-                        <span className="jd-rating-val">{custAvg.toFixed(1)}</span>
-                        <span>({reviewsCountLabel(custCnt)})</span>
+                  ) : (
+                    <div className="ed-price-num" style={{ fontSize: 22, fontWeight: 700 }}>
+                      {JOB_REQUEST_PRICE_MISSING_LABEL}
+                    </div>
+                  )}
+                  <p className="ed-price-sub">
+                    {priceIsNegotiable
+                      ? 'заказчик не указал сумму — уточните в личных сообщениях'
+                      : 'окончательная цена в заявке; детали — в чате'}
+                  </p>
+                  <div className="ed-actions">
+                    <button type="button" className="ed-btn ed-btn-confirm" onClick={() => handleOpenOfferModal(req)}>
+                      Откликнуться
+                    </button>
+                    {req.customerId ? (
+                      <Link to={`/chat/${req.customerId}?jobRequestId=${req.id}`} className="ed-btn ed-btn-ghost">
+                        Написать сообщение
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
+
+                {(req.customerName || req.customerId) && (
+                  <div className="ed-card">
+                    <div className="ed-eyebrow ed-eyebrow--block">Заказчик</div>
+                    {req.customerId ? (
+                      <div
+                        className="ed-cust-row"
+                        onClick={() =>
+                          navigate(`/customers/${req.customerId}?name=${encodeURIComponent(custNameFull)}`)
+                        }
+                        role="presentation"
+                      >
+                        {req.customerAvatar ? (
+                          <div className="ed-ava">
+                            <img src={jdPhotoUrl(req.customerAvatar)} alt="" />
+                            <span className="ed-ava-dot" />
+                          </div>
+                        ) : (
+                          <div className="ed-ava">
+                            <div className="ed-ava-fallback neutral">{(custNameFull[0] || '?').toUpperCase()}</div>
+                            <span className="ed-ava-dot" />
+                          </div>
+                        )}
+                        <div className="ed-cust-info">
+                          <div className="ed-cust-name">{custNameFull}</div>
+                          <div className="ed-cust-meta">Активный заказчик</div>
+                        </div>
+                        <div className="ed-cust-arrow">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
                       </div>
+                    ) : (
+                      <div className="ed-cust-row" style={{ cursor: 'default', pointerEvents: 'none' }}>
+                        <div className="ed-ava">
+                          <div className="ed-ava-fallback neutral">{(custNameFull[0] || '?').toUpperCase()}</div>
+                          <span className="ed-ava-dot" />
+                        </div>
+                        <div className="ed-cust-info">
+                          <div className="ed-cust-name">{custNameFull}</div>
+                          <div className="ed-cust-meta">Активный заказчик</div>
+                        </div>
+                      </div>
+                    )}
+                    {req.customerId ? (
+                      <Link to={`/chat/${req.customerId}?jobRequestId=${req.id}`} className="ed-msg-btn">
+                        Написать заказчику
+                      </Link>
+                    ) : null}
+                    <div className="ed-rating-line">
+                      <span className="ed-rating-stars" aria-hidden>
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <span key={i} className={i < custStars ? 'on' : 'off'}>
+                            {i < custStars ? '★' : '☆'}
+                          </span>
+                        ))}
+                      </span>
+                      <span>
+                        <span className="ed-rating-num">{custAvg.toFixed(1)}</span>
+                        <span className="ed-rating-sub">({reviewsCountLabel(custCnt)})</span>
+                      </span>
                     </div>
                   </div>
                 )}
-              </div>
-            )}
-          </aside>
-        </div>
-      </div>
-
-      {lightbox && (
-        <div
-          style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.93)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}
-          onClick={() => setLightbox(null)}
-        >
-          <div style={{ position:'relative', maxWidth:'90vw', maxHeight:'80vh' }} onClick={e => e.stopPropagation()}>
-            <img src={lightbox.photos[lightbox.index]} alt="" style={{ maxWidth:'90vw', maxHeight:'80vh', borderRadius:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', display:'block', pointerEvents:'none' }} />
-            <div style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:13, fontWeight:700, padding:'4px 10px', borderRadius:999 }}>
-              {lightbox.index + 1} / {lightbox.photos.length}
+              </aside>
             </div>
-            <button onClick={() => setLightbox(null)} style={{ position:'absolute', top:12, right:12, width:36, height:36, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:22, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
-            {lightbox.photos.length > 1 && (
-              <>
-                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index > 0 ? l.index - 1 : l.photos.length - 1})); }} style={{ position:'absolute', left:-52, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:26, cursor:'pointer' }}>‹</button>
-                <button onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index: l.index < l.photos.length - 1 ? l.index + 1 : 0})); }} style={{ position:'absolute', right:-52, top:'50%', transform:'translateY(-50%)', width:40, height:40, borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'none', color:'#fff', fontSize:26, cursor:'pointer' }}>›</button>
-              </>
-            )}
           </div>
-          {lightbox.photos.length > 1 && (
-            <div style={{ display:'flex', gap:8, marginTop:14 }} onClick={e => e.stopPropagation()}>
-              {lightbox.photos.map((p, i) => (
-                <div key={i} onClick={() => setLightbox(l => ({...l, index: i}))}
-                  style={{ width:52, height:40, borderRadius:6, overflow:'hidden', cursor:'pointer', border: i === lightbox.index ? '2.5px solid #e8410a' : '2px solid rgba(255,255,255,0.2)', opacity: i === lightbox.index ? 1 : 0.6 }}
-                >
-                  <img src={p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }} />
-                </div>
-              ))}
-            </div>
-          )}
         </div>
-      )}
 
-      <OfferModal
-        request={showOfferModal}
-        offerForm={offerForm}
-        setOfferForm={setOfferForm}
-        onClose={handleCloseOfferModal}
-        onSubmit={handleSubmitOffer}
-        submitting={submitting}
-      />
+        <OfferModal
+          request={showOfferModal}
+          offerForm={offerForm}
+          setOfferForm={setOfferForm}
+          onClose={handleCloseOfferModal}
+          onSubmit={handleSubmitOffer}
+          submitting={submitting}
+        />
       </>
     );
   }
