@@ -449,7 +449,11 @@ export default function FavoritesPage() {
                             <button
                               type="button"
                               className={`fav-heart on ${popping === i.key ? 'pop' : ''}`}
-                              onClick={() => bumpRemove(i.key, () => removeItem(i))}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                bumpRemove(i.key, () => removeItem(i));
+                              }}
                               title="Убрать из избранного"
                             >
                               ❤
@@ -494,89 +498,104 @@ export default function FavoritesPage() {
                   const sharePath =
                     i.kind === 'master' ? `/listings/${i.rawId}` : `/find-work?request=${encodeURIComponent(i.rawId)}`;
 
+                  const detailAria =
+                    i.kind === 'master'
+                      ? `Открыть объявление: ${i.title}`
+                      : `Открыть заявку: ${i.title}`;
+
                   return (
                     <article key={i.key} className="fav-card">
-                      <div className="fav-card-top">
-                        <div className="fav-card-photo">
-                          <button
-                            type="button"
-                            className={`fav-heart on ${popping === i.key ? 'pop' : ''}`}
-                            onClick={() => bumpRemove(i.key, () => removeItem(i))}
-                            title="Убрать из избранного"
-                          >
-                            ❤
-                          </button>
-                          {i.photo ? (
-                            <img src={i.photo} alt="" />
-                          ) : (
-                            <span className="emoji">{i.emoji}</span>
-                          )}
-                        </div>
-                        <div className="fav-card-body">
-                          <div className="fav-card-row">
-                            <h3 className="fav-card-title">{i.title}</h3>
-                            <span className={`fav-type ${i.kind}`}>
-                              {i.kind === 'master' ? 'Мастер' : 'Заявка'}
-                            </span>
-                          </div>
-                          {i.desc ? <div className="fav-card-desc">{i.desc}</div> : null}
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 10,
-                              flexWrap: 'wrap',
-                              marginTop: 4,
-                            }}
-                          >
-                            <span className="fav-cat">
-                              {i.emoji} {i.category}
-                            </span>
-                            {i.kind === 'master' && i.rating != null && (
-                              <span className="fav-rating">
-                                <span className="star">★</span>
-                                {i.rating.toFixed(1)}
-                                {i.reviews != null && (
-                                  <span className="fav-rating-count">· {i.reviews} отзывов</span>
-                                )}
-                              </span>
+                      <Link
+                        to={primaryTo}
+                        className="fav-card-hit"
+                        aria-label={detailAria}
+                      >
+                        <div className="fav-card-top">
+                          <div className="fav-card-photo">
+                            <button
+                              type="button"
+                              className={`fav-heart on ${popping === i.key ? 'pop' : ''}`}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                bumpRemove(i.key, () => removeItem(i));
+                              }}
+                              title="Убрать из избранного"
+                            >
+                              ❤
+                            </button>
+                            {i.photo ? (
+                              <img src={i.photo} alt="" />
+                            ) : (
+                              <span className="emoji">{i.emoji}</span>
                             )}
                           </div>
-                          <div className="fav-price-row">
-                            <div>
-                              {i.price ? (
-                                <>
-                                  <span className="fav-price-num">{fmt(i.price)} ₽</span>
-                                  <span className="fav-price-lbl">{i.priceLabel}</span>
-                                </>
-                              ) : (
-                                <span
-                                  className="fav-price-lbl"
-                                  style={{
-                                    fontSize: 15,
-                                    fontWeight: 700,
-                                    color: '#64748b',
-                                    marginLeft: 0,
-                                  }}
-                                >
-                                  {i.priceLabel === 'договорная' ? 'Договорная' : i.priceLabel}
+                          <div className="fav-card-body">
+                            <div className="fav-card-row">
+                              <h3 className="fav-card-title">{i.title}</h3>
+                              <span className={`fav-type ${i.kind}`}>
+                                {i.kind === 'master' ? 'Мастер' : 'Заявка'}
+                              </span>
+                            </div>
+                            {i.desc ? <div className="fav-card-desc">{i.desc}</div> : null}
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 10,
+                                flexWrap: 'wrap',
+                                marginTop: 4,
+                              }}
+                            >
+                              <span className="fav-cat">
+                                {i.emoji} {i.category}
+                              </span>
+                              {i.kind === 'master' && i.rating != null && (
+                                <span className="fav-rating">
+                                  <span className="star">★</span>
+                                  {i.rating.toFixed(1)}
+                                  {i.reviews != null && (
+                                    <span className="fav-rating-count">· {i.reviews} отзывов</span>
+                                  )}
                                 </span>
                               )}
                             </div>
+                            <div className="fav-price-row">
+                              <div>
+                                {i.price ? (
+                                  <>
+                                    <span className="fav-price-num">{fmt(i.price)} ₽</span>
+                                    <span className="fav-price-lbl">{i.priceLabel}</span>
+                                  </>
+                                ) : (
+                                  <span
+                                    className="fav-price-lbl"
+                                    style={{
+                                      fontSize: 15,
+                                      fontWeight: 700,
+                                      color: '#64748b',
+                                      marginLeft: 0,
+                                    }}
+                                  >
+                                    {i.priceLabel === 'договорная' ? 'Договорная' : i.priceLabel}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="fav-meta">
-                        <span className="fav-meta-item">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M12 22s8-7 8-13a8 8 0 0 0-16 0c0 6 8 13 8 13z" />
-                            <circle cx="12" cy="9" r="2.5" />
-                          </svg>
-                          {i.city}
-                        </span>
-                        <span className="fav-saved-at">сохранено · {i.savedAt}</span>
-                      </div>
+                        <div className="fav-meta">
+                          <span className="fav-meta-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M12 22s8-7 8-13a8 8 0 0 0-16 0c0 6 8 13 8 13z" />
+                              <circle cx="12" cy="9" r="2.5" />
+                            </svg>
+                            {i.city}
+                          </span>
+                          <span className="fav-saved-at">сохранено · {i.savedAt}</span>
+                        </div>
+                      </Link>
 
                       <div className="fav-actions">
                         <Link to={primaryTo} className="fav-btn fav-btn-primary">
