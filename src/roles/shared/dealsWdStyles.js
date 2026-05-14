@@ -40,12 +40,17 @@ export function dealToUiStatus(status) {
   return 'new';
 }
 
+/** Тот же фон, что у .jl-page / .ed — списки, сделки и карточки без «больничного» белого */
+const warmAppShellBackgroundCss = `radial-gradient(1200px 600px at 80% -10%, rgba(232,65,10,.06), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(232,65,10,.04), transparent 55%),
+    #f6f6f4`;
+
 /* Shared wd-* styles: worker + customer deals pages */
 export const dealsWdCss = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; }
 
-  .wd-page { background: #f2f2f2; min-height: 100vh; font-family: Inter, Arial, sans-serif; color: #1a1a1a; }
+  .wd-page { background: ${warmAppShellBackgroundCss}; min-height: 100vh; min-height: 100dvh; font-family: Inter, Arial, sans-serif; color: #1a1a1a; }
 
   /* ── HERO ── */
   .wd-hero {
@@ -210,7 +215,7 @@ export const dealsWdCss = `
   .wd-section-label:first-child { margin-top: 0; }
 
   /* ── DETAIL ── */
-  .wd-detail { background: #f2f2f2; min-height: 100vh; }
+  .wd-detail { background: ${warmAppShellBackgroundCss}; min-height: 100vh; min-height: 100dvh; }
   .wd-detail-nav { background: #fff; border-bottom: 1.5px solid #e5e7eb; padding: 12px 0; }
   .wd-detail-wrap {
     max-width: 1000px; margin: 0 auto; padding: 20px 20px 60px;
@@ -411,7 +416,7 @@ export const dealsWdCss = `
 export const dealsMdListCss = `
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
 
-  .md-page { background: #f5f5f7; min-height: 100vh; font-family: 'Manrope', system-ui, sans-serif; color: #0f172a; padding-bottom: 80px; }
+  .md-page { background: ${warmAppShellBackgroundCss}; min-height: 100vh; min-height: 100dvh; font-family: 'Manrope', system-ui, sans-serif; color: #0f172a; padding-bottom: 80px; }
 
   .md-hero { position: relative; height: 240px; overflow: hidden; }
   @media (max-width: 768px) { .md-hero { height: 200px; } }
@@ -553,11 +558,7 @@ export const dealsDetailEdCss = `
 
 .ed {
   font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  /* Как .jl-page в «Найти работу»: не «болванчик» #fafafa, а тёплый фон с лёгким градиентом */
-  background:
-    radial-gradient(1200px 600px at 80% -10%, rgba(232,65,10,.06), transparent 60%),
-    radial-gradient(900px 500px at -10% 10%, rgba(232,65,10,.04), transparent 55%),
-    #f6f6f4;
+  background: ${warmAppShellBackgroundCss};
   color: #0a0a0a;
   min-height: 100vh;
   min-height: 100dvh;
