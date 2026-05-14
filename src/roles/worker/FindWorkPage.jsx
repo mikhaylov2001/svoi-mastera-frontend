@@ -1307,15 +1307,15 @@ export default function FindWorkPage() {
             </button>
             <span className="jd-breadcrumb-sep jd-breadcrumb-sep-bar">|</span>
             <Link to="/">Главная</Link>
-            <span className="jd-breadcrumb-sep">›</span>
+            <span className="jd-breadcrumb-sep">{">"}</span>
             <Link to="/find-work">Найти работу</Link>
             {categoryLabel && (
               <>
-                <span className="jd-breadcrumb-sep">›</span>
+                <span className="jd-breadcrumb-sep">{">"}</span>
                 <span className="jd-breadcrumb-muted">{categoryLabel}</span>
               </>
             )}
-            <span className="jd-breadcrumb-sep">›</span>
+            <span className="jd-breadcrumb-sep">{">"}</span>
             <span className="jd-breadcrumb-current">{breadCrumbTitle}</span>
           </div>
         </div>

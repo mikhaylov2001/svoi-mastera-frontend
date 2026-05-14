@@ -343,27 +343,32 @@
   background: #fff;
   border-bottom: 1px solid #eaeaea;
 }
+/* Хлебные крошки детали заявки — как в референсе: «Назад» | Главная > … > текущий (тёмный) */
 .jd-breadcrumb-inner {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 11px 20px;
+  padding: 10px 24px;
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  color: #888;
   flex-wrap: wrap;
+  gap: 6px;
+  box-sizing: border-box;
+  min-height: 42px;
+  font-family: Manrope, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #9ca3af;
 }
 .jd-breadcrumb-back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   padding: 0;
   border: none;
   background: none;
-  color: #888;
+  color: #9ca3af;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   font-family: inherit;
   cursor: pointer;
   flex-shrink: 0;
@@ -373,12 +378,14 @@
   color: #e8410a;
 }
 .jd-breadcrumb-back-ico {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.04em;
+  font-weight: 400;
 }
 .jd-breadcrumb-inner a {
-  color: #888;
+  color: #9ca3af;
+  font-weight: 400;
   text-decoration: none;
   transition: color 0.15s;
 }
@@ -386,18 +393,28 @@
   color: #e8410a;
 }
 .jd-breadcrumb-sep {
-  color: #ddd;
+  color: #d1d5db;
+  font-weight: 400;
+  user-select: none;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0 1px;
 }
 .jd-breadcrumb-sep-bar {
-  color: #e5e5e5;
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 300;
+  padding: 0 4px 0 2px;
+  margin: 0;
 }
 .jd-breadcrumb-muted {
-  color: #888;
-  font-weight: 500;
+  color: #9ca3af;
+  font-weight: 400;
 }
 .jd-breadcrumb-current {
-  color: #555;
-  font-weight: 500;
+  color: #111827;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   max-width: min(280px, 40vw);
   overflow: hidden;
   text-overflow: ellipsis;
