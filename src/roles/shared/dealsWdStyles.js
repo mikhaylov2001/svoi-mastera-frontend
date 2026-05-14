@@ -595,7 +595,6 @@ export const dealsDetailEdCss = `
 .ed-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
 .ed-head-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .ed-head h1 { font-size: 22px; font-weight: 600; letter-spacing: -.02em; line-height: 1.25; margin: 0; color: #0a0a0a; }
-.ed-head-id { font-size: 12px; color: #a1a1aa; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.3; }
 .ed-status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 6px; background: #f4f4f5; font-size: 11.5px; font-weight: 600; color: #18181b; line-height: 1.3; }
 .ed-status-pill .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 

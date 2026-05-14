@@ -15,6 +15,7 @@ import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPla
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
+import { listingDetailSurfaceExtraCss } from '../shared/listingDetailSurfaceExtraCss';
 
 const MY_DEALS_HERO_PHOTO =
   'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=max&w=2400&q=86';
@@ -275,8 +276,8 @@ export default function DealsPage() {
     const pulseShadow = `0 0 0 3px ${st.dot}26`;
 
     return (
-      <div className="ed">
-        <style>{`${dealsWdCss}\n${dealsDetailEdCss}`}</style>
+      <div className="ed ed--listing-detail">
+        <style>{`${dealsWdCss}\n${dealsDetailEdCss}\n${listingDetailSurfaceExtraCss}`}</style>
         <div className="ed-wrap">
           <button
             type="button"
@@ -292,7 +293,6 @@ export default function DealsPage() {
           <div className="ed-head">
             <div className="ed-head-left">
               <h1>{detail.title || 'Задача'}</h1>
-              <span className="ed-head-id">#{detail.id}</span>
             </div>
             <span className="ed-status-pill">
               <span className="dot" style={{ background: st.dot, boxShadow: pulseShadow }} />

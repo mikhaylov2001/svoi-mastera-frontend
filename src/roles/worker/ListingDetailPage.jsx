@@ -19,16 +19,6 @@ const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 const listingViewPostedIds = new Set();
 const COLLAPSE = 420;
 
-function reviewsCountLabel(n) {
-  const x = Number(n) || 0;
-  const abs = x % 100;
-  const d = x % 10;
-  if (abs > 10 && abs < 20) return `${x} отзывов`;
-  if (d === 1) return `${x} отзыв`;
-  if (d >= 2 && d <= 4) return `${x} отзыва`;
-  return `${x} отзывов`;
-}
-
 function timeAgo(d) {
   if (!d) return '';
   const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
@@ -51,7 +41,6 @@ export default function ListingDetailPage() {
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
   const [listingDeal, setListingDeal] = useState(null);
-  const [stats, setStats] = useState(null);
   const [similar, setSimilar] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
@@ -79,12 +68,6 @@ export default function ListingDetailPage() {
         ) {
           listingViewPostedIds.add(data.id);
           recordListingView(data.id).catch(() => {});
-        }
-        if (data.workerId) {
-          fetch(`${API}/workers/${data.workerId}/stats`)
-            .then(r => (r.ok ? r.json() : null))
-            .then(s => setStats(s))
-            .catch(() => {});
         }
         fetch(`${API}/listings`)
           .then(r => (r.ok ? r.json() : []))
@@ -308,9 +291,6 @@ export default function ListingDetailPage() {
 
   const workerName = [listing.workerName, listing.workerLastName].filter(Boolean).join(' ') || 'Мастер';
   const initials = (listing.workerName || 'М')[0].toUpperCase();
-  const workerRating = Number(stats?.averageRating ?? listing.workerRating ?? 0);
-  const workerReviews = Number(stats?.reviewsCount ?? stats?.reviewCount ?? 0);
-  const workerStars = Math.min(5, Math.max(0, Math.round(workerRating)));
   const isOwnListing = String(userId) === String(listing.workerId);
   const ownerFullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
   const ownerAva = userAvatar
@@ -445,7 +425,6 @@ export default function ListingDetailPage() {
           <div className="ed-head-left" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <h1>{listing.title || 'Объявление'}</h1>
-              <span className="ed-head-id">#{listing.id}</span>
             </div>
             <div className="ed-listing-meta">
               {listing.category && (
@@ -783,19 +762,6 @@ export default function ListingDetailPage() {
                 <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-msg-btn">
                   Написать мастеру
                 </Link>
-                <div className="ed-rating-line">
-                  <span className="ed-rating-stars" aria-hidden>
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <span key={i} className={i < workerStars ? 'on' : 'off'}>
-                        {i < workerStars ? '★' : '☆'}
-                      </span>
-                    ))}
-                  </span>
-                  <span>
-                    <span className="ed-rating-num">{workerRating.toFixed(1)}</span>
-                    <span className="ed-rating-sub">({reviewsCountLabel(workerReviews)})</span>
-                  </span>
-                </div>
               </div>
             )}
 

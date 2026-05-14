@@ -1,17 +1,17 @@
 /** Доп. стили для «карточки объявления» (сетка, сайдбар, мета) — страница объявления и деталь заявки в «Найти работу». */
 export const listingDetailSurfaceExtraCss = `
-/* Сетка чуть ровнее: галерея уже, сайдбар шире; карточки чуть просторнее */
+/* Сайдбар чуть шире → главное фото слега уже; карточки чуть просторнее */
 .ed--listing-detail .ed-grid {
-  grid-template-columns: minmax(0, 1fr) minmax(270px, 340px);
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) minmax(288px, 358px);
+  gap: 20px;
 }
 @media (max-width: 1020px) {
   .ed--listing-detail .ed-grid { grid-template-columns: 1fr; }
 }
-.ed--listing-detail .ed-side { gap: 12px; min-width: 0; }
+.ed--listing-detail .ed-side { gap: 13px; min-width: 0; }
 .ed--listing-detail .ed-side .ed-card {
-  padding: 15px 18px;
-  border-radius: 14px;
+  padding: 17px 20px;
+  border-radius: 15px;
 }
 .ed--listing-detail .ed-price-num { font-size: 28px; margin-top: 6px; letter-spacing: -0.03em; }
 .ed--listing-detail .ed-price-num small { font-size: 16px; }
@@ -25,8 +25,20 @@ export const listingDetailSurfaceExtraCss = `
 }
 .ed--listing-detail .ed-cust-row { padding: 0 0 10px; }
 .ed--listing-detail .ed-eyebrow--block { display: block; margin-bottom: 8px; }
-.ed--listing-detail .ed-rating-line { margin-top: 10px; padding-top: 10px; gap: 6px; font-size: 12px; }
-.ed--listing-detail .ed-rating-stars { font-size: 13px; letter-spacing: 1px; }
+/* Аватар в карточке «Мастер» / «Заказчик» — чуть меньше базового 44px */
+.ed--listing-detail .ed-ava {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+.ed--listing-detail .ed-ava-fallback { font-size: 13px; }
+.ed--listing-detail .ed-ava-dot {
+  width: 10px;
+  height: 10px;
+  bottom: -1px;
+  right: -1px;
+  border-width: 2px;
+}
 .ed--listing-detail .ed-own-note { margin-top: 10px; padding: 10px 12px; font-size: 12px; line-height: 1.45; }
 .ed--listing-detail .ed-link-deals { padding: 6px 0 0; font-size: 12px; }
 .ed--listing-detail .ed-similar-head { margin-bottom: 10px; }
@@ -44,12 +56,6 @@ export const listingDetailSurfaceExtraCss = `
 .ed-listing-meta { margin-top: 10px; font-size: 13px; color: #71717a; line-height: 1.5; display: flex; flex-wrap: wrap; gap: 10px 16px; }
 .ed-listing-meta span { display: inline-flex; align-items: center; gap: 6px; }
 .ed-ava-fallback.neutral { background: #e4e4e8 !important; color: #52525b !important; }
-.ed-rating-line { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f4f4f5; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 13px; }
-.ed-rating-stars { letter-spacing: 2px; font-size: 14px; }
-.ed-rating-stars .on { color: #f45b31; }
-.ed-rating-stars .off { color: #d4d4d8; }
-.ed-rating-num { font-weight: 700; color: #0a0a0a; }
-.ed-rating-sub { color: #a1a1aa; font-size: 12px; margin-left: 4px; }
 .ed-similar-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .ed-similar-head strong { font-size: 15px; font-weight: 600; color: #0a0a0a; letter-spacing: -.02em; }
 .ed-similar-head a { font-size: 12px; color: #f45b31; font-weight: 600; text-decoration: none; }

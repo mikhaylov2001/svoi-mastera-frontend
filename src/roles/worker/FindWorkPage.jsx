@@ -1296,10 +1296,6 @@ export default function FindWorkPage() {
       (req.cityName && String(req.cityName).trim()) ||
       (req.city && String(req.city).trim()) ||
       (addressLine.includes(',') ? addressLine.split(',')[0].trim() : '—');
-    const custRatingStats = req.customerId ? customerStats[String(req.customerId)] : null;
-    const custAvg = custRatingStats?.averageRating ?? 0;
-    const custCnt = custRatingStats?.reviewsCount ?? 0;
-    const custStars = Math.min(5, Math.max(0, Math.round(Number(custAvg) || 0)));
     const custNameFull = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
     const categoryLabel = selectedCategory?.name || req.categoryName;
     const priceNum = getJobRequestPublishedBudgetNumber(req);
@@ -1413,7 +1409,6 @@ export default function FindWorkPage() {
               <div className="ed-head-left" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                   <h1>{req.title || 'Заявка'}</h1>
-                  <span className="ed-head-id">#{req.id}</span>
                 </div>
                 <div className="ed-listing-meta">
                   {categoryLabel && (
@@ -1631,19 +1626,6 @@ export default function FindWorkPage() {
                         Написать заказчику
                       </Link>
                     ) : null}
-                    <div className="ed-rating-line">
-                      <span className="ed-rating-stars" aria-hidden>
-                        {Array.from({ length: 5 }, (_, i) => (
-                          <span key={i} className={i < custStars ? 'on' : 'off'}>
-                            {i < custStars ? '★' : '☆'}
-                          </span>
-                        ))}
-                      </span>
-                      <span>
-                        <span className="ed-rating-num">{custAvg.toFixed(1)}</span>
-                        <span className="ed-rating-sub">({reviewsCountLabel(custCnt)})</span>
-                      </span>
-                    </div>
                   </div>
                 )}
               </aside>
