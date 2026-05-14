@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   getCategories,
@@ -34,7 +34,11 @@ const TABS = [
   { key: 'job', label: 'Заявки' },
 ];
 
-const fmt = (n) => n.toLocaleString('ru-RU');
+const SORT_OPTIONS = [
+  { value: 'recent', label: 'Сначала новые' },
+  { value: 'price-asc', label: 'Цена ↑' },
+  { value: 'price-desc', label: 'Цена ↓' },
+];
 
 function categoryEmoji(name) {
   const n = String(name || '').toLowerCase();
@@ -61,6 +65,26 @@ export default function FavoritesPage() {
   const [q, setQ] = useState('');
   const [sort, setSort] = useState('recent');
   const [popping, setPopping] = useState(null);
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortWrapRef = useRef(null);
+
+  useEffect(() => {
+    if (!sortOpen) return;
+    const onDown = (e) => {
+      if (sortWrapRef.current && !sortWrapRef.current.contains(e.target)) {
+        setSortOpen(false);
+      }
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') setSortOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [sortOpen]);
 
   const listingKey = listingIds.join(',');
   const jobRequestKey = jobRequestIds.join(',');
@@ -336,18 +360,53 @@ export default function FavoritesPage() {
                   aria-label="Поиск в избранном"
                 />
               </div>
-              <div className="fav-sort-wrap">
-                <select
-                  id="fav-sort-select"
-                  className="fav-sort"
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value)}
+              <div className="fav-sort-wrap" ref={sortWrapRef}>
+                <button
+                  type="button"
+                  id="fav-sort-trigger"
+                  className={`fav-sort-trigger${sortOpen ? ' is-open' : ''}`}
                   aria-label="Сортировка избранного"
+                  aria-haspopup="listbox"
+                  aria-expanded={sortOpen}
+                  aria-controls="fav-sort-listbox"
+                  onClick={() => setSortOpen((o) => !o)}
                 >
-                  <option value="recent">Сначала новые</option>
-                  <option value="price-asc">Цена ↑</option>
-                  <option value="price-desc">Цена ↓</option>
-                </select>
+                  <span className="fav-sort-trigger-label">
+                    {SORT_OPTIONS.find((o) => o.value === sort)?.label ?? 'Сортировка'}
+                  </span>
+                  <span className="fav-sort-trigger-chevron" aria-hidden>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </span>
+                </button>
+                {sortOpen && (
+                  <div
+                    id="fav-sort-listbox"
+                    className="fav-sort-menu"
+                    role="listbox"
+                    aria-labelledby="fav-sort-trigger"
+                  >
+                    {SORT_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        role="option"
+                        aria-selected={sort === opt.value}
+                        className={`fav-sort-option${sort === opt.value ? ' is-active' : ''}`}
+                        onClick={() => {
+                          setSort(opt.value);
+                          setSortOpen(false);
+                        }}
+                      >
+                        <span className="fav-sort-option-check" aria-hidden>
+                          {sort === opt.value ? '✓' : ''}
+                        </span>
+                        <span className="fav-sort-option-label">{opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

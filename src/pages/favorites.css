@@ -196,7 +196,7 @@
   pointer-events: none;
 }
 
-/* Сортировка: единая высота с поиском, аккуратная «кнопка» вместо сырого select */
+/* Сортировка: кнопка + кастомное меню (единый стиль с поиском, без системного select) */
 .fav-sort-wrap {
   flex: 0 0 auto;
   align-self: center;
@@ -204,7 +204,7 @@
   min-width: 196px;
   max-width: min(260px, 100%);
 }
-.fav-sort {
+.fav-sort-trigger {
   width: 100%;
   min-height: 48px;
   box-sizing: border-box;
@@ -212,9 +212,6 @@
   border: 1px solid #e2e8f0;
   border-radius: 999px;
   background-color: #fff;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
   font: inherit;
   font-size: 14px;
   font-weight: 600;
@@ -222,23 +219,126 @@
   letter-spacing: -0.01em;
   cursor: pointer;
   outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.04);
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
 }
-.fav-sort:hover {
+.fav-sort-trigger-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fav-sort-trigger-chevron {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  color: #94a3b8;
+  line-height: 0;
+  transition: transform 0.2s ease;
+  pointer-events: none;
+}
+.fav-sort-trigger.is-open .fav-sort-trigger-chevron {
+  transform: translateY(-50%) rotate(180deg);
+}
+.fav-sort-trigger:hover {
   border-color: #cbd5e1;
   background-color: #fafafa;
   color: #0f172a;
 }
-.fav-sort:focus {
+.fav-sort-trigger:focus-visible {
   border-color: #e8410a;
   background-color: #fff;
   box-shadow:
     0 0 0 3px rgba(232, 65, 10, 0.12),
     0 4px 14px rgba(15, 23, 42, 0.06);
+}
+.fav-sort-trigger.is-open {
+  border-color: #e8410a;
+  background-color: #fff;
+  box-shadow:
+    0 0 0 3px rgba(232, 65, 10, 0.1),
+    0 4px 14px rgba(15, 23, 42, 0.06);
+}
+
+.fav-sort-menu {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+  min-width: 100%;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 6px;
+  margin: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow:
+    0 4px 6px rgba(15, 23, 42, 0.04),
+    0 12px 32px rgba(15, 23, 42, 0.12);
+  animation: fav-sort-pop 0.18s ease;
+}
+@keyframes fav-sort-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fav-sort-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px 11px 10px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.fav-sort-option:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+.fav-sort-option.is-active {
+  background: linear-gradient(135deg, rgba(232, 65, 10, 0.1), rgba(255, 107, 61, 0.08));
+  color: #c2410c;
+}
+.fav-sort-option-check {
+  flex: 0 0 22px;
+  width: 22px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #e8410a;
+  line-height: 1;
+}
+.fav-sort-option:not(.is-active) .fav-sort-option-check {
+  color: transparent;
+}
+.fav-sort-option:focus-visible {
+  outline: 2px solid rgba(232, 65, 10, 0.45);
+  outline-offset: 1px;
 }
 
 @media (max-width: 720px) {
@@ -266,6 +366,12 @@
     max-width: none;
     width: 100%;
     align-self: stretch;
+  }
+  .fav-sort-menu {
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: none;
   }
 }
 
