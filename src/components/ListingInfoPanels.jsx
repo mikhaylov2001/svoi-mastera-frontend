@@ -60,8 +60,35 @@ const LIP_CSS = `
   .lip-wrap--job .lip-row:last-child { border-bottom: none; }
   .lip-wrap--job .lip-section--job + .lip-section--job .lip-h { margin-bottom: 16px; }
 
+  /* Вариант «Мои заявки / Мои объявления» — как mo-card / избранное */
+  .lip-wrap--mo { gap: 14px; }
+  .lip-section--mo {
+    background: #fff;
+    border: 1px solid rgba(255, 160, 130, 0.28);
+    border-radius: 20px;
+    padding: 20px 22px;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+  }
+  .lip-wrap--mo .lip-h {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin: 0 0 12px;
+  }
+  .lip-wrap--mo .lip-desc { font-size: 14px; color: #475569; line-height: 1.75; }
+  .lip-wrap--mo .lip-empty { color: #94a3b8; }
+  .lip-wrap--mo .lip-row {
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+  }
+  .lip-wrap--mo .lip-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .lip-wrap--mo .lip-row dt { color: #64748b; font-weight: 600; min-width: 110px; }
+  .lip-wrap--mo .lip-row dd { color: #0f172a; font-weight: 600; }
+
   @media (max-width: 640px) {
-    .lip-section, .lip-section--merged, .lip-section--job {
+    .lip-section, .lip-section--merged, .lip-section--job, .lip-section--mo {
       padding: 16px 14px;
     }
     .lip-row {
@@ -105,7 +132,7 @@ export default function ListingInfoPanels({
   emptyDescriptionText = 'Описание не добавлено',
   /** Одна карточка вместо двух отдельных блоков */
   mergedSections = false,
-  /** Карточки как на детали заявки (отдельные блоки, типографика) */
+  /** default | jobDetail | mo — mo: стиль списков «Мои заявки/объявления» */
   variant = 'default',
   /** Подпись строки цены в подробностях */
   budgetDtLabel = 'Окончательная цена',
@@ -169,8 +196,9 @@ export default function ListingInfoPanels({
   );
 
   const jobDetail = variant === 'jobDetail';
-  const sectionClass = jobDetail ? 'lip-section lip-section--job' : 'lip-section';
-  const wrapClass = jobDetail ? 'lip-wrap lip-wrap--job' : 'lip-wrap';
+  const moDetail = variant === 'mo';
+  const sectionClass = moDetail ? 'lip-section lip-section--mo' : jobDetail ? 'lip-section lip-section--job' : 'lip-section';
+  const wrapClass = moDetail ? 'lip-wrap lip-wrap--mo' : jobDetail ? 'lip-wrap lip-wrap--job' : 'lip-wrap';
 
   return (
     <>

@@ -219,14 +219,14 @@ const css = `
   .ml-btn-edit:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.34); }
   .ml-btn-edit:active { transform: translateY(0); }
   .ml-btn-copy {
-    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 10px;
+    width: 100%; box-sizing: border-box; min-height: 44px; padding: 12px 14px;
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 600; line-height: 1.25; text-align: center;
+    font-size: 14px; font-weight: 600; line-height: 1.25; text-align: center;
     white-space: nowrap;
-    background: #fff; border: 1px solid #d4d4d8; border-radius: 8px; color: #374151;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; color: #334155;
     cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s;
   }
-  .ml-btn-copy:hover { border-color: #71717a; background: #fafafa; }
+  .ml-btn-copy:hover { border-color: #cbd5e1; background: #f8fafc; }
   .ml-btn-copy.copied { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
   .ml-link-preview {
     font-size: 13px; font-weight: 600; color: #e8410a; text-align: center;
@@ -248,47 +248,217 @@ const css = `
   .ml-btn-review-customer:active { transform: translateY(0); }
   /* .ml-empty — unifiedListingCards.css */
 
-  /* ── DETAIL ── */
-  .ml-detail { background: #f2f2f2; min-height: 100vh; }
-  .ml-detail-nav { background: #fff; border-bottom: 1.5px solid #e5e7eb; padding: 12px 0; }
-  .ml-detail-wrap { max-width: 1000px; margin: 0 auto; padding: 20px 20px 60px; display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: flex-start; }
-  .ml-detail-gallery { background: #fff; overflow: hidden; margin-bottom: 14px; }
-  .ml-detail-main-img { position: relative; aspect-ratio: 16/9; overflow: hidden; cursor: pointer; background: #f5f5f5; display: flex; align-items: center; justify-content: center; }
-  .ml-detail-main-img img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
-  .ml-detail-thumbs { display: flex; gap: 6px; padding: 10px 12px; background: #fafafa; overflow-x: auto; }
-  .ml-detail-thumb { width: 72px; height: 54px; flex-shrink: 0; border-radius: 6px; overflow: hidden; cursor: pointer; border: 2px solid transparent; }
-  .ml-detail-thumb.on { border-color: #e8410a; }
-  .ml-detail-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .ml-detail-right { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 72px; }
-  .ml-detail-price-card { background: #fff; padding: 20px; }
-  .ml-detail-price-label { font-size: 12px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-  .ml-detail-price { font-size: 28px; font-weight: 900; color: #1a1a1a; }
-  .ml-detail-price-unit { font-size: 13px; color: #9ca3af; margin-top: 4px; font-weight: 500; }
-  .ml-detail-status-line { font-size: 12px; color: #6b7280; margin-top: 10px; font-weight: 500; }
-  .ml-detail-actions-card { background: #fff; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  /* ── DETAIL — как mo-список / избранное ── */
+  .ml-detail {
+    background: #f5f5f7;
+    min-height: 100vh;
+    font-family: 'Manrope', Inter, system-ui, sans-serif;
+    color: #0f172a;
+  }
+  .ml-detail-nav {
+    background: rgba(255, 255, 255, 0.94);
+    border-bottom: 1px solid rgba(31, 41, 55, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 14px 0;
+  }
+  .ml-detail-nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 clamp(20px, 4vw, 28px);
+  }
+  .ml-detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .ml-detail-back:hover { color: #e8410a; }
+  .ml-detail-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px clamp(20px, 4vw, 28px) 72px;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .ml-detail-gallery {
+    background: #fff;
+    border: 1px solid rgba(255, 160, 130, 0.28);
+    border-radius: 22px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+  }
+  .ml-detail-main-img {
+    position: relative;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    cursor: pointer;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ml-detail-main-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+  }
+  .ml-detail-thumbs {
+    display: flex;
+    gap: 8px;
+    padding: 12px 14px;
+    background: #fafafa;
+    overflow-x: auto;
+    border-top: 1px solid #f1f5f9;
+  }
+  .ml-detail-thumb {
+    width: 76px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .ml-detail-thumb.on {
+    border-color: #e8410a;
+    box-shadow: 0 0 0 2px rgba(232, 65, 10, 0.12);
+  }
+  .ml-detail-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .ml-detail-right {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: sticky;
+    top: 76px;
+  }
+  .ml-detail-price-card,
+  .ml-detail-actions-card,
+  .ml-detail-side-card {
+    background: #fff;
+    border: 1px solid rgba(255, 160, 130, 0.28);
+    border-radius: 20px;
+    padding: 20px 22px;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+  }
+  .ml-detail-actions-card {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ml-detail-price-label {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .ml-detail-price {
+    font-size: 28px;
+    font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+  }
+  .ml-detail-price-unit {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+  .ml-detail-status-line {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 12px;
+    font-weight: 600;
+  }
   .ml-btn-primary {
-    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700; line-height: 1.25; text-align: center;
-    background: #e8410a; border: none; border-radius: 8px; color: #fff;
-    cursor: pointer; font-family: inherit;
-    box-shadow: 0 3px 14px rgba(232,65,10,.30);
-    transition: background .15s, transform .15s, box-shadow .15s;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: 12px 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+    background: linear-gradient(135deg, #e8410a, #ff6b3d);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 16px rgba(232, 65, 10, 0.28);
+    transition: filter 0.15s, transform 0.15s, box-shadow 0.15s;
   }
-  .ml-btn-primary:hover { background: #d03a09; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(232,65,10,.36); }
+  .ml-btn-primary:hover {
+    filter: brightness(1.03);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(232, 65, 10, 0.34);
+  }
   .ml-btn-primary:active { transform: translateY(0); }
-  .ml-btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none !important; box-shadow: none; }
-  .ml-btn-outline-neutral {
-    width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center;
-    background: #fff; border: 1px solid #d4d4d8; border-radius: 8px; color: #374151;
-    font-family: inherit; cursor: pointer;
-    transition: border-color .15s, background .15s;
+  .ml-btn-primary:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none;
   }
-  .ml-btn-outline-neutral:hover { border-color: #71717a; background: #fafafa; }
-  .ml-btn-outline-neutral:disabled { opacity: .55; cursor: not-allowed; }
-  .ml-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+  .ml-btn-outline-neutral {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: 12px 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: center;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    color: #334155;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .ml-btn-outline-neutral:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    color: #0f172a;
+  }
+  .ml-btn-outline-neutral:disabled { opacity: 0.55; cursor: not-allowed; }
+  .ml-section-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
   .ml-detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
   .ml-detail-row:last-child { border-bottom: none; }
   /* .ml-tag — unifiedListingCards.css */
@@ -1566,11 +1736,10 @@ export default function MyListingsPage() {
       <div className="ml-detail">
         <style>{css}</style>
         <div className="ml-detail-nav">
-          <div style={{maxWidth:1000, margin:'0 auto', padding:'0 20px'}}>
-            <button
-              style={{background:'none', border:'none', cursor:'pointer', color:'#888', fontSize:14, fontFamily:'Inter,sans-serif', padding:0}}
-              onClick={() => { setDetail(null); setPhotoIdx(0); }}
-            >← Мои объявления</button>
+          <div className="ml-detail-nav-inner">
+            <button type="button" className="ml-detail-back" onClick={() => { setDetail(null); setPhotoIdx(0); }}>
+              ← Мои объявления
+            </button>
           </div>
         </div>
 
@@ -1604,6 +1773,7 @@ export default function MyListingsPage() {
             </div>
 
             <ListingInfoPanels
+              variant="mo"
               description={detail.description}
               category={detail.category}
               address={detail.address || 'Йошкар-Ола · выезд по договорённости'}
@@ -1671,7 +1841,7 @@ export default function MyListingsPage() {
               )}
             </div>
             )}
-            <div style={{background:'#fff', borderRadius:12, padding:'16px 20px'}}>
+            <div className="ml-detail-side-card">
               <div className="ml-section-label">Ваш профиль</div>
               <Link to={userId ? `/workers/${userId}` : '/worker-profile'} style={{display:'flex', alignItems:'center', gap:12, textDecoration:'none', color:'inherit'}}>
                 {ava
