@@ -1084,6 +1084,8 @@ export default function FindWorkPage() {
   const [loading,          setLoading]          = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedRequest,  setSelectedRequest]  = useState(null);
+  /** Откуда открыли деталь заявки: главная / избранное / раздел «Найти работу» */
+  const [jobDetailFrom, setJobDetailFrom] = useState('find-work');
   const [activePhotoIdx,   setActivePhotoIdx]   = useState(0);
   const [showOfferModal,   setShowOfferModal]   = useState(null);
   const [offerForm,        setOfferForm]        = useState({ price: '', comment: '', estimatedDays: '' });
@@ -1162,11 +1164,14 @@ export default function FindWorkPage() {
 
   useEffect(() => {
     if (!requestIdFromUrl || loading) return;
+    const fromParam = searchParams.get('from');
+    const nextFrom = fromParam === 'home' || fromParam === 'favorites' ? fromParam : 'find-work';
+    setJobDetailFrom(nextFrom);
     const req = requests.find(r => String(r.id) === String(requestIdFromUrl));
     if (!req) {
       if (requests.length > 0) {
         showToast('Заявка закрыта или недоступна', 'info');
-        setSearchParams(p => { const next = new URLSearchParams(p); next.delete('request'); return next; }, { replace: true });
+        setSearchParams(p => { const next = new URLSearchParams(p); next.delete('request'); next.delete('from'); return next; }, { replace: true });
       }
       return;
     }
@@ -1175,8 +1180,8 @@ export default function FindWorkPage() {
     setSelectedRequest(req);
     setActivePhotoIdx(0);
     bumpJobRequestView(req.id);
-    setSearchParams(p => { const next = new URLSearchParams(p); next.delete('request'); return next; }, { replace: true });
-  }, [requestIdFromUrl, loading, requests, categories, setSearchParams, showToast, bumpJobRequestView]);
+    setSearchParams(p => { const next = new URLSearchParams(p); next.delete('request'); next.delete('from'); return next; }, { replace: true });
+  }, [requestIdFromUrl, loading, requests, categories, setSearchParams, showToast, bumpJobRequestView, searchParams]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -1231,6 +1236,7 @@ export default function FindWorkPage() {
 
   const openRequestDetail = useCallback((req) => {
     bumpJobRequestView(req?.id);
+    setJobDetailFrom('find-work');
     setSelectedRequest(req);
     setActivePhotoIdx(0);
   }, [bumpJobRequestView]);
@@ -1302,6 +1308,8 @@ export default function FindWorkPage() {
     const photoCount = jdPhotos.length;
     const hasMultiplePhotos = photoCount > 1;
     const openStatusPill = { label: 'Открыта', dot: '#22c55e', shadow: '0 0 0 3px rgba(34,197,94,.2)' };
+    const jobBackLabel =
+      jobDetailFrom === 'home' ? 'Главная' : jobDetailFrom === 'favorites' ? 'Избранное' : 'Заявки';
 
     return (
       <>
@@ -1395,6 +1403,23 @@ export default function FindWorkPage() {
               type="button"
               className="ed-back"
               onClick={() => {
+                setLightbox(null);
+                if (jobDetailFrom === 'home') {
+                  setSelectedRequest(null);
+                  setSelectedCategory(null);
+                  setActivePhotoIdx(0);
+                  setJobDetailFrom('find-work');
+                  navigate('/');
+                  return;
+                }
+                if (jobDetailFrom === 'favorites') {
+                  setSelectedRequest(null);
+                  setSelectedCategory(null);
+                  setActivePhotoIdx(0);
+                  setJobDetailFrom('find-work');
+                  navigate('/favorites');
+                  return;
+                }
                 setSelectedRequest(null);
                 setActivePhotoIdx(0);
               }}
@@ -1402,7 +1427,7 @@ export default function FindWorkPage() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
-              Заявки
+              {jobBackLabel}
             </button>
 
             <div className="ed-head">

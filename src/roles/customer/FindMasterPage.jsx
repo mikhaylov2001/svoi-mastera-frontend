@@ -1203,6 +1203,15 @@ export default function FindMasterPage() {
   /** Подсветка фона hero при наведении на карточку категории (как на «Найти работу») */
   const [heroCatSlug, setHeroCatSlug] = useState(null);
 
+  const listingPublicUrl = useCallback(
+    (listingId) => {
+      const q = new URLSearchParams({ from: 'find-master' });
+      if (categorySlug) q.set('cat', categorySlug);
+      return `/listings/${listingId}?${q.toString()}`;
+    },
+    [categorySlug],
+  );
+
   const [fmpSearchFocused, setFmpSearchFocused] = useState(false);
   const [debouncedSearchInput, setDebouncedSearchInput] = useState('');
   const fmpSearchDdRef = useRef(null);
@@ -1449,7 +1458,7 @@ export default function FindMasterPage() {
                     photos[0] ||
                     getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category }, categories);
                   return (
-                    <Link key={s.id} to={`/listings/${s.id}`} className="fmp-gcard">
+                    <Link key={s.id} to={listingPublicUrl(s.id)} className="fmp-gcard">
                       <div className="fmp-gcard-photo">
                         <img src={mainPhoto} alt="" />
                       </div>
@@ -1640,7 +1649,7 @@ export default function FindMasterPage() {
                       return (
                         <Link
                           key={s.id}
-                          to={`/listings/${s.id}`}
+                          to={listingPublicUrl(s.id)}
                           className="fmp-search-hit"
                           onClick={() => setFmpSearchFocused(false)}
                         >
@@ -1857,11 +1866,11 @@ export default function FindMasterPage() {
                       className="jl-bigcard-cover"
                       role="button"
                       tabIndex={0}
-                      onClick={() => navigate(`/listings/${s.id}`)}
+                      onClick={() => navigate(listingPublicUrl(s.id))}
                       onKeyDown={e => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          navigate(`/listings/${s.id}`);
+                          navigate(listingPublicUrl(s.id));
                         }
                       }}
                     >
@@ -1889,11 +1898,11 @@ export default function FindMasterPage() {
                         className="jl-bigcard-thumbs"
                         role="button"
                         tabIndex={0}
-                        onClick={() => navigate(`/listings/${s.id}`)}
+                        onClick={() => navigate(listingPublicUrl(s.id))}
                         onKeyDown={e => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            navigate(`/listings/${s.id}`);
+                            navigate(listingPublicUrl(s.id));
                           }
                         }}
                       >
@@ -1928,11 +1937,11 @@ export default function FindMasterPage() {
                         className="jl-bigcard-detail-zone"
                         role="button"
                         tabIndex={0}
-                        onClick={() => navigate(`/listings/${s.id}`)}
+                        onClick={() => navigate(listingPublicUrl(s.id))}
                         onKeyDown={e => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            navigate(`/listings/${s.id}`);
+                            navigate(listingPublicUrl(s.id));
                           }
                         }}
                       >

@@ -415,7 +415,7 @@ function CustomerHome({ userId }) {
                     const wname =
                       [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
                     return (
-                      <Link key={l.id} to={`/listings/${l.id}`} className="av-card">
+                      <Link key={l.id} to={`/listings/${l.id}?from=home`} className="av-card">
                         <div className="av-card-img">
                           <FavoriteHeartButton kind="listing" id={l.id} />
                           <img src={src} alt="" />
@@ -673,7 +673,7 @@ function WorkerHome({ userId, userName }) {
                     return (
                       <Link
                         key={item.id}
-                        to={`/find-work?request=${encodeURIComponent(item.id)}`}
+                        to={`/find-work?request=${encodeURIComponent(item.id)}&from=home`}
                         className="av-card"
                       >
                         <div className="av-card-img">

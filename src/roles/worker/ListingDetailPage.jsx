@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { acceptListingDeal, recordListingView, getMyDeals, workerStartDeal } from '../../api';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
@@ -37,6 +37,9 @@ const listingStyles = `${dealsDetailEdCss}\n${listingDetailLightboxCss}\n${listi
 
 export default function ListingDetailPage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const refFrom = searchParams.get('from');
+  const refCat = searchParams.get('cat');
   const { userId, userName, userLastName, userAvatar, userRole } = useAuth();
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
@@ -327,21 +330,41 @@ export default function ListingDetailPage() {
       navigate('/my-listings');
       return;
     }
+    if (refFrom === 'home') {
+      navigate('/');
+      return;
+    }
+    if (refFrom === 'find-master') {
+      navigate(refCat ? `/find-master/${refCat}` : '/find-master');
+      return;
+    }
+    if (refFrom === 'favorites') {
+      navigate('/favorites');
+      return;
+    }
     if (!userId) {
       navigate(catSlug ? `/find-master/${catSlug}` : '/find-master');
       return;
     }
-    if (userRole === 'WORKER') navigate('/find-work');
+    if (userRole === 'WORKER') navigate('/find-master');
     else navigate('/my-orders');
   };
 
   const backLabel = isOwnListing
     ? 'Мои объявления'
-    : !userId
-      ? 'К поиску'
-      : userRole === 'WORKER'
-        ? 'Заявки'
-        : 'Мои заказы';
+    : refFrom === 'home'
+      ? 'Главная'
+      : refFrom === 'find-master'
+        ? refCat
+          ? 'К категории'
+          : 'Найти мастера'
+        : refFrom === 'favorites'
+          ? 'Избранное'
+          : !userId
+            ? 'К поиску'
+            : userRole === 'WORKER'
+              ? 'Найти мастера'
+              : 'Мои заказы';
 
   const listingActive = listing.active !== false;
   const statusPill = listingActive
