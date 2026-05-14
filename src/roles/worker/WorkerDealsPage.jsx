@@ -725,7 +725,6 @@ export default function WorkerDealsPage() {
         <img src={MY_DEALS_HERO_PHOTO} alt="" />
         <div className="md-hero-inner">
           <div>
-            <span className="md-hero-eyebrow"><span className="pulse" />Личный кабинет</span>
             <h1>Мои сделки</h1>
             <p>Сделки с заказчиками — отслеживайте прогресс и подтверждайте</p>
           </div>

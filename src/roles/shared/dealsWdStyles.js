@@ -427,9 +427,6 @@ export const dealsMdListCss = `
     .md-hero-inner { flex-direction: column; align-items: flex-start; justify-content: center; gap: 14px; }
     .md-cta { align-self: stretch; text-align: center; }
   }
-  .md-hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.14); backdrop-filter: blur(12px); padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 12px; border: 1px solid rgba(255,255,255,.18); }
-  .md-hero-eyebrow .pulse { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 4px rgba(74,222,128,.25); animation: md-pulse 1.5s infinite; }
-  @keyframes md-pulse { 0%,100% { box-shadow: 0 0 0 4px rgba(74,222,128,.25); } 50% { box-shadow: 0 0 0 8px rgba(74,222,128,.05); } }
   .md-hero h1 { margin: 0 0 6px; font-size: 34px; font-weight: 900; letter-spacing: -0.025em; }
   .md-hero p { margin: 0; color: rgba(255,255,255,.85); font-size: 14px; }
   .md-cta { background: #e8410a; color: #fff; border: none; padding: 14px 24px; border-radius: 12px; font: inherit; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 10px 28px rgba(232,65,10,.4); transition: transform .2s; text-decoration: none; display: inline-block; text-align: center; }
