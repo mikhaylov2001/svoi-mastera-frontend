@@ -7,6 +7,7 @@ import {
 } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
+import AttachButton from '../components/AttachButton';
 import './ChatPage.css';
 
 // ─── Фоны ───────────────────────────────────────────────────
@@ -26,30 +27,42 @@ const BG_LIST = [
 ];
 
 const EMOJIS = [
-  '😀','😂','🥰','😍','🤩','😎','🤔','😮','😢','😡',
-  '👍','👎','❤️','🔥','✅','⭐','💯','🎉','🙏','💪',
-  '😊','😄','🤗','😌','😴','🥳','😬','🤝','👋','🫡',
-  '💬','📱','🔨','🏠','⚡','🔧','💻','🧹','✨','📚',
+  '😀', '😃', '😄', '😁', '😅', '😂', '🤣', '🥲', '😊', '😇', '🙂', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '😎', '🤓', '🧐',
+  '😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱', '🤤', '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️', '💩', '🤡', '👹', '👺', '👻', '👽', '👾', '🤖',
+  '👍', '👎', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁', '🦷', '🦴', '👀', '👁️', '👅', '👄',
+  '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❤️‍🔥', '❤️‍🩹', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🪬', '🕎', '☯️', '☦️', '🛐', '⛎',
+  '🔥', '✨', '⭐', '🌟', '💫', '💥', '💢', '💯', '✅', '☑️', '✔️', '❌', '❎', '➕', '➖', '➗', '♾️', '💤', '💨', '🎉', '🎊', '🎁', '🏆', '🥇', '🥈', '🥉',
+  '💬', '👤', '👥', '🗨️', '🗯️', '💭', '🏠', '🏡', '🏘️', '🏚️', '🏗️', '🏭', '🏢', '🏬', '🏣', '🏤', '🏥', '🏦', '🏨', '🏪', '🏫', '🏩', '💒', '⛪', '🕌', '🛕', '🕍', '⛩️', '🛤️', '🛣️', '🗺️', '🗿', '🗽', '🗼', '🏰',
+  '🔨', '🪓', '⛏️', '⚒️', '🛠️', '🗡️', '⚔️', '🔧', '🔩', '⚙️', '🪚', '🔫', '💣', '🧨', '🪛', '🔦', '🏮', '🪜', '🧹', '🧺', '🧻', '🚽', '🚿', '🛁', '🛀', '🧼', '🪥', '🪒', '🧴', '🧷', '🧹', '🪣', '🧽', '🪤', '🧯', '🛒',
+  '📱', '💻', '🖥️', '🖨️', '⌨️', '🖱️', '🖲️', '💽', '💾', '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️', '🧭', '⏱️', '⏲️', '⏰', '🕰️', '⌛', '⏳', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🪔', '🧯', '🛢️', '💸', '💵', '💴', '💶', '💷', '🪙', '💰', '💳', '🧾', '✉️', '📧', '📨', '📩', '📤', '📥', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️',
+  '✏️', '✒️', '🖋️', '🖊️', '🖌️', '🖍️', '📝', '📁', '📂', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️',
+  '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🛻', '🚚', '🚛', '🚜', '🏍️', '🛵', '🚲', '🛴', '🛹', '🛼', '🚁', '✈️', '🛫', '🛬', '🪂', '💺', '🚀', '🛸', '🚉', '🚊', '🚝', '🚞', '🚋', '🚃', '🚋', '🚆', '🚇', '🚄', '🚅', '🚈', '🚂', '🚆', '🚇', '🚊', '🚉', '⛵', '🛶', '🚤', '🛥️', '🛳️', '⛴️', '🚢', '⚓', '🪝', '⛽', '🚧', '🚦', '🚥', '🗺️', '🗿', '🗽', '🗼', '🏛️', '🏜️', '🏝️', '🏖️', '🏔️', '⛰️', '🌋', '🗻', '🏕️', '🏞️', '🏟️', '🏛️', '🏗️', '🧱', '🪨', '🪵', '🛖', '🏘️', '🏚️', '🏠', '🏡', '🏢', '🏣', '🏤', '🏥', '🏦', '🏨', '🏩', '🏪', '🏫', '🏬', '🏭', '🏯', '🏰', '💒', '🗼', '🗽', '⛪', '🕌', '🛕', '🕍', '⛩️', '🕋', '⛲', '⛺', '🌁', '🌃', '🏙️', '🌄', '🌅', '🌆', '🌇', '🌉', '♨️', '🎠', '🎡', '🎢', '💈', '🎪', '🚂', '🚃', '🚄', '🚅', '🚆', '🚇', '🚈', '🚉', '🚊', '🚝', '🚞', '🚋', '🚌', '🚍', '🚎', '🚐', '🚑', '🚒', '🚓', '🚔', '🚕', '🚖', '🚗', '🚘', '🚙', '🚚', '🚛', '🚜', '🏎️', '🏍️', '🛵', '🚲', '🛴', '🛹', '🛼', '🚁', '🛸', '✈️', '🛫', '🛬', '🪂', '💺', '🚀',
+  '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🪱', '🐛', '🦋', '🐌', '🐞', '🐜', '🪰', '🪲', '🪳', '🦟', '🦗', '🕷️', '🕸️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🦬', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🐐', '🦌', '🐕', '🐩', '🦮', '🐕‍🦺', '🐈', '🐈‍⬛', '🪶', '🐓', '🦃', '🦤', '🦚', '🦜', '🦢', '🦩', '🕊️', '🐇', '🦝', '🦨', '🦡', '🦫', '🦦', '🦥', '🐁', '🐀', '🐿️', '🦔',
+  '🍎', '🍏', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🫓', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🥫', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '🫖', '☕', '🍵', '🧃', '🥤', '🧋', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾', '🧊',
+  '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '🤺', '⛹️', '🤾', '🏌️', '🏇', '🧘', '🏄', '🏊', '🤽', '🚣', '🧗', '🚴', '🚵', '🤹', '🛀', '🛌', '👶', '🧒', '👦', '👧', '🧑', '👱', '👨', '🧔', '👩', '🧓', '👴', '👵', '🙍', '🙎', '🙅', '🙆', '💁', '🙋', '🧏', '🙇', '🤦', '🤷', '👮', '🕵️', '💂', '🥷', '👷', '🤴', '👸', '👳', '👲', '🧕', '🤵', '👰', '🤰', '🤱', '👼', '🎅', '🤶', '🦸', '🦹', '🧙', '🧚', '🧛', '🧜', '🧝', '🧞', '🧟', '💆', '💇', '🚶', '🧍', '🧎', '🏃', '💃', '🕺', '🕴️', '👯', '🧖', '🧗', '🤺', '🏇', '⛷️', '🏂', '🏌️', '🏄', '🚣', '🏊', '⛹️', '🏋️', '🚴', '🚵', '🤸', '🤼', '🤽', '🤾', '🤹', '🧘', '🛀', '🛌',
+  '🎮', '🕹️', '🎰', '🎲', '🧩', '🎯', '🎳', '🎮', '🎧', '🎤', '🎼', '🎹', '🥁', '🪘', '🎷', '🎺', '🪗', '🎸', '🪕', '🎻', '🎬', '🎭', '🩰', '🎨', '🖼️', '🎪', '🎠', '🎡', '🎢', '🎫', '🎟️', '🎗️', '🎀', '🎁', '🎂', '🎃', '🎄', '🎆', '🎇', '🧨', '✨', '🎊', '🎉', '🎈', '🎁', '🏮', '🎐', '🎑', '🧧', '🎎', '🎏', '🎐', '🎀', '🎁', '🎗️', '🎟️', '🎫', '🎖️', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🏵️', '🎗️',
 ];
+
+const REACTION_QUICK = ['👍', '❤️', '🔥', '😂', '🙏', '👏', '🎉', '💯'];
 
 // ─── SVG Icons ───────────────────────────────────────────────
 const IcSmile  = () => <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/></svg>;
 const IcMic    = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10a7 7 0 0 1-14 0M12 19v3M8 22h8"/></svg>;
 const IcSend   = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>;
 const IcBack   = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>;
-const IcTrash  = () => <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>;
+const IcTrash  = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.85" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>;
 const IcPlay   = () => <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>;
 const IcPause  = () => <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>;
-const IcAttach = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>;
 const IcSearch = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>;
 const IcPen = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>;
 const IcMore = () => <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>;
 const IcPhone = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>;
 const IcVideo = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>;
-const IcReply = () => <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>;
-const IcHeart = () => <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>;
-const IcForward = () => <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>;
+const IcReply = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.85" viewBox="0 0 24 24"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>;
+const IcHeart = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.85" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>;
+const IcForward = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.85" viewBox="0 0 24 24"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>;
 const IcClose = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>;
+const IcArrowDown = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>;
 
 // ─── Avatar ──────────────────────────────────────────────────
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
@@ -353,6 +366,85 @@ function replyPreviewSnippet(m, parsed, hasImg) {
   return (m.text || '').slice(0, 220);
 }
 
+function buildReplyPrefix(rt) {
+  if (!rt) return '';
+  const q = String(rt.text || '').replace(/\s+/g, ' ').trim().slice(0, 240);
+  return `↪️ Ответ ${rt.name}:\n«${q}»\n\n`;
+}
+
+function chatReactionsKey(uid, pid) {
+  return `chatReactions_${uid}_${pid}`;
+}
+
+function chatArchiveKey(uid) {
+  return `chatArchivedPartners_${uid}`;
+}
+
+function loadReactionsMap(uid, pid) {
+  if (!uid || !pid) return {};
+  try {
+    const s = localStorage.getItem(chatReactionsKey(uid, pid));
+    if (!s) return {};
+    const o = JSON.parse(s);
+    return typeof o === 'object' && o && !Array.isArray(o) ? o : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveReactionsMap(uid, pid, map) {
+  if (!uid || !pid) return;
+  try { localStorage.setItem(chatReactionsKey(uid, pid), JSON.stringify(map)); } catch {}
+}
+
+function loadArchivedPartnerIds(uid) {
+  if (!uid) return new Set();
+  try {
+    const s = localStorage.getItem(chatArchiveKey(uid));
+    const a = s ? JSON.parse(s) : [];
+    return new Set(Array.isArray(a) ? a.map(String) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveArchivedPartnerIds(uid, set) {
+  if (!uid) return;
+  try { localStorage.setItem(chatArchiveKey(uid), JSON.stringify([...set])); } catch {}
+}
+
+function forwardBodyFromMessage(m, parsed, imgUrl) {
+  let body = '';
+  if (parsed.type === 'location') body = m.text || '';
+  else if (parsed.type === 'voice') body = m.text || '🎤 Голосовое';
+  else if (parsed.type === 'image_text' && imgUrl) {
+    const cap = parsed.caption ? `\n${parsed.caption}` : '';
+    body = `📷 ${parsed.filename || 'Фото'}${cap}`;
+  } else if (parsed.type === 'video_text' && imgUrl) {
+    const cap = parsed.caption ? `\n${parsed.caption}` : '';
+    body = `🎥 ${parsed.filename || 'Видео'}${cap}`;
+  } else if (parsed.type === 'file_text') body = `📎 ${parsed.filename || 'Файл'}`;
+  else body = (m.text || '').trim();
+  const snip = body.length > 900 ? `${body.slice(0, 897)}…` : body;
+  return `↪️ Переслано:\n${snip}`;
+}
+
+async function shareOrCopyChatHint(title, text) {
+  const payload = { title: title || 'Чат', text: text || window.location.href, url: window.location.href };
+  try {
+    if (navigator.share && typeof navigator.share === 'function') {
+      await navigator.share(payload);
+      return;
+    }
+  } catch {}
+  try {
+    await navigator.clipboard.writeText(text || window.location.href);
+    alert('Ссылка скопирована в буфер обмена');
+  } catch {
+    alert(text || 'Не удалось поделиться ссылкой');
+  }
+}
+
 // ─── Voice Recorder Hook ──────────────────────────────────────
 function useVoiceRec(onDone) {
   const [rec, setRec]   = useState(false);
@@ -405,7 +497,7 @@ function useVoiceRec(onDone) {
 // ─── MAIN COMPONENT ───────────────────────────────────────────
 export default function ChatPage() {
   const { partnerId } = useParams();
-  const { userId, userName, userAvatar } = useAuth();
+  const { userId, userName, userAvatar, isWorker } = useAuth();
   const navigate      = useNavigate();
   const loc           = useLocation();
 
@@ -427,13 +519,24 @@ export default function ChatPage() {
   const [menuId,  setMenuId]  = useState(null);
 
   const [showEmoji,  setShowEmoji]  = useState(false);
-  const [showAttach, setShowAttach] = useState(false);
   const [showBg,     setShowBg]     = useState(false);
   const [bgId,       setBgId]       = useState(() => localStorage.getItem('chatBg') || 'tg');
   const [listFilter, setListFilter] = useState('all');
   const [listSearch, setListSearch] = useState('');
   const [showChMenu, setShowChMenu] = useState(false);
   const [replyTo,    setReplyTo]    = useState(null);
+
+  const [showSidebarMenu, setShowSidebarMenu] = useState(false);
+  const [archivedPartnerIds, setArchivedPartnerIds] = useState(() => new Set());
+
+  const [showChatSearch, setShowChatSearch] = useState(false);
+  const [chatSearchQuery, setChatSearchQuery] = useState('');
+  const [chatSearchHit, setChatSearchHit] = useState(0);
+
+  const [forwardText, setForwardText] = useState(null);
+  const [reactionPickerMid, setReactionPickerMid] = useState(null);
+  const [reactionsMap, setReactionsMap] = useState({});
+  const [showScrollDown, setShowScrollDown] = useState(false);
 
   // локальное хранилище голосовых: messageId -> {url, duration}
   const [voiceStore, setVoiceStore] = useState({});
@@ -445,10 +548,11 @@ export default function ChatPage() {
   const [preview, setPreview] = useState(null);
 
   const endRef    = useRef(null);
+  const cmsgRef   = useRef(null);
   const inputRef  = useRef(null);
-  const photoRef  = useRef(null);
-  const fileRef   = useRef(null);
   const camRef    = useRef(null);
+  const attachRef = useRef(null);
+  const closeAttach = () => attachRef.current?.close?.();
 
   const curBg = BG_LIST.find(b => b.id === bgId) || BG_LIST[0];
 
@@ -479,14 +583,48 @@ export default function ChatPage() {
   useEffect(() => {
     if (!pid) return;
     setLoading(true);
-    setMenuId(null); setEditId(null); setShowEmoji(false); setShowAttach(false);
+    setMenuId(null); setEditId(null); setShowEmoji(false); closeAttach();
     setReplyTo(null);
     setShowChMenu(false);
+    setShowChatSearch(false);
+    setChatSearchQuery('');
+    setChatSearchHit(0);
+    setForwardText(null);
+    setReactionPickerMid(null);
     loadMsgs().then(() => setLoading(false));
     setTimeout(() => inputRef.current?.focus(), 100);
   }, [pid, loadMsgs]);
 
+  useEffect(() => {
+    if (!userId) {
+      setArchivedPartnerIds(new Set());
+      return;
+    }
+    setArchivedPartnerIds(loadArchivedPartnerIds(userId));
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId || !pid) {
+      setReactionsMap({});
+      return;
+    }
+    setReactionsMap(loadReactionsMap(userId, pid));
+  }, [userId, pid]);
+
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
+
+  useEffect(() => {
+    const el = cmsgRef.current;
+    if (!el) return;
+    const nearBottom = () => {
+      const th = 100;
+      return el.scrollHeight - el.scrollTop - el.clientHeight < th;
+    };
+    const onScroll = () => setShowScrollDown(!nearBottom());
+    onScroll();
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [pid, msgs, loading]);
 
   useEffect(() => {
     if (!pid) return;
@@ -499,6 +637,7 @@ export default function ChatPage() {
     const t = txt.trim();
     if ((!t && !preview) || !pid || !userId) return;
     setBusy(true); setErr('');
+    const replyPrefix = buildReplyPrefix(replyTo);
     try {
       let finalTxt = t;
       let attachmentUrl  = null;
@@ -567,7 +706,8 @@ export default function ChatPage() {
 
         // Отправляем сообщение
         if (!finalTxt) { setBusy(false); return; }
-        const sent = await sendMessage(userId, pid, finalTxt, jrId, attachmentUrl, attachmentType);
+        const sendTxt = replyPrefix ? replyPrefix + finalTxt : finalTxt;
+        const sent = await sendMessage(userId, pid, sendTxt, jrId, attachmentUrl, attachmentType);
         const sentId = sent?.id;
 
         // Сохраняем в локальный store для показа сразу
@@ -580,7 +720,7 @@ export default function ChatPage() {
             setFileStore(p => ({ ...p, [sentId]: { url: attachmentUrl || localUrl, name: preview?.name } }));
         }
 
-        setTxt(''); setShowEmoji(false); setShowAttach(false); setReplyTo(null);
+        setTxt(''); setShowEmoji(false); closeAttach(); setReplyTo(null);
         await loadMsgs(); await loadConvos();
         setBusy(false);
         return; // выходим — уже сохранили
@@ -588,8 +728,9 @@ export default function ChatPage() {
 
       // Простое текстовое сообщение (без вложений)
       if (finalTxt) {
-        await sendMessage(userId, pid, finalTxt, jrId, null, null);
-        setTxt(''); setShowEmoji(false); setShowAttach(false); setReplyTo(null);
+        const sendTxt = replyPrefix ? replyPrefix + finalTxt : finalTxt;
+        await sendMessage(userId, pid, sendTxt, jrId, null, null);
+        setTxt(''); setShowEmoji(false); closeAttach(); setReplyTo(null);
         await loadMsgs(); await loadConvos();
       }
 
@@ -614,11 +755,62 @@ export default function ChatPage() {
     setBusy(false);
   };
 
+  const requestDeleteMessage = async mid => {
+    if (!window.confirm('Удалить это сообщение?')) return;
+    await delMsg(mid);
+  };
+
   const delChat = async () => {
     if (!window.confirm('Удалить весь чат?')) return;
     setBusy(true);
     try { await deleteConversation(userId, pid); setMsgs([]); await loadConvos(); navigate('/chat'); } catch {}
     setBusy(false);
+  };
+
+  const toggleMessageReaction = (mid, emoji) => {
+    setReactionPickerMid(null);
+    const key = String(mid);
+    setReactionsMap(prev => {
+      const cur = Array.isArray(prev[key]) ? [...prev[key]] : [];
+      const i = cur.indexOf(emoji);
+      if (i >= 0) cur.splice(i, 1);
+      else {
+        cur.push(emoji);
+        while (cur.length > 6) cur.shift();
+      }
+      const next = { ...prev };
+      if (cur.length) next[key] = cur;
+      else delete next[key];
+      if (userId && pid) saveReactionsMap(userId, pid, next);
+      return next;
+    });
+  };
+
+  const openForwardFor = (m, parsed, imgUrl) => {
+    setReactionPickerMid(null);
+    setForwardText(forwardBodyFromMessage(m, parsed, imgUrl));
+  };
+
+  const forwardToPartner = async targetPid => {
+    if (!forwardText || !userId || !targetPid) return;
+    setBusy(true);
+    try {
+      await sendMessage(userId, String(targetPid), forwardText, null, null, null);
+      setForwardText(null);
+      await loadConvos();
+    } catch (e) { setErr(e?.message || 'Не удалось переслать.'); }
+    setBusy(false);
+  };
+
+  const toggleArchiveCurrent = () => {
+    if (!userId || !pid) return;
+    const id = String(pid);
+    const next = new Set(archivedPartnerIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setArchivedPartnerIds(next);
+    saveArchivedPartnerIds(userId, next);
+    setShowChMenu(false);
   };
 
   const pickFile = (e, type) => {
@@ -629,12 +821,10 @@ export default function ChatPage() {
     if (f.type.startsWith('image/')) realType = 'image';
     else if (f.type.startsWith('video/')) realType = 'video';
     setPreview({ type: realType, url, name: f.name, file: f });
-    setShowAttach(false);
     e.target.value = '';
   };
 
   const shareGeo = () => {
-    setShowAttach(false);
     if (!navigator.geolocation) { alert('Геолокация недоступна'); return; }
     navigator.geolocation.getCurrentPosition(
       p => setPreview({ type: 'location', name: `${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}` }),
@@ -643,8 +833,45 @@ export default function ChatPage() {
   };
 
   const partner = convos.find(c => String(c.partnerId) === pid);
+
+  const tryPhoneCall = () => {
+    setShowChMenu(false);
+    const raw = partner?.partnerPhone || partner?.phone || partner?.tel || partner?.mobile;
+    const digits = raw != null ? String(raw).replace(/[^\d+]/g, '') : '';
+    if (digits.length >= 10) {
+      window.location.href = `tel:${digits}`;
+      return;
+    }
+    shareOrCopyChatHint('Чат', `Номер телефона в карточке собеседника пока не указан.\nСсылка: ${window.location.href}`);
+  };
+
+  const tryVideoHint = () => {
+    setShowChMenu(false);
+    shareOrCopyChatHint('Видеозвонок', `Видеозвонки скоро появятся в приложении.\nСсылка на чат: ${window.location.href}`);
+  };
+
+  const handleAttachPick = (type, files) => {
+    setShowEmoji(false);
+    if (type === 'photo' && files?.length) {
+      pickFile(
+        { target: { files, value: '' } },
+        files[0].type?.startsWith('video') ? 'video' : 'image'
+      );
+    } else if (type === 'doc' && files?.length) {
+      pickFile({ target: { files, value: '' } }, 'file');
+    } else if (type === 'camera') {
+      setTimeout(() => camRef.current?.click(), 0);
+    } else if (type === 'geo') {
+      shareGeo();
+    } else if (type === 'contact') {
+      alert('Отправка контакта скоро появится в приложении.');
+    }
+  };
+
   const closeAll = () => {
-    setMenuId(null); setShowEmoji(false); setShowAttach(false); setShowChMenu(false);
+    setMenuId(null); setShowEmoji(false); closeAttach(); setShowChMenu(false);
+    setShowSidebarMenu(false); setReactionPickerMid(null); setForwardText(null);
+    setShowChatSearch(false);
   };
 
   const totalUnread = useMemo(
@@ -653,11 +880,15 @@ export default function ChatPage() {
   );
 
   const displayConvos = useMemo(() => {
-    let arr = convos;
+    const arch = archivedPartnerIds;
+    let arr;
     if (listFilter === 'archive') {
-      arr = convos;
-    } else if (listFilter === 'unread') {
-      arr = convos.filter(c => (Number(c.unreadCount) || 0) > 0);
+      arr = convos.filter(c => arch.has(String(c.partnerId)));
+    } else {
+      arr = convos.filter(c => !arch.has(String(c.partnerId)));
+      if (listFilter === 'unread') {
+        arr = arr.filter(c => (Number(c.unreadCount) || 0) > 0);
+      }
     }
     const q = listSearch.trim().toLowerCase();
     if (q) {
@@ -667,7 +898,38 @@ export default function ChatPage() {
       );
     }
     return arr;
-  }, [convos, listSearch, listFilter]);
+  }, [convos, listSearch, listFilter, archivedPartnerIds]);
+
+  const chatSearchMatches = useMemo(() => {
+    const q = chatSearchQuery.trim().toLowerCase();
+    if (!q || !msgs.length) return [];
+    return msgs.filter(m => String(m.text || '').toLowerCase().includes(q)).map(m => m.id);
+  }, [msgs, chatSearchQuery]);
+
+  const chatSearchMatchesRef = useRef([]);
+  chatSearchMatchesRef.current = chatSearchMatches;
+
+  useEffect(() => { setChatSearchHit(0); }, [chatSearchQuery, pid]);
+
+  useEffect(() => {
+    if (!chatSearchQuery.trim()) return;
+    const q = chatSearchQuery.trim().toLowerCase();
+    const ids = msgs.filter(m => String(m.text || '').toLowerCase().includes(q)).map(m => m.id);
+    if (!ids.length) return;
+    const mid = ids[0];
+    requestAnimationFrame(() => document.getElementById(`chat-msg-${mid}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+  }, [chatSearchQuery]);
+
+  const gotoNextSearchHit = () => {
+    const ids = chatSearchMatchesRef.current;
+    if (!ids.length) return;
+    setChatSearchHit(h => {
+      const next = (h + 1) % ids.length;
+      const mid = ids[next];
+      requestAnimationFrame(() => document.getElementById(`chat-msg-${mid}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+      return next;
+    });
+  };
 
   const fmt2 = s => {
     const n = isFinite(s) ? s : 0;
@@ -684,8 +946,37 @@ export default function ChatPage() {
           <div className="cs-top-row">
             <div className="cs-top-title">Чаты</div>
             <div className="cs-top-actions">
-              <button type="button" className="cs-iconbtn" title="Новый чат" aria-label="Новый чат"><IcPen /></button>
-              <button type="button" className="cs-iconbtn" title="Меню" aria-label="Меню"><IcMore /></button>
+              <button
+                type="button"
+                className="cs-iconbtn"
+                title="Новый чат"
+                aria-label="Новый чат"
+                onClick={e => { e.stopPropagation(); navigate(isWorker ? '/find-work' : '/find-master'); }}
+              >
+                <IcPen />
+              </button>
+              <button
+                type="button"
+                className="cs-iconbtn"
+                title="Меню"
+                aria-label="Меню"
+                onClick={e => { e.stopPropagation(); setShowSidebarMenu(v => !v); setShowEmoji(false); closeAttach(); }}
+              >
+                <IcMore />
+              </button>
+              {showSidebarMenu && (
+                <div className="cs-pop" onClick={e => e.stopPropagation()}>
+                  <button type="button" className="cs-pop-item" onClick={() => { setListSearch(''); setShowSidebarMenu(false); }}>
+                    Очистить поиск в списке
+                  </button>
+                  <button type="button" className="cs-pop-item" onClick={() => { setListFilter('all'); setShowSidebarMenu(false); }}>
+                    Показать все чаты
+                  </button>
+                  <button type="button" className="cs-pop-item" onClick={() => { navigate(isWorker ? '/find-work' : '/find-master'); setShowSidebarMenu(false); }}>
+                    {isWorker ? 'Найти работу' : 'Найти мастера'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           <div className="cs-search">
@@ -772,20 +1063,70 @@ export default function ChatPage() {
               </div>
             </div>
             <div className="ch-actions">
-              <button type="button" className="ch-btn" title="Поиск в чате (скоро)" aria-label="Поиск"><IcSearch /></button>
-              <button type="button" className="ch-btn" title="Звонок (скоро)" aria-label="Звонок"><IcPhone /></button>
-              <button type="button" className="ch-btn" title="Видео (скоро)" aria-label="Видео"><IcVideo /></button>
+              <button
+                type="button"
+                className="ch-btn"
+                title="Поиск в чате"
+                aria-label="Поиск в чате"
+                onClick={e => { e.stopPropagation(); setShowChatSearch(v => !v); setShowChMenu(false); setShowEmoji(false); closeAttach(); }}
+              >
+                <IcSearch />
+              </button>
+              <button
+                type="button"
+                className="ch-btn"
+                title="Позвонить"
+                aria-label="Позвонить"
+                onClick={e => { e.stopPropagation(); tryPhoneCall(); }}
+              >
+                <IcPhone />
+              </button>
+              <button
+                type="button"
+                className="ch-btn"
+                title="Видео"
+                aria-label="Видео"
+                onClick={e => { e.stopPropagation(); tryVideoHint(); }}
+              >
+                <IcVideo />
+              </button>
               <button
                 type="button"
                 className="ch-btn"
                 title="Ещё"
                 aria-label="Меню чата"
-                onClick={e => { e.stopPropagation(); setShowChMenu(v => !v); setShowEmoji(false); setShowAttach(false); }}
+                onClick={e => { e.stopPropagation(); setShowChMenu(v => !v); setShowEmoji(false); closeAttach(); }}
               >
                 <IcMore />
               </button>
             </div>
           </header>
+
+          {showChatSearch && (
+            <div className="ch-searchbar" onClick={e => e.stopPropagation()}>
+              <IcSearch />
+              <input
+                type="search"
+                placeholder="Поиск по сообщениям…"
+                value={chatSearchQuery}
+                onChange={e => setChatSearchQuery(e.target.value)}
+                aria-label="Поиск по сообщениям"
+              />
+              <span className="ch-searchbar-meta">
+                {chatSearchQuery.trim()
+                  ? `${chatSearchMatches.length ? chatSearchHit + 1 : 0}/${chatSearchMatches.length}`
+                  : ''}
+              </span>
+              <button
+                type="button"
+                className="ch-searchbar-next"
+                disabled={!chatSearchMatches.length}
+                onClick={gotoNextSearchHit}
+              >
+                Далее
+              </button>
+            </div>
+          )}
 
           {showChMenu && (
             <div className="ch-menu" onClick={e => e.stopPropagation()}>
@@ -795,6 +1136,9 @@ export default function ChatPage() {
                 onClick={() => { setShowBg(true); setShowChMenu(false); }}
               >
                 Тема чата
+              </button>
+              <button type="button" className="ch-menu-item" onClick={toggleArchiveCurrent}>
+                {archivedPartnerIds.has(String(pid)) ? 'Вернуть из архива' : 'В архив'}
               </button>
               <button
                 type="button"
@@ -825,7 +1169,7 @@ export default function ChatPage() {
           {err && <div className="cerr">{err}</div>}
 
           {/* MESSAGES */}
-          <div className="cmsg" style={curBg.style}>
+          <div className="cmsg" ref={cmsgRef} style={curBg.style}>
             {loading ? (
               <div className="cmsg-load">Загрузка...</div>
             ) : msgs.length === 0 ? (
@@ -842,6 +1186,9 @@ export default function ChatPage() {
               const imgUrl   = imgStore[m.id]   || (m.attachmentType === 'image'  && m.attachmentUrl ? m.attachmentUrl : null)
                                                 || (m.attachmentType === 'video'  && m.attachmentUrl ? m.attachmentUrl : null);
               const fileData = fileStore[m.id]  || (m.attachmentType === 'file'   && m.attachmentUrl ? { url: m.attachmentUrl, name: parsed.filename } : null);
+              const rxList   = reactionsMap[m.id] || reactionsMap[String(m.id)] || [];
+              const curHitId = chatSearchMatches.length ? chatSearchMatches[chatSearchHit % chatSearchMatches.length] : null;
+              const isSearchLit = chatSearchQuery.trim() && curHitId != null && String(curHitId) === String(m.id);
 
               return (
                 <React.Fragment key={m.id}>
@@ -849,7 +1196,11 @@ export default function ChatPage() {
                     <div className="cdate"><span>{fmtDateChip(m.createdAt)}</span></div>
                   )}
 
-                  <div className={`cmrow ${mine ? 'mine' : 'their'}`} style={{marginBottom: isLast ? 10 : 2}}>
+                  <div
+                    id={`chat-msg-${m.id}`}
+                    className={[`cmrow`, mine ? 'mine' : 'their', isSearchLit ? 'cmrow-search-hit' : ''].filter(Boolean).join(' ')}
+                    style={{marginBottom: isLast ? 10 : 2}}
+                  >
                     {!mine && (
                       <div className="cmrow-ava">{isLast && <Ava name={m.senderName} url={m.senderAvatarUrl} size={30}/>}</div>
                     )}
@@ -861,11 +1212,17 @@ export default function ChatPage() {
                     ].filter(Boolean).join(' ')}>
 
                       {editId !== m.id && (
-                        <div className="cbub-actions" onClick={e => e.stopPropagation()}>
+                        <div
+                          className="cbub-actions"
+                          role="toolbar"
+                          aria-label="Действия с сообщением"
+                          onClick={e => e.stopPropagation()}
+                        >
                           <button
                             type="button"
                             className="cba-btn"
                             title="Ответить"
+                            aria-label="Ответить"
                             onClick={() => setReplyTo({
                               name: mine ? 'Вы' : (m.senderName || partner?.partnerName || 'Собеседник'),
                               text: replyPreviewSnippet(m, parsed, !!imgUrl),
@@ -873,8 +1230,54 @@ export default function ChatPage() {
                           >
                             <IcReply />
                           </button>
-                          <button type="button" className="cba-btn" title="Реакция" aria-hidden><IcHeart /></button>
-                          <button type="button" className="cba-btn" title="Переслать" aria-hidden><IcForward /></button>
+                          <span className="cba-sep" aria-hidden />
+                          <button
+                            type="button"
+                            className="cba-btn"
+                            title="Реакция"
+                            aria-label="Реакция"
+                            onClick={() => setReactionPickerMid(reactionPickerMid === m.id ? null : m.id)}
+                          >
+                            <IcHeart />
+                          </button>
+                          <span className="cba-sep" aria-hidden />
+                          <button
+                            type="button"
+                            className="cba-btn"
+                            title="Переслать"
+                            aria-label="Переслать"
+                            onClick={() => openForwardFor(m, parsed, imgUrl)}
+                          >
+                            <IcForward />
+                          </button>
+                          {mine && (
+                            <>
+                              <span className="cba-sep" aria-hidden />
+                              <button
+                                type="button"
+                                className="cba-btn cba-btn-del"
+                                title="Удалить"
+                                aria-label="Удалить сообщение"
+                                onClick={() => requestDeleteMessage(m.id)}
+                              >
+                                <IcTrash />
+                              </button>
+                            </>
+                          )}
+                          {reactionPickerMid === m.id && (
+                            <div className="creact-pop">
+                              {REACTION_QUICK.map(em => (
+                                <button
+                                  key={em}
+                                  type="button"
+                                  className="creact-pop-btn"
+                                  onClick={() => toggleMessageReaction(m.id, em)}
+                                >
+                                  {em}
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -969,11 +1372,18 @@ export default function ChatPage() {
                             {mine && <Ticks isRead={m.isRead}/>}
                           </div>
 
+                          {rxList.length > 0 && (
+                            <div className="cbub-rx" aria-label="Реакции">
+                              {rxList.map((em, j) => (
+                                <span key={`${m.id}-${j}-${em}`} className="cbub-rx-item">{em}</span>
+                              ))}
+                            </div>
+                          )}
+
                           {/* CONTEXT MENU */}
                           {mine && menuId === m.id && editId !== m.id && (
                             <div className="cmenu" onClick={e => e.stopPropagation()}>
                               <button className="cmenu-btn" onClick={() => startEdit(m)}>✏️ Изменить</button>
-                              <button className="cmenu-btn cmenu-del" onClick={() => delMsg(m.id)}>🗑 Удалить</button>
                             </div>
                           )}
                         </>
@@ -991,6 +1401,57 @@ export default function ChatPage() {
             })}
             <div ref={endRef}/>
           </div>
+
+          {showScrollDown && (
+            <button
+              type="button"
+              className="c-scroll-down"
+              title="Вниз"
+              aria-label="Прокрутить к последним сообщениям"
+              onClick={e => {
+                e.stopPropagation();
+                endRef.current?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              <IcArrowDown />
+            </button>
+          )}
+
+          {forwardText && (
+            <div
+              className="cforward-backdrop"
+              onClick={() => !busy && setForwardText(null)}
+              role="presentation"
+            >
+              <div className="cforward-panel" onClick={e => e.stopPropagation()}>
+                <div className="cforward-hdr">Переслать сообщение</div>
+                <div className="cforward-preview">{forwardText.length > 320 ? `${forwardText.slice(0, 317)}…` : forwardText}</div>
+                <div className="cforward-list">
+                  {convos.filter(c => String(c.partnerId) !== String(pid)).length === 0 ? (
+                    <div className="cforward-empty">Нет других диалогов — откройте чат из заявки или каталога.</div>
+                  ) : (
+                    convos
+                      .filter(c => String(c.partnerId) !== String(pid))
+                      .map(c => (
+                        <button
+                          key={c.partnerId}
+                          type="button"
+                          className="cforward-row"
+                          disabled={busy}
+                          onClick={() => forwardToPartner(c.partnerId)}
+                        >
+                          <Ava name={c.partnerName} url={c.partnerAvatarUrl} size={40} />
+                          <span className="cforward-name">{c.partnerName || 'Чат'}</span>
+                        </button>
+                      ))
+                  )}
+                </div>
+                <button type="button" className="cforward-cancel" disabled={busy} onClick={() => setForwardText(null)}>
+                  Отмена
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* PREVIEW */}
           {preview && (
@@ -1034,42 +1495,12 @@ export default function ChatPage() {
           {/* EMOJI PANEL */}
           {showEmoji && (
             <div className="cemoji" onClick={e => e.stopPropagation()}>
-              {EMOJIS.map(em => (
-                <button key={em} className="cemoji-btn"
+              {EMOJIS.map((em, ei) => (
+                <button key={`${ei}-${em}`} className="cemoji-btn"
                   onClick={() => { setTxt(t => t+em); inputRef.current?.focus(); }}>
                   {em}
                 </button>
               ))}
-            </div>
-          )}
-
-          {/* ATTACH PANEL */}
-          {showAttach && (
-            <div className="cattach" onClick={e => e.stopPropagation()}>
-              <button className="ca-btn" onClick={() => photoRef.current?.click()}>
-                <span className="ca-ic" style={{background:'linear-gradient(135deg,#43a047,#66bb6a)'}}>
-                  <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                </span>
-                <span>Фото или видео</span>
-              </button>
-              <button className="ca-btn" onClick={() => fileRef.current?.click()}>
-                <span className="ca-ic" style={{background:'linear-gradient(135deg,#1e88e5,#42a5f5)'}}>
-                  <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-                </span>
-                <span>Файл</span>
-              </button>
-              <button className="ca-btn" onClick={() => { camRef.current?.click(); setShowAttach(false); }}>
-                <span className="ca-ic" style={{background:'linear-gradient(135deg,#e53935,#ef5350)'}}>
-                  <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                </span>
-                <span>Камера</span>
-              </button>
-              <button className="ca-btn" onClick={shareGeo}>
-                <span className="ca-ic" style={{background:'linear-gradient(135deg,#f4511e,#ff7043)'}}>
-                  <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                </span>
-                <span>Местоположение</span>
-              </button>
             </div>
           )}
 
@@ -1088,10 +1519,7 @@ export default function ChatPage() {
 
           {/* INPUT */}
           <div className="cinput" onClick={e => e.stopPropagation()}>
-            <button className={`ci-btn${showAttach ? ' active' : ''}`}
-              onClick={() => { setShowAttach(v=>!v); setShowEmoji(false); }}>
-              <IcAttach/>
-            </button>
+            <AttachButton ref={attachRef} disabled={busy || voice.rec} onPick={handleAttachPick} />
 
             {voice.rec ? (
               <div className="ci-vrec">
@@ -1112,7 +1540,7 @@ export default function ChatPage() {
                 placeholder="Написать сообщение…" value={txt}
                 onChange={e => setTxt(e.target.value)} onKeyDown={onKey} rows={1}/>
               <button className={`ci-btn${showEmoji ? ' active' : ''}`}
-                onClick={() => { setShowEmoji(v=>!v); setShowAttach(false); }}>
+                onClick={() => { setShowEmoji(v=>!v); closeAttach(); }}>
                 <IcSmile/>
               </button>
               {txt.trim() || preview ? (
@@ -1123,8 +1551,6 @@ export default function ChatPage() {
             </>)}
           </div>
 
-          <input ref={photoRef} type="file" accept="image/*,video/*" style={{display:'none'}} onChange={e => pickFile(e, e.target.files?.[0]?.type?.startsWith('video') ? 'video' : 'image')}/>
-          <input ref={fileRef}  type="file" style={{display:'none'}} onChange={e => pickFile(e, 'file')}/>
           <input ref={camRef}   type="file" accept="image/*" capture="environment" style={{display:'none'}} onChange={e => pickFile(e, 'image')}/>
         </>)}
       </div>
