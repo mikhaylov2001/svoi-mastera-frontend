@@ -26,6 +26,8 @@ import { listingDetailSurfaceExtraCss } from '../shared/listingDetailSurfaceExtr
 
 const JOB_REQUEST_DETAIL_STYLES = `${dealsDetailEdCss}\n${listingDetailLightboxCss}\n${listingDetailSurfaceExtraCss}`;
 
+const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
+
 const JD_BACKEND = 'https://svoi-mastera-backend.onrender.com';
 const jdPhotoUrl = (u) =>
   !u ? null : u.startsWith('http') || u.startsWith('data:') ? u : JD_BACKEND + u;
