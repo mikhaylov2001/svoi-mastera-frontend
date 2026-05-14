@@ -41,6 +41,15 @@ const IcTrash  = () => <svg width="15" height="15" fill="none" stroke="currentCo
 const IcPlay   = () => <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>;
 const IcPause  = () => <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>;
 const IcAttach = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>;
+const IcSearch = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>;
+const IcPen = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>;
+const IcMore = () => <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>;
+const IcPhone = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>;
+const IcVideo = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>;
+const IcReply = () => <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>;
+const IcHeart = () => <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>;
+const IcForward = () => <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>;
+const IcClose = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>;
 
 // ─── Avatar ──────────────────────────────────────────────────
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
@@ -52,23 +61,28 @@ function fullUrl(url) {
   return BACKEND + url;
 }
 
-function Ava({ name, url, size=40 }) {
+function Ava({ name, url, size = 40, online = false }) {
   const [imgError, setImgError] = React.useState(false);
   const src = fullUrl(url);
-  const ini = (name||'?').trim().split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
-  const pallete = ['#7c3aed','#2563eb','#059669','#d97706','#dc2626','#0891b2','#db2777'];
-  const bg = pallete[(ini.charCodeAt(0)||0) % pallete.length];
+  const ini = (name || '?').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
+  const pallete = ['#7c3aed', '#2563eb', '#059669', '#d97706', '#dc2626', '#0891b2', '#db2777'];
+  const bg = pallete[(ini.charCodeAt(0) || 0) % pallete.length];
+  const ring = online ? ' cav-online' : '';
 
   if (src && !imgError) {
     return (
-      <img
-        src={src} alt="" className="cav"
-        style={{width:size, height:size}}
-        onError={() => setImgError(true)}
-      />
+      <div className={`cav-wrap${online ? ' cav-wrap-online' : ''}`} style={{ width: size, height: size }}>
+        <img
+          src={src}
+          alt=""
+          className="cav"
+          style={{ width: size, height: size }}
+          onError={() => setImgError(true)}
+        />
+      </div>
     );
   }
-  return <div className="cav" style={{width:size,height:size,background:bg,fontSize:size*0.36}}>{ini}</div>;
+  return <div className={`cav${ring}`} style={{ width: size, height: size, background: bg, fontSize: size * 0.36 }}>{ini}</div>;
 }
 
 // ─── Ticks ───────────────────────────────────────────────────
@@ -83,7 +97,7 @@ function Ticks({ isRead }) {
 }
 
 // ─── Voice Player ─────────────────────────────────────────────
-function VoicePlayer({ url, dur, mine }) {
+function VoicePlayer({ url, dur }) {
   const [playing, setPlaying] = useState(false);
   const [cur,     setCur]     = useState(0);
   const [len,     setLen]     = useState(dur > 0 ? dur : 0);
@@ -133,7 +147,7 @@ function VoicePlayer({ url, dur, mine }) {
   const BARS = 32;
 
   return (
-    <div className={`cvp ${mine ? 'cvp-m' : 'cvp-t'}`}>
+    <div className="cvp">
       <button className="cvp-btn" onClick={toggle} disabled={!ready}>
         {playing ? <IcPause/> : <IcPlay/>}
       </button>
@@ -319,6 +333,25 @@ const fmtShort = d => {
 };
 const fmtTime = d => !d ? '' : new Date(d).toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
 const fmtDate = d => !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day:'numeric', month:'long' });
+const fmtDateChip = d => {
+  if (!d) return '';
+  const dt = new Date(d);
+  const now = new Date();
+  if (dt.toDateString() === now.toDateString()) return 'Сегодня';
+  const y = new Date(now);
+  y.setDate(y.getDate() - 1);
+  if (dt.toDateString() === y.toDateString()) return 'Вчера';
+  return fmtDate(d);
+};
+
+function replyPreviewSnippet(m, parsed, hasImg) {
+  if (parsed.type === 'image_text' && hasImg) return '📷 Фото';
+  if (parsed.type === 'video_text' && hasImg) return '🎥 Видео';
+  if (parsed.type === 'file_text') return `📎 ${parsed.filename || 'Файл'}`;
+  if (parsed.type === 'voice') return '🎤 Голосовое';
+  if (parsed.type === 'location') return '📍 Местоположение';
+  return (m.text || '').slice(0, 220);
+}
 
 // ─── Voice Recorder Hook ──────────────────────────────────────
 function useVoiceRec(onDone) {
@@ -397,6 +430,10 @@ export default function ChatPage() {
   const [showAttach, setShowAttach] = useState(false);
   const [showBg,     setShowBg]     = useState(false);
   const [bgId,       setBgId]       = useState(() => localStorage.getItem('chatBg') || 'tg');
+  const [listFilter, setListFilter] = useState('all');
+  const [listSearch, setListSearch] = useState('');
+  const [showChMenu, setShowChMenu] = useState(false);
+  const [replyTo,    setReplyTo]    = useState(null);
 
   // локальное хранилище голосовых: messageId -> {url, duration}
   const [voiceStore, setVoiceStore] = useState({});
@@ -443,6 +480,8 @@ export default function ChatPage() {
     if (!pid) return;
     setLoading(true);
     setMenuId(null); setEditId(null); setShowEmoji(false); setShowAttach(false);
+    setReplyTo(null);
+    setShowChMenu(false);
     loadMsgs().then(() => setLoading(false));
     setTimeout(() => inputRef.current?.focus(), 100);
   }, [pid, loadMsgs]);
@@ -541,7 +580,7 @@ export default function ChatPage() {
             setFileStore(p => ({ ...p, [sentId]: { url: attachmentUrl || localUrl, name: preview?.name } }));
         }
 
-        setTxt(''); setShowEmoji(false); setShowAttach(false);
+        setTxt(''); setShowEmoji(false); setShowAttach(false); setReplyTo(null);
         await loadMsgs(); await loadConvos();
         setBusy(false);
         return; // выходим — уже сохранили
@@ -550,7 +589,7 @@ export default function ChatPage() {
       // Простое текстовое сообщение (без вложений)
       if (finalTxt) {
         await sendMessage(userId, pid, finalTxt, jrId, null, null);
-        setTxt(''); setShowEmoji(false); setShowAttach(false);
+        setTxt(''); setShowEmoji(false); setShowAttach(false); setReplyTo(null);
         await loadMsgs(); await loadConvos();
       }
 
@@ -604,7 +643,31 @@ export default function ChatPage() {
   };
 
   const partner = convos.find(c => String(c.partnerId) === pid);
-  const closeAll = () => { setMenuId(null); setShowEmoji(false); setShowAttach(false); };
+  const closeAll = () => {
+    setMenuId(null); setShowEmoji(false); setShowAttach(false); setShowChMenu(false);
+  };
+
+  const totalUnread = useMemo(
+    () => convos.reduce((s, c) => s + (Number(c.unreadCount) || 0), 0),
+    [convos]
+  );
+
+  const displayConvos = useMemo(() => {
+    let arr = convos;
+    if (listFilter === 'archive') {
+      arr = convos;
+    } else if (listFilter === 'unread') {
+      arr = convos.filter(c => (Number(c.unreadCount) || 0) > 0);
+    }
+    const q = listSearch.trim().toLowerCase();
+    if (q) {
+      arr = arr.filter(c =>
+        String(c.partnerName || '').toLowerCase().includes(q) ||
+        String(c.lastMessage || '').toLowerCase().includes(q)
+      );
+    }
+    return arr;
+  }, [convos, listSearch, listFilter]);
 
   const fmt2 = s => {
     const n = isFinite(s) ? s : 0;
@@ -618,31 +681,66 @@ export default function ChatPage() {
       {/* ═══ SIDEBAR ═══ */}
       <aside className={`cs ${pid ? 'cs-hide' : ''}`}>
         <div className="cs-top">
-          <div className="cs-top-title">Сообщения</div>
-          <div className="cs-top-sub">{convos.length > 0 ? `${convos.length} диалог${convos.length > 1 ? 'а' : ''}` : 'Нет диалогов'}</div>
+          <div className="cs-top-row">
+            <div className="cs-top-title">Чаты</div>
+            <div className="cs-top-actions">
+              <button type="button" className="cs-iconbtn" title="Новый чат" aria-label="Новый чат"><IcPen /></button>
+              <button type="button" className="cs-iconbtn" title="Меню" aria-label="Меню"><IcMore /></button>
+            </div>
+          </div>
+          <div className="cs-search">
+            <IcSearch />
+            <input
+              type="search"
+              placeholder="Поиск по чатам и сообщениям…"
+              value={listSearch}
+              onChange={e => setListSearch(e.target.value)}
+              aria-label="Поиск"
+            />
+          </div>
+        </div>
+        <div className="cs-filters">
+          <button type="button" className={`cs-filter${listFilter === 'all' ? ' active' : ''}`} onClick={() => setListFilter('all')}>Все</button>
+          <button type="button" className={`cs-filter${listFilter === 'unread' ? ' active' : ''}`} onClick={() => setListFilter('unread')}>
+            Непрочитанные
+            {totalUnread > 0 && <span className="cs-filter-count">{totalUnread}</span>}
+          </button>
+          <button type="button" className={`cs-filter${listFilter === 'archive' ? ' active' : ''}`} onClick={() => setListFilter('archive')}>Архив</button>
         </div>
         {convos.length === 0 ? (
           <div className="cs-empty">
-            <div style={{fontSize:52}}>💬</div>
+            <div style={{ fontSize: 52 }}>💬</div>
             <b>Нет диалогов</b>
             <span>Напишите мастеру со страницы заявки</span>
           </div>
+        ) : displayConvos.length === 0 ? (
+          <div className="cs-empty">
+            <div style={{ fontSize: 44 }}>🔍</div>
+            <b>Ничего не найдено</b>
+            <span>Попробуйте другой запрос или вкладку</span>
+          </div>
         ) : (
           <div className="cs-list">
-            {convos.map(c => (
-              <div key={c.partnerId}
+            {displayConvos.map(c => (
+              <div
+                key={c.partnerId}
                 className={`cs-item ${String(c.partnerId) === pid ? 'active' : ''}`}
                 onClick={e => { e.stopPropagation(); navigate(`/chat/${c.partnerId}`); }}
+                role="presentation"
               >
-                <Ava name={c.partnerName} url={c.partnerAvatarUrl} size={46}/>
+                <Ava name={c.partnerName} url={c.partnerAvatarUrl} size={48} online />
                 <div className="cs-item-body">
                   <div className="cs-item-row">
-                    <span className="cs-item-name">{c.partnerName}</span>
+                    <span className="cs-item-name">
+                      {c.partnerName}
+                    </span>
                     <span className="cs-item-time">{fmtShort(c.lastMessageAt)}</span>
                   </div>
                   <div className="cs-item-row">
-                    <span className="cs-item-msg">{fmtPreview(c.lastMessage) || 'Нет сообщений'}</span>
-                    {c.unreadCount > 0 && <span className="cs-badge">{c.unreadCount}</span>}
+                    <div className="cs-item-msg-wrap">
+                      <span className="cs-item-msg">{fmtPreview(c.lastMessage) || 'Нет сообщений'}</span>
+                    </div>
+                    {(Number(c.unreadCount) || 0) > 0 && <span className="cs-badge">{c.unreadCount}</span>}
                   </div>
                 </div>
               </div>
@@ -664,23 +762,49 @@ export default function ChatPage() {
         {pid && (<>
           {/* HEADER */}
           <header className="ch" onClick={e => e.stopPropagation()}>
-            <button className="ch-back" onClick={() => navigate('/chat')}><IcBack/></button>
-            <Ava name={partner?.partnerName} url={partner?.partnerAvatarUrl} size={40}/>
+            <button type="button" className="ch-back" onClick={() => navigate('/chat')} aria-label="Назад"><IcBack /></button>
+            <Ava name={partner?.partnerName} url={partner?.partnerAvatarUrl} size={44} online />
             <div className="ch-info">
               <div className="ch-name">{partner?.partnerName || 'Чат'}</div>
               <div className="ch-status">
-                <span className="ch-dot"/>онлайн
+                <span className="ch-dot" />
+                онлайн
               </div>
             </div>
             <div className="ch-actions">
-              <button className="ch-btn" onClick={e => { e.stopPropagation(); setShowBg(v=>!v); }} title="Сменить фон">
-                🎨
-              </button>
-              <button className="ch-btn ch-btn-del" onClick={e => { e.stopPropagation(); delChat(); }} title="Удалить чат">
-                <IcTrash/>
+              <button type="button" className="ch-btn" title="Поиск в чате (скоро)" aria-label="Поиск"><IcSearch /></button>
+              <button type="button" className="ch-btn" title="Звонок (скоро)" aria-label="Звонок"><IcPhone /></button>
+              <button type="button" className="ch-btn" title="Видео (скоро)" aria-label="Видео"><IcVideo /></button>
+              <button
+                type="button"
+                className="ch-btn"
+                title="Ещё"
+                aria-label="Меню чата"
+                onClick={e => { e.stopPropagation(); setShowChMenu(v => !v); setShowEmoji(false); setShowAttach(false); }}
+              >
+                <IcMore />
               </button>
             </div>
           </header>
+
+          {showChMenu && (
+            <div className="ch-menu" onClick={e => e.stopPropagation()}>
+              <button
+                type="button"
+                className="ch-menu-item"
+                onClick={() => { setShowBg(true); setShowChMenu(false); }}
+              >
+                Тема чата
+              </button>
+              <button
+                type="button"
+                className="ch-menu-item ch-menu-item--danger"
+                onClick={() => { setShowChMenu(false); delChat(); }}
+              >
+                Удалить чат
+              </button>
+            </div>
+          )}
 
           {/* BG PICKER */}
           {showBg && (
@@ -722,7 +846,7 @@ export default function ChatPage() {
               return (
                 <React.Fragment key={m.id}>
                   {showDate && (
-                    <div className="cdate"><span>{fmtDate(m.createdAt)}</span></div>
+                    <div className="cdate"><span>{fmtDateChip(m.createdAt)}</span></div>
                   )}
 
                   <div className={`cmrow ${mine ? 'mine' : 'their'}`} style={{marginBottom: isLast ? 10 : 2}}>
@@ -735,6 +859,24 @@ export default function ChatPage() {
                       parsed.type === 'location' ? 'cbub-loc' : '',
                       (parsed.type === 'image_text' && imgUrl) || (parsed.type === 'video_text' && imgUrl) ? 'cbub-img' : '',
                     ].filter(Boolean).join(' ')}>
+
+                      {editId !== m.id && (
+                        <div className="cbub-actions" onClick={e => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            className="cba-btn"
+                            title="Ответить"
+                            onClick={() => setReplyTo({
+                              name: mine ? 'Вы' : (m.senderName || partner?.partnerName || 'Собеседник'),
+                              text: replyPreviewSnippet(m, parsed, !!imgUrl),
+                            })}
+                          >
+                            <IcReply />
+                          </button>
+                          <button type="button" className="cba-btn" title="Реакция" aria-hidden><IcHeart /></button>
+                          <button type="button" className="cba-btn" title="Переслать" aria-hidden><IcForward /></button>
+                        </div>
+                      )}
 
                       {!mine && isLast && <div className="cbub-name">{m.senderName}</div>}
 
@@ -755,7 +897,7 @@ export default function ChatPage() {
                             <LocBubble coords={parsed.coords}/>
 
                           ) : parsed.type === 'voice' && vd ? (
-                            <VoicePlayer url={vd.url} dur={vd.duration} mine={mine}/>
+                            <VoicePlayer url={vd.url} dur={vd.duration} />
 
                           ) : parsed.type === 'voice' ? (
                             // голосовое без локального url
@@ -927,6 +1069,19 @@ export default function ChatPage() {
                   <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 </span>
                 <span>Местоположение</span>
+              </button>
+            </div>
+          )}
+
+          {replyTo && (
+            <div className="crepl" onClick={e => e.stopPropagation()}>
+              <div className="crepl-bar" />
+              <div className="crepl-body">
+                <div className="crepl-title">Ответ {replyTo.name}</div>
+                <div className="crepl-text">{replyTo.text}</div>
+              </div>
+              <button type="button" className="crepl-close" onClick={() => setReplyTo(null)} aria-label="Закрыть ответ">
+                <IcClose />
               </button>
             </div>
           )}
