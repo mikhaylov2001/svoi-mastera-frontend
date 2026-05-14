@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
-import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
-import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../../constants/homePaths';
+import { CUSTOMER_HOME_PATH } from '../../constants/homePaths';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
@@ -43,7 +41,7 @@ export function CustomerHomePage({ userId, userName }) {
 
   useEffect(() => { reloadListings(); }, [reloadListings]);
 
-  useSameRouteRefetch('/', reloadListings);
+  useSameRouteRefetch(CUSTOMER_HOME_PATH, reloadListings);
 
   return (
     <div className="av-page">
@@ -180,179 +178,7 @@ function cityInLocative(nominative) {
   return c || 'Йошкар-Оле';
 }
 
-export function WorkerHomePage({ userId, userName }) {
-  const navigate = useNavigate();
-  const [openRequests, setOpenRequests] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [city, setCity] = useState('Йошкар-Ола');
-  const [loading, setLoading] = useState(true);
-
-  const reloadWorkerHome = useCallback(async () => {
-    if (!userId) return;
-    setLoading(true);
-    try {
-      const [reqs, prof, cats] = await Promise.all([
-        getOpenJobRequestsForWorker(userId).catch(() => []),
-        getUserProfile(userId).catch(() => null),
-        getCategories().catch(() => []),
-      ]);
-      setOpenRequests(Array.isArray(reqs) ? reqs : []);
-      setCategories(Array.isArray(cats) ? cats : []);
-      const c = (prof && prof.city && String(prof.city).trim()) || '';
-      if (c) setCity(c);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  useEffect(() => { reloadWorkerHome(); }, [reloadWorkerHome]);
-
-  useSameRouteRefetch(WORKER_HOME_PATH, reloadWorkerHome);
-
-  const sortedOpenRequests = useMemo(
-    () => [...openRequests].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
-    [openRequests],
-  );
-
-  const catName = (categoryId) => categories.find(c => String(c.id) === String(categoryId))?.name || 'Заявка';
-
-  const firstName = (userName || 'Мастер').trim().split(/\s+/)[0] || 'Мастер';
-  const cityPrep = cityInLocative(city);
-
-  return (
-    <div className="av-page">
-      <style>{HOME_MARKET_CSS}</style>
-
-      <div className="av-hero-wrap">
-        <div className="av-hero-grid" />
-        <div className="av-hero-glow-top" />
-
-        <div className="av-hero-inner">
-          <div className="av-hero-badge">
-            <span className="av-hero-badge-dot" />
-            <span className="av-hero-badge-text">{city} · Личный кабинет мастера</span>
-          </div>
-          <h1 className="av-hero-h1">
-            <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
-              Заказы и клиенты в&nbsp;<span className="h1-line2">{cityPrep}</span>
-            </span>
-            <span style={{ display: 'block' }}>рядом с вами</span>
-          </h1>
-          <p className="av-hero-sub">
-            Привет, {firstName}! Здесь заявки заказчиков с открытыми задачами — откликайтесь в разделе «Найти работу».
-          </p>
-          <div className="av-hero-actions">
-            <Link to="/find-work" className="av-hero-btn-primary" style={{ textDecoration: 'none' }}>
-              Найти работу →
-            </Link>
-            <Link to="/my-listings" className="av-hero-btn-ghost">
-              + Моё объявление
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="av-body">
-        <div>
-          <div className="av-cats-block">
-            <div className="av-cats-hdr">
-              <span className="av-cats-hdr-title">Категории заявок</span>
-              <Link to="/find-work" className="av-cats-hdr-link">
-                Все заявки →
-              </Link>
-            </div>
-            <div className="av-cats-scroll">
-              {ALL_CATS.map(cat => (
-                <Link key={cat.slug} to="/find-work" className="av-cat-item">
-                  <div className="av-cat-photo">
-                    {CAT_PHOTOS[cat.slug] ? (
-                      <img src={CAT_PHOTOS[cat.slug]} alt={cat.name} />
-                    ) : (
-                      <div className="av-cat-photo-ph">{cat.emoji || '🛠️'}</div>
-                    )}
-                  </div>
-                  <div className="av-cat-name">{cat.name}</div>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="av-recs-hdr av-recs-hdr--solo">
-            <h2 className="av-recs-title">Актуальные заявки</h2>
-          </div>
-
-          {loading ? (
-            <div className="av-empty">
-              <div className="av-empty-ico">⏳</div>
-              <h3>Загружаем заявки…</h3>
-            </div>
-          ) : sortedOpenRequests.length === 0 ? (
-            <div className="av-empty">
-              <div className="av-empty-ico">📋</div>
-              <h3>Пока нет открытых заявок</h3>
-              <p>Когда заказчики опубликуют задачи, они появятся здесь и в «Найти работу»</p>
-            </div>
-          ) : (
-            <div className="av-cards-grid">
-              {sortedOpenRequests.map(req => {
-                const img0 = req.photos?.[0];
-                const src = workerListingPhotoUrl(img0);
-                const budget = formatJobRequestBudgetLabel(req);
-                const custName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
-                const loc = req.addressText || req.city || city;
-                const cname = catName(req.categoryId);
-                return (
-                  <Link
-                    key={req.id}
-                    to={`/find-work?request=${encodeURIComponent(req.id)}`}
-                    className="av-card"
-                  >
-                    <div className="av-card-img">
-                      {src ? <img src={src} alt="" /> : '👤'}
-                      <span className="av-card-cat">{cname}</span>
-                    </div>
-                    <div className="av-card-body">
-                      <div className="av-card-price">{budget}</div>
-                      <div className="av-card-title">{req.title}</div>
-                      <div className="av-card-footer">
-                        <div className="av-card-ava">
-                          {req.customerAvatar ? (
-                            <img src={workerListingPhotoUrl(req.customerAvatar)} alt="" />
-                          ) : (
-                            (custName || 'З')[0]
-                          )}
-                        </div>
-                        <span className="av-card-wname">{custName}</span>
-                        <span className="av-card-city">📍 {loc}</span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <div className="av-side">
-          <div className="av-promo">
-            <h3>Новые заявки ждут</h3>
-            <p>Откликнитесь первым в разделе «Найти работу» — так вы чаще получаете заказ.</p>
-            <button type="button" className="av-promo-btn" onClick={() => navigate('/find-work')}>
-              Смотреть заявки →
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function WorkerHomeGate() {
-  const { userId, userRole, userName } = useAuth();
-  if (!userId) return <Navigate to="/login" replace />;
-  if (userRole !== 'WORKER') return <Navigate to={CUSTOMER_HOME_PATH} replace />;
-  return <WorkerHomePage userId={userId} userName={userName} />;
-}
+export { WorkerHomeGate, WorkerHomePage } from '../../pages/HomePage';
 
 export default function HomePage() {
   const { userId, userName } = useAuth();
