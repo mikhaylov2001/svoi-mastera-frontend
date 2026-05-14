@@ -35,6 +35,7 @@ import VerificationPage from './pages/VerificationPage';
 import GuaranteeTermsPage from './pages/GuaranteeTermsPage';
 import ListingDetailPage from './roles/worker/ListingDetailPage';
 import FavoritesPage from './pages/FavoritesPage';
+import HomePreviewPage from './pages/HomePreviewPage';
 import './App.css';
 import './styles/unifiedListingCards.css';
 
@@ -69,6 +70,8 @@ function AppContent() {
       <main className="app-main">
         <Routes>
           <Route path="/"                element={<HomePage />} />
+          <Route path="/home-preview" element={<HomePreviewPage variant="customer" />} />
+          <Route path="/home-preview/worker" element={<HomePreviewPage variant="worker" />} />
           <Route path="/sections"        element={<SectionsPage />} />
           <Route path="/services"        element={<ServicesPage />} />
           <Route path="/categories"      element={<CategoriesPage />} />
