@@ -373,6 +373,11 @@ export async function uploadFile(userId, file) {
 export async function getListings() {
   return apiCall('/listings');
 }
+
+/** Одно объявление по id (публичный GET; без массового /listings). */
+export async function getListingById(listingId) {
+  return apiCall(`/listings/${listingId}`);
+}
 export async function getListingsByWorker(workerUserId) {
   return apiCall(`/workers/${workerUserId}/listings`);
 }

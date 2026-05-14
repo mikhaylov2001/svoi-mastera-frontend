@@ -41,7 +41,7 @@
   color: #fff;
 }
 .fav-hero h1 {
-  margin: 0 0 6px;
+  margin: 0 0 8px;
   font-size: 32px;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -49,6 +49,7 @@
   align-items: center;
   gap: 12px;
 }
+
 .fav-hero h1 .heart {
   display: inline-flex;
   width: 40px;

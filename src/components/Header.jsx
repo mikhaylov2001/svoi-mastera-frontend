@@ -473,6 +473,7 @@ function Header() {
             {userId && (
               <NavLink
                 to="/favorites"
+                aria-label="Избранное"
                 className={({ isActive }) =>
                   `header-nav-link header-nav-favorites${isActive ? ' active' : ''}`
                 }
@@ -482,7 +483,6 @@ function Header() {
                 <span className="header-nav-fav-icwrap">
                   <FavoritesNavIcon />
                 </span>
-                Избранное
                 {favCount > 0 && (
                   <span
                     className="header-unread-badge"
@@ -711,13 +711,16 @@ function Header() {
                     </NavLink>
                     <NavLink
                       to="/favorites"
+                      aria-label="Избранное"
                       className="header-mobile-link header-mobile-favorites"
                       onClick={(e) => { onRepeatNavClick('/favorites')(e); setMobileMenuOpen(false); }}
                     >
                       <span className="header-nav-fav-icwrap" aria-hidden>
                         <FavoritesNavIcon />
                       </span>
-                      <span>Избранное{favCount > 0 ? ` · ${favCount > 99 ? '99+' : favCount}` : ''}</span>
+                      {favCount > 0 && (
+                        <span className="header-mobile-fav-count">{favCount > 99 ? '99+' : favCount}</span>
+                      )}
                     </NavLink>
                   </>
                 ) : (

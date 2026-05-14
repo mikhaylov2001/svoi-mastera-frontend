@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getListings, getOpenJobRequests, getCategories } from '../api';
+import {
+  getCategories,
+  getListingById,
+  getJobRequestById,
+  getOpenJobRequests,
+} from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { setFavorites } from '../utils/favoritesStorage';
@@ -57,21 +62,45 @@ export default function FavoritesPage() {
   const [sort, setSort] = useState('recent');
   const [popping, setPopping] = useState(null);
 
+  const listingKey = listingIds.join(',');
+  const jobRequestKey = jobRequestIds.join(',');
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
       setErr(null);
       try {
-        const [L, R, C] = await Promise.all([
-          getListings(),
-          getOpenJobRequests(),
-          getCategories(),
-        ]);
+        const C = await getCategories();
         if (cancelled) return;
-        setListings(Array.isArray(L) ? L : []);
-        setRequests(Array.isArray(R) ? R : []);
         setCategories(Array.isArray(C) ? C : []);
+
+        const L = await Promise.all(
+          listingIds.map((id) => getListingById(id).catch(() => null)),
+        ).then((rows) => rows.filter(Boolean));
+
+        let R = [];
+        if (jobRequestIds.length) {
+          if (userId) {
+            R = await Promise.all(
+              jobRequestIds.map((jid) => getJobRequestById(userId, jid).catch(() => null)),
+            ).then((rows) => rows.filter(Boolean));
+          } else {
+            try {
+              const open = await getOpenJobRequests();
+              const arr = Array.isArray(open) ? open : [];
+              const want = new Set(jobRequestIds.map(String));
+              R = arr.filter((r) => want.has(String(r.id)));
+            } catch {
+              R = [];
+            }
+          }
+        }
+
+        if (!cancelled) {
+          setListings(L);
+          setRequests(R);
+        }
       } catch (e) {
         if (!cancelled) setErr(e?.message || 'Ошибка загрузки');
       } finally {
@@ -81,7 +110,7 @@ export default function FavoritesPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [userId, listingKey, jobRequestKey]);
 
   const catName = useCallback(
     (categoryId) => categories.find((c) => String(c.id) === String(categoryId))?.name || 'Заявка',
@@ -260,11 +289,10 @@ export default function FavoritesPage() {
         <img src={HERO_IMG} alt="" />
         <div className="fav-hero-inner">
           <div>
-            <h1>
+            <h1 className="fav-hero-title" aria-label="Избранное">
               <span className="heart" aria-hidden>
                 ❤
-              </span>{' '}
-              Избранное
+              </span>
             </h1>
             <p>Мастера и заявки, которые вы сохранили</p>
           </div>
