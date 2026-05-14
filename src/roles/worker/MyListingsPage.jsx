@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import ListingInfoPanels from '../../components/ListingInfoPanels';
+import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import { parseListingDescription } from '../../components/ListingInfoPanels';
 import { SECTIONS } from '../../pages/SectionsPage';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import { API_BASE, getMyDeals } from '../../api';
@@ -11,7 +12,7 @@ import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILTER, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { LISTING_ARCHIVED_AFTER_DEAL } from '../../utils/listingArchiveEvents';
-import { categoryChipToneClass } from '../../utils/categoryChipTone';
+import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 import { getListingViewsCount } from '../../utils/jobRequestViews';
@@ -106,6 +107,37 @@ function photoForCategoryName(name) {
   const n = String(name).trim();
   if (CATEGORY_PHOTO_BY_NAME[n]) return CATEGORY_PHOTO_BY_NAME[n];
   return DEFAULT_MY_LISTINGS_BG;
+}
+
+function mlDetailFmtDateLong(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function mlDetailTimeAgo(d) {
+  if (!d) return '';
+  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (m < 1) return 'только что';
+  if (m < 60) return `${m} мин. назад`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} ч. назад`;
+  const days = Math.floor(h / 24);
+  if (days < 30) return `${days} дн. назад`;
+  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+}
+
+function mlDetailPhotoUrl(u, backend) {
+  const b = backend || 'https://svoi-mastera-backend.onrender.com';
+  if (!u) return null;
+  if (String(u).startsWith('http') || String(u).startsWith('data:')) return u;
+  return b + u;
+}
+
+/** Плашка статуса объявления в детальном экране владельца. */
+function listingOwnerDetailStatusPill(detail, lockedAfterDeal) {
+  if (lockedAfterDeal) return { label: 'Завершено по сделке', dot: '#94a3b8', shadow: '0 0 0 3px rgba(148,163,184,.22)' };
+  if (detail.active) return { label: 'В каталоге', dot: '#22c55e', shadow: '0 0 0 3px rgba(34,197,94,.2)' };
+  return { label: 'Снято с публикации', dot: '#a1a1aa', shadow: '0 0 0 3px rgba(161,161,170,.22)' };
 }
 
 function WorkerReviewDealModal({ dealId, onClose, onReload }) {
@@ -247,221 +279,6 @@ const css = `
   .ml-btn-review-customer:hover { filter: brightness(1.06); transform: translateY(-1px); }
   .ml-btn-review-customer:active { transform: translateY(0); }
   /* .ml-empty — unifiedListingCards.css */
-
-  /* ── DETAIL — как mo-список / избранное ── */
-  .ml-detail {
-    background: #f5f5f7;
-    min-height: 100vh;
-    font-family: 'Manrope', Inter, system-ui, sans-serif;
-    color: #0f172a;
-  }
-  .ml-detail-nav {
-    background: rgba(255, 255, 255, 0.94);
-    border-bottom: 1px solid rgba(31, 41, 55, 0.08);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    padding: 14px 0;
-  }
-  .ml-detail-nav-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 clamp(20px, 4vw, 28px);
-  }
-  .ml-detail-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0;
-    border: none;
-    background: none;
-    font: inherit;
-    font-size: 14px;
-    font-weight: 600;
-    color: #64748b;
-    cursor: pointer;
-    transition: color 0.15s;
-  }
-  .ml-detail-back:hover { color: #e8410a; }
-  .ml-detail-wrap {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 24px clamp(20px, 4vw, 28px) 72px;
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 24px;
-    align-items: flex-start;
-  }
-  .ml-detail-gallery {
-    background: #fff;
-    border: 1px solid rgba(255, 160, 130, 0.28);
-    border-radius: 22px;
-    overflow: hidden;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
-  }
-  .ml-detail-main-img {
-    position: relative;
-    aspect-ratio: 16/9;
-    overflow: hidden;
-    cursor: pointer;
-    background: #f1f5f9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .ml-detail-main-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    pointer-events: none;
-  }
-  .ml-detail-thumbs {
-    display: flex;
-    gap: 8px;
-    padding: 12px 14px;
-    background: #fafafa;
-    overflow-x: auto;
-    border-top: 1px solid #f1f5f9;
-  }
-  .ml-detail-thumb {
-    width: 76px;
-    height: 56px;
-    flex-shrink: 0;
-    border-radius: 10px;
-    overflow: hidden;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .ml-detail-thumb.on {
-    border-color: #e8410a;
-    box-shadow: 0 0 0 2px rgba(232, 65, 10, 0.12);
-  }
-  .ml-detail-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .ml-detail-right {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    position: sticky;
-    top: 76px;
-  }
-  .ml-detail-price-card,
-  .ml-detail-actions-card,
-  .ml-detail-side-card {
-    background: #fff;
-    border: 1px solid rgba(255, 160, 130, 0.28);
-    border-radius: 20px;
-    padding: 20px 22px;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
-  }
-  .ml-detail-actions-card {
-    padding: 18px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .ml-detail-price-label {
-    font-size: 12px;
-    color: #94a3b8;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 6px;
-  }
-  .ml-detail-price {
-    font-size: 28px;
-    font-weight: 900;
-    color: #0f172a;
-    letter-spacing: -0.02em;
-  }
-  .ml-detail-price-unit {
-    font-size: 13px;
-    color: #94a3b8;
-    margin-top: 6px;
-    font-weight: 600;
-  }
-  .ml-detail-status-line {
-    font-size: 13px;
-    color: #64748b;
-    margin-top: 12px;
-    font-weight: 600;
-  }
-  .ml-btn-primary {
-    width: 100%;
-    box-sizing: border-box;
-    min-height: 44px;
-    padding: 12px 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.25;
-    text-align: center;
-    background: linear-gradient(135deg, #e8410a, #ff6b3d);
-    border: none;
-    border-radius: 14px;
-    color: #fff;
-    cursor: pointer;
-    font-family: inherit;
-    box-shadow: 0 4px 16px rgba(232, 65, 10, 0.28);
-    transition: filter 0.15s, transform 0.15s, box-shadow 0.15s;
-  }
-  .ml-btn-primary:hover {
-    filter: brightness(1.03);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(232, 65, 10, 0.34);
-  }
-  .ml-btn-primary:active { transform: translateY(0); }
-  .ml-btn-primary:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none;
-  }
-  .ml-btn-outline-neutral {
-    width: 100%;
-    box-sizing: border-box;
-    min-height: 44px;
-    padding: 12px 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.25;
-    text-align: center;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    color: #334155;
-    font-family: inherit;
-    cursor: pointer;
-    transition: border-color 0.15s, background 0.15s, color 0.15s;
-  }
-  .ml-btn-outline-neutral:hover {
-    border-color: #cbd5e1;
-    background: #f8fafc;
-    color: #0f172a;
-  }
-  .ml-btn-outline-neutral:disabled { opacity: 0.55; cursor: not-allowed; }
-  .ml-section-label {
-    font-size: 11px;
-    font-weight: 800;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 10px;
-  }
-  .ml-detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
-  .ml-detail-row:last-child { border-bottom: none; }
-  /* .ml-tag — unifiedListingCards.css */
 
   /* ══ ФОРМА СТРАНИЦА ══ */
   .mlf-hero { position: relative; height: var(--page-hero-h-desktop); overflow: hidden; }
@@ -906,8 +723,6 @@ const css = `
   @media(max-width: 900px) {
     .mlf-wrap { grid-template-columns: 1fr; }
     .mlf-sidebar { position: static; }
-    .ml-detail-wrap { grid-template-columns: 1fr; }
-    .ml-detail-right { position: static; }
   }
   @media(max-width: 860px) {
     .mlf-sec-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: 180px; }
@@ -934,6 +749,7 @@ const css = `
 
 export default function MyListingsPage() {
   const { userId, userName, userLastName, userAvatar } = useAuth();
+  const navigate = useNavigate();
 
   const [listings, setListings] = useState([]);
   const [workerDeals, setWorkerDeals] = useState([]);
@@ -1728,164 +1544,352 @@ export default function MyListingsPage() {
     );
   }
 
-  // ══ ДЕТАЛЬНАЯ СТРАНИЦА ══
+  // ══ ДЕТАЛЬНАЯ СТРАНИЦА (как карточка объявления / ed--listing-detail) ══
   if (detail) {
-    const hasPhoto = detail.photos?.length > 0;
+    const lockedDeal = listingLockedAfterDeal(detail);
+    const statusPill = listingOwnerDetailStatusPill(detail, lockedDeal);
+    const catLabel = detail.category || '';
     const detailPlaceholder = getCategoryPlaceholderPhotoUrlOrDefault({ category: detail.category });
+    const jdPhotosRaw = (detail.photos || []).map((p) => mlDetailPhotoUrl(p, BACKEND)).filter(Boolean);
+    const jdPhotos = jdPhotosRaw.length ? jdPhotosRaw : [detailPlaceholder];
+    const mainSrc = jdPhotos[photoIdx] || jdPhotos[0];
+    const pubPrice = getListingPublishedPriceNumber(detail);
+    const priceNegotiable = String(detail.priceUnit || '').toLowerCase().includes('договор') || pubPrice == null;
+    const addressLine = detail.address || 'Йошкар-Ола · выезд по договорённости';
+    const cityGuess = addressLine.includes('·')
+      ? addressLine.split('·')[0].trim()
+      : (addressLine.includes(',') ? addressLine.split(',')[0].trim() : addressLine);
+    const viewsCount = getListingViewsCount(detail);
+    const { bodyText, urgencyLabel } = parseListingDescription(detail.description || '');
+    const showDescCard = !!(bodyText && String(bodyText).trim());
+    const photoCount = jdPhotos.length;
+    const hasMultiplePhotos = photoCount > 1;
+
     return (
-      <div className="ml-detail">
+      <div className="ed ed--listing-detail">
         <style>{css}</style>
-        <div className="ml-detail-nav">
-          <div className="ml-detail-nav-inner">
-            <button type="button" className="ml-detail-back" onClick={() => { setDetail(null); setPhotoIdx(0); }}>
-              ← Мои объявления
-            </button>
-          </div>
-        </div>
-
-        <div className="ml-detail-wrap">
-          <div>
-            <div className="ml-detail-gallery">
-              <div className="ml-detail-main-img" onClick={() => hasPhoto && setLightbox({photos: detail.photos, index: photoIdx})}>
-                {hasPhoto
-                  ? <img src={detail.photos[photoIdx]} alt="" />
-                  : <img src={detailPlaceholder} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                }
-                {hasPhoto && detail.photos.length > 1 && (<>
-                  <button onClick={e => {e.stopPropagation(); setPhotoIdx(i => (i-1+detail.photos.length)%detail.photos.length);}}
-                    style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',width:36,height:36,borderRadius:'50%',background:'rgba(0,0,0,.45)',border:'none',color:'#fff',fontSize:22,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',zIndex:2}}>‹</button>
-                  <button onClick={e => {e.stopPropagation(); setPhotoIdx(i => (i+1)%detail.photos.length);}}
-                    style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',width:36,height:36,borderRadius:'50%',background:'rgba(0,0,0,.45)',border:'none',color:'#fff',fontSize:22,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',zIndex:2}}>›</button>
-                  <div style={{position:'absolute',bottom:10,right:10,background:'rgba(0,0,0,.5)',color:'#fff',fontSize:12,fontWeight:700,padding:'4px 10px',borderRadius:999,zIndex:2}}>
-                    {photoIdx+1} / {detail.photos.length}
-                  </div>
-                </>)}
-              </div>
-              {hasPhoto && detail.photos.length > 1 && (
-                <div className="ml-detail-thumbs">
-                  {detail.photos.map((p,i) => (
-                    <div key={i} className={`ml-detail-thumb${i===photoIdx?' on':''}`} onClick={() => setPhotoIdx(i)}>
-                      <img src={p} alt="" />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <ListingInfoPanels
-              variant="mo"
-              description={detail.description}
-              category={detail.category}
-              address={detail.address || 'Йошкар-Ола · выезд по договорённости'}
-              budgetLabel={
-                (() => {
-                  const pub = getListingPublishedPriceNumber(detail);
-                  return pub != null
-                    ? `${pub.toLocaleString('ru-RU')} ₽${detail.priceUnit ? ` ${detail.priceUnit}` : ''}`
-                    : (detail.priceUnit || 'Договорная');
-                })()
-              }
-              publishedAt={detail.createdAt}
-            />
-          </div>
-
-          <div className="ml-detail-right">
-            <div className="ml-detail-price-card">
-              <div className="ml-detail-price-label">Стоимость</div>
-              {detail.priceUnit === 'договорная' || getListingPublishedPriceNumber(detail) == null ? (
-                <div className="ml-detail-price" style={{ fontSize: 22 }}>Договорная</div>
-              ) : (
-                <div className="ml-detail-price">{getListingPublishedPriceNumber(detail).toLocaleString('ru-RU')} ₽</div>
-              )}
-              <div className="ml-detail-price-unit">{detail.priceUnit || 'за работу'}</div>
-              <div className="ml-detail-status-line">
-                {listingLockedAfterDeal(detail)
-                  ? 'Завершено по сделке'
-                  : detail.active
-                    ? 'В каталоге'
-                    : 'Снято с публикации'}
-              </div>
-              {detail.category && <div style={{ marginTop: 8 }}><span className={`ml-tag ${categoryChipToneClass(detail.category)}`}>{detail.category}</span></div>}
-            </div>
-            {(showWorkerReviewForListing(detail.id) || !listingLockedAfterDeal(detail)) && (
-            <div className="ml-detail-actions-card">
-              <div className="ml-section-label" style={{marginBottom:4}}>Управление</div>
-              {!listingLockedAfterDeal(detail) && (
-                <>
-                  <button type="button" className="ml-btn-primary" onClick={() => openEdit(detail)}>Редактировать</button>
-                  <button
-                    type="button"
-                    className={`ml-btn-copy${copyFlashId === detail.id ? ' copied' : ''}`}
-                    onClick={(e) => copyListingPublicLink(detail.id, e)}
-                  >
-                    {copyFlashId === detail.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
-                  </button>
-                  <div className="ml-actions-divider" />
-                  <button type="button" className="ml-btn-outline-neutral" onClick={e => handleToggle(detail, e)}>
-                    {detail.active ? 'Снять с публикации' : 'Восстановить'}
-                  </button>
-                </>
-              )}
-              {showWorkerReviewForListing(detail.id) && (
-                <button
-                  type="button"
-                  className="ml-btn-review-customer"
-                  style={{ marginTop: !listingLockedAfterDeal(detail) ? 10 : 0 }}
-                  onClick={() => {
-                    const d = completedDealForListing(detail.id);
-                    if (d) setWorkerReviewDealId(d.id);
-                  }}
-                >
-                  Отзыв о заказчике
-                </button>
-              )}
-            </div>
-            )}
-            <div className="ml-detail-side-card">
-              <div className="ml-section-label">Ваш профиль</div>
-              <Link to={userId ? `/workers/${userId}` : '/worker-profile'} style={{display:'flex', alignItems:'center', gap:12, textDecoration:'none', color:'inherit'}}>
-                {ava
-                  ? <img src={ava} alt="" style={{width:44,height:44,borderRadius:'50%',objectFit:'cover',flexShrink:0}} />
-                  : <div style={{width:44,height:44,borderRadius:'50%',background:'linear-gradient(135deg,#e8410a,#ff7043)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontWeight:800,fontSize:16,flexShrink:0}}>
-                      {(userName||'М')[0].toUpperCase()}
-                    </div>
-                }
-                <div>
-                  <div style={{fontSize:14,fontWeight:700,color:'#111827'}}>{fullName}</div>
-                  <div style={{fontSize:12,color:'#22c55e',fontWeight:600}}>● Мастер</div>
-                </div>
-              </Link>
-            </div>
-          </div>
-        </div>
+        <style>{edListingDetailMergedCss}</style>
 
         {lightbox && (
-          <div style={{position:'fixed',inset:0,zIndex:9999,background:'rgba(0,0,0,.93)',display:'flex',alignItems:'center',justifyContent:'center'}} onClick={() => setLightbox(null)}>
-            {lightbox.photos.length > 1 && (<>
-              <button onClick={e=>{e.stopPropagation();setLightbox(l=>({...l,index:(l.index-1+l.photos.length)%l.photos.length}));}}
-                style={{position:'absolute',left:20,top:'50%',transform:'translateY(-50%)',zIndex:10001,width:48,height:48,borderRadius:'50%',background:'rgba(255,255,255,.18)',border:'none',color:'#fff',fontSize:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>‹</button>
-              <button onClick={e=>{e.stopPropagation();setLightbox(l=>({...l,index:(l.index+1)%l.photos.length}));}}
-                style={{position:'absolute',right:20,top:'50%',transform:'translateY(-50%)',zIndex:10001,width:48,height:48,borderRadius:'50%',background:'rgba(255,255,255,.18)',border:'none',color:'#fff',fontSize:30,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>›</button>
-            </>)}
-            <div style={{position:'relative',maxWidth:'85vw',maxHeight:'80vh'}} onClick={e=>e.stopPropagation()}>
-              <img src={lightbox.photos[lightbox.index]} alt="" style={{maxWidth:'85vw',maxHeight:'80vh',borderRadius:10,display:'block',userSelect:'none'}} />
-              <div style={{position:'absolute',top:12,left:12,background:'rgba(0,0,0,.55)',color:'#fff',fontSize:13,fontWeight:700,padding:'4px 10px',borderRadius:999}}>
-                {lightbox.index+1} / {lightbox.photos.length}
-              </div>
-              <button onClick={() => setLightbox(null)} style={{position:'absolute',top:12,right:12,width:36,height:36,borderRadius:'50%',background:'rgba(255,255,255,.18)',border:'none',color:'#fff',fontSize:22,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+          <div className="jd-lightbox" onClick={() => setLightbox(null)} role="presentation">
+            <button
+              type="button"
+              className="jd-lb-close"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightbox(null);
+              }}
+            >
+              ✕
+            </button>
+            {lightbox.photos.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="jd-lb-nav jd-lb-prev"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightbox((l) => ({
+                      ...l,
+                      index: l.index > 0 ? l.index - 1 : l.photos.length - 1,
+                    }));
+                  }}
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className="jd-lb-nav jd-lb-next"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightbox((l) => ({
+                      ...l,
+                      index: l.index < l.photos.length - 1 ? l.index + 1 : 0,
+                    }));
+                  }}
+                >
+                  ›
+                </button>
+              </>
+            )}
+            <div className="jd-lightbox-img-wrap" onClick={(e) => e.stopPropagation()}>
+              {lightbox.photos.length > 1 && (
+                <>
+                  <div
+                    className="jd-lb-zone jd-lb-zone-prev"
+                    onClick={() =>
+                      setLightbox((l) => ({
+                        ...l,
+                        index: l.index > 0 ? l.index - 1 : l.photos.length - 1,
+                      }))
+                    }
+                    role="presentation"
+                  />
+                  <div
+                    className="jd-lb-zone jd-lb-zone-next"
+                    onClick={() =>
+                      setLightbox((l) => ({
+                        ...l,
+                        index: l.index < l.photos.length - 1 ? l.index + 1 : 0,
+                      }))
+                    }
+                    role="presentation"
+                  />
+                </>
+              )}
+              <img
+                src={lightbox.photos[lightbox.index]}
+                alt={detail.title || ''}
+                onClick={() => lightbox.photos.length <= 1 && setLightbox(null)}
+              />
             </div>
             {lightbox.photos.length > 1 && (
-              <div style={{position:'absolute',bottom:20,left:'50%',transform:'translateX(-50%)',display:'flex',gap:8}} onClick={e=>e.stopPropagation()}>
-                {lightbox.photos.map((p,i)=>(
-                  <div key={i} onClick={()=>setLightbox(l=>({...l,index:i}))}
-                    style={{width:52,height:40,borderRadius:5,overflow:'hidden',cursor:'pointer',border:i===lightbox.index?'2.5px solid #e8410a':'2px solid rgba(255,255,255,.25)',opacity:i===lightbox.index?1:0.6}}>
-                    <img src={p} alt="" style={{width:'100%',height:'100%',objectFit:'cover',pointerEvents:'none'}}/>
-                  </div>
-                ))}
+              <div className="jd-lb-counter">
+                {lightbox.index + 1} / {lightbox.photos.length}
               </div>
             )}
+            <div className="jd-lb-hint">← → по краям · Esc — закрыть</div>
           </div>
         )}
+
+        <div className="ed-wrap">
+          <button
+            type="button"
+            className="ed-back"
+            onClick={() => {
+              setLightbox(null);
+              setDetail(null);
+              setPhotoIdx(0);
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Мои объявления
+          </button>
+
+          <div className="ed-head">
+            <div className="ed-head-left" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <h1>{detail.title || 'Объявление'}</h1>
+              </div>
+              <div className="ed-listing-meta">
+                {catLabel ? (
+                  <span>
+                    {dealCategoryEmoji(catLabel)} {catLabel}
+                  </span>
+                ) : null}
+                {addressLine ? <span>📍 {addressLine}</span> : null}
+                {detail.createdAt ? <span>📅 {mlDetailFmtDateLong(detail.createdAt)}</span> : null}
+              </div>
+            </div>
+            <div className="ed-head-right">
+              <FavoriteHeartButton kind="listing" id={detail.id} className="ulc-fav-heart ed-fav" />
+              <span className="ed-status-pill">
+                <span className="dot" style={{ background: statusPill.dot, boxShadow: statusPill.shadow }} />
+                {statusPill.label}
+              </span>
+            </div>
+          </div>
+
+          <div className="ed-grid">
+            <div className="ed-col">
+              <div className="ed-gallery">
+                <div
+                  className="ed-main"
+                  role="presentation"
+                  onClick={() => jdPhotos.length > 0 && setLightbox({ photos: jdPhotos, index: photoIdx })}
+                >
+                  {mainSrc ? (
+                    <img src={mainSrc} alt={detail.title || ''} key={`${photoCount}-${photoIdx}`} />
+                  ) : (
+                    <div className="ed-main-placeholder" aria-hidden>
+                      {dealCategoryEmoji(catLabel)}
+                    </div>
+                  )}
+                  <div className="ed-floats">
+                    <div className="ed-chip">
+                      <span className="pulse" style={{ background: statusPill.dot, boxShadow: statusPill.shadow }} />
+                      <span className="ed-chip-text">{statusPill.label}</span>
+                    </div>
+                    {catLabel ? (
+                      <div className="ed-chip">
+                        <span className="ed-chip-text">
+                          {dealCategoryEmoji(catLabel)} {catLabel}
+                        </span>
+                      </div>
+                    ) : null}
+                  </div>
+                  {hasMultiplePhotos ? (
+                    <>
+                      <button
+                        type="button"
+                        className="ed-arrow l"
+                        aria-label="Предыдущее фото"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPhotoIdx((i) => (i > 0 ? i - 1 : jdPhotos.length - 1));
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="ed-arrow r"
+                        aria-label="Следующее фото"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPhotoIdx((i) => (i < jdPhotos.length - 1 ? i + 1 : 0));
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                      <div className="ed-counter">
+                        {String(photoIdx + 1).padStart(2, '0')} / {String(photoCount).padStart(2, '0')}
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+                {hasMultiplePhotos ? (
+                  <div className="ed-thumbs">
+                    {jdPhotos.map((p, i) => (
+                      <div
+                        key={i}
+                        className={`ed-thumb${i === photoIdx ? ' on' : ''}`}
+                        onClick={() => setPhotoIdx(i)}
+                        role="presentation"
+                      >
+                        <img src={p} alt="" />
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              {showDescCard ? (
+                <section className="ed-card">
+                  <div className="ed-eyebrow">Описание</div>
+                  <p className="ed-desc">{bodyText}</p>
+                  {urgencyLabel ? (
+                    <p className="ed-desc" style={{ marginTop: 14, color: '#c2410c', fontWeight: 600 }}>
+                      <b>Срочность:</b> {urgencyLabel}
+                    </p>
+                  ) : null}
+                </section>
+              ) : (
+                <section className="ed-card">
+                  <div className="ed-eyebrow">Описание</div>
+                  <p className="ed-desc" style={{ color: '#a1a1aa', fontStyle: 'italic' }}>
+                    Описание не добавлено
+                  </p>
+                </section>
+              )}
+
+              <section className="ed-card">
+                <div className="ed-eyebrow">Условия</div>
+                <dl className="ed-rows">
+                  {[
+                    catLabel && ['Категория', catLabel],
+                    ['Город', cityGuess || '—'],
+                    addressLine && ['Адрес', addressLine],
+                    [
+                      'Стоимость',
+                      priceNegotiable
+                        ? 'Договорная'
+                        : `${Number(pubPrice).toLocaleString('ru-RU')} ₽${detail.priceUnit ? ` ${detail.priceUnit}` : ''}`,
+                    ],
+                    detail.createdAt && ['Опубликована', mlDetailTimeAgo(detail.createdAt) || mlDetailFmtDateLong(detail.createdAt)],
+                    viewsCount > 0 && ['Просмотры', String(viewsCount)],
+                  ]
+                    .filter(Boolean)
+                    .map(([label, value]) => (
+                      <div key={String(label)} className="ed-row">
+                        <dt>{label}</dt>
+                        <dd>{value}</dd>
+                      </div>
+                    ))}
+                </dl>
+              </section>
+            </div>
+
+            <aside className="ed-side">
+              <div className="ed-card">
+                <div className="ed-eyebrow">Стоимость</div>
+                {!priceNegotiable && pubPrice != null ? (
+                  <div className="ed-price-num">
+                    {Number(pubPrice).toLocaleString('ru-RU')}
+                    <small> ₽</small>
+                  </div>
+                ) : (
+                  <div className="ed-price-num" style={{ fontSize: 22, fontWeight: 700 }}>
+                    Договорная
+                  </div>
+                )}
+                <p className="ed-price-sub">{detail.priceUnit || 'за работу'}</p>
+              </div>
+
+              {(showWorkerReviewForListing(detail.id) || !lockedDeal) && (
+                <div className="ed-card">
+                  <div className="ed-eyebrow ed-eyebrow--block">Управление</div>
+                  {!lockedDeal && (
+                    <div className="ed-actions">
+                      <button type="button" className="ed-btn ed-btn-confirm" onClick={() => openEdit(detail)}>
+                        Редактировать
+                      </button>
+                      <button
+                        type="button"
+                        className={`ml-btn-copy${copyFlashId === detail.id ? ' copied' : ''}`}
+                        onClick={(e) => copyListingPublicLink(detail.id, e)}
+                      >
+                        {copyFlashId === detail.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
+                      </button>
+                      <button type="button" className="ed-btn ed-btn-ghost" onClick={(e) => handleToggle(detail, e)}>
+                        {detail.active ? 'Снять с публикации' : 'Восстановить'}
+                      </button>
+                    </div>
+                  )}
+                  {showWorkerReviewForListing(detail.id) && (
+                    <button
+                      type="button"
+                      className="ml-btn-review-customer"
+                      style={{ marginTop: !lockedDeal ? 10 : 0, width: '100%' }}
+                      onClick={() => {
+                        const d = completedDealForListing(detail.id);
+                        if (d) setWorkerReviewDealId(d.id);
+                      }}
+                    >
+                      Отзыв о заказчике
+                    </button>
+                  )}
+                </div>
+              )}
+
+              <div className="ed-card">
+                <div className="ed-eyebrow ed-eyebrow--block">Ваш профиль</div>
+                <div
+                  className="ed-cust-row ed-cust-row-static"
+                  onClick={() => navigate(userId ? `/workers/${userId}` : '/worker-profile')}
+                  role="presentation"
+                >
+                  <div className="ed-ava">
+                    {ava ? <img src={ava} alt={fullName} /> : (
+                      <div className="ed-ava-fallback neutral">{(userName || 'М')[0].toUpperCase()}</div>
+                    )}
+                  </div>
+                  <div className="ed-cust-info">
+                    <div className="ed-cust-name">{fullName}</div>
+                    <div className="ed-cust-meta">Мастер</div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+
         <WorkerReviewDealModal
           dealId={workerReviewDealId}
           onClose={() => setWorkerReviewDealId(null)}

@@ -1,4 +1,5 @@
 import { PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
+import { listingDetailSurfaceExtraCss } from './listingDetailSurfaceExtraCss';
 
 /** Эмодзи категории для строки категории в карточке сделок (md-cat). */
 export const DEAL_CATEGORY_EMOJI = {
@@ -1022,4 +1023,7 @@ export const listingDetailLightboxCss = `
 .jd-lb-counter { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.7); font-size: 14px; font-weight: 600; background: rgba(255,255,255,.1); padding: 5px 16px; border-radius: 20px; z-index: 10; }
 .jd-lb-hint { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.35); font-size: 12px; white-space: nowrap; pointer-events: none; }
 `;
+
+/** Карточка объявления / заявки: ed + лайтбокк (как FindWorkPage, ListingDetailPage). */
+export const edListingDetailMergedCss = `${dealsDetailEdCss}\n${listingDetailLightboxCss}\n${listingDetailSurfaceExtraCss}`;
 
