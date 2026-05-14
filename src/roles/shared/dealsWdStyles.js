@@ -553,9 +553,14 @@ export const dealsDetailEdCss = `
 
 .ed {
   font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: #fafafa;
+  /* Как .jl-page в «Найти работу»: не «болванчик» #fafafa, а тёплый фон с лёгким градиентом */
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(232,65,10,.06), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(232,65,10,.04), transparent 55%),
+    #f6f6f4;
   color: #0a0a0a;
   min-height: 100vh;
+  min-height: 100dvh;
   padding: 24px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
