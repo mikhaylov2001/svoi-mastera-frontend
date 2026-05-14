@@ -314,6 +314,37 @@
 .header-nav-link:hover   { background: var(--gray-100); color: var(--gray-800); }
 .header-nav-link.active  { color: var(--primary); background: var(--primary-light); }
 
+/* Избранное: залитое сердце (#ccc), активная ссылка — бренд */
+.header-nav-link.header-nav-favorites {
+  gap: 7px;
+}
+.header-nav-fav-icwrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  color: #cccccc;
+  flex-shrink: 0;
+}
+.header-nav-link.header-nav-favorites:hover .header-nav-fav-icwrap {
+  color: #94a3b8;
+}
+.header-nav-link.header-nav-favorites.active .header-nav-fav-icwrap {
+  color: var(--primary);
+}
+
+.header-mobile-link.header-mobile-favorites {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-mobile-link.header-mobile-favorites .header-nav-fav-icwrap {
+  color: #cccccc;
+}
+.header-mobile-link.header-mobile-favorites:hover .header-nav-fav-icwrap {
+  color: #94a3b8;
+}
+
 /* Бейдж непрочитанных */
 .header-unread-badge {
   display: inline-flex;
