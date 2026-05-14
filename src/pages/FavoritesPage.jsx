@@ -336,11 +336,19 @@ export default function FavoritesPage() {
                   aria-label="Поиск в избранном"
                 />
               </div>
-              <select className="fav-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
-                <option value="recent">Сначала новые</option>
-                <option value="price-asc">Цена ↑</option>
-                <option value="price-desc">Цена ↓</option>
-              </select>
+              <div className="fav-sort-wrap">
+                <select
+                  id="fav-sort-select"
+                  className="fav-sort"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  aria-label="Сортировка избранного"
+                >
+                  <option value="recent">Сначала новые</option>
+                  <option value="price-asc">Цена ↑</option>
+                  <option value="price-desc">Цена ↓</option>
+                </select>
+              </div>
             </div>
 
             {visible.length > 0 && (
