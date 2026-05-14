@@ -10,7 +10,7 @@ import { SAME_ROUTE_REFETCH, isSameNavDest } from '../utils/sameRouteRefetch';
  */
 export function useSameRouteRefetch(navPath, fetcher, options = {}) {
   const { pathname } = useLocation();
-  const end = options.end ?? navPath === '/';
+  const end = options.end ?? (navPath === '/' || navPath === '/worker-home');
 
   useEffect(() => {
     const handler = (ev) => {

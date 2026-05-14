@@ -12,7 +12,7 @@ import {
   getCategorySlugFromLabel,
 } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
-import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../../constants/homePaths';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
@@ -331,7 +331,7 @@ export default function ListingDetailPage() {
       return;
     }
     if (refFrom === 'home') {
-      navigate('/');
+      navigate(userRole === 'WORKER' ? WORKER_HOME_PATH : CUSTOMER_HOME_PATH);
       return;
     }
     if (refFrom === 'find-master') {

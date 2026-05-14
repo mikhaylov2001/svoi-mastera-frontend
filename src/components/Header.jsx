@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUnreadCount, getListings } from '../api';
 import { rankItemsBySmartMatch, listingHaystack } from '../utils/smartSearch';
+import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../constants/homePaths';
 import { dispatchSameRouteRefetch, isSameNavDest } from '../utils/sameRouteRefetch';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
@@ -46,6 +47,7 @@ function Header() {
     : '';
   const navigate = useNavigate();
   const location = useLocation();
+  const homePath = userRole === 'WORKER' ? WORKER_HOME_PATH : CUSTOMER_HOME_PATH;
 
   const onRepeatNavClick = (navTo, opts = {}) => (e) => {
     if (isSameNavDest(location.pathname, navTo, opts)) {
@@ -266,12 +268,12 @@ function Header() {
 
           {/* ── LOGO ── */}
           <Link
-            to="/"
+            to={homePath}
             className="header-logo"
             onClick={(e) => {
-              if (location.pathname === '/') {
+              if (location.pathname === homePath) {
                 e.preventDefault();
-                dispatchSameRouteRefetch('/');
+                dispatchSameRouteRefetch(homePath);
               }
             }}
           >
@@ -384,10 +386,10 @@ function Header() {
           {/* ── NAV ── */}
           <nav className="header-nav">
             <NavLink
-              to="/"
+              to={homePath}
               end
               className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-              onClick={onRepeatNavClick('/')}
+              onClick={onRepeatNavClick(homePath, { end: true })}
             >
               Главная
             </NavLink>
@@ -647,7 +649,7 @@ function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               />
               <div className="header-mobile-menu">
-                <NavLink to="/" end className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/')(e); setMobileMenuOpen(false); }}>
+                <NavLink to={homePath} end className="header-mobile-link" onClick={(e) => { onRepeatNavClick(homePath, { end: true })(e); setMobileMenuOpen(false); }}>
                   Главная
                 </NavLink>
 

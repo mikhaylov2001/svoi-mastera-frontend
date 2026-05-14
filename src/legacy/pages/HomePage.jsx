@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getOpenJobRequestsForWorker, getCategories } from '../api';
 import { formatJobRequestBudgetLabel } from '../utils/jobRequestBudget';
+import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../../constants/homePaths';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
@@ -206,7 +207,7 @@ function WorkerHome({ userId, userName }) {
 
   useEffect(() => { reloadWorkerHome(); }, [reloadWorkerHome]);
 
-  useSameRouteRefetch('/', reloadWorkerHome);
+  useSameRouteRefetch(WORKER_HOME_PATH, reloadWorkerHome);
 
   const sortedOpenRequests = useMemo(
     () => [...openRequests].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
@@ -346,10 +347,15 @@ function WorkerHome({ userId, userName }) {
   );
 }
 
+export function WorkerHomeGate() {
+  const { userId, userRole, userName } = useAuth();
+  if (!userId) return <Navigate to="/login" replace />;
+  if (userRole !== 'WORKER') return <Navigate to={CUSTOMER_HOME_PATH} replace />;
+  return <WorkerHome userId={userId} userName={userName} />;
 }
 
 export default function HomePage() {
   const { userId, userRole, userName } = useAuth();
-  if (userRole === 'WORKER') return <WorkerHome userId={userId} userName={userName} />;
+  if (userId && userRole === 'WORKER') return <Navigate to={WORKER_HOME_PATH} replace />;
   return <CustomerHome userId={userId} userName={userName} />;
 }

@@ -13,6 +13,7 @@ import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
 import './jobListings.css';
 import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
+import { WORKER_HOME_PATH } from '../../constants/homePaths';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
@@ -1409,7 +1410,7 @@ export default function FindWorkPage() {
                   setSelectedCategory(null);
                   setActivePhotoIdx(0);
                   setJobDetailFrom('find-work');
-                  navigate('/');
+                  navigate(WORKER_HOME_PATH);
                   return;
                 }
                 if (jobDetailFrom === 'favorites') {

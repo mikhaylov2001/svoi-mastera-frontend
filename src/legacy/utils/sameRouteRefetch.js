@@ -10,6 +10,7 @@ export function dispatchSameRouteRefetch(navPath) {
  */
 export function isSameNavDest(pathname, navTo, { end } = {}) {
   if (navTo === '/') return pathname === '/';
+  if (navTo === '/worker-home') return pathname === '/worker-home';
   if (end) return pathname === navTo;
   if (navTo === '/chat') return pathname === '/chat' || pathname.startsWith('/chat/');
   if (navTo === '/find-master') {

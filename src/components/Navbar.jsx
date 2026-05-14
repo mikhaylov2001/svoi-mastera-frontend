@@ -1,5 +1,6 @@
 import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../constants/homePaths';
 import './Navbar.css';
 
 function getInitials(name) {
@@ -15,14 +16,16 @@ function Navbar() {
   const roleLabel = !userId ? 'Не авторизован' : userRole === 'WORKER' ? 'Мастер' : 'Заказчик';
   const initials = getInitials(displayName);
 
+  const homePath = userRole === 'WORKER' ? WORKER_HOME_PATH : CUSTOMER_HOME_PATH;
+
   return (
     <nav className="navbar">
-      <Link className="logo" to="/">
+      <Link className="logo" to={homePath}>
         СвоиМастера
       </Link>
 
           <div className="nav-center">
-            <NavLink to="/" end>
+            <NavLink to={homePath} end>
               Главная
             </NavLink>
             <NavLink to="/categories">
