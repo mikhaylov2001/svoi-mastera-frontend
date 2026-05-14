@@ -63,6 +63,7 @@ function DealsMdStepBar({ status }) {
         {MD_STEPS.map((s, i) => {
           let cls = '';
           if (status === 'cancel') cls = i === 0 ? 'done' : 'cancel';
+          else if (status === 'done') cls = 'done';
           else if (i < idx) cls = 'done';
           else if (i === idx) cls = 'current';
           return (
@@ -773,8 +774,8 @@ export default function WorkerDealsPage() {
           <div className="md-grid">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="md-card" style={{ cursor: 'default', pointerEvents: 'none' }} aria-hidden>
+                <div className="md-card-cover"><div className="wd-sk" style={{ width: '100%', height: '100%', borderRadius: 0 }} /></div>
                 <div className="md-top">
-                  <div className="md-photo"><div className="wd-sk" style={{ width: '100%', height: '100%', borderRadius: 18 }} /></div>
                   <div className="md-body">
                     <div className="wd-sk" style={{ height: 16, width: '70%' }} />
                     <div className="wd-sk" style={{ height: 12, width: '40%', marginTop: 10 }} />
@@ -876,10 +877,10 @@ export default function WorkerDealsPage() {
                     }
                   }}
                 >
+                  <div className="md-card-cover">
+                    {img ? <img src={img} alt="" /> : <span className="emoji" aria-hidden>🤝</span>}
+                  </div>
                   <div className="md-top">
-                    <div className="md-photo">
-                      {img ? <img src={img} alt="" /> : <span className="emoji" aria-hidden>🤝</span>}
-                    </div>
                     <div className="md-body">
                       <div className="md-row">
                         <h3 className="md-title">{d.title || 'Задача'}</h3>
