@@ -58,10 +58,10 @@ export function getDealEdProgress(detail, role, formatRelative) {
 
   const doneCount = steps.filter((s) => s.state === 'done').length;
   const n = steps.length;
-  const lineWidth =
-    n > 1
-      ? `calc(${(doneCount / (n - 1)) * 100}% + ${(0.5 / (n - 1)) * 100}%)`
-      : '0%';
+  const segmentCount = Math.max(1, n - 1);
+  /* Без ограничения при 5/5 done получалось 125%+ — линия вылезала за карточку */
+  const rawPercent = (doneCount / segmentCount) * 100 + (0.5 / segmentCount) * 100;
+  const lineWidth = `${Math.min(100, Math.max(0, rawPercent))}%`;
 
   const currentIdx = steps.findIndex((s) => s.state === 'current');
   const doneLen = steps.filter((s) => s.state === 'done').length;

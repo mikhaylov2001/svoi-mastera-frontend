@@ -658,7 +658,7 @@ export const dealsDetailEdCss = `
 .ed-prog-pct b { color: #0a0a0a; font-weight: 600; }
 .ed-prog-cancelled { color: #dc2626; font-weight: 600; }
 
-.ed-steps { display: flex; justify-content: space-between; position: relative; padding-top: 0; }
+.ed-steps { display: flex; justify-content: space-between; position: relative; padding-top: 0; min-width: 0; overflow: hidden; }
 .ed-line-bg {
   position: absolute;
   top: 9px;
@@ -676,6 +676,7 @@ export const dealsDetailEdCss = `
   left: 9px;
   height: 2px;
   margin-top: -.5px;
+  max-width: calc(100% - 18px);
   background: #f45b31;
   transition: width .8s cubic-bezier(.2,.8,.2,1);
   border-radius: 2px;
