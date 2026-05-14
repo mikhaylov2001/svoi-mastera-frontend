@@ -5,6 +5,7 @@ import { FavoritesProvider } from './context/FavoritesContext';
 import { ToastProvider } from './context/ToastContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import { WORKER_HOME_PATH } from './constants/homePaths';
 import HomePage, { WorkerHomeGate } from './pages/HomePage';
 import SectionsPage from './pages/SectionsPage';
 import CategoriesPage from './pages/CategoriesPage';
@@ -57,6 +58,13 @@ function DealsRoute() {
   return userRole === 'WORKER' ? <WorkerDealsPage /> : <DealsPage />;
 }
 
+/** `/` — витрина заказчика/гостя; мастер уходит на отдельную главную без дублирования логики в HomePage. */
+function CustomerHomeRoute() {
+  const { userId, userRole } = useAuth();
+  if (userId && userRole === 'WORKER') return <Navigate to={WORKER_HOME_PATH} replace />;
+  return <HomePage />;
+}
+
 function AppContent() {
   const location = useLocation();
 
@@ -68,7 +76,7 @@ function AppContent() {
       <Header />
       <main className="app-main">
         <Routes>
-          <Route path="/"                element={<HomePage />} />
+          <Route path="/"                element={<CustomerHomeRoute />} />
           <Route path="/worker-home"     element={<WorkerHomeGate />} />
           <Route path="/sections"        element={<SectionsPage />} />
           <Route path="/services"        element={<ServicesPage />} />

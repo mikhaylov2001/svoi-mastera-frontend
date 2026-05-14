@@ -31,7 +31,7 @@ const CAT_PHOTOS = {
 };
 
 
-function CustomerHome({ userId, userName }) {
+export function CustomerHomePage({ userId, userName }) {
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [shown, setShown] = useState(8);
@@ -180,7 +180,7 @@ function cityInLocative(nominative) {
   return c || 'Йошкар-Оле';
 }
 
-function WorkerHome({ userId, userName }) {
+export function WorkerHomePage({ userId, userName }) {
   const navigate = useNavigate();
   const [openRequests, setOpenRequests] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -351,11 +351,10 @@ export function WorkerHomeGate() {
   const { userId, userRole, userName } = useAuth();
   if (!userId) return <Navigate to="/login" replace />;
   if (userRole !== 'WORKER') return <Navigate to={CUSTOMER_HOME_PATH} replace />;
-  return <WorkerHome userId={userId} userName={userName} />;
+  return <WorkerHomePage userId={userId} userName={userName} />;
 }
 
 export default function HomePage() {
-  const { userId, userRole, userName } = useAuth();
-  if (userId && userRole === 'WORKER') return <Navigate to={WORKER_HOME_PATH} replace />;
-  return <CustomerHome userId={userId} userName={userName} />;
+  const { userId, userName } = useAuth();
+  return <CustomerHomePage userId={userId} userName={userName} />;
 }
