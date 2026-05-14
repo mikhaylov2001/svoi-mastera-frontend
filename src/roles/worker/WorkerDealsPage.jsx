@@ -587,7 +587,6 @@ export default function WorkerDealsPage() {
                     {customerAva ? <img src={customerAva} alt="" /> : (
                       <div className="ed-ava-fallback">{(custLabel[0] || 'З').toUpperCase()}</div>
                     )}
-                    <span className="ed-ava-dot" />
                   </div>
                   <div className="ed-cust-info">
                     <div className="ed-cust-name">{custLabel}</div>

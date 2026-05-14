@@ -1616,12 +1616,10 @@ export default function FindWorkPage() {
                         {req.customerAvatar ? (
                           <div className="ed-ava">
                             <img src={jdPhotoUrl(req.customerAvatar)} alt="" />
-                            <span className="ed-ava-dot" />
                           </div>
                         ) : (
                           <div className="ed-ava">
                             <div className="ed-ava-fallback neutral">{(custNameFull[0] || '?').toUpperCase()}</div>
-                            <span className="ed-ava-dot" />
                           </div>
                         )}
                         <div className="ed-cust-info">
@@ -1638,7 +1636,6 @@ export default function FindWorkPage() {
                       <div className="ed-cust-row" style={{ cursor: 'default', pointerEvents: 'none' }}>
                         <div className="ed-ava">
                           <div className="ed-ava-fallback neutral">{(custNameFull[0] || '?').toUpperCase()}</div>
-                          <span className="ed-ava-dot" />
                         </div>
                         <div className="ed-cust-info">
                           <div className="ed-cust-name">{custNameFull}</div>

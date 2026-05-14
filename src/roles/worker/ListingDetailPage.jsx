@@ -687,7 +687,6 @@ export default function ListingDetailPage() {
                     ) : (
                       <div className="ed-ava-fallback">{(listingDeal.customerName || 'З')[0].toUpperCase()}</div>
                     )}
-                    <span className="ed-ava-dot" />
                   </div>
                   <div className="ed-cust-info">
                     <div className="ed-cust-name">
@@ -746,7 +745,6 @@ export default function ListingDetailPage() {
                     {ownerAva ? <img src={ownerAva} alt={ownerFullName} /> : (
                       <div className="ed-ava-fallback">{(userName || 'М')[0].toUpperCase()}</div>
                     )}
-                    <span className="ed-ava-dot" />
                   </div>
                   <div className="ed-cust-info">
                     <div className="ed-cust-name">{ownerFullName}</div>
@@ -770,7 +768,6 @@ export default function ListingDetailPage() {
                     ) : (
                       <div className="ed-ava-fallback neutral">{initials}</div>
                     )}
-                    <span className="ed-ava-dot" />
                   </div>
                   <div className="ed-cust-info">
                     <div className="ed-cust-name">{workerName}</div>

@@ -772,7 +772,6 @@ export const dealsDetailEdCss = `
 .ed-ava { position: relative; width: 44px; height: 44px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
 .ed-ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .ed-ava-fallback { width: 100%; height: 100%; background: linear-gradient(135deg, #f45b31, #f97316); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; letter-spacing: -.01em; line-height: 1; }
-.ed-ava-dot { position: absolute; bottom: -2px; right: -2px; width: 12px; height: 12px; background: #22c55e; border: 2.5px solid #fff; border-radius: 50%; }
 .ed-cust-info { flex: 1; min-width: 0; }
 .ed-cust-name { font-size: 14px; font-weight: 600; color: #0a0a0a; letter-spacing: -.01em; line-height: 1.35; }
 .ed-cust-meta { font-size: 12px; font-weight: 400; color: #71717a; margin-top: 2px; line-height: 1.4; }

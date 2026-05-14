@@ -548,7 +548,6 @@ export default function DealsPage() {
                     {workerAva ? <img src={workerAva} alt="" /> : (
                       <div className="ed-ava-fallback">{(detail.workerName || 'М')[0].toUpperCase()}</div>
                     )}
-                    <span className="ed-ava-dot" />
                   </div>
                   <div className="ed-cust-info">
                     <div className="ed-cust-name">{workerLabel}</div>

@@ -32,13 +32,6 @@ export const listingDetailSurfaceExtraCss = `
   border-radius: 10px;
 }
 .ed--listing-detail .ed-ava-fallback { font-size: 13px; }
-.ed--listing-detail .ed-ava-dot {
-  width: 10px;
-  height: 10px;
-  bottom: -1px;
-  right: -1px;
-  border-width: 2px;
-}
 .ed--listing-detail .ed-own-note { margin-top: 10px; padding: 10px 12px; font-size: 12px; line-height: 1.45; }
 .ed--listing-detail .ed-link-deals { padding: 6px 0 0; font-size: 12px; }
 .ed--listing-detail .ed-similar-head { margin-bottom: 10px; }
