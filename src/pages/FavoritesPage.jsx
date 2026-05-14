@@ -289,10 +289,11 @@ export default function FavoritesPage() {
         <img src={HERO_IMG} alt="" />
         <div className="fav-hero-inner">
           <div>
-            <h1 className="fav-hero-title" aria-label="Избранное">
+            <h1 className="fav-hero-title">
               <span className="heart" aria-hidden>
                 ❤
               </span>
+              <span className="fav-hero-title-text">Избранное</span>
             </h1>
             <p>Мастера и заявки, которые вы сохранили</p>
           </div>
