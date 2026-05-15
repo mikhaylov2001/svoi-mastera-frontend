@@ -34,13 +34,15 @@ const FEED_AVATAR_GRADIENTS = [
   'linear-gradient(135deg,#f59e0b,#fbbf24)',
 ];
 
-const CHIPS_WORKER = ['⚡ Электрика', '🔧 Сантехника', '🧹 Уборка', '💻 IT', '🚚 Перевозки', '🎨 Отделка', '🔨 Ремонт', '✂️ Красота'];
-const QUICK_WORKER = ['⚡ срочные заявки', '📍 рядом с вами', '💰 от 1500 ₽', '⭐ с бюджетом'];
-const FEED_WORKER = [
+/** Демо-лента «Сейчас на платформе», если с API мало событий (как у мастера). */
+const FEED_PLATFORM_DEFAULT = [
   { who: 'Ольга', what: 'ищет мастера «Установка двери»', time: '1 мин', color: 'linear-gradient(135deg,#e8410a,#ff7043)' },
   { who: 'Сергей', what: 'принял отклик на заявку', time: '4 мин', color: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
   { who: 'Мария', what: 'опубликовала «Генеральная уборка»', time: '6 мин', color: 'linear-gradient(135deg,#0ea5e9,#22d3ee)' },
 ];
+
+const CHIPS_WORKER = ['⚡ Электрика', '🔧 Сантехника', '🧹 Уборка', '💻 IT', '🚚 Перевозки', '🎨 Отделка', '🔨 Ремонт', '✂️ Красота'];
+const QUICK_WORKER = ['⚡ срочные заявки', '📍 рядом с вами', '💰 от 1500 ₽', '⭐ с бюджетом'];
 const SOCIAL_WORKER = [
   ['12 480', 'заказов'],
   ['4.9 ★', 'рейтинг'],
@@ -59,6 +61,61 @@ function timeAgoShort(d) {
   const days = Math.floor(h / 24);
   if (days < 30) return `${days} дн назад`;
   return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+}
+
+/** Короткое время для ленты в hero (как на макете: «4 мин»). */
+function timeAgoFeed(d) {
+  if (!d) return '';
+  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (m < 1) return 'только что';
+  if (m < 60) return `${m} мин`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} ч`;
+  const days = Math.floor(h / 24);
+  if (days < 30) return `${days} дн`;
+  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+}
+
+function buildPlatformFeedFromOpenRequests(openRequests) {
+  const sorted = [...(Array.isArray(openRequests) ? openRequests : [])].sort(
+    (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+  );
+  return sorted.slice(0, 24).map((req, idx) => {
+    const full = [req.customerName, req.customerLastName].filter(Boolean).join(' ').trim();
+    const who = full.split(/\s+/)[0] || 'Заказчик';
+    const title = (req.title || 'Заявка').trim();
+    const short = title.length > 44 ? `${title.slice(0, 42)}…` : title;
+    return {
+      key: String(req.id ?? `req-${idx}`),
+      who,
+      what: `ищет мастера «${short}»`,
+      time: timeAgoFeed(req.createdAt),
+      color: FEED_AVATAR_GRADIENTS[idx % FEED_AVATAR_GRADIENTS.length],
+    };
+  });
+}
+
+/** ≥3 пункта: с API и/или демо; иначе только демо-ротация как у мастера. */
+function resolvePlatformFeedCycle(openRequests) {
+  const fromApi = buildPlatformFeedFromOpenRequests(openRequests);
+  if (fromApi.length >= 3) return fromApi;
+  if (fromApi.length > 0) {
+    const merged = [...fromApi];
+    for (let i = 0; merged.length < 3; i += 1) {
+      const d = FEED_PLATFORM_DEFAULT[i % FEED_PLATFORM_DEFAULT.length];
+      merged.push({ ...d, key: `def-${i}` });
+    }
+    return merged;
+  }
+  return FEED_PLATFORM_DEFAULT.map((row, i) => ({ ...row, key: `def-${i}` }));
+}
+
+function visiblePlatformFeedRows(feedCycle, feedIdx) {
+  const n = Math.max(1, feedCycle.length);
+  return [0, 1, 2].map((k) => {
+    const row = feedCycle[(feedIdx + k) % n];
+    return { ...row, _k: `${row.key}-${k}` };
+  });
 }
 
 function listingRatingValue(l) {
@@ -201,50 +258,19 @@ export function CustomerHomePage({ userId }) {
     return rows;
   }, [listings]);
 
-  const customerFeedCycle = useMemo(() => {
-    const sorted = [...openRequests].sort(
-      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
-    );
-    const rows = sorted.slice(0, 24).map((req, idx) => {
-      const full = [req.customerName, req.customerLastName].filter(Boolean).join(' ').trim();
-      const who = full.split(/\s+/)[0] || 'Заказчик';
-      const title = (req.title || 'Заявка').trim();
-      const short = title.length > 44 ? `${title.slice(0, 42)}…` : title;
-      return {
-        key: String(req.id ?? `i-${idx}`),
-        who,
-        what: `ищет мастера «${short}»`,
-        time: timeAgoShort(req.createdAt),
-        color: FEED_AVATAR_GRADIENTS[idx % FEED_AVATAR_GRADIENTS.length],
-      };
-    });
-    if (rows.length) return rows;
-    return [
-      {
-        key: 'placeholder',
-        who: '…',
-        what: 'Пока нет открытых заявок — опубликуйте свою в пару кликов',
-        time: '',
-        color: FEED_AVATAR_GRADIENTS[0],
-      },
-    ];
-  }, [openRequests]);
+  const platformFeedCycle = useMemo(() => resolvePlatformFeedCycle(openRequests), [openRequests]);
 
-  const feedCycleMod = Math.max(1, customerFeedCycle.length);
+  const feedCycleMod = Math.max(1, platformFeedCycle.length);
 
   useEffect(() => {
     const t = setInterval(() => setFeedIdx((i) => (i + 1) % feedCycleMod), 3500);
     return () => clearInterval(t);
   }, [feedCycleMod]);
 
-  const visibleFeed = useMemo(() => {
-    const cycle = customerFeedCycle;
-    const n = Math.max(1, cycle.length);
-    return [0, 1, 2].map((k) => {
-      const row = cycle[(feedIdx + k) % n];
-      return { ...row, _k: `${row.key}-${k}` };
-    });
-  }, [feedIdx, customerFeedCycle]);
+  const visibleFeed = useMemo(
+    () => visiblePlatformFeedRows(platformFeedCycle, feedIdx),
+    [platformFeedCycle, feedIdx],
+  );
 
   const avgRatingListings = useMemo(() => averageListingRating(listings), [listings]);
   const masterCount = useMemo(() => uniqueWorkerCountFromListings(listings), [listings]);
@@ -683,10 +709,14 @@ export function WorkerHomePage({ userId, userName }) {
     setShown(8);
   }, [homeListCat]);
 
+  const platformFeedCycle = useMemo(() => resolvePlatformFeedCycle(openRequests), [openRequests]);
+
+  const feedCycleMod = Math.max(1, platformFeedCycle.length);
+
   useEffect(() => {
-    const t = setInterval(() => setFeedIdx((i) => (i + 1) % FEED_WORKER.length), 3500);
+    const t = setInterval(() => setFeedIdx((i) => (i + 1) % feedCycleMod), 3500);
     return () => clearInterval(t);
-  }, []);
+  }, [feedCycleMod]);
 
   const sortedOpenRequests = useMemo(
     () => [...openRequests].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
@@ -726,12 +756,8 @@ export function WorkerHomePage({ userId, userName }) {
   );
 
   const visibleFeed = useMemo(
-    () => [
-      FEED_WORKER[feedIdx],
-      FEED_WORKER[(feedIdx + 1) % FEED_WORKER.length],
-      FEED_WORKER[(feedIdx + 2) % FEED_WORKER.length],
-    ],
-    [feedIdx],
+    () => visiblePlatformFeedRows(platformFeedCycle, feedIdx),
+    [platformFeedCycle, feedIdx],
   );
 
   const sidebarRequests = useMemo(() => sortedOpenRequests.slice(0, 3), [sortedOpenRequests]);
@@ -813,8 +839,8 @@ export function WorkerHomePage({ userId, userName }) {
               <span className="chpv-live-online">Онлайн</span>
             </div>
             <div className="chpv-feed">
-              {visibleFeed.map((f, i) => (
-                <div className="chpv-feed-row" key={`${f.who}-${i}`}>
+              {visibleFeed.map((f) => (
+                <div className="chpv-feed-row" key={f._k}>
                   <div className="chpv-feed-ava" style={{ background: f.color }}>
                     {f.who[0]}
                   </div>
