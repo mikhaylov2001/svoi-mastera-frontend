@@ -8,6 +8,8 @@ import {
   getOpenJobRequests,
   getCategories,
   getListings,
+  getWorkerStats,
+  getCustomerStats,
 } from '../api';
 import { formatJobRequestBudgetLabel, hasJobRequestPublishedPrice } from '../utils/jobRequestBudget';
 import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
@@ -162,6 +164,34 @@ function workerListingPhotoUrl(url) {
   return BACKEND_ORIGIN + url;
 }
 
+async function fetchStatsMap(ids, fetcher) {
+  const unique = [...new Set(ids.filter((id) => id != null && String(id).trim() !== ''))];
+  const pairs = await Promise.all(
+    unique.slice(0, 16).map(async (id) => {
+      try {
+        const st = await fetcher(id);
+        return [String(id), st];
+      } catch {
+        return null;
+      }
+    }),
+  );
+  return Object.fromEntries(pairs.filter(Boolean));
+}
+
+function SpotlightAvatar({ photoUrl, name }) {
+  const src = workerListingPhotoUrl(photoUrl);
+  const initial = (name || '?').trim().charAt(0).toUpperCase() || '?';
+  if (src) {
+    return <img src={src} alt="" className="chpv-tm-ava chpv-tm-ava--photo" loading="lazy" />;
+  }
+  return <div className="chpv-tm-ava">{initial}</div>;
+}
+
+function SpotlightRate({ rate }) {
+  return <div className="chpv-tm-rate">{rate != null ? `★ ${Number(rate).toFixed(1)}` : '★ —'}</div>;
+}
+
 export function CustomerHomePage({ userId }) {
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
@@ -173,6 +203,7 @@ export function CustomerHomePage({ userId }) {
   const [sortBy, setSortBy] = useState('new');
   const [q, setQ] = useState('');
   const [feedIdx, setFeedIdx] = useState(0);
+  const [workerStats, setWorkerStats] = useState({});
 
   const reloadCustomerHome = useCallback(async () => {
     try {
@@ -181,9 +212,13 @@ export function CustomerHomePage({ userId }) {
         getOpenJobRequests().catch(() => []),
         getCategories().catch(() => []),
       ]);
-      setListings(Array.isArray(rawListings) ? rawListings.filter((l) => l.active) : []);
+      const activeListings = Array.isArray(rawListings) ? rawListings.filter((l) => l.active) : [];
+      setListings(activeListings);
       setOpenRequests(Array.isArray(rawOpen) ? rawOpen : []);
       setCategoriesApi(Array.isArray(cats) ? cats : []);
+
+      const workerIds = activeListings.map((l) => l.workerId).filter((id) => id != null);
+      setWorkerStats(await fetchStatsMap(workerIds, getWorkerStats));
 
       if (userId != null) {
         const prof = await getUserProfile(userId).catch(() => null);
@@ -193,6 +228,7 @@ export function CustomerHomePage({ userId }) {
     } catch {
       setListings([]);
       setOpenRequests([]);
+      setWorkerStats({});
     }
   }, [userId]);
 
@@ -251,15 +287,31 @@ export function CustomerHomePage({ userId }) {
     const seen = new Set();
     const rows = [];
     for (const l of listings) {
-      const key = l.workerId ?? `${l.workerName}-${l.workerLastName}`;
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      const name = [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
-      rows.push({ name, cat: (l.category || '').trim() || 'Услуга', rate: listingRatingValue(l) });
+      const dedupeKey = l.workerId ?? `${l.workerName}-${l.workerLastName}`;
+      if (!dedupeKey || seen.has(dedupeKey)) continue;
+      seen.add(dedupeKey);
+      const wid = l.workerId != null ? String(l.workerId) : null;
+      const st = wid ? workerStats[wid] : null;
+      const name =
+        [l.workerName, l.workerLastName].filter(Boolean).join(' ') ||
+        [st?.displayName, st?.lastName].filter(Boolean).join(' ') ||
+        'Мастер';
+      const rate =
+        listingRatingValue(l) ??
+        (typeof st?.averageRating === 'number' && !Number.isNaN(st.averageRating) ? st.averageRating : null);
+      rows.push({
+        key: wid || `w-${name}`,
+        workerId: wid,
+        listingId: l.id,
+        name,
+        cat: (l.category || '').trim() || 'Услуга',
+        rate,
+        avatar: l.workerAvatar || st?.avatarUrl || null,
+      });
       if (rows.length >= 3) break;
     }
     return rows;
-  }, [listings]);
+  }, [listings, workerStats]);
 
   const platformFeedCycle = useMemo(() => resolvePlatformFeedCycle(openRequests), [openRequests]);
 
@@ -600,14 +652,19 @@ export function CustomerHomePage({ userId }) {
               </p>
             ) : (
               sidebarSpotlights.map((m) => (
-                <div className="chpv-top-master" key={m.name}>
-                  <div className="chpv-tm-ava">{m.name[0]}</div>
+                <Link
+                  key={m.key}
+                  to={m.workerId ? `/workers/${m.workerId}` : `/listings/${m.listingId}`}
+                  className="chpv-top-master"
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <SpotlightAvatar photoUrl={m.avatar} name={m.name} />
                   <div style={{ minWidth: 0 }}>
                     <div className="chpv-tm-name">{m.name}</div>
                     <div className="chpv-tm-cat">{m.cat}</div>
                   </div>
-                  <div className="chpv-tm-rate">{m.rate != null ? `★ ${m.rate.toFixed(1)}` : '★ —'}</div>
-                </div>
+                  <SpotlightRate rate={m.rate} />
+                </Link>
               ))
             )}
           </div>
@@ -655,6 +712,7 @@ export function WorkerHomePage({ userId, userName }) {
   const [q, setQ] = useState('');
   const [feedIdx, setFeedIdx] = useState(0);
   const [shown, setShown] = useState(8);
+  const [customerStats, setCustomerStats] = useState({});
 
   const reloadWorkerHome = useCallback(async () => {
     if (!userId) return;
@@ -665,8 +723,11 @@ export function WorkerHomePage({ userId, userName }) {
         getUserProfile(userId).catch(() => null),
         getCategories().catch(() => []),
       ]);
-      setOpenRequests(Array.isArray(reqs) ? reqs : []);
+      const list = Array.isArray(reqs) ? reqs : [];
+      setOpenRequests(list);
       setCategories(Array.isArray(cats) ? cats : []);
+      const customerIds = list.map((r) => r.customerId).filter((id) => id != null);
+      setCustomerStats(await fetchStatsMap(customerIds, getCustomerStats));
       const c = (prof && prof.city && String(prof.city).trim()) || '';
       if (c) setCity(c);
     } finally {
@@ -735,7 +796,33 @@ export function WorkerHomePage({ userId, userName }) {
     [platformFeedCycle, feedIdx],
   );
 
-  const sidebarRequests = useMemo(() => sortedOpenRequests.slice(0, 3), [sortedOpenRequests]);
+  const sidebarCustomerSpotlights = useMemo(() => {
+    const seen = new Set();
+    const rows = [];
+    for (const r of sortedOpenRequests) {
+      const cid = r.customerId != null ? String(r.customerId) : null;
+      const dedupeKey = cid ?? `${r.customerName}-${r.customerLastName}`;
+      if (!dedupeKey || seen.has(dedupeKey)) continue;
+      seen.add(dedupeKey);
+      const st = cid ? customerStats[cid] : null;
+      const name = [r.customerName, r.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
+      const rate =
+        typeof st?.averageRating === 'number' && !Number.isNaN(st.averageRating) ? st.averageRating : null;
+      const catLabel = r.categoryName || catName(r.categoryId);
+      rows.push({
+        key: cid || `c-${r.id}`,
+        requestId: r.id,
+        customerId: cid,
+        name,
+        cat: (r.title || catLabel || 'Заявка').trim().slice(0, 48),
+        sub: hasJobRequestPublishedPrice(r) ? formatJobRequestBudgetLabel(r) : catLabel,
+        rate,
+        avatar: r.customerAvatar || null,
+      });
+      if (rows.length >= 3) break;
+    }
+    return rows;
+  }, [sortedOpenRequests, customerStats, catName]);
 
   const onSearch = (e) => {
     e.preventDefault();
@@ -1030,30 +1117,31 @@ export function WorkerHomePage({ userId, userName }) {
           </div>
 
           <div className="chpv-widget">
-            <h3 className="chpv-widget-title">Свежие в ленте</h3>
-            {sidebarRequests.length === 0 ? (
-              <p style={{ margin: 0, fontSize: 13, color: '#888', lineHeight: 1.5 }}>Заявки появятся здесь после загрузки.</p>
+            <h3 className="chpv-widget-title">Заказчики с заявками</h3>
+            {sidebarCustomerSpotlights.length === 0 ? (
+              <p style={{ margin: 0, fontSize: 13, color: '#888', lineHeight: 1.5 }}>
+                Здесь появятся заказчики из актуальных заявок.
+              </p>
             ) : (
-              sidebarRequests.map((r) => {
-                const title = (r.title || 'Заявка').slice(0, 80);
-                const budget = hasJobRequestPublishedPrice(r) ? formatJobRequestBudgetLabel(r) : 'бюджет уточняется';
-                return (
-                  <Link key={r.id} to={`/find-work?request=${encodeURIComponent(r.id)}`} className="chpv-top-master" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <div className="chpv-tm-ava" style={{ fontSize: 12 }}>
-                      {(r.customerName || '?')[0]}
-                    </div>
-                    <div style={{ minWidth: 0 }}>
-                      <div className="chpv-tm-name" style={{ fontSize: 12, lineHeight: 1.25 }}>
-                        {title}
-                      </div>
-                      <div className="chpv-tm-cat">{budget}</div>
-                    </div>
-                    <div className="chpv-tm-rate" style={{ fontSize: 11, color: '#94a3b8' }}>
-                      →
-                    </div>
-                  </Link>
-                );
-              })
+              sidebarCustomerSpotlights.map((c) => (
+                <Link
+                  key={c.key}
+                  to={
+                    c.customerId
+                      ? `/customers/${c.customerId}`
+                      : `/find-work?request=${encodeURIComponent(c.requestId)}`
+                  }
+                  className="chpv-top-master"
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <SpotlightAvatar photoUrl={c.avatar} name={c.name} />
+                  <div style={{ minWidth: 0 }}>
+                    <div className="chpv-tm-name">{c.name}</div>
+                    <div className="chpv-tm-cat">{c.sub}</div>
+                  </div>
+                  <SpotlightRate rate={c.rate} />
+                </Link>
+              ))
             )}
           </div>
 
