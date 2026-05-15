@@ -41,6 +41,9 @@ const FEED_PLATFORM_DEFAULT = [
   { who: 'Мария', what: 'опубликовала «Генеральная уборка»', time: '6 мин', color: 'linear-gradient(135deg,#0ea5e9,#22d3ee)' },
 ];
 
+const CHIPS_CUSTOMER = ['⚡ Электрика', '🔧 Сантехника', '🧹 Уборка', '💻 IT', '🚚 Перевозки', '🎨 Отделка', '🔨 Ремонт', '✂️ Красота'];
+const QUICK_CUSTOMER = ['⚡ электрик сегодня', '📍 рядом с вами', '💰 от 1500 ₽', '⭐ с рейтингом'];
+
 const CHIPS_WORKER = ['⚡ Электрика', '🔧 Сантехника', '🧹 Уборка', '💻 IT', '🚚 Перевозки', '🎨 Отделка', '🔨 Ремонт', '✂️ Красота'];
 const QUICK_WORKER = ['⚡ срочные заявки', '📍 рядом с вами', '💰 от 1500 ₽', '⭐ с бюджетом'];
 const SOCIAL_WORKER = [
@@ -288,28 +291,6 @@ export function CustomerHomePage({ userId }) {
     [listings.length, avgRatingListings, masterCount, openCount, todayReqCount],
   );
 
-  const discoveryChips = useMemo(() => {
-    const top = masterListingCategoryChips.slice(0, 10);
-    if (top.length) {
-      return top.map((x) => ({ label: x.name, href: `/find-master?q=${encodeURIComponent(x.name)}` }));
-    }
-    return ALL_CATS.slice(0, 8).map((c) => ({
-      label: c.name,
-      href: `/find-master/${c.slug}`,
-    }));
-  }, [masterListingCategoryChips]);
-
-  const quickSearchChips = useMemo(() => {
-    const sorted = [...openRequests].sort(
-      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
-    );
-    return sorted.slice(0, 4).map((r) => {
-      const t = (r.title || '').trim();
-      const label = t.length > 36 ? `${t.slice(0, 34)}…` : t || 'Заявка';
-      return { label, q: t || 'заявка' };
-    });
-  }, [openRequests]);
-
   const onSearch = (e) => {
     e.preventDefault();
     const s = q.trim();
@@ -358,31 +339,25 @@ export function CustomerHomePage({ userId }) {
             </form>
 
             <div className="chpv-quick">
-              {quickSearchChips.length ? (
-                quickSearchChips.map((item, idx) => (
-                  <button key={`${item.q}-${idx}`} type="button" className="chpv-quick-chip" onClick={() => quickGo(item.q)}>
-                    {item.label}
-                  </button>
-                ))
-              ) : (
-                <button type="button" className="chpv-quick-chip" onClick={() => navigate('/find-master')}>
-                  Каталог мастеров
+              {QUICK_CUSTOMER.map((t) => (
+                <button key={t} type="button" className="chpv-quick-chip" onClick={() => quickGo(t)}>
+                  {t}
                 </button>
-              )}
+              ))}
             </div>
 
             <div className="chpv-trust">
               <div className="chpv-trust-item">
-                <strong>{listings.length.toLocaleString('ru-RU')}</strong>
+                <strong>{listings.length ? listings.length.toLocaleString('ru-RU') : '—'}</strong>
                 объявлений в каталоге
               </div>
               <div className="chpv-trust-item">
-                <strong>{avgRatingListings != null ? `${avgRatingListings.toFixed(1)} ★` : '—'}</strong>
-                средняя оценка в объявлениях
+                <strong>{avgRatingListings != null ? `${avgRatingListings.toFixed(1)} ★` : '4.9 ★'}</strong>
+                рейтинг мастеров
               </div>
               <div className="chpv-trust-item">
-                <strong>{openCount.toLocaleString('ru-RU')}</strong>
-                открытых заявок
+                <strong>~7 мин</strong>
+                средний отклик
               </div>
             </div>
           </div>
@@ -469,9 +444,9 @@ export function CustomerHomePage({ userId }) {
           </div>
 
           <div className="chpv-chips">
-            {discoveryChips.map((chip, idx) => (
-              <Link key={`${chip.href}-${idx}`} className="chpv-chip" to={chip.href}>
-                {chip.label}
+            {CHIPS_CUSTOMER.map((chip) => (
+              <Link key={chip} className="chpv-chip" to={`/find-master?q=${encodeURIComponent(chip)}`}>
+                {chip}
               </Link>
             ))}
           </div>
