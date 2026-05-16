@@ -9,6 +9,7 @@ import { getCategoryPlaceholderPhotoUrlOrDefault } from '../utils/categoryPlaceh
 import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
 import './Header.css';
 import FavoriteHeartButton from './FavoriteHeartButton';
+import BrandLogo from './BrandLogo';
 
 const NOTIF_API = 'https://svoi-mastera-backend.onrender.com/api/v1/notifications';
 
@@ -18,19 +19,6 @@ function SearchIcon() {
       <circle cx="11" cy="11" r="8"/>
       <path d="m21 21-4.35-4.35"/>
     </svg>
-  );
-}
-
-function LogoIcon() {
-  return (
-    <img
-      src="/brand-logo.png"
-      alt=""
-      className="header-logo-img"
-      width={140}
-      height={36}
-      aria-hidden
-    />
   );
 }
 
@@ -276,7 +264,7 @@ function Header() {
         <div className="header-inner">
 
           {/* ── LOGO ── */}
-          <Link
+          <BrandLogo
             to={homePath}
             className="header-logo"
             onClick={(e) => {
@@ -285,9 +273,7 @@ function Header() {
                 dispatchSameRouteRefetch(homePath);
               }
             }}
-          >
-            <LogoIcon />
-          </Link>
+          />
 
           {/* ── BURGER ── */}
           <button

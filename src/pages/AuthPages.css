@@ -39,36 +39,6 @@
   z-index: 2;
 }
 
-.apv2-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: var(--ink);
-}
-
-.apv2-brand--stack {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-}
-
-.apv2-brand-img {
-  display: block;
-  height: 44px;
-  width: auto;
-  max-width: min(220px, 52vw);
-  object-fit: contain;
-}
-
-.apv2-brand-s {
-  display: block;
-  font-size: 11px;
-  color: var(--muted);
-  font-weight: 600;
-  padding-left: 2px;
-}
-
 .apv2-back {
   display: inline-flex;
   align-items: center;

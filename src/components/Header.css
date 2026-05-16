@@ -30,14 +30,6 @@
   text-decoration: none;
 }
 
-.header-logo-img {
-  display: block;
-  height: 36px;
-  width: auto;
-  max-width: 150px;
-  object-fit: contain;
-}
-
 /* Иконка SM */
 .header-logo-icon-new {
   width: 38px;

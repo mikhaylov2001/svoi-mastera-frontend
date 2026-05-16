@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { loginUser, registerUser } from '../api';
 import { useAuth } from '../context/AuthContext';
+import BrandLogo from '../components/BrandLogo';
 import './AuthPages.css';
 
 function isValidEmail(email) {
@@ -38,22 +39,11 @@ function passwordStrength(pass) {
   return s;
 }
 
-const BRAND_LOGO_SRC = '/brand-logo.png';
-
-function BrandLogo({ showCity = false, to = '/login' }) {
-  return (
-    <Link to={to} className={`apv2-brand${showCity ? ' apv2-brand--stack' : ''}`}>
-      <img src={BRAND_LOGO_SRC} alt="СвоиМастера" className="apv2-brand-img" width={200} height={48} />
-      {showCity ? <span className="apv2-brand-s">Йошкар-Ола</span> : null}
-    </Link>
-  );
-}
-
 function AuthShowcase() {
   return (
     <aside className="apv2-show">
       <div className="apv2-top">
-        <BrandLogo showCity to="/login" />
+        <BrandLogo to="/login" showCity />
         <Link to="/" className="apv2-back">
           <ArrowLeft size={14} /> На главную
         </Link>
