@@ -774,6 +774,19 @@
   margin-bottom: 20px;
 }
 
+.apv2-form-nav {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 28px;
+  width: 100%;
+}
+
+.apv2-form-nav .apv2-tabs {
+  margin-bottom: 0;
+}
+
 .apv2-back-link {
   display: inline-flex;
   align-items: center;
@@ -781,7 +794,13 @@
   font-size: 13px;
   color: var(--muted);
   text-decoration: none;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.apv2-form-nav .apv2-back-link {
+  margin-bottom: 10px;
 }
 
 .apv2-back-link:hover {

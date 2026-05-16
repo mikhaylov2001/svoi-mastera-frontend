@@ -565,11 +565,12 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthShell>
-      <AuthTabs active="login" />
-
-      <Link to="/login" className="apv2-back-link">
-        <ArrowLeft size={14} /> Назад ко входу
-      </Link>
+      <div className="apv2-form-nav">
+        <AuthTabs active="login" />
+        <Link to="/login" className="apv2-back-link">
+          <ArrowLeft size={14} /> Назад ко входу
+        </Link>
+      </div>
 
       <h2 className="apv2-title">
         Восстановление <em>пароля</em>.
