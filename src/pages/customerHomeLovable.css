@@ -90,7 +90,8 @@
 .chpv-search-input { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 10px; }
 .chpv-search-loc { color: rgba(255, 255, 255, 0.85); font-weight: 700; font-size: 14px; background: rgba(255, 255, 255, 0.05); white-space: nowrap; }
 .chpv-search-input { flex: 1; background: transparent; }
-.chpv-search-input input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 15px; font-family: inherit; }
+.chpv-search-ico { flex-shrink: 0; font-size: 15px; line-height: 1; opacity: 0.45; }
+.chpv-search-input input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 15px; font-family: inherit; min-width: 0; }
 .chpv-search-input input::placeholder { color: rgba(255, 255, 255, 0.4); }
 .chpv-search-go {
   background: #e8410a;

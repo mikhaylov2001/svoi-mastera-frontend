@@ -188,12 +188,11 @@ function SpotlightRate({ rate }) {
 
 function HomeCatalogSearch({ value, onChange, onSubmit, placeholder, inputId }) {
   return (
-    <form className="chpv-search chpv-search--strip" onSubmit={onSubmit}>
+    <form className="chpv-search" onSubmit={onSubmit}>
       <div className="chpv-search-input">
-        <svg className="chpv-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
-          <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
+        <span className="chpv-search-ico" aria-hidden>
+          🔍
+        </span>
         <input
           id={inputId}
           placeholder={placeholder}
@@ -382,6 +381,14 @@ export function CustomerHomePage({ userId }) {
               отзывам.
             </p>
 
+            <HomeCatalogSearch
+              inputId="chpv-search-customer"
+              placeholder="Что ищете? Например: сантехник на сегодня"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onSubmit={onSearch}
+            />
+
             <div className="chpv-quick">
               {QUICK_CUSTOMER.map((t) => (
                 <button key={t} type="button" className="chpv-quick-chip" onClick={() => quickGo(t)}>
@@ -422,18 +429,6 @@ export function CustomerHomePage({ userId }) {
           </aside>
         </div>
       </section>
-
-      <div className="chpv-social chpv-search-strip">
-        <div className="chpv-social-inner">
-          <HomeCatalogSearch
-            inputId="chpv-search-customer"
-            placeholder="Что ищете? Например: сантехник на сегодня"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onSubmit={onSearch}
-          />
-        </div>
-      </div>
 
       <div className="chpv-body">
         <main>
@@ -838,6 +833,14 @@ export function WorkerHomePage({ userId, userName }) {
               карточки ниже.
             </p>
 
+            <HomeCatalogSearch
+              inputId="chpv-search-worker"
+              placeholder="Что ищете? Например: электрика на сегодня"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onSubmit={onSearch}
+            />
+
             <div className="chpv-quick">
               {QUICK_WORKER.map((t) => (
                 <button key={t} type="button" className="chpv-quick-chip" onClick={() => quickGo(t)}>
@@ -878,18 +881,6 @@ export function WorkerHomePage({ userId, userName }) {
           </aside>
         </div>
       </section>
-
-      <div className="chpv-social chpv-search-strip">
-        <div className="chpv-social-inner">
-          <HomeCatalogSearch
-            inputId="chpv-search-worker"
-            placeholder="Что ищете? Например: электрика на сегодня"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onSubmit={onSearch}
-          />
-        </div>
-      </div>
 
       <div className="chpv-body">
         <main>
