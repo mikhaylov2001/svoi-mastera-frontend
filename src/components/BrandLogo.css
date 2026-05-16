@@ -8,11 +8,11 @@
 }
 
 .brand-logo-icon {
-  font-size: 26px;
+  display: block;
+  font-size: 28px;
   line-height: 1;
   flex-shrink: 0;
-  transform: rotate(-18deg);
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.08));
+  align-self: center;
 }
 
 .brand-logo-wordmark {
@@ -47,13 +47,8 @@
   line-height: 1.2;
 }
 
-/* Auth layout */
-.apv2-top .brand-logo {
-  align-items: flex-start;
-}
-
 .apv2-mobtop .brand-logo-icon {
-  font-size: 22px;
+  font-size: 26px;
 }
 
 .apv2-mobtop .brand-logo-name {
@@ -66,7 +61,7 @@
 }
 
 .header-logo .brand-logo-icon {
-  font-size: 24px;
+  font-size: 28px;
 }
 
 .header-logo .brand-logo-name {
