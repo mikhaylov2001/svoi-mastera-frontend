@@ -22,7 +22,16 @@ function SearchIcon() {
 }
 
 function LogoIcon() {
-  return <span style={{ fontSize: 28 }}>🔨</span>;
+  return (
+    <img
+      src="/brand-logo.png"
+      alt=""
+      className="header-logo-img"
+      width={140}
+      height={36}
+      aria-hidden
+    />
+  );
 }
 
 /** Сердце в шапке — размер как у колокольчика (20px), цвет от ссылки */
@@ -278,7 +287,6 @@ function Header() {
             }}
           >
             <LogoIcon />
-            <span className="header-logo-text"><b>Свои</b><b className="header-logo-text-accent">Мастера</b></span>
           </Link>
 
           {/* ── BURGER ── */}

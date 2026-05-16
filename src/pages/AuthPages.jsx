@@ -38,17 +38,22 @@ function passwordStrength(pass) {
   return s;
 }
 
+const BRAND_LOGO_SRC = '/brand-logo.png';
+
+function BrandLogo({ showCity = false, to = '/login' }) {
+  return (
+    <Link to={to} className={`apv2-brand${showCity ? ' apv2-brand--stack' : ''}`}>
+      <img src={BRAND_LOGO_SRC} alt="СвоиМастера" className="apv2-brand-img" width={200} height={48} />
+      {showCity ? <span className="apv2-brand-s">Йошкар-Ола</span> : null}
+    </Link>
+  );
+}
+
 function AuthShowcase() {
   return (
     <aside className="apv2-show">
       <div className="apv2-top">
-        <Link to="/login" className="apv2-brand">
-          <span className="apv2-mark">СМ</span>
-          <span>
-            <span className="apv2-brand-t">СвоиМастера</span>
-            <span className="apv2-brand-s">Йошкар-Ола</span>
-          </span>
-        </Link>
+        <BrandLogo showCity to="/login" />
         <Link to="/" className="apv2-back">
           <ArrowLeft size={14} /> На главную
         </Link>
@@ -121,10 +126,7 @@ function AuthShowcase() {
 function AuthMobileTop() {
   return (
     <div className="apv2-mobtop">
-      <Link to="/login" className="apv2-brand">
-        <span className="apv2-mark">СМ</span>
-        <span className="apv2-brand-t">СвоиМастера</span>
-      </Link>
+      <BrandLogo to="/login" />
       <Link to="/" className="apv2-back">
         <ArrowLeft size={14} /> Назад
       </Link>
@@ -325,8 +327,14 @@ export function LoginPage() {
 
         <div className="apv2-row">
           <label className="apv2-check">
-            <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-            Запомнить меня на 30 дней
+            <input
+              type="checkbox"
+              className="apv2-check-input"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+            />
+            <span className="apv2-check-box" aria-hidden />
+            <span>Запомнить меня на 30 дней</span>
           </label>
         </div>
 
