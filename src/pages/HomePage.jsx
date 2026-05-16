@@ -22,6 +22,7 @@ import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
 import GuestLandingHome from './GuestLandingHome';
 import FavoriteHeartButton from '../components/FavoriteHeartButton';
+import { rankItemsBySmartMatch, listingHaystack, jobRequestHaystack } from '../utils/smartSearch';
 import '../roles/worker/jobListings.css';
 import './customerHomeLovable.css';
 
@@ -48,13 +49,6 @@ const QUICK_CUSTOMER = ['⚡ электрик сегодня', '📍 рядом 
 
 const CHIPS_WORKER = ['⚡ Электрика', '🔧 Сантехника', '🧹 Уборка', '💻 IT', '🚚 Перевозки', '🎨 Отделка', '🔨 Ремонт', '✂️ Красота'];
 const QUICK_WORKER = ['⚡ срочные заявки', '📍 рядом с вами', '💰 от 1500 ₽', '⭐ с бюджетом'];
-const SOCIAL_WORKER = [
-  ['12 480', 'заказов'],
-  ['4.9 ★', 'рейтинг'],
-  ['87', 'свежих'],
-  ['~7 мин', 'отклик'],
-  ['98%', 'довольны'],
-];
 
 function timeAgoShort(d) {
   if (!d) return '';
@@ -192,6 +186,29 @@ function SpotlightRate({ rate }) {
   return <div className="chpv-tm-rate">{rate != null ? `★ ${Number(rate).toFixed(1)}` : '★ —'}</div>;
 }
 
+function HomeCatalogSearch({ value, onChange, onSubmit, placeholder, inputId }) {
+  return (
+    <form className="chpv-search chpv-search--strip" onSubmit={onSubmit}>
+      <div className="chpv-search-input">
+        <svg className="chpv-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+          <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+        <input
+          id={inputId}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          aria-label="Поиск"
+        />
+      </div>
+      <button type="submit" className="chpv-search-go">
+        Найти →
+      </button>
+    </form>
+  );
+}
+
 export function CustomerHomePage({ userId }) {
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
@@ -240,7 +257,7 @@ export function CustomerHomePage({ userId }) {
 
   useEffect(() => {
     setShown(8);
-  }, [masterListCat, sortBy]);
+  }, [masterListCat, sortBy, q]);
 
   const masterListingCategoryChips = useMemo(() => {
     const s = new Map();
@@ -266,6 +283,12 @@ export function CustomerHomePage({ userId }) {
     }
     return rows;
   }, [listings, masterListCat, sortBy]);
+
+  const filteredMasterListings = useMemo(() => {
+    const trimmed = q.trim();
+    if (trimmed.length < 2) return visibleMasterListings;
+    return rankItemsBySmartMatch(visibleMasterListings, trimmed, listingHaystack);
+  }, [visibleMasterListings, q]);
 
   const bentoCats = useMemo(() => {
     const raw =
@@ -327,21 +350,8 @@ export function CustomerHomePage({ userId }) {
     [platformFeedCycle, feedIdx],
   );
 
-  const avgRatingListings = useMemo(() => averageListingRating(listings), [listings]);
   const masterCount = useMemo(() => uniqueWorkerCountFromListings(listings), [listings]);
-  const openCount = openRequests.length;
   const todayReqCount = useMemo(() => openJobRequestsCreatedToday(openRequests), [openRequests]);
-
-  const socialCustomerStats = useMemo(
-    () => [
-      [listings.length ? listings.length.toLocaleString('ru-RU') : '0', 'объявлений'],
-      [avgRatingListings != null ? `${avgRatingListings.toFixed(1)} ★` : '—', 'ср. оценка'],
-      [masterCount ? masterCount.toLocaleString('ru-RU') : '0', 'мастеров'],
-      [openCount ? openCount.toLocaleString('ru-RU') : '0', 'открытых заявок'],
-      [todayReqCount ? todayReqCount.toLocaleString('ru-RU') : '0', 'заявок сегодня'],
-    ],
-    [listings.length, avgRatingListings, masterCount, openCount, todayReqCount],
-  );
 
   const onSearch = (e) => {
     e.preventDefault();
@@ -361,34 +371,16 @@ export function CustomerHomePage({ userId }) {
             <div className="chpv-eyebrow">
               <span className="chpv-dot" />
               {userId ? `${city} · Личный кабинет заказчика` : `${city} · Найдите мастера рядом`}
-            </div>
+          </div>
             <h1 className="chpv-h1">
               Найдите мастера в <span className="chpv-h1-city">{cityInLocative(city)}</span>
               <br />
               рядом с вами
-            </h1>
+          </h1>
             <p className="chpv-sub">
               Ремонт, сантехника, красота и другие услуги — разместите заявку или выберите мастера по объявлениям и
               отзывам.
             </p>
-
-            <form className="chpv-search" onSubmit={onSearch}>
-              <div className="chpv-search-loc">📍 {city}</div>
-              <div className="chpv-search-input">
-                <span style={{ color: 'rgba(255,255,255,.4)' }} aria-hidden>
-                  🔍
-                </span>
-                <input
-                  placeholder="Что нужно сделать? Например: починить кран"
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  aria-label="Поиск мастера"
-                />
-              </div>
-              <button type="submit" className="chpv-search-go">
-                Найти →
-              </button>
-            </form>
 
             <div className="chpv-quick">
               {QUICK_CUSTOMER.map((t) => (
@@ -396,21 +388,6 @@ export function CustomerHomePage({ userId }) {
                   {t}
                 </button>
               ))}
-            </div>
-
-            <div className="chpv-trust">
-              <div className="chpv-trust-item">
-                <strong>{listings.length ? listings.length.toLocaleString('ru-RU') : '—'}</strong>
-                объявлений в каталоге
-              </div>
-              <div className="chpv-trust-item">
-                <strong>{avgRatingListings != null ? `${avgRatingListings.toFixed(1)} ★` : '4.9 ★'}</strong>
-                рейтинг мастеров
-              </div>
-              <div className="chpv-trust-item">
-                <strong>~7 мин</strong>
-                средний отклик
-              </div>
             </div>
           </div>
 
@@ -446,17 +423,15 @@ export function CustomerHomePage({ userId }) {
         </div>
       </section>
 
-      <div className="chpv-social">
+      <div className="chpv-social chpv-search-strip">
         <div className="chpv-social-inner">
-          {socialCustomerStats.map(([bold, lbl], i) => (
-            <React.Fragment key={`soc-${lbl}-${i}`}>
-              {i > 0 ? <div className="chpv-social-divider" /> : null}
-              <div className="chpv-social-item">
-                <b>{bold}</b>
-                <span>{lbl}</span>
-              </div>
-            </React.Fragment>
-          ))}
+          <HomeCatalogSearch
+            inputId="chpv-search-customer"
+            placeholder="Что ищете? Например: сантехник на сегодня"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onSubmit={onSearch}
+          />
         </div>
       </div>
 
@@ -499,9 +474,9 @@ export function CustomerHomePage({ userId }) {
             {CHIPS_CUSTOMER.map((chip) => (
               <Link key={chip} className="chpv-chip" to={`/find-master?q=${encodeURIComponent(chip)}`}>
                 {chip}
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
 
           <div className="chpv-section-hdr" style={{ marginTop: 28 }}>
             <div>
@@ -544,29 +519,33 @@ export function CustomerHomePage({ userId }) {
           </div>
 
           <div className="chpv-grid">
-            {listings.length === 0 ? (
+          {listings.length === 0 ? (
               <div className="chpv-empty">
-                <h3>Пока нет объявлений</h3>
+              <h3>Пока нет объявлений</h3>
                 <p>Мастера скоро появятся — загляните позже или разместите заявку.</p>
               </div>
-            ) : visibleMasterListings.length === 0 ? (
+            ) : filteredMasterListings.length === 0 ? (
               <div className="chpv-empty">
-                <h3>В этой категории нет объявлений</h3>
-                <p>Попробуйте другой фильтр или раздел «Все мастера».</p>
-              </div>
-            ) : (
-              visibleMasterListings.slice(0, shown).map((l) => {
-                const img0 = l.photos?.[0];
+                <h3>{q.trim().length >= 2 ? 'Ничего не нашли' : 'В этой категории нет объявлений'}</h3>
+                <p>
+                  {q.trim().length >= 2
+                    ? 'Измените запрос или сбросьте поиск.'
+                    : 'Попробуйте другой фильтр или раздел «Все мастера».'}
+                </p>
+            </div>
+          ) : (
+              filteredMasterListings.slice(0, shown).map((l) => {
+                  const img0 = l.photos?.[0];
                 const src =
                   workerListingPhotoUrl(img0) ||
                   getCategoryPlaceholderPhotoUrlOrDefault({ category: l.category }, categoriesApi);
-                const wname = [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
+                  const wname = [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
                 const priceNum = getListingPublishedPriceNumber(l);
                 const priceStr = priceNum ? `${priceNum.toLocaleString('ru-RU')} ₽` : '— ₽';
                 const rating = listingRatingValue(l);
                 const locCity = (l.city && String(l.city).trim()) || city;
                 const detail = `/listings/${l.id}?from=home`;
-                return (
+                  return (
                   <article className="chpv-card" key={l.id}>
                     <div className="chpv-card-img">
                       <Link to={detail}>
@@ -574,7 +553,7 @@ export function CustomerHomePage({ userId }) {
                       </Link>
                       {l.category ? <div className="chpv-card-tag">{l.category}</div> : null}
                       <div className="chpv-card-fav-slot">
-                        <FavoriteHeartButton kind="listing" id={l.id} />
+                        <FavoriteHeartButton kind="listing" id={l.id} className="chpv-fav-heart" />
                       </div>
                       <div className="chpv-card-quick">
                         <Link to={detail} className="chpv-quick-btn primary" onClick={(e) => e.stopPropagation()}>
@@ -583,8 +562,8 @@ export function CustomerHomePage({ userId }) {
                         <Link to={detail} className="chpv-quick-btn" onClick={(e) => e.stopPropagation()}>
                           Подробнее
                         </Link>
-                      </div>
-                    </div>
+                        </div>
+                          </div>
                     <Link to={detail} style={{ textDecoration: 'none', color: 'inherit' }}>
                       <div className="chpv-card-body">
                         <div>
@@ -604,14 +583,14 @@ export function CustomerHomePage({ userId }) {
                       </div>
                     </Link>
                   </article>
-                );
+                  );
               })
             )}
-          </div>
-          {listings.length > 0 && shown < visibleMasterListings.length ? (
+              </div>
+          {filteredMasterListings.length > 0 && shown < filteredMasterListings.length ? (
             <button type="button" className="chpv-cta-btn" style={{ marginTop: 14 }} onClick={() => setShown((s) => s + 8)}>
-              Показать ещё · осталось {visibleMasterListings.length - shown}
-            </button>
+              Показать ещё · осталось {filteredMasterListings.length - shown}
+                </button>
           ) : null}
         </main>
 
@@ -628,8 +607,8 @@ export function CustomerHomePage({ userId }) {
             <div className="chpv-step">
               <div className="chpv-step-num">2</div>
               <div className="chpv-step-text">
-                <b>Получите отклики</b>
-                <span>В среднем за несколько минут</span>
+                <b>Получите предложения</b>
+                <span>Мастера напишут в личные сообщения</span>
               </div>
             </div>
             <div className="chpv-step">
@@ -642,7 +621,7 @@ export function CustomerHomePage({ userId }) {
             <Link className="chpv-cta-btn" to={userId ? '/my-requests' : '/register'}>
               Разместить заявку →
             </Link>
-          </div>
+        </div>
 
           <div className="chpv-widget">
             <h3 className="chpv-widget-title">Мастера с объявлениями</h3>
@@ -662,12 +641,12 @@ export function CustomerHomePage({ userId }) {
                   <div style={{ minWidth: 0 }}>
                     <div className="chpv-tm-name">{m.name}</div>
                     <div className="chpv-tm-cat">{m.cat}</div>
-                  </div>
+          </div>
                   <SpotlightRate rate={m.rate} />
                 </Link>
               ))
             )}
-          </div>
+        </div>
 
           <div className="chpv-promo">
             <h3>Стать мастером</h3>
@@ -743,7 +722,7 @@ export function WorkerHomePage({ userId, userName }) {
 
   useEffect(() => {
     setShown(8);
-  }, [homeListCat]);
+  }, [homeListCat, q]);
 
   const platformFeedCycle = useMemo(() => resolvePlatformFeedCycle(openRequests), [openRequests]);
 
@@ -780,6 +759,12 @@ export function WorkerHomePage({ userId, userName }) {
       return name === homeListCat;
     });
   }, [sortedOpenRequests, homeListCat, catName]);
+
+  const filteredHomeRequests = useMemo(() => {
+    const trimmed = q.trim();
+    if (trimmed.length < 2) return homeVisibleRequests;
+    return rankItemsBySmartMatch(homeVisibleRequests, trimmed, jobRequestHaystack);
+  }, [homeVisibleRequests, q]);
 
   const firstName = (userName || 'Мастер').trim().split(/\s+/)[0] || 'Мастер';
   const cityPrep = cityInLocative(city);
@@ -842,34 +827,16 @@ export function WorkerHomePage({ userId, userName }) {
             <div className="chpv-eyebrow">
               <span className="chpv-dot" />
               {city} · Личный кабинет мастера
-            </div>
+          </div>
             <h1 className="chpv-h1">
               Заказы и клиенты в <span className="chpv-h1-city">{cityPrep}</span>
               <br />
               рядом с вами
-            </h1>
+          </h1>
             <p className="chpv-sub">
-              Привет, {firstName}! Заявки заказчиков с открытыми задачами — ищите в каталоге или откликайтесь из карточек
-              ниже.
+              Привет, {firstName}! Заявки заказчиков с открытыми задачами — ищите в каталоге и выбирайте подходящие
+              карточки ниже.
             </p>
-
-            <form className="chpv-search" onSubmit={onSearch}>
-              <div className="chpv-search-loc">📍 {city}</div>
-              <div className="chpv-search-input">
-                <span style={{ color: 'rgba(255,255,255,.4)' }} aria-hidden>
-                  🔍
-                </span>
-                <input
-                  placeholder="Что ищете? Например: электрика на сегодня"
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  aria-label="Поиск заявок"
-                />
-              </div>
-              <button type="submit" className="chpv-search-go">
-                Найти →
-              </button>
-            </form>
 
             <div className="chpv-quick">
               {QUICK_WORKER.map((t) => (
@@ -877,21 +844,6 @@ export function WorkerHomePage({ userId, userName }) {
                   {t}
                 </button>
               ))}
-            </div>
-
-            <div className="chpv-trust">
-              <div className="chpv-trust-item">
-                <strong>{openRequests.length || '—'}</strong>
-                заявок в ленте
-              </div>
-              <div className="chpv-trust-item">
-                <strong>4.9 ★</strong>
-                доверие заказчиков
-              </div>
-              <div className="chpv-trust-item">
-                <strong>~7 мин</strong>
-                средний отклик
-              </div>
             </div>
           </div>
 
@@ -905,39 +857,37 @@ export function WorkerHomePage({ userId, userName }) {
                 <div className="chpv-feed-row" key={f._k}>
                   <div className="chpv-feed-ava" style={{ background: f.color }}>
                     {f.who[0]}
-                  </div>
+            </div>
                   <div className="chpv-feed-text">
                     <b>{f.who}</b> {f.what}
-                  </div>
+                    </div>
                   <div className="chpv-feed-time">{f.time}</div>
-                </div>
+                        </div>
               ))}
-            </div>
+                      </div>
             <div className="chpv-mini-stats">
               <div className="chpv-mini-stat">
                 <b>{openRequests.length}</b>
                 <span>в вашей ленте</span>
-              </div>
+                    </div>
               <div className="chpv-mini-stat">
                 <b>{homeListingCats.length}</b>
                 <span>направлений</span>
-              </div>
             </div>
+        </div>
           </aside>
         </div>
       </section>
 
-      <div className="chpv-social">
+      <div className="chpv-social chpv-search-strip">
         <div className="chpv-social-inner">
-          {SOCIAL_WORKER.map(([bold, lbl], i) => (
-            <React.Fragment key={`w-soc-${i}`}>
-              {i > 0 ? <div className="chpv-social-divider" /> : null}
-              <div className="chpv-social-item">
-                <b>{bold}</b>
-                <span>{lbl}</span>
-              </div>
-            </React.Fragment>
-          ))}
+          <HomeCatalogSearch
+            inputId="chpv-search-worker"
+            placeholder="Что ищете? Например: электрика на сегодня"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onSubmit={onSearch}
+          />
         </div>
       </div>
 
@@ -951,7 +901,7 @@ export function WorkerHomePage({ userId, userName }) {
             {bentoCats.map((cat, i) => {
               const n = countRequestsInCategory(cat.name);
               const img = CAT_PHOTOS[cat.slug];
-              return (
+  return (
                 <Link key={cat.slug} className={`chpv-bento-tile ${i === 0 ? 'big' : ''}`} to={`/find-work?q=${encodeURIComponent(cat.name)}`}>
                   {img ? (
                     <div className="chpv-bento-bg" style={{ backgroundImage: `url(${img})` }} />
@@ -964,8 +914,8 @@ export function WorkerHomePage({ userId, userName }) {
                     <div className="chpv-bento-meta">
                       <span>{n ? `${n} заявок` : 'заявки'}</span>
                       <span>рядом</span>
-                    </div>
-                  </div>
+            </div>
+                </div>
                 </Link>
               );
             })}
@@ -977,17 +927,17 @@ export function WorkerHomePage({ userId, userName }) {
                 {chip}
               </Link>
             ))}
-          </div>
+      </div>
 
           <div className="chpv-section-hdr" style={{ marginTop: 28 }}>
             <div>
               <h2 style={{ margin: 0 }}>Свежие заявки</h2>
               <p style={{ margin: '6px 0 0', fontSize: 13, color: '#888', fontWeight: 600 }}>
-                {loading ? 'Загрузка…' : `${pluralRequestsLabel(openRequests.length)} ждут отклика`}
+                {loading ? 'Загрузка…' : pluralRequestsLabel(openRequests.length)}
               </p>
-            </div>
-            <Link to="/find-work">Все заявки →</Link>
           </div>
+            <Link to="/find-work">Все заявки →</Link>
+              </div>
 
           <div className="chpv-filter-row">
             <button
@@ -1018,18 +968,26 @@ export function WorkerHomePage({ userId, userName }) {
               <div className="chpv-empty">
                 <h3>Загружаем заявки…</h3>
                 <p>Подождите несколько секунд.</p>
-              </div>
-            ) : homeVisibleRequests.length === 0 ? (
+            </div>
+            ) : filteredHomeRequests.length === 0 ? (
               <div className="chpv-empty">
-                <h3>{homeListCat === 'ALL' ? 'Пока нет открытых заявок' : 'В этой категории пока нет заявок'}</h3>
+                <h3>
+                  {q.trim().length >= 2
+                    ? 'Ничего не нашли'
+                    : homeListCat === 'ALL'
+                      ? 'Пока нет открытых заявок'
+                      : 'В этой категории пока нет заявок'}
+                </h3>
                 <p>
-                  {homeListCat === 'ALL'
-                    ? 'Когда заказчики опубликуют задачи, они появятся здесь и в разделе «Найти работу».'
-                    : 'Попробуйте другой фильтр.'}
+                  {q.trim().length >= 2
+                    ? 'Измените запрос или сбросьте поиск.'
+                    : homeListCat === 'ALL'
+                      ? 'Когда заказчики опубликуют задачи, они появятся здесь и в разделе «Найти работу».'
+                      : 'Попробуйте другой фильтр.'}
                 </p>
-              </div>
+          </div>
             ) : (
-              homeVisibleRequests.slice(0, shown).map((item) => {
+              filteredHomeRequests.slice(0, shown).map((item) => {
                 const catLabel = item.categoryName || catName(item.categoryId);
                 const photoSrc =
                   workerListingPhotoUrl(item.photos?.[0] || item.photo) ||
@@ -1050,66 +1008,66 @@ export function WorkerHomePage({ userId, userName }) {
                       </Link>
                       {catLabel ? <div className="chpv-card-tag">{catLabel}</div> : null}
                       <div className="chpv-card-fav-slot">
-                        <FavoriteHeartButton kind="jobRequest" id={item.id} />
-                      </div>
+                        <FavoriteHeartButton kind="jobRequest" id={item.id} className="chpv-fav-heart" />
+                </div>
                       <div className="chpv-card-quick">
                         <Link to={detail} className="chpv-quick-btn primary" onClick={(e) => e.stopPropagation()}>
-                          Откликнуться
-                        </Link>
+                          Написать
+              </Link>
                         <Link to={detail} className="chpv-quick-btn" onClick={(e) => e.stopPropagation()}>
                           Подробнее
                         </Link>
-                      </div>
-                    </div>
+          </div>
+        </div>
                     <Link to={detail} style={{ textDecoration: 'none', color: 'inherit' }}>
                       <div className="chpv-card-body">
-                        <div>
+                <div>
                           <span className="chpv-card-price">{hasPrice ? budgetLabel : '— ₽'}</span>
                           <span className="chpv-card-unit">{hasPrice ? 'в заявке' : 'бюджет'}</span>
-                        </div>
+                </div>
                         <div className="chpv-card-title">{item.title}</div>
                         <div className="chpv-card-meta">
                           <span style={{ color: '#64748b', fontWeight: 600 }}>{custName}</span>
                           <span className="chpv-card-verified">● Открыта</span>
                           <span className="chpv-card-city">📍 {cityShort}</span>
-                        </div>
-                      </div>
+              </div>
+          </div>
                     </Link>
                   </article>
                 );
               })
             )}
-          </div>
-          {!loading && homeVisibleRequests.length > 0 && shown < homeVisibleRequests.length ? (
+        </div>
+          {!loading && filteredHomeRequests.length > 0 && shown < filteredHomeRequests.length ? (
             <button type="button" className="chpv-cta-btn" style={{ marginTop: 14 }} onClick={() => setShown((s) => s + 8)}>
-              Показать ещё · осталось {homeVisibleRequests.length - shown}
+              Показать ещё · осталось {filteredHomeRequests.length - shown}
             </button>
           ) : null}
         </main>
 
         <aside className="chpv-side">
           <div className="chpv-widget">
-            <h3 className="chpv-widget-title">Отклик за минуту</h3>
+            <h3 className="chpv-widget-title">Работа с заказчиком</h3>
             <div className="chpv-step">
               <div className="chpv-step-num">1</div>
               <div className="chpv-step-text">
                 <b>Откройте заявку</b>
                 <span>Подходит по городу и задаче</span>
-              </div>
-            </div>
+          </div>
+                </div>
             <div className="chpv-step">
               <div className="chpv-step-num">2</div>
               <div className="chpv-step-text">
                 <b>Предложите цену</b>
                 <span>Срок и комментарий в одном окне</span>
               </div>
-            </div>
+          </div>
             <div className="chpv-step">
               <div className="chpv-step-num">3</div>
               <div className="chpv-step-text">
                 <b>Договоритесь в чате</b>
                 <span>Уточните детали с заказчиком</span>
-              </div>
+        </div>
             </div>
             <Link className="chpv-cta-btn" to="/find-work">
               Смотреть заявки →
@@ -1138,7 +1096,7 @@ export function WorkerHomePage({ userId, userName }) {
                   <div style={{ minWidth: 0 }}>
                     <div className="chpv-tm-name">{c.name}</div>
                     <div className="chpv-tm-cat">{c.sub}</div>
-                  </div>
+            </div>
                   <SpotlightRate rate={c.rate} />
                 </Link>
               ))
@@ -1151,7 +1109,7 @@ export function WorkerHomePage({ userId, userName }) {
             <Link className="chpv-promo-btn" to="/my-listings">
               Мои объявления →
             </Link>
-          </div>
+        </div>
         </aside>
       </div>
     </div>
