@@ -14,7 +14,7 @@ import ServicesPage from './pages/ServicesPage';
 import ManageServicesPage from './roles/worker/ManageServicesPage';
 import ActiveClientsPage from './roles/worker/ActiveClientsPage';
 import MyListingsPage from './roles/worker/MyListingsPage';
-import { LoginPage, RegisterPage } from './pages/AuthPages';
+import { LoginPage, RegisterPage, ForgotPasswordPage } from './pages/AuthPages';
 import CustomerProfilePage from './roles/customer/CustomerProfilePage';
 import WorkerProfilePage from './roles/worker/WorkerProfilePage';
 import PublicWorkerProfilePage from './roles/worker/PublicWorkerProfilePage';
@@ -68,13 +68,13 @@ function CustomerHomeRoute() {
 function AppContent() {
   const location = useLocation();
 
-  // На страницах чата скрываем футер — чат занимает весь экран
   const isChatPage = location.pathname.startsWith('/chat');
+  const isAuthPage = ['/login', '/register', '/forgot-password'].includes(location.pathname);
 
   return (
     <div className="app-shell">
-      <Header />
-      <main className="app-main">
+      {!isAuthPage && <Header />}
+      <main className={`app-main${isAuthPage ? ' app-main--auth' : ''}`}>
         <Routes>
           <Route path="/"                element={<CustomerHomeRoute />} />
           <Route path="/worker-home"     element={<WorkerHomeGate />} />
@@ -85,6 +85,7 @@ function AppContent() {
           <Route path="/categories/:slug"      element={<CategoryPage />} />
           <Route path="/login"           element={<LoginPage />} />
           <Route path="/register"        element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/profile"         element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
           <Route path="/worker-profile"  element={<ProtectedRoute workerOnly><WorkerProfilePage /></ProtectedRoute>} />
           <Route path="/deals"           element={<ProtectedRoute><DealsRoute /></ProtectedRoute>} />
@@ -115,7 +116,7 @@ function AppContent() {
         </Routes>
       </main>
       {/* Футер скрыт на странице чата */}
-      {!isChatPage && <Footer />}
+      {!isChatPage && !isAuthPage && <Footer />}
     </div>
   );
 }

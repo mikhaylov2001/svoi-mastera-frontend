@@ -55,6 +55,11 @@ body {
   background: var(--gray-50);
 }
 
+.app-main--auth {
+  background: #fafaf7;
+  padding: 0;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
