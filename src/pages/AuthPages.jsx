@@ -50,18 +50,16 @@ function AuthShowcase() {
       </div>
 
       <div className="apv2-hero">
-        <div className="apv2-hero-copy">
-          <span className="apv2-eyebrow">
-            <span className="dot" /> 247 мастеров онлайн прямо сейчас
-          </span>
-          <h1 className="apv2-h">
-            Заказы, мастера, отзывы — <em>в одном месте.</em>
-          </h1>
-          <p className="apv2-lead">
-            Локальный маркетплейс услуг для жителей Йошкар-Олы. Прямой контакт с мастером, прозрачные цены,
-            реальные отзывы.
-          </p>
-        </div>
+        <span className="apv2-eyebrow">
+          <span className="dot" /> 247 мастеров онлайн прямо сейчас
+        </span>
+        <h1 className="apv2-h">
+          Заказы, мастера, отзывы — <em>в одном месте.</em>
+        </h1>
+        <p className="apv2-lead">
+          Локальный маркетплейс услуг для жителей Йошкар-Олы. Прямой контакт с мастером, прозрачные цены,
+          реальные отзывы.
+        </p>
 
         <div className="apv2-stack">
           <div className="apv2-fcard c1">
@@ -106,7 +104,7 @@ function AuthShowcase() {
         <div className="sep" />
         <div>
           <div className="apv2-stat-n">4.92★</div>
-          <div className="apv2-stat-l">Ср. рейтинг</div>
+          <div className="apv2-stat-l">Средний рейтинг</div>
         </div>
       </div>
 
