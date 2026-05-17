@@ -61,6 +61,32 @@ const GUEST_SECTION_CSS = `
     .g-reviews-scroll { }
     .g-section-dark .g-section-center .g-title { color: #fff; }
     .g-section-dark .g-section-center .g-eyebrow { color: #ff8055; }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .g-wrap { padding: 0 32px; }
+      .g-section { padding: 48px 0; }
+      .g-section-center { margin-bottom: 28px; }
+      .g-title { font-size: 28px; }
+      .g-how-grid { gap: 20px; }
+      .g-how-card { padding: 24px 22px; }
+      .g-benefits-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 20px; }
+      .g-benefit { padding: 4px 0; }
+      .g-cat-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+      .g-reviews-grid { gap: 16px; }
+      .g-review { padding: 22px 20px; }
+      .g-cta {
+        padding: 36px 40px;
+        gap: 24px 32px;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      .g-cta > div:first-child { flex: 1; min-width: 0; }
+      .g-cta-btn { margin-left: auto; }
+      .g-cta-title { font-size: 24px; }
+      .g-cta-sub { font-size: 14px; line-height: 1.55; }
+      .g-cta-btn { padding: 14px 28px; }
+    }
+
     @media(max-width:768px) {
       .g-wrap { padding: 0 max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right)); }
       .g-section { padding: 40px 0; }
