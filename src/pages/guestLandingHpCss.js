@@ -212,23 +212,45 @@ export const GUEST_LANDING_HP_CSS = `
   /* Планшет: двухколоночный hero и сетка на всю ширину (не трогаем mobile ≤768 и desktop >1024) */
   @media (min-width: 769px) and (max-width: 1024px) {
     .hp-guest-hero-inner {
-      grid-template-columns: 1fr 1fr;
-      gap: 32px 28px;
-      padding: 52px 32px 48px;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      gap: 20px 18px;
+      padding: 44px 28px 40px;
       align-items: center;
     }
-    .hp-guest-hero-lead { max-width: none; font-size: 15px; }
-    .hp-guest-hero-actions { margin-bottom: 28px; }
-    .hp-guest-hero-stats { gap: 32px 40px; padding-top: 24px; }
+    .hp-guest-hero-inner > div:first-child {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .hp-guest-hero-lead { max-width: none; font-size: 14px; line-height: 1.6; margin-bottom: 22px; }
+    .hp-guest-hero-actions { margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+    .hp-guest-hero-actions .hp-hero-btn,
+    .hp-guest-hero-actions .hp-hero-btn-ghost {
+      padding: 12px 18px;
+      font-size: 14px;
+      min-height: 44px;
+    }
+    .hp-guest-hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px 14px;
+      width: 100%;
+      padding-top: 18px;
+      margin-top: 4px;
+    }
+    .hp-guest-stat-num { font-size: 20px; }
+    .hp-guest-stat-lbl { font-size: 9px; line-height: 1.25; }
     .hp-guest-photo-grid {
       max-width: none;
       width: 100%;
       justify-self: stretch;
-      gap: 10px;
+      align-self: center;
+      gap: 8px;
     }
     .hp-guest-photo-grid > a { aspect-ratio: 1; }
-    .hp-guest-photo-grid > a > div:last-child { font-size: 11px; padding: 9px 10px; }
-    .hp-hero-h1 { font-size: clamp(34px, 4.2vw, 44px); }
+    .hp-guest-photo-grid > a > div:last-child { font-size: 10px; padding: 8px 9px; }
+    .hp-hero-h1 { font-size: clamp(30px, 3.6vw, 40px); line-height: 1.08; }
+    .hp-hero-eyebrow { font-size: 10px; margin-bottom: 18px !important; }
   }
 
   @media(max-width:768px) {

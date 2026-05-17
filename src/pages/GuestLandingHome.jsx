@@ -67,8 +67,9 @@ const GUEST_SECTION_CSS = `
       .g-section { padding: 48px 0; }
       .g-section-center { margin-bottom: 28px; }
       .g-title { font-size: 28px; }
-      .g-how-grid { gap: 20px; }
-      .g-how-card { padding: 24px 22px; }
+      .g-how-grid { gap: 18px; align-items: start; }
+      .g-how-card { padding: 22px 20px; height: auto; align-self: start; }
+      .g-how-desc { margin-bottom: 0; }
       .g-benefits-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 20px; }
       .g-benefit { padding: 4px 0; }
       .g-cat-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }

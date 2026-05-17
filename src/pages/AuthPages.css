@@ -811,104 +811,190 @@
   display: none;
 }
 
-/* Планшет: две колонки, компактная витрина и форма по центру */
+/* Планшет: форма шире, витрина компактнее, колонки на всю высоту */
 @media (min-width: 769px) and (max-width: 1024px) {
   .apv2 {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(280px, 0.44fr) minmax(340px, 0.56fr);
+    align-items: stretch;
     min-height: 100vh;
     min-height: 100dvh;
   }
 
   .apv2-show {
-    padding: 28px 32px;
+    padding: 22px 26px 18px;
     overflow: hidden;
+    min-height: 100dvh;
+    justify-content: flex-start;
   }
 
   .apv2-mobtop {
     display: none;
   }
 
+  .apv2-top {
+    flex-shrink: 0;
+    margin-bottom: 4px;
+  }
+
+  .apv2-back {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+
+  .apv2-hero {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 0 4px;
+    min-height: 0;
+  }
+
+  .apv2-eyebrow {
+    margin-bottom: 14px;
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
   .apv2-h {
-    font-size: clamp(30px, 3.6vw, 46px);
-    max-width: 13ch;
+    font-size: clamp(26px, 3.1vw, 38px);
+    max-width: 11ch;
+    margin-bottom: 12px;
+    line-height: 1.02;
   }
 
   .apv2-lead {
-    font-size: 15px;
-    margin-bottom: 22px;
-    max-width: 36ch;
+    font-size: 14px;
+    margin-bottom: 16px;
+    max-width: 34ch;
+    line-height: 1.5;
   }
 
   .apv2-stack {
-    height: 190px;
-    max-width: min(100%, 360px);
-    margin-top: 4px;
+    height: 158px;
+    max-width: 100%;
+    margin-top: 0;
   }
 
   .apv2-fcard {
-    width: 215px;
-    padding: 12px 14px;
+    width: 188px;
+    padding: 11px 12px;
+    border-radius: 14px;
   }
 
   .apv2-fcard.c2 {
-    top: 52px;
-    left: 108px;
+    top: 44px;
+    left: 88px;
   }
 
   .apv2-fcard.c3 {
-    top: 118px;
-    left: 16px;
+    top: 100px;
+    left: 8px;
+  }
+
+  .apv2-av {
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .apv2-fname {
+    font-size: 12.5px;
+  }
+
+  .apv2-fmeta {
+    font-size: 10.5px;
+  }
+
+  .apv2-pill {
+    font-size: 10px;
+    padding: 3px 7px;
   }
 
   .apv2-deco {
-    font-size: clamp(160px, 22vw, 220px);
-    right: -24px;
-    bottom: -16px;
+    display: none;
   }
 
   .apv2-foot {
-    gap: 18px;
-    margin-top: 16px;
-    padding-top: 20px;
+    flex-shrink: 0;
+    gap: 12px 18px;
+    margin-top: auto;
+    padding-top: 14px;
     flex-wrap: wrap;
   }
 
   .apv2-stat-n {
-    font-size: 20px;
+    font-size: 18px;
+  }
+
+  .apv2-stat-l {
+    font-size: 10px;
   }
 
   .apv2-right {
-    padding: 32px 28px;
-    align-items: center;
-    justify-content: center;
-    min-height: auto;
+    padding: 22px 28px 28px;
+    align-items: stretch;
+    justify-content: flex-start;
+    min-height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #fff;
+    border-left: 1px solid var(--line);
   }
 
   .apv2-card {
-    max-width: 440px;
+    max-width: none;
     width: 100%;
-    margin: 0 auto;
+    margin: 0;
+    padding-top: 0;
   }
 
   .apv2-form-nav {
-    gap: 20px 24px;
-    margin-bottom: 24px;
+    gap: 16px 20px;
+    margin-bottom: 20px;
   }
 
   .apv2-tabs {
-    margin-bottom: 0;
+    margin-bottom: 28px;
+    gap: 20px;
   }
 
   .apv2-title {
-    font-size: 30px;
+    font-size: 28px;
   }
 
   .apv2-sub {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    font-size: 14px;
   }
 
   .apv2-field {
+    margin-bottom: 16px;
+  }
+
+  .apv2-roles {
+    margin-bottom: 20px;
+  }
+
+  .apv2-row {
+    margin-bottom: 20px;
+  }
+
+  .apv2-socs {
+    gap: 8px;
     margin-bottom: 18px;
+  }
+
+  .apv2-soc {
+    height: 44px;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+  .apv2-or {
+    margin: 4px 0 16px;
+  }
+
+  .apv2-footer {
+    margin-top: 18px;
   }
 }
 
