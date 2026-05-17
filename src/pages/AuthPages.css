@@ -811,7 +811,108 @@
   display: none;
 }
 
-@media (max-width: 1024px) {
+/* Планшет: две колонки, компактная витрина и форма по центру */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .apv2 {
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .apv2-show {
+    padding: 28px 32px;
+    overflow: hidden;
+  }
+
+  .apv2-mobtop {
+    display: none;
+  }
+
+  .apv2-h {
+    font-size: clamp(30px, 3.6vw, 46px);
+    max-width: 13ch;
+  }
+
+  .apv2-lead {
+    font-size: 15px;
+    margin-bottom: 22px;
+    max-width: 36ch;
+  }
+
+  .apv2-stack {
+    height: 190px;
+    max-width: min(100%, 360px);
+    margin-top: 4px;
+  }
+
+  .apv2-fcard {
+    width: 215px;
+    padding: 12px 14px;
+  }
+
+  .apv2-fcard.c2 {
+    top: 52px;
+    left: 108px;
+  }
+
+  .apv2-fcard.c3 {
+    top: 118px;
+    left: 16px;
+  }
+
+  .apv2-deco {
+    font-size: clamp(160px, 22vw, 220px);
+    right: -24px;
+    bottom: -16px;
+  }
+
+  .apv2-foot {
+    gap: 18px;
+    margin-top: 16px;
+    padding-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .apv2-stat-n {
+    font-size: 20px;
+  }
+
+  .apv2-right {
+    padding: 32px 28px;
+    align-items: center;
+    justify-content: center;
+    min-height: auto;
+  }
+
+  .apv2-card {
+    max-width: 440px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .apv2-form-nav {
+    gap: 20px 24px;
+    margin-bottom: 24px;
+  }
+
+  .apv2-tabs {
+    margin-bottom: 0;
+  }
+
+  .apv2-title {
+    font-size: 30px;
+  }
+
+  .apv2-sub {
+    margin-bottom: 24px;
+  }
+
+  .apv2-field {
+    margin-bottom: 18px;
+  }
+}
+
+@media (max-width: 768px) {
   .apv2 {
     grid-template-columns: 1fr;
   }
@@ -821,14 +922,17 @@
   }
 
   .apv2-right {
-    padding: 24px 20px 40px;
+    padding: 24px max(20px, env(safe-area-inset-left)) 40px max(20px, env(safe-area-inset-right));
     min-height: 100vh;
+    min-height: 100dvh;
     align-items: flex-start;
   }
 
   .apv2-card {
     max-width: 480px;
     padding-top: 8px;
+    margin: 0 auto;
+    width: 100%;
   }
 
   .apv2-mobtop {
@@ -840,6 +944,18 @@
 
   .apv2-title {
     font-size: 28px;
+  }
+
+  .apv2-form-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .apv2-form-nav .apv2-back-link {
+    order: -1;
+    margin-bottom: 0;
   }
 }
 
