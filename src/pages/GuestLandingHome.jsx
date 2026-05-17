@@ -11,9 +11,16 @@ const GUEST_SECTION_CSS = `
     .g-section-gray  { background: #f5f5f3; }
     .g-section-dark  { background: #0d0d0d; }
     .g-wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .g-section-hdr { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 16px; margin-bottom: 20px; flex-wrap: wrap; }
+    .g-section-hdr .g-title { margin-bottom: 0; }
+    .g-section-hdr-link { font-size: 13px; color: #e8410a; font-weight: 700; text-decoration: none; white-space: nowrap; }
+    .g-section-hdr-link:hover { text-decoration: underline; }
+    .g-section-center { text-align: center; margin-bottom: 32px; }
+    .g-section-center .g-sub { margin-bottom: 0; }
     .g-eyebrow { font-size: 11px; font-weight: 800; color: #e8410a; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
     .g-title { font-size: 32px; font-weight: 900; letter-spacing: -.5px; margin: 0 0 10px; }
     .g-sub { font-size: 15px; color: #888; margin: 0 0 40px; }
+    .g-how-scroll { }
     .g-how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
     .g-how-card { background: #fff; border-radius: 16px; padding: 28px 24px; border: 1px solid #ebebeb; transition: box-shadow .18s, transform .18s; }
     .g-how-card:hover { box-shadow: 0 8px 28px rgba(232,65,10,.1); transform: translateY(-3px); border-color: rgba(232,65,10,.2); }
@@ -44,21 +51,53 @@ const GUEST_SECTION_CSS = `
     .g-cta-btn { background: #fff; border: none; border-radius: 10px; color: #e8410a; font-size: 15px; font-weight: 800; padding: 14px 32px; cursor: pointer; white-space: nowrap; font-family: Manrope,Arial,sans-serif; transition: background .15s; flex-shrink: 0; }
     .g-cta-btn:hover { background: #fff3f0; }
     .g-cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+    .g-cat-tile { border-radius: 12px; overflow: hidden; text-decoration: none; color: #fff; position: relative; aspect-ratio: 4/3; display: flex; flex-direction: column; justify-content: flex-end; transition: transform .18s, box-shadow .18s; -webkit-tap-highlight-color: transparent; }
+    .g-cat-tile:active { transform: scale(0.98); }
+    .g-cat-tile-bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
+    .g-cat-tile-ph { position: absolute; inset: 0; background: linear-gradient(135deg,#2a1a00,#e8410a); display: flex; align-items: center; justify-content: center; font-size: 36px; }
+    .g-cat-tile-overlay { position: absolute; inset: 0; background: linear-gradient(0deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.1) 55%,transparent 100%); }
+    .g-cat-tile-label { position: relative; padding: 10px 12px; font-size: 13px; font-weight: 800; line-height: 1.2; }
+    .g-cat-grid > a { -webkit-tap-highlight-color: transparent; }
+    .g-reviews-scroll { }
+    .g-section-dark .g-section-center .g-title { color: #fff; }
+    .g-section-dark .g-section-center .g-eyebrow { color: #ff8055; }
     @media(max-width:768px) {
-      .g-how-grid,.g-benefits-grid,.g-reviews-grid { grid-template-columns: 1fr; }
-      .g-cta { flex-direction: column; align-items: stretch; text-align: center; }
-      .g-cta-btn { width: 100%; white-space: normal; }
       .g-wrap { padding: 0 max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right)); }
-      .g-section { padding: 44px 0; }
+      .g-section { padding: 40px 0; }
+      .g-section-center { margin-bottom: 24px; }
       .g-title { font-size: 26px; }
-      .g-cat-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+      .g-sub { margin-bottom: 0; }
+      .g-section-hdr { flex-direction: column; align-items: flex-start; margin-bottom: 16px; }
+      .g-section-hdr-link { min-height: 44px; display: inline-flex; align-items: center; }
+      .g-how-scroll, .g-reviews-scroll {
+        overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+        margin: 0 calc(-1 * max(16px, env(safe-area-inset-left)));
+        padding: 4px max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left));
+        scrollbar-width: none;
+      }
+      .g-how-scroll::-webkit-scrollbar, .g-reviews-scroll::-webkit-scrollbar { display: none; }
+      .g-how-grid, .g-reviews-grid {
+        display: flex; gap: 12px; width: max-content; grid-template-columns: unset;
+      }
+      .g-how-card, .g-review {
+        flex: 0 0 min(84vw, 300px); scroll-snap-align: start;
+      }
+      .g-benefits-grid { grid-template-columns: 1fr; gap: 10px; }
+      .g-benefit { background: #fff; border: 1px solid #ebebeb; border-radius: 14px; padding: 14px 16px; }
+      .g-cat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .g-cta { flex-direction: column; align-items: stretch; text-align: center; padding: 32px 20px; gap: 16px; }
+      .g-cta-title { font-size: 22px; }
+      .g-cta-btn { width: 100%; white-space: normal; min-height: 48px; }
     }
     @media(max-width:480px) {
       .g-section { padding: 32px 0; }
-      .g-title { font-size: 22px; }
-      .g-sub { font-size: 14px; margin-bottom: 28px; }
-      .g-cat-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .g-cta { padding: 28px 18px !important; border-radius: 16px; }
+      .g-title { font-size: 22px; letter-spacing: -.35px; }
+      .g-cat-grid { gap: 8px; }
+      .g-cat-grid > a { aspect-ratio: 1 !important; border-radius: 14px !important; }
+      .g-cat-grid > a > div:last-child { padding: 8px 10px !important; }
+      .g-cat-grid > a > div:last-child > div { font-size: 12px !important; }
+      .g-how-card { padding: 20px 18px; }
+      .g-cta { padding: 24px 16px !important; border-radius: 16px; }
     }
   `;
 
@@ -193,11 +232,12 @@ export default function GuestLandingHome() {
 
       <section className="g-section g-section-white">
         <div className="g-wrap">
-          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <div className="g-section-center">
             <p className="g-eyebrow">Просто и понятно</p>
             <h2 className="g-title">Как это работает</h2>
             <p className="g-sub">Три шага от задачи до результата</p>
           </div>
+          <div className="g-how-scroll">
           <div className="g-how-grid">
             {[
               { n: '1', title: 'Создайте задачу', desc: 'Опишите работу, укажите цену за работу и адрес. Это займёт пару минут.' },
@@ -211,19 +251,18 @@ export default function GuestLandingHome() {
               </div>
             ))}
           </div>
+          </div>
         </div>
       </section>
 
       <section className="g-section g-section-gray">
         <div className="g-wrap">
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 24 }}>
+          <div className="g-section-hdr">
             <div>
               <p className="g-eyebrow">Услуги</p>
-              <h2 className="g-title" style={{ marginBottom: 0 }}>
-                Популярные категории
-              </h2>
+              <h2 className="g-title">Популярные категории</h2>
             </div>
-            <Link to="/register" style={{ fontSize: 13, color: '#e8410a', fontWeight: 700, textDecoration: 'none' }}>
+            <Link to="/register" className="g-section-hdr-link">
               Все категории →
             </Link>
           </div>
@@ -297,7 +336,7 @@ export default function GuestLandingHome() {
 
       <section className="g-section g-section-white">
         <div className="g-wrap">
-          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <div className="g-section-center">
             <p className="g-eyebrow">Почему мы</p>
             <h2 className="g-title">Преимущества сервиса</h2>
           </div>
@@ -326,7 +365,7 @@ export default function GuestLandingHome() {
 
       <section className="g-section g-section-dark">
         <div className="g-wrap">
-          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <div className="g-section-center">
             <p className="g-eyebrow" style={{ color: '#ff8055' }}>
               Отзывы
             </p>
@@ -334,6 +373,7 @@ export default function GuestLandingHome() {
               Что говорят клиенты
             </h2>
           </div>
+          <div className="g-reviews-scroll">
           <div className="g-reviews-grid">
             {[
               { ava: 'АК', color: '#6366f1', name: 'Анна К.', svc: 'Сантехника', text: 'Нашла сантехника за 15 минут. Приехал вовремя, всё сделал аккуратно. Сервис огонь!' },
@@ -354,6 +394,7 @@ export default function GuestLandingHome() {
                 </div>
               </div>
             ))}
+          </div>
           </div>
         </div>
       </section>
