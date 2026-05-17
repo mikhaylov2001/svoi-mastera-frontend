@@ -823,11 +823,15 @@
   .apv2-right {
     padding: 24px 20px 40px;
     min-height: 100vh;
-    align-items: flex-start;
+    min-height: 100dvh;
+    align-items: center;
+    justify-content: center;
   }
 
   .apv2-card {
+    width: 100%;
     max-width: 480px;
+    margin: 0 auto;
     padding-top: 8px;
   }
 
