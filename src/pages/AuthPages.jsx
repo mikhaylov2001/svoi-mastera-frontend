@@ -104,7 +104,7 @@ function AuthShowcase() {
         <div className="sep" />
         <div>
           <div className="apv2-stat-n">4.92★</div>
-          <div className="apv2-stat-l">Средний рейтинг</div>
+          <div className="apv2-stat-l">Ср. рейтинг</div>
         </div>
       </div>
 
