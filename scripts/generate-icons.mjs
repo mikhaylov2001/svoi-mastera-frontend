@@ -63,8 +63,10 @@ async function main() {
     await writePng(buf, path.join(publicDir, file));
   }
 
-  fs.writeFileSync(path.join(publicDir, "favicon.svg"), svg);
-  console.log("wrote public/favicon.svg");
+  if (!hasPngSource) {
+    fs.writeFileSync(path.join(publicDir, "favicon.svg"), svg);
+    console.log("wrote public/favicon.svg");
+  }
 
   const ico = await toIco([pngBuffers[16], pngBuffers[32]]);
   fs.writeFileSync(path.join(publicDir, "favicon.ico"), ico);
