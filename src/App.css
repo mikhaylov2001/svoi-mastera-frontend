@@ -64,6 +64,15 @@ body {
   overflow-y: visible;
 }
 
+/* Карточка объявления, чат, профиль — контент не схлопывается во flex (белый экран) */
+.app-main--content {
+  flex: 1 1 auto;
+  min-height: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
+  align-self: stretch;
+}
+
 .app-main--auth {
   background: #fafaf7;
   padding: 0;

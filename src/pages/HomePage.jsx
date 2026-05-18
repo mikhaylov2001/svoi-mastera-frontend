@@ -262,10 +262,10 @@ function HomeSortDropdown({ value, onChange, options }) {
     const onKey = (e) => {
       if (e.key === 'Escape') setOpen(false);
     };
-    document.addEventListener('click', onDoc, true);
+    document.addEventListener('mousedown', onDoc);
     document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('click', onDoc, true);
+      document.removeEventListener('mousedown', onDoc);
       document.removeEventListener('keydown', onKey);
     };
   }, [open]);
@@ -303,7 +303,11 @@ function HomeSortDropdown({ value, onChange, options }) {
                 role="option"
                 aria-selected={value === opt.value}
                 className={`chpv-sort-option${value === opt.value ? ' is-selected' : ''}`}
-                onClick={() => pick(opt.value)}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  pick(opt.value);
+                }}
               >
                 {opt.label}
               </button>
@@ -418,8 +422,9 @@ export function CustomerHomePage({ userId }) {
   const filteredMasterListings = useMemo(() => {
     const trimmed = q.trim();
     if (trimmed.length < 2) return visibleMasterListings;
-    return rankItemsBySmartMatch(visibleMasterListings, trimmed, listingHaystack);
-  }, [visibleMasterListings, q]);
+    const ranked = rankItemsBySmartMatch(visibleMasterListings, trimmed, listingHaystack);
+    return sortListings(ranked, sortBy, workerStats);
+  }, [visibleMasterListings, q, sortBy, workerStats]);
 
   const bentoCats = useMemo(() => {
     const raw =
@@ -881,10 +886,10 @@ export function WorkerHomePage({ userId, userName }) {
   }, [openRequests, homeListCat, catName]);
 
   const filteredHomeRequests = useMemo(() => {
-    const rows = sortJobRequests(homeVisibleRequests, sortBy);
     const trimmed = q.trim();
-    if (trimmed.length < 2) return rows;
-    return rankItemsBySmartMatch(rows, trimmed, jobRequestHaystack);
+    if (trimmed.length < 2) return sortJobRequests(homeVisibleRequests, sortBy);
+    const ranked = rankItemsBySmartMatch(homeVisibleRequests, trimmed, jobRequestHaystack);
+    return sortJobRequests(ranked, sortBy);
   }, [homeVisibleRequests, q, sortBy]);
 
   const firstName = (userName || 'Мастер').trim().split(/\s+/)[0] || 'Мастер';

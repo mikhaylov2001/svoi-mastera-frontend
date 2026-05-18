@@ -1,7 +1,15 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { acceptListingDeal, recordListingView, getMyDeals, workerStartDeal } from '../../api';
+import {
+  acceptListingDeal,
+  recordListingView,
+  getMyDeals,
+  workerStartDeal,
+  getListingById,
+  getListings,
+  API_BASE,
+} from '../../api';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
 import { dealsDetailEdCss, listingDetailLightboxCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { listingDetailSurfaceExtraCss } from '../shared/listingDetailSurfaceExtraCss';
@@ -14,7 +22,13 @@ import {
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../../constants/homePaths';
 
-const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
+const BACKEND_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, '');
+
+function listingPhotoUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  return `${BACKEND_ORIGIN}${url.startsWith('/') ? url : `/${url}`}`;
+}
 
 const listingViewPostedIds = new Set();
 const COLLAPSE = 420;
@@ -57,9 +71,8 @@ export default function ListingDetailPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API}/listings/${id}`)
-      .then(r => (r.ok ? r.json() : null))
-      .then(data => {
+    getListingById(id)
+      .then((data) => {
         if (!data) return;
         setListing(data);
         setActivePhoto(0);
@@ -72,18 +85,17 @@ export default function ListingDetailPage() {
           listingViewPostedIds.add(data.id);
           recordListingView(data.id).catch(() => {});
         }
-        fetch(`${API}/listings`)
-          .then(r => (r.ok ? r.json() : []))
-          .then(all => {
+        getListings()
+          .then((all) => {
             setSimilar(
               (Array.isArray(all) ? all : [])
-                .filter(l => l.active && l.id !== data.id && l.category === data.category)
+                .filter((l) => l.active && l.id !== data.id && l.category === data.category)
                 .slice(0, 4),
             );
           })
           .catch(() => {});
       })
-      .catch(() => {})
+      .catch(() => setListing(null))
       .finally(() => setLoading(false));
   }, [id, userId]);
 
@@ -145,7 +157,9 @@ export default function ListingDetailPage() {
     };
   }, [listing, userId]);
 
-  const photos = listing?.photos?.length ? listing.photos : [];
+  const photos = listing?.photos?.length
+    ? listing.photos.map((p) => listingPhotoUrl(p)).filter(Boolean)
+    : [];
   const fallbackPhoto = getCategoryPlaceholderPhotoUrlOrDefault({ category: listing?.category });
   const hasUploadedPhotos = photos.length > 0;
   const photoList = hasUploadedPhotos ? photos : [];
@@ -299,7 +313,7 @@ export default function ListingDetailPage() {
   const ownerAva = userAvatar
     ? userAvatar.startsWith('data:') || userAvatar.startsWith('http')
       ? userAvatar
-      : `${API.replace(/\/api\/v1$/, '')}${userAvatar.startsWith('/') ? '' : '/'}${userAvatar}`
+      : `${BACKEND_ORIGIN}${userAvatar.startsWith('/') ? '' : '/'}${userAvatar}`
     : null;
 
   const priceNum = getListingPublishedPriceNumber(listing);
