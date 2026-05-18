@@ -297,8 +297,11 @@ input, textarea, select {
    Универсально (мобила): без горизонтального скролла, фото в пределах экрана
 ═══════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  .app-main {
-    overflow-x: clip;
+  .app-main:not(.app-main--home) {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+  .app-main--home {
     max-width: 100%;
   }
   .app-main img {

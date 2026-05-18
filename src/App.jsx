@@ -70,11 +70,14 @@ function AppContent() {
 
   const isChatPage = location.pathname.startsWith('/chat');
   const isAuthPage = ['/login', '/register', '/forgot-password'].includes(location.pathname);
+  const isHomeCatalog = location.pathname === '/' || location.pathname === WORKER_HOME_PATH;
 
   return (
     <div className="app-shell">
       {!isAuthPage && <Header />}
-      <main className={`app-main${isAuthPage ? ' app-main--auth' : ''}`}>
+      <main
+        className={`app-main${isAuthPage ? ' app-main--auth' : ''}${isHomeCatalog ? ' app-main--home' : ''}`}
+      >
         <Routes>
           <Route path="/"                element={<CustomerHomeRoute />} />
           <Route path="/worker-home"     element={<WorkerHomeGate />} />

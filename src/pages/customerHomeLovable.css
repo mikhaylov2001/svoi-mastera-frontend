@@ -1,7 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
-
-.chpv { font-family: Manrope, system-ui, Arial, sans-serif; background: #f6f6f4; color: #1a1a1a; min-height: 100vh; }
+/* Шрифт Manrope подключается в App.css */
+.chpv {
+  font-family: Manrope, system-ui, Arial, sans-serif;
+  background: #f6f6f4;
+  color: #1a1a1a;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
 .chpv * { box-sizing: border-box; }
+.chpv-main { min-width: 0; }
 
 /* HERO */
 .chpv-hero { position: relative; background: #0b0d14; color: #fff; overflow: hidden; }
@@ -20,7 +28,8 @@
   inset: 0;
   background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 28px 28px;
-  mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, black 30%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, #000 30%, transparent 90%);
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, #000 30%, transparent 90%);
   pointer-events: none;
 }
 .chpv-hero-inner {
@@ -78,10 +87,16 @@
   color: #fff;
 }
 .chpv-h1 .chpv-h1-city {
+  color: #ff7043;
   background: linear-gradient(90deg, #ff7043, #ffc107);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .chpv-h1 .chpv-h1-city {
+    -webkit-text-fill-color: currentColor;
+  }
 }
 .chpv-sub { font-size: 16px; line-height: 1.65; color: rgba(255, 255, 255, 0.6); max-width: 520px; margin: 0 0 24px; }
 
@@ -166,6 +181,13 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chpv-feed-row {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 .chpv-feed-ava {
@@ -582,7 +604,7 @@
   .chpv-body { padding: 20px 16px 48px; gap: 18px; }
   .chpv-section-hdr h2 { font-size: 18px; }
   .chpv-bento { grid-template-columns: 1fr 1fr; grid-template-rows: 120px 120px 120px; gap: 8px; }
-  .chpv-bento-tile.big { height: 140px; }
+  .chpv-bento-tile.big { grid-column: 1 / -1; grid-row: 1; height: 140px; }
   .chpv-bento-name { font-size: 13px; }
   .chpv-bento-tile.big .chpv-bento-name { font-size: 17px; }
   .chpv-bento-meta { font-size: 10px; }
@@ -603,8 +625,23 @@
   .chpv-hero-inner { padding: 22px 14px; }
   .chpv-h1 { font-size: 24px; }
   .chpv-body { padding: 16px 14px 48px; }
-  .chpv-bento { grid-template-columns: 1fr; grid-template-rows: none; }
-  .chpv-bento-tile { height: 110px; }
-  .chpv-bento-tile.big { height: 140px; grid-column: auto; grid-row: auto; }
+  .chpv-bento {
+    grid-template-columns: 1fr;
+    grid-template-rows: unset;
+    grid-auto-rows: 110px;
+    gap: 8px;
+  }
+  .chpv-bento-tile { height: auto; min-height: 110px; }
+  .chpv-bento-tile.big { grid-column: 1; grid-row: auto; min-height: 140px; }
   .chpv-section-hdr h2 { font-size: 17px; }
+}
+
+/* Главные заказчика/мастера: не сжимать контент во flex-оболочке на телефоне */
+@media (max-width: 768px) {
+  .app-main--home {
+    min-height: auto;
+    flex: 1 1 auto;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
 }

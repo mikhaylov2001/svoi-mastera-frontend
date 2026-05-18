@@ -431,7 +431,7 @@ export function CustomerHomePage({ userId }) {
       </section>
 
       <div className="chpv-body">
-        <main>
+        <div className="chpv-main">
           <div className="chpv-section-hdr">
             <h2>Популярные категории</h2>
             <Link to="/find-master">Все категории →</Link>
@@ -587,7 +587,7 @@ export function CustomerHomePage({ userId }) {
               Показать ещё · осталось {filteredMasterListings.length - shown}
                 </button>
           ) : null}
-        </main>
+        </div>
 
         <aside className="chpv-side">
           <div className="chpv-widget">
@@ -902,7 +902,7 @@ export function WorkerHomePage({ userId, userName }) {
       </section>
 
       <div className="chpv-body">
-        <main>
+        <div className="chpv-main">
           <div className="chpv-section-hdr">
             <h2>Популярные направления</h2>
             <Link to="/find-work">Все заявки →</Link>
@@ -1059,7 +1059,7 @@ export function WorkerHomePage({ userId, userName }) {
               Показать ещё · осталось {filteredHomeRequests.length - shown}
             </button>
           ) : null}
-        </main>
+        </div>
 
         <aside className="chpv-side">
           <div className="chpv-widget">
