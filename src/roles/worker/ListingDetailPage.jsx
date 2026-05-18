@@ -10,6 +10,7 @@ import {
   getListings,
   API_BASE,
 } from '../../api';
+import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
 import { dealsDetailEdCss, listingDetailLightboxCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { listingDetailSurfaceExtraCss } from '../shared/listingDetailSurfaceExtraCss';
