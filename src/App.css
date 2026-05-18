@@ -45,14 +45,23 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 .app-main {
-  flex: 1;
+  flex: 1 1 auto;
   width: 100%;
   min-height: 0;
   /* Явный фон: при flex-разметке не остаётся «просветов» цвета браузера по умолчанию */
   background: var(--gray-50);
+}
+
+/* Главная (гость / заказчик / мастер): контент не сжимается во flex на iOS */
+.app-main--home {
+  flex: 0 0 auto;
+  min-height: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .app-main--auth {

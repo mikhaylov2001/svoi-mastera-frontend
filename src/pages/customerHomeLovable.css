@@ -636,12 +636,15 @@
   .chpv-section-hdr h2 { font-size: 17px; }
 }
 
-/* Главные заказчика/мастера: не сжимать контент во flex-оболочке на телефоне */
+/* Главные заказчика/мастера на телефоне */
 @media (max-width: 768px) {
-  .app-main--home {
-    min-height: auto;
-    flex: 1 1 auto;
-    overflow-x: hidden;
-    overflow-y: visible;
+  .chpv,
+  .app-main--home .hp {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+  }
+  .chpv-hero {
+    min-height: 1px;
   }
 }

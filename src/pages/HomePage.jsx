@@ -110,10 +110,12 @@ function resolvePlatformFeedCycle(openRequests) {
 }
 
 function visiblePlatformFeedRows(feedCycle, feedIdx) {
-  const n = Math.max(1, feedCycle.length);
+  const cycle = Array.isArray(feedCycle) && feedCycle.length > 0 ? feedCycle : FEED_PLATFORM_DEFAULT;
+  const n = cycle.length;
   return [0, 1, 2].map((k) => {
-    const row = feedCycle[(feedIdx + k) % n];
-    return { ...row, _k: `${row.key}-${k}` };
+    const row = cycle[(feedIdx + k) % n] || FEED_PLATFORM_DEFAULT[k % FEED_PLATFORM_DEFAULT.length];
+    const key = row.key ?? `feed-${k}`;
+    return { ...row, _k: `${key}-${k}` };
   });
 }
 
@@ -910,8 +912,12 @@ export function WorkerHomePage({ userId, userName }) {
           <div className="chpv-bento">
             {bentoCats.map((cat, i) => {
               const n = countRequestsInCategory(cat.name);
-              const photoKey = mapCategorySlugToPhotoKey(cat.slug, categories);
-              const img = CAT_PHOTOS[photoKey] || CAT_PHOTOS[cat.slug];
+              const img =
+                CAT_PHOTOS[cat.slug] ||
+                getCategoryPlaceholderPhotoUrlOrDefault(
+                  { categoryName: cat.name, categorySlug: cat.slug },
+                  categories,
+                );
               return (
                 <Link key={cat.slug} className={`chpv-bento-tile ${i === 0 ? 'big' : ''}`} to={`/find-work?q=${encodeURIComponent(cat.name)}`}>
                   {img ? (
