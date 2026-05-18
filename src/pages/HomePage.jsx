@@ -611,25 +611,29 @@ export function CustomerHomePage({ userId }) {
             <Link to="/find-master">Все мастера →</Link>
           </div>
 
-          <div className="chpv-filter-row">
-            <button
-              type="button"
-              className={`chpv-filter${masterListCat === 'ALL' ? ' active' : ''}`}
-              onClick={() => setMasterListCat('ALL')}
-            >
-              Все
-            </button>
-            {masterListingCategoryChips.slice(0, 6).map((c) => (
+          <div className="chpv-filters-block">
+            <div className="chpv-filter-row">
               <button
-                key={c.name}
                 type="button"
-                className={`chpv-filter${masterListCat === c.name ? ' active' : ''}`}
-                onClick={() => setMasterListCat(c.name)}
+                className={`chpv-filter${masterListCat === 'ALL' ? ' active' : ''}`}
+                onClick={() => setMasterListCat('ALL')}
               >
-                {c.name} · {c.n}
+                Все
               </button>
-            ))}
-            <HomeSortDropdown value={sortBy} onChange={setSortBy} options={SORT_LISTING} />
+              {masterListingCategoryChips.slice(0, 6).map((c) => (
+                <button
+                  key={c.name}
+                  type="button"
+                  className={`chpv-filter${masterListCat === c.name ? ' active' : ''}`}
+                  onClick={() => setMasterListCat(c.name)}
+                >
+                  {c.name} · {c.n}
+                </button>
+              ))}
+            </div>
+            <div className="chpv-sort-row">
+              <HomeSortDropdown value={sortBy} onChange={setSortBy} options={SORT_LISTING} />
+            </div>
           </div>
 
           <div className="chpv-grid">
@@ -1062,25 +1066,29 @@ export function WorkerHomePage({ userId, userName }) {
             <Link to="/find-work">Все заявки →</Link>
               </div>
 
-          <div className="chpv-filter-row">
-            <button
-              type="button"
-              className={`chpv-filter${homeListCat === 'ALL' ? ' active' : ''}`}
-              onClick={() => setHomeListCat('ALL')}
-            >
-              Все
-            </button>
-            {homeListingCats.slice(0, 6).map((c) => (
+          <div className="chpv-filters-block">
+            <div className="chpv-filter-row">
               <button
-                key={c.name}
                 type="button"
-                className={`chpv-filter${homeListCat === c.name ? ' active' : ''}`}
-                onClick={() => setHomeListCat(c.name)}
+                className={`chpv-filter${homeListCat === 'ALL' ? ' active' : ''}`}
+                onClick={() => setHomeListCat('ALL')}
               >
-                {c.name} · {c.n}
+                Все
               </button>
-            ))}
-            <HomeSortDropdown value={sortBy} onChange={setSortBy} options={SORT_REQUEST} />
+              {homeListingCats.slice(0, 6).map((c) => (
+                <button
+                  key={c.name}
+                  type="button"
+                  className={`chpv-filter${homeListCat === c.name ? ' active' : ''}`}
+                  onClick={() => setHomeListCat(c.name)}
+                >
+                  {c.name} · {c.n}
+                </button>
+              ))}
+            </div>
+            <div className="chpv-sort-row">
+              <HomeSortDropdown value={sortBy} onChange={setSortBy} options={SORT_REQUEST} />
+            </div>
           </div>
 
           <div className="chpv-grid">

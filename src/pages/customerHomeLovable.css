@@ -308,7 +308,22 @@
 }
 .chpv-chip:hover { border-color: #e8410a; color: #e8410a; background: #fff5f2; }
 
-.chpv-filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.chpv-filters-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.chpv-filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 0;
+}
+.chpv-sort-row {
+  width: 100%;
+}
 .chpv-filter {
   padding: 8px 14px;
   background: #fff;
@@ -325,8 +340,8 @@
 .chpv-filter.active { background: #e8410a; border-color: #e8410a; color: #fff; }
 .chpv-sort-dropdown {
   position: relative;
-  flex: 1 1 auto;
-  min-width: 140px;
+  width: 100%;
+  max-width: 100%;
   z-index: 1;
 }
 .chpv-sort-dropdown.is-open {
@@ -760,16 +775,17 @@
   .chpv-chips { gap: 8px; margin-bottom: 22px; }
   .chpv-chip { font-size: 13px; padding: 8px 13px; }
 
-  .chpv-filter-row {
+  .chpv-filters-block {
     gap: 8px;
     margin-bottom: 10px;
   }
+  .chpv-filter-row {
+    gap: 8px;
+  }
   .chpv-filter { font-size: 13px; padding: 8px 13px; }
   .chpv-sort-dropdown {
-    flex: 1 1 100%;
     width: 100%;
     min-width: 0;
-    margin-top: 2px;
   }
   .chpv-sort-trigger {
     padding: 12px 16px;
