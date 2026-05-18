@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -199,19 +199,63 @@ function SpotlightRate({ rate }) {
   return <div className="chpv-tm-rate">{rate != null ? `★ ${Number(rate).toFixed(1)}` : '★ —'}</div>;
 }
 
-function HomeSortChips({ value, onChange, options }) {
+function HomeSortDropdown({ value, onChange, options }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+  const selected = options.find((o) => o.value === value) || options[0];
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDoc = (e) => {
+      if (!rootRef.current?.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const pick = (next) => {
+    onChange(next);
+    setOpen(false);
+  };
+
   return (
-    <div className="chpv-sort-group" role="group" aria-label="Сортировка">
-      {options.map((opt) => (
+    <div ref={rootRef} className={`chpv-sort-dropdown${open ? ' is-open' : ''}`}>
+      <div className="chpv-sort-panel">
         <button
-          key={opt.value}
           type="button"
-          className={`chpv-filter chpv-sort-btn${value === opt.value ? ' active' : ''}`}
-          onClick={() => onChange(opt.value)}
+          className="chpv-sort-trigger"
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          aria-label="Сортировка"
+          onClick={() => setOpen((v) => !v)}
         >
-          {opt.label}
+          <span className="chpv-sort-trigger-label">{selected?.label}</span>
+          <span className={`chpv-sort-chevron${open ? ' is-open' : ''}`} aria-hidden />
         </button>
-      ))}
+        {open && (
+          <div className="chpv-sort-menu" role="listbox" aria-label="Варианты сортировки">
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                role="option"
+                aria-selected={value === opt.value}
+                className={`chpv-sort-option${value === opt.value ? ' is-selected' : ''}`}
+                onClick={() => pick(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -540,7 +584,7 @@ export function CustomerHomePage({ userId }) {
                 {c.name} · {c.n}
               </button>
             ))}
-            <HomeSortChips value={sortBy} onChange={setSortBy} options={SORT_LISTING} />
+            <HomeSortDropdown value={sortBy} onChange={setSortBy} options={SORT_LISTING} />
           </div>
 
           <div className="chpv-grid">
@@ -997,7 +1041,7 @@ export function WorkerHomePage({ userId, userName }) {
                 {c.name} · {c.n}
               </button>
             ))}
-            <HomeSortChips value={sortBy} onChange={setSortBy} options={SORT_REQUEST} />
+            <HomeSortDropdown value={sortBy} onChange={setSortBy} options={SORT_REQUEST} />
           </div>
 
           <div className="chpv-grid">
