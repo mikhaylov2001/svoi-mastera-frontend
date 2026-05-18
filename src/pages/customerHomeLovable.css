@@ -311,8 +311,8 @@
 .chpv-filters-block {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: 6px;
+  margin-bottom: 12px;
 }
 .chpv-filter-row {
   display: flex;
@@ -355,21 +355,23 @@
   transition: border-radius 0.15s, box-shadow 0.15s;
 }
 .chpv-sort-dropdown.is-open .chpv-sort-panel {
-  border-radius: 16px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 .chpv-sort-trigger {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
-  padding: 10px 16px;
+  min-height: 0;
+  padding: 8px 14px;
   border: none;
   background: transparent;
   font-family: inherit;
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
   color: #111;
   cursor: pointer;
   text-align: left;
@@ -380,11 +382,11 @@
 }
 .chpv-sort-chevron {
   flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid #888;
-  border-bottom: 2px solid #888;
-  transform: rotate(45deg) translateY(-2px);
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid #888;
+  border-bottom: 1.5px solid #888;
+  transform: rotate(45deg) translateY(-1px);
   transition: transform 0.15s;
 }
 .chpv-sort-chevron.is-open {
@@ -393,16 +395,16 @@
 .chpv-sort-menu {
   display: flex;
   flex-direction: column;
-  padding: 0 6px 6px;
+  padding: 0 4px 4px;
 }
 .chpv-sort-option {
   width: 100%;
-  padding: 10px 12px;
+  padding: 7px 10px;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   background: transparent;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #444;
   text-align: left;
@@ -776,8 +778,8 @@
   .chpv-chip { font-size: 13px; padding: 8px 13px; }
 
   .chpv-filters-block {
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 6px;
+    margin-bottom: 8px;
   }
   .chpv-filter-row {
     gap: 8px;
@@ -788,8 +790,12 @@
     min-width: 0;
   }
   .chpv-sort-trigger {
-    padding: 12px 16px;
-    font-size: 15px;
+    padding: 8px 13px;
+    font-size: 13px;
+  }
+  .chpv-sort-option {
+    padding: 7px 10px;
+    font-size: 13px;
   }
 
   .chpv-grid {
