@@ -11,7 +11,11 @@ import {
   getWorkerStats,
   getCustomerStats,
 } from '../api';
-import { formatJobRequestBudgetLabel, hasJobRequestPublishedPrice } from '../utils/jobRequestBudget';
+import {
+  formatJobRequestBudgetLabel,
+  getJobRequestPublishedBudgetNumber,
+  hasJobRequestPublishedPrice,
+} from '../utils/jobRequestBudget';
 import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
@@ -136,6 +140,52 @@ function listingRatingValue(l) {
   return null;
 }
 
+const SORT_FALLBACK_BIG = 1e15;
+const SORT_FALLBACK_SMALL = -1;
+
+function workerRatingForListing(listing, workerStatsMap) {
+  const fromListing = listingRatingValue(listing);
+  if (fromListing != null) return fromListing;
+  const wid = listing?.workerId != null ? String(listing.workerId) : null;
+  const st = wid ? workerStatsMap?.[wid] : null;
+  if (typeof st?.averageRating === 'number' && !Number.isNaN(st.averageRating)) return st.averageRating;
+  return null;
+}
+
+function sortListings(rows, sortBy, workerStatsMap) {
+  const copy = [...rows];
+  if (sortBy === 'cheap') {
+    copy.sort(
+      (a, b) =>
+        (getListingPublishedPriceNumber(a) ?? SORT_FALLBACK_BIG) -
+        (getListingPublishedPriceNumber(b) ?? SORT_FALLBACK_BIG),
+    );
+  } else if (sortBy === 'rating') {
+    copy.sort(
+      (a, b) =>
+        (workerRatingForListing(b, workerStatsMap) ?? SORT_FALLBACK_SMALL) -
+        (workerRatingForListing(a, workerStatsMap) ?? SORT_FALLBACK_SMALL),
+    );
+  } else {
+    copy.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  }
+  return copy;
+}
+
+function sortJobRequests(rows, sortBy) {
+  const copy = [...rows];
+  if (sortBy === 'cheap') {
+    copy.sort(
+      (a, b) =>
+        (getJobRequestPublishedBudgetNumber(a) ?? SORT_FALLBACK_BIG) -
+        (getJobRequestPublishedBudgetNumber(b) ?? SORT_FALLBACK_BIG),
+    );
+  } else {
+    copy.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  }
+  return copy;
+}
+
 function averageListingRating(rows) {
   const vals = (Array.isArray(rows) ? rows : []).map(listingRatingValue).filter((x) => typeof x === 'number');
   if (!vals.length) return null;
@@ -212,10 +262,10 @@ function HomeSortDropdown({ value, onChange, options }) {
     const onKey = (e) => {
       if (e.key === 'Escape') setOpen(false);
     };
-    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('click', onDoc, true);
     document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('click', onDoc, true);
       document.removeEventListener('keydown', onKey);
     };
   }, [open]);
@@ -240,7 +290,12 @@ function HomeSortDropdown({ value, onChange, options }) {
           <span className={`chpv-sort-chevron${open ? ' is-open' : ''}`} aria-hidden />
         </button>
         {open && (
-          <div className="chpv-sort-menu" role="listbox" aria-label="Варианты сортировки">
+          <div
+            className="chpv-sort-menu"
+            role="listbox"
+            aria-label="Варианты сортировки"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             {options.map((opt) => (
               <button
                 key={opt.value}
@@ -357,18 +412,8 @@ export function CustomerHomePage({ userId }) {
   const visibleMasterListings = useMemo(() => {
     const base =
       masterListCat === 'ALL' ? listings : listings.filter((l) => (l.category || '').trim() === masterListCat);
-    const rows = [...base];
-    if (sortBy === 'new') {
-      rows.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-    } else if (sortBy === 'cheap') {
-      rows.sort(
-        (a, b) => (getListingPublishedPriceNumber(a) ?? 1e15) - (getListingPublishedPriceNumber(b) ?? 1e15),
-      );
-    } else if (sortBy === 'rating') {
-      rows.sort((a, b) => (listingRatingValue(b) ?? -1) - (listingRatingValue(a) ?? -1));
-    }
-    return rows;
-  }, [listings, masterListCat, sortBy]);
+    return sortListings(base, sortBy, workerStats);
+  }, [listings, masterListCat, sortBy, workerStats]);
 
   const filteredMasterListings = useMemo(() => {
     const trimmed = q.trim();
@@ -611,7 +656,7 @@ export function CustomerHomePage({ userId }) {
                   const wname = [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
                 const priceNum = getListingPublishedPriceNumber(l);
                 const priceStr = priceNum ? `${priceNum.toLocaleString('ru-RU')} ₽` : '— ₽';
-                const rating = listingRatingValue(l);
+                const rating = workerRatingForListing(l, workerStats);
                 const locCity = (l.city && String(l.city).trim()) || city;
                 const detail = `/listings/${l.id}?from=home`;
                   return (
@@ -823,22 +868,16 @@ export function WorkerHomePage({ userId, userName }) {
   }, [sortedOpenRequests, catName]);
 
   const homeVisibleRequests = useMemo(() => {
-    if (homeListCat === 'ALL') return sortedOpenRequests;
-    return sortedOpenRequests.filter((i) => {
+    const base = Array.isArray(openRequests) ? openRequests : [];
+    if (homeListCat === 'ALL') return base;
+    return base.filter((i) => {
       const name = i.categoryName || catName(i.categoryId);
       return name === homeListCat;
     });
-  }, [sortedOpenRequests, homeListCat, catName]);
+  }, [openRequests, homeListCat, catName]);
 
   const filteredHomeRequests = useMemo(() => {
-    let rows = [...homeVisibleRequests];
-    if (sortBy === 'cheap') {
-      rows.sort((a, b) => {
-        const pa = a.publishedBudget != null ? Number(a.publishedBudget) : 1e15;
-        const pb = b.publishedBudget != null ? Number(b.publishedBudget) : 1e15;
-        return pa - pb;
-      });
-    }
+    const rows = sortJobRequests(homeVisibleRequests, sortBy);
     const trimmed = q.trim();
     if (trimmed.length < 2) return rows;
     return rankItemsBySmartMatch(rows, trimmed, jobRequestHaystack);
