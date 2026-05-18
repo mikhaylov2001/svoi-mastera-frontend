@@ -216,6 +216,19 @@ function HomeSortChips({ value, onChange, options }) {
   );
 }
 
+function HomeHeroTitle({ line1, city }) {
+  const cityPrep = cityInLocative(city);
+  return (
+    <h1 className="chpv-h1">
+      <span className="chpv-h1-line1">{line1}</span>
+      <br />
+      <span className="chpv-h1-line2">
+        в <span className="chpv-h1-city">{cityPrep}</span> рядом с вами
+      </span>
+    </h1>
+  );
+}
+
 function HomeCatalogSearch({ value, onChange, onSubmit, placeholder, inputId }) {
   return (
     <form className="chpv-search" onSubmit={onSubmit}>
@@ -401,11 +414,7 @@ export function CustomerHomePage({ userId }) {
               <span className="chpv-dot" />
               {userId ? `${city} · Личный кабинет заказчика` : `${city} · Найдите мастера рядом`}
           </div>
-            <h1 className="chpv-h1">
-              Найдите мастера в <span className="chpv-h1-city">{cityInLocative(city)}</span>
-              <br />
-              рядом с вами
-          </h1>
+            <HomeHeroTitle line1="Найдите мастера" city={city} />
             <p className="chpv-sub">
               Ремонт, сантехника, красота и другие услуги — разместите заявку или выберите мастера по объявлениям и
               отзывам.
@@ -792,7 +801,6 @@ export function WorkerHomePage({ userId, userName }) {
   }, [homeVisibleRequests, q, sortBy]);
 
   const firstName = (userName || 'Мастер').trim().split(/\s+/)[0] || 'Мастер';
-  const cityPrep = cityInLocative(city);
   const bentoCats = useMemo(() => {
     const raw =
       categories.length > 0
@@ -863,11 +871,7 @@ export function WorkerHomePage({ userId, userName }) {
               <span className="chpv-dot" />
               {city} · Личный кабинет мастера
           </div>
-            <h1 className="chpv-h1">
-              Заказы и клиенты в <span className="chpv-h1-city">{cityPrep}</span>
-              <br />
-              рядом с вами
-          </h1>
+            <HomeHeroTitle line1="Заказы и клиенты" city={city} />
             <p className="chpv-sub">
               Привет, {firstName}! Заявки заказчиков с открытыми задачами — ищите в каталоге и выбирайте подходящие
               карточки ниже.

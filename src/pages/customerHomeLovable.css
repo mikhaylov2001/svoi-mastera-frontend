@@ -86,6 +86,14 @@
   margin: 0 0 18px;
   color: #fff;
 }
+.chpv-h1-line1,
+.chpv-h1-line2 {
+  font-weight: inherit;
+  letter-spacing: inherit;
+}
+.chpv-h1-line2 {
+  white-space: normal;
+}
 .chpv-h1 .chpv-h1-city {
   color: #ff7043;
   background: linear-gradient(90deg, #ff7043, #ffc107);
