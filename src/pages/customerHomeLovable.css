@@ -315,16 +315,14 @@
 }
 .chpv-filter:hover { border-color: #e8410a; color: #e8410a; }
 .chpv-filter.active { background: #e8410a; border-color: #e8410a; color: #fff; }
-.chpv-sort {
-  margin-left: auto;
-  padding: 8px 14px;
-  background: #fff;
-  border: 1.5px solid #ebebeb;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
+.chpv-sort-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.chpv-sort-btn {
+  flex-shrink: 0;
 }
 
 .chpv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -689,14 +687,12 @@
     margin-bottom: 10px;
   }
   .chpv-filter { font-size: 13px; padding: 8px 13px; }
-  .chpv-sort {
+  .chpv-sort-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
     width: 100%;
-    margin-left: 0;
-    margin-top: 4px;
-    padding: 12px 14px;
-    border-radius: 12px;
-    font-size: 14px;
-    min-height: 48px;
+    margin-top: 2px;
   }
 
   .chpv-grid {

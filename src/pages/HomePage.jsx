@@ -50,6 +50,17 @@ const QUICK_CUSTOMER = ['⚡ электрик сегодня', '📍 рядом 
 const CHIPS_WORKER = ['⚡ Электрика', '🔧 Сантехника', '🧹 Уборка', '💻 IT', '🚚 Перевозки', '🎨 Отделка', '🔨 Ремонт', '✂️ Красота'];
 const QUICK_WORKER = ['⚡ срочные заявки', '📍 рядом с вами', '💰 от 1500 ₽', '⭐ с бюджетом'];
 
+const SORT_LISTING = [
+  { value: 'new', label: 'Новые' },
+  { value: 'cheap', label: 'Дешевле' },
+  { value: 'rating', label: 'Рейтинг' },
+];
+
+const SORT_REQUEST = [
+  { value: 'new', label: 'Новые' },
+  { value: 'cheap', label: 'По бюджету' },
+];
+
 function timeAgoShort(d) {
   if (!d) return '';
   const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
@@ -186,6 +197,23 @@ function SpotlightAvatar({ photoUrl, name }) {
 
 function SpotlightRate({ rate }) {
   return <div className="chpv-tm-rate">{rate != null ? `★ ${Number(rate).toFixed(1)}` : '★ —'}</div>;
+}
+
+function HomeSortChips({ value, onChange, options }) {
+  return (
+    <div className="chpv-sort-group" role="group" aria-label="Сортировка">
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          className={`chpv-filter chpv-sort-btn${value === opt.value ? ' active' : ''}`}
+          onClick={() => onChange(opt.value)}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function HomeCatalogSearch({ value, onChange, onSubmit, placeholder, inputId }) {
@@ -503,16 +531,7 @@ export function CustomerHomePage({ userId }) {
                 {c.name} · {c.n}
               </button>
             ))}
-            <select
-              className="chpv-sort"
-              aria-label="Сортировка"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="new">Новые</option>
-              <option value="cheap">Дешевле</option>
-              <option value="rating">Рейтинг</option>
-            </select>
+            <HomeSortChips value={sortBy} onChange={setSortBy} options={SORT_LISTING} />
           </div>
 
           <div className="chpv-grid">
@@ -974,15 +993,7 @@ export function WorkerHomePage({ userId, userName }) {
                 {c.name} · {c.n}
               </button>
             ))}
-            <select
-              className="chpv-sort"
-              aria-label="Сортировка"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="new">Новые</option>
-              <option value="cheap">По бюджету</option>
-            </select>
+            <HomeSortChips value={sortBy} onChange={setSortBy} options={SORT_REQUEST} />
           </div>
 
           <div className="chpv-grid">
