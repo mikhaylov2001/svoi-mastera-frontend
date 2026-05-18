@@ -549,18 +549,62 @@
 .chpv-promo .chpv-promo-btn:hover { filter: brightness(0.96); }
 
 @media (max-width: 980px) {
-  .chpv-hero-inner { grid-template-columns: 1fr; gap: 32px; }
-  .chpv-livecard { max-width: 420px; }
-  .chpv-body { grid-template-columns: 1fr; }
+  .chpv-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 36px 20px;
+  }
+  .chpv-livecard { max-width: 480px; width: 100%; }
+  .chpv-h1 { font-size: 36px; letter-spacing: -1px; }
+  .chpv-sub { font-size: 15px; }
+  .chpv-body { grid-template-columns: 1fr; padding: 24px 20px 48px; gap: 20px; }
   .chpv-side { position: static; }
-  .chpv-bento { grid-template-columns: 1fr 1fr; grid-template-rows: 140px 140px 140px; }
+  .chpv-bento { grid-template-columns: 1fr 1fr; grid-template-rows: 150px 150px 150px; }
   .chpv-bento-tile.big { grid-column: 1 / -1; grid-row: 1; }
-  .chpv-h1 { font-size: 36px; }
+  .chpv-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
-  .chpv-search { flex-direction: column; }
+  .chpv-hero-inner { padding: 28px 16px; gap: 24px; }
+  .chpv-h1 { font-size: 28px; letter-spacing: -0.8px; margin-bottom: 14px; }
+  .chpv-sub { font-size: 14px; margin-bottom: 18px; }
+  .chpv-eyebrow { font-size: 10px; padding: 5px 11px; margin-bottom: 14px; }
+  .chpv-search { flex-direction: column; gap: 6px; padding: 10px; border-radius: 14px; }
   .chpv-search--strip { flex-direction: column; }
+  .chpv-search-input { padding: 10px 12px; }
+  .chpv-search-go { width: 100%; padding: 13px; border-radius: 10px; font-size: 15px; min-height: 50px; }
   .chpv-search--strip .chpv-search-go { width: 100%; }
-  .chpv-grid { grid-template-columns: 1fr; }
+  .chpv-quick { gap: 6px; margin-bottom: 0; }
+  .chpv-quick-chip { font-size: 11px; padding: 6px 10px; }
+  .chpv-livecard { max-width: 100%; padding: 16px; border-radius: 16px; }
+  .chpv-feed-row { padding: 8px 10px; }
+  .chpv-feed-text { font-size: 11px; }
+  .chpv-mini-stat b { font-size: 16px; }
+  .chpv-body { padding: 20px 16px 48px; gap: 18px; }
+  .chpv-section-hdr h2 { font-size: 18px; }
+  .chpv-bento { grid-template-columns: 1fr 1fr; grid-template-rows: 120px 120px 120px; gap: 8px; }
+  .chpv-bento-tile.big { height: 140px; }
+  .chpv-bento-name { font-size: 13px; }
+  .chpv-bento-tile.big .chpv-bento-name { font-size: 17px; }
+  .chpv-bento-meta { font-size: 10px; }
+  .chpv-chips { gap: 6px; margin-bottom: 20px; }
+  .chpv-chip { font-size: 12px; padding: 7px 11px; }
+  .chpv-filter-row { gap: 6px; }
+  .chpv-filter { font-size: 12px; padding: 7px 11px; }
+  .chpv-sort { font-size: 12px; padding: 7px 10px; margin-left: 0; width: 100%; margin-top: 2px; }
+  .chpv-grid { grid-template-columns: 1fr; gap: 10px; }
+  .chpv-card-price { font-size: 16px; }
+  .chpv-card-body { padding: 10px 12px 12px; }
+  .chpv-widget { padding: 16px; border-radius: 14px; }
+  .chpv-promo { padding: 18px; border-radius: 14px; }
+  .chpv-cta-btn { padding: 14px; font-size: 15px; min-height: 50px; }
   .chpv-social-divider { display: none; }
+}
+@media (max-width: 390px) {
+  .chpv-hero-inner { padding: 22px 14px; }
+  .chpv-h1 { font-size: 24px; }
+  .chpv-body { padding: 16px 14px 48px; }
+  .chpv-bento { grid-template-columns: 1fr; grid-template-rows: none; }
+  .chpv-bento-tile { height: 110px; }
+  .chpv-bento-tile.big { height: 140px; grid-column: auto; grid-row: auto; }
+  .chpv-section-hdr h2 { font-size: 17px; }
 }

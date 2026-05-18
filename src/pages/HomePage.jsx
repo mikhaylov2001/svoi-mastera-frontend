@@ -686,6 +686,7 @@ export function WorkerHomePage({ userId, userName }) {
   const [q, setQ] = useState('');
   const [feedIdx, setFeedIdx] = useState(0);
   const [shown, setShown] = useState(8);
+  const [sortBy, setSortBy] = useState('new');
   const [customerStats, setCustomerStats] = useState({});
 
   const reloadWorkerHome = useCallback(async () => {
@@ -717,7 +718,7 @@ export function WorkerHomePage({ userId, userName }) {
 
   useEffect(() => {
     setShown(8);
-  }, [homeListCat, q]);
+  }, [homeListCat, q, sortBy]);
 
   const platformFeedCycle = useMemo(() => resolvePlatformFeedCycle(openRequests), [openRequests]);
 
@@ -756,14 +757,32 @@ export function WorkerHomePage({ userId, userName }) {
   }, [sortedOpenRequests, homeListCat, catName]);
 
   const filteredHomeRequests = useMemo(() => {
+    let rows = [...homeVisibleRequests];
+    if (sortBy === 'cheap') {
+      rows.sort((a, b) => {
+        const pa = a.publishedBudget != null ? Number(a.publishedBudget) : 1e15;
+        const pb = b.publishedBudget != null ? Number(b.publishedBudget) : 1e15;
+        return pa - pb;
+      });
+    }
     const trimmed = q.trim();
-    if (trimmed.length < 2) return homeVisibleRequests;
-    return rankItemsBySmartMatch(homeVisibleRequests, trimmed, jobRequestHaystack);
-  }, [homeVisibleRequests, q]);
+    if (trimmed.length < 2) return rows;
+    return rankItemsBySmartMatch(rows, trimmed, jobRequestHaystack);
+  }, [homeVisibleRequests, q, sortBy]);
 
   const firstName = (userName || 'Мастер').trim().split(/\s+/)[0] || 'Мастер';
   const cityPrep = cityInLocative(city);
-  const bentoCats = useMemo(() => ALL_CATS.slice(0, 5), []);
+  const bentoCats = useMemo(() => {
+    const raw =
+      categories.length > 0
+        ? categories
+            .filter((c) => c && String(c.name || '').trim() && String(c.slug || '').trim())
+            .map((c) => ({ slug: String(c.slug).trim(), name: String(c.name).trim(), emoji: null }))
+        : ALL_CATS.map((c) => ({ slug: c.slug, name: c.name, emoji: c.emoji }));
+    const countName = (name) =>
+      sortedOpenRequests.filter((r) => (r.categoryName || catName(r.categoryId)) === name).length;
+    return [...raw].sort((a, b) => countName(b.name) - countName(a.name)).slice(0, 5);
+  }, [categories, sortedOpenRequests, catName]);
 
   const countRequestsInCategory = useCallback(
     (catDisplayName) =>
@@ -859,7 +878,7 @@ export function WorkerHomePage({ userId, userName }) {
               {visibleFeed.map((f) => (
                 <div className="chpv-feed-row" key={f._k}>
                   <div className="chpv-feed-ava" style={{ background: f.color }}>
-                    {f.who[0]}
+                    {(f.who && f.who[0]) || '·'}
             </div>
                   <div className="chpv-feed-text">
                     <b>{f.who}</b> {f.what}
@@ -891,8 +910,9 @@ export function WorkerHomePage({ userId, userName }) {
           <div className="chpv-bento">
             {bentoCats.map((cat, i) => {
               const n = countRequestsInCategory(cat.name);
-              const img = CAT_PHOTOS[cat.slug];
-  return (
+              const photoKey = mapCategorySlugToPhotoKey(cat.slug, categories);
+              const img = CAT_PHOTOS[photoKey] || CAT_PHOTOS[cat.slug];
+              return (
                 <Link key={cat.slug} className={`chpv-bento-tile ${i === 0 ? 'big' : ''}`} to={`/find-work?q=${encodeURIComponent(cat.name)}`}>
                   {img ? (
                     <div className="chpv-bento-bg" style={{ backgroundImage: `url(${img})` }} />
@@ -948,7 +968,12 @@ export function WorkerHomePage({ userId, userName }) {
                 {c.name} · {c.n}
               </button>
             ))}
-            <select className="chpv-sort" aria-label="Сортировка" defaultValue="new">
+            <select
+              className="chpv-sort"
+              aria-label="Сортировка"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
               <option value="new">Новые</option>
               <option value="cheap">По бюджету</option>
             </select>
