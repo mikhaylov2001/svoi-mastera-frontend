@@ -585,66 +585,153 @@
   .chpv-bento-tile.big { grid-column: 1 / -1; grid-row: 1; }
   .chpv-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 600px) {
-  .chpv-hero-inner { padding: 28px 16px; gap: 24px; }
-  .chpv-h1 { font-size: 28px; letter-spacing: -0.8px; margin-bottom: 14px; }
-  .chpv-sub { font-size: 14px; margin-bottom: 18px; }
-  .chpv-eyebrow { font-size: 10px; padding: 5px 11px; margin-bottom: 14px; }
-  .chpv-search { flex-direction: column; gap: 6px; padding: 10px; border-radius: 14px; }
-  .chpv-search--strip { flex-direction: column; }
-  .chpv-search-input { padding: 10px 12px; }
-  .chpv-search-go { width: 100%; padding: 13px; border-radius: 10px; font-size: 15px; min-height: 50px; }
-  .chpv-search--strip .chpv-search-go { width: 100%; }
-  .chpv-quick { gap: 6px; margin-bottom: 0; }
-  .chpv-quick-chip { font-size: 11px; padding: 6px 10px; }
-  .chpv-livecard { max-width: 100%; padding: 16px; border-radius: 16px; }
-  .chpv-feed-row { padding: 8px 10px; }
-  .chpv-feed-text { font-size: 11px; }
-  .chpv-mini-stat b { font-size: 16px; }
-  .chpv-body { padding: 20px 16px 48px; gap: 18px; }
-  .chpv-section-hdr h2 { font-size: 18px; }
-  .chpv-bento { grid-template-columns: 1fr 1fr; grid-template-rows: 120px 120px 120px; gap: 8px; }
-  .chpv-bento-tile.big { grid-column: 1 / -1; grid-row: 1; height: 140px; }
-  .chpv-bento-name { font-size: 13px; }
-  .chpv-bento-tile.big .chpv-bento-name { font-size: 17px; }
-  .chpv-bento-meta { font-size: 10px; }
-  .chpv-chips { gap: 6px; margin-bottom: 20px; }
-  .chpv-chip { font-size: 12px; padding: 7px 11px; }
-  .chpv-filter-row { gap: 6px; }
-  .chpv-filter { font-size: 12px; padding: 7px 11px; }
-  .chpv-sort { font-size: 12px; padding: 7px 10px; margin-left: 0; width: 100%; margin-top: 2px; }
-  .chpv-grid { grid-template-columns: 1fr; gap: 10px; }
-  .chpv-card-price { font-size: 16px; }
-  .chpv-card-body { padding: 10px 12px 12px; }
-  .chpv-widget { padding: 16px; border-radius: 14px; }
-  .chpv-promo { padding: 18px; border-radius: 14px; }
-  .chpv-cta-btn { padding: 14px; font-size: 15px; min-height: 50px; }
-  .chpv-social-divider { display: none; }
-}
-@media (max-width: 390px) {
-  .chpv-hero-inner { padding: 22px 14px; }
-  .chpv-h1 { font-size: 24px; }
-  .chpv-body { padding: 16px 14px 48px; }
-  .chpv-bento {
-    grid-template-columns: 1fr;
-    grid-template-rows: unset;
-    grid-auto-rows: 110px;
-    gap: 8px;
-  }
-  .chpv-bento-tile { height: auto; min-height: 110px; }
-  .chpv-bento-tile.big { grid-column: 1; grid-row: auto; min-height: 140px; }
-  .chpv-section-hdr h2 { font-size: 17px; }
-}
 
-/* Главные заказчика/мастера на телефоне */
+/* Мобильная витрина заказчика и мастера (как в макете) */
 @media (max-width: 768px) {
   .chpv,
   .app-main--home .hp {
     display: block;
     width: 100%;
     max-width: 100%;
+    overflow-x: hidden;
   }
-  .chpv-hero {
-    min-height: 1px;
+
+  .chpv-hero { min-height: 1px; }
+  .chpv-hero-inner {
+    padding: 28px max(16px, env(safe-area-inset-right)) 24px max(16px, env(safe-area-inset-left));
+    gap: 20px;
   }
+  .chpv-h1 {
+    font-size: clamp(26px, 7.5vw, 32px);
+    letter-spacing: -0.9px;
+    margin-bottom: 12px;
+    line-height: 1.1;
+  }
+  .chpv-sub { font-size: 14px; margin-bottom: 16px; line-height: 1.55; }
+  .chpv-eyebrow { font-size: 10px; padding: 5px 11px; margin-bottom: 12px; }
+
+  .chpv-search {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+  }
+  .chpv-search-input { padding: 10px 12px; }
+  .chpv-search-go {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    min-height: 50px;
+  }
+  .chpv-quick { gap: 8px; margin-bottom: 0; }
+  .chpv-quick-chip { font-size: 12px; padding: 8px 12px; }
+
+  .chpv-livecard {
+    max-width: 100%;
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+  }
+  .chpv-feed-row { padding: 8px 10px; }
+  .chpv-feed-text { font-size: 11px; }
+  .chpv-mini-stat b { font-size: 16px; }
+
+  .chpv-body {
+    padding: 20px max(16px, env(safe-area-inset-right)) 56px max(16px, env(safe-area-inset-left));
+    gap: 20px;
+  }
+  .chpv-main { min-width: 0; }
+  .chpv-side { position: static; order: 2; }
+
+  .chpv-section-hdr {
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .chpv-section-hdr h2 { font-size: 20px; letter-spacing: -0.35px; }
+
+  /* Категории: вертикальный список полноширинных карточек */
+  .chpv-bento {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .chpv-bento-tile,
+  .chpv-bento-tile.big {
+    width: 100%;
+    min-height: 152px;
+    height: 152px;
+    flex: none;
+    grid-column: auto;
+    grid-row: auto;
+    border-radius: 16px;
+  }
+  .chpv-bento-tile:active { transform: scale(0.99); }
+  .chpv-bento-name { font-size: 20px; font-weight: 800; }
+  .chpv-bento-tile.big .chpv-bento-name { font-size: 20px; }
+  .chpv-bento-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: 12px;
+    margin-top: 6px;
+  }
+  .chpv-bento-body { left: 16px; right: 16px; bottom: 14px; }
+
+  .chpv-chips { gap: 8px; margin-bottom: 22px; }
+  .chpv-chip { font-size: 13px; padding: 8px 13px; }
+
+  .chpv-filter-row {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .chpv-filter { font-size: 13px; padding: 8px 13px; }
+  .chpv-sort {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 4px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    min-height: 48px;
+  }
+
+  .chpv-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .chpv-card { border-radius: 16px; }
+  .chpv-card-quick {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .chpv-quick-btn {
+    padding: 10px;
+    font-size: 13px;
+    min-height: 44px;
+    border-radius: 10px;
+  }
+  .chpv-card-price { font-size: 18px; }
+  .chpv-card-body { padding: 12px 14px 14px; }
+  .chpv-card-title { font-size: 14px; -webkit-line-clamp: 3; }
+
+  .chpv-widget { padding: 16px; border-radius: 16px; }
+  .chpv-promo { padding: 18px; border-radius: 16px; }
+  .chpv-cta-btn { padding: 14px; font-size: 15px; min-height: 50px; }
+  .chpv-social-divider { display: none; }
+}
+
+@media (max-width: 390px) {
+  .chpv-hero-inner { padding: 24px 14px 20px; }
+  .chpv-h1 { font-size: 24px; }
+  .chpv-body { padding: 16px 14px 48px; }
+  .chpv-section-hdr h2 { font-size: 18px; }
+  .chpv-bento-tile,
+  .chpv-bento-tile.big { min-height: 140px; height: 140px; }
+  .chpv-bento-name { font-size: 18px; }
+  .chpv-bento-tile.big .chpv-bento-name { font-size: 18px; }
 }
