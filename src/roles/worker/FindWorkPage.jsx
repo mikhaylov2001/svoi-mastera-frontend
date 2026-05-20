@@ -1186,23 +1186,20 @@ export default function FindWorkPage() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const [catsR, reqsR] = await Promise.allSettled([
-      getCategories(),
-      getOpenJobRequestsForWorker(userId),
-    ]);
-    setCategories(
-      mergeApiCategoriesWithCatalog(catsR.status === 'fulfilled' ? catsR.value || [] : []),
-    );
-    if (reqsR.status === 'fulfilled') {
-      setRequests(reqsR.value || []);
-    } else {
+    try {
+      const [cats, reqs] = await Promise.all([
+        getCategories(),
+        getOpenJobRequestsForWorker(userId),
+      ]);
+      setCategories(mergeApiCategoriesWithCatalog(Array.isArray(cats) ? cats : []));
+      setRequests(Array.isArray(reqs) ? reqs : []);
+    } catch (err) {
+      console.error('Failed to load data:', err);
+      setCategories(mergeApiCategoriesWithCatalog([]));
       setRequests([]);
-      console.error('Failed to load requests:', reqsR.reason);
+    } finally {
+      setLoading(false);
     }
-    if (catsR.status === 'rejected') {
-      console.error('Failed to load categories:', catsR.reason);
-    }
-    setLoading(false);
   }, [userId]);
 
   useEffect(() => { loadData(); }, [loadData]);

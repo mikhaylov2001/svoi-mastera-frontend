@@ -1,8 +1,30 @@
 import { humanizeServerErrorMessage } from './utils/humanizeServerError';
 
-export const API_BASE = process.env.NODE_ENV === 'development'
-  ? 'http://localhost:8080/api/v1'
-  : 'https://svoi-mastera-backend.onrender.com/api/v1';
+function resolveApiBase() {
+  const raw =
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
+    (typeof import.meta !== 'undefined' && import.meta.env?.REACT_APP_API_URL);
+  if (raw && String(raw).trim()) {
+    const base = String(raw).trim().replace(/\/$/, '');
+    return base.endsWith('/api/v1') ? base : `${base}/api/v1`;
+  }
+  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
+    return 'http://localhost:8080/api/v1';
+  }
+  return 'https://svoi-mastera-backend.onrender.com/api/v1';
+}
+
+export const API_BASE = resolveApiBase();
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryableNetworkError(error) {
+  if (error instanceof TypeError) return true;
+  if (error?.name === 'AbortError' || error?.name === 'TimeoutError') return true;
+  return error?.message === 'Нет соединения с сервером.';
+}
 
 function getFriendlyMessage(status, endpoint, serverMessage) {
   const msg = (serverMessage || '').toLowerCase();
@@ -29,39 +51,53 @@ function getFriendlyMessage(status, endpoint, serverMessage) {
   return 'Что-то пошло не так.';
 }
 
-async function apiCall(endpoint, options = {}) {
-  try {
-    const { headers: extraHeaders, cache, ...restOptions } = options;
-    const mergedHeaders = { 'Content-Type': 'application/json', ...extraHeaders };
-    // Не отправляем пустой X-User-Id, чтобы не получать ложные 500 от бэкенда.
-    if (Object.prototype.hasOwnProperty.call(mergedHeaders, 'X-User-Id')) {
-      const uid = mergedHeaders['X-User-Id'];
-      if (uid == null || String(uid).trim() === '' || String(uid).toLowerCase() === 'undefined') {
-        throw new Error('Сессия истекла. Войдите в аккаунт снова.');
-      }
+async function apiCallOnce(endpoint, options = {}) {
+  const { headers: extraHeaders, cache, signal, ...restOptions } = options;
+  const mergedHeaders = { 'Content-Type': 'application/json', ...extraHeaders };
+  // Не отправляем пустой X-User-Id, чтобы не получать ложные 500 от бэкенда.
+  if (Object.prototype.hasOwnProperty.call(mergedHeaders, 'X-User-Id')) {
+    const uid = mergedHeaders['X-User-Id'];
+    if (uid == null || String(uid).trim() === '' || String(uid).toLowerCase() === 'undefined') {
+      throw new Error('Сессия истекла. Войдите в аккаунт снова.');
     }
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      ...restOptions,
-      cache: cache || 'no-store',
-      headers: mergedHeaders,
-    });
-    const text = await response.text();
-    let data;
-    try { data = text ? JSON.parse(text) : {}; } catch { data = { message: text }; }
-    if (!response.ok) {
-      const raw = String(data.message || data.error || data.detail || text || '').trim();
-      if (raw) {
-        throw new Error(humanizeServerErrorMessage(raw));
-      }
-      throw new Error(getFriendlyMessage(response.status, endpoint, ''));
-    }
-    return data;
-  } catch (error) {
-    if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      throw new Error('Нет соединения с сервером.');
-    }
-    throw error;
   }
+  const response = await fetch(`${API_BASE}${endpoint}`, {
+    ...restOptions,
+    cache: cache || 'no-store',
+    headers: mergedHeaders,
+    signal,
+  });
+  const text = await response.text();
+  let data;
+  try { data = text ? JSON.parse(text) : {}; } catch { data = { message: text }; }
+  if (!response.ok) {
+    const raw = String(data.message || data.error || data.detail || text || '').trim();
+    if (raw) {
+      throw new Error(humanizeServerErrorMessage(raw));
+    }
+    throw new Error(getFriendlyMessage(response.status, endpoint, ''));
+  }
+  return data;
+}
+
+async function apiCall(endpoint, options = {}) {
+  const { retries = 2, retryDelayMs = 1500, ...fetchOptions } = options;
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await apiCallOnce(endpoint, fetchOptions);
+    } catch (error) {
+      lastError = error;
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        lastError = new Error('Нет соединения с сервером.');
+      }
+      if (!isRetryableNetworkError(lastError) || attempt >= retries) {
+        throw lastError;
+      }
+      await sleep(retryDelayMs * (attempt + 1));
+    }
+  }
+  throw lastError;
 }
 
 // ── AUTH ──
@@ -371,7 +407,11 @@ export async function uploadFile(userId, file) {
 
 // ── LISTINGS ──
 export async function getListings() {
-  return apiCall('/listings');
+  const signal =
+    typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
+      ? AbortSignal.timeout(120000)
+      : undefined;
+  return apiCall('/listings', { signal, retries: 3, retryDelayMs: 2000 });
 }
 
 /** Одно объявление по id (публичный GET; без массового /listings). */

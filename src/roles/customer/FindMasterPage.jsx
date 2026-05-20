@@ -1,6 +1,14 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { getCategories, getListings, acceptListingDeal, getMyDeals, cancelPendingDeal } from '../../api';
+import {
+  getCategories,
+  getListings,
+  acceptListingDeal,
+  getMyDeals,
+  cancelPendingDeal,
+  getWorkerStats,
+} from '../../api';
+import { fetchStatsMap } from '../../utils/fetchStatsMap';
 import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import {
@@ -23,8 +31,6 @@ import {
 } from '../../utils/mergeApiCategoriesWithCatalog';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import '../worker/jobListings.css';
-
-const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
 /* Плоский словарь slug → данные категории (фото, описание, цена, …) */
 const CAT_ALL = {};
@@ -1326,53 +1332,33 @@ export default function FindMasterPage() {
     setLoading(true);
     setError('');
     setWorkerStats({});
-    const dealsPromise = userId ? getMyDeals(userId).catch(() => []) : Promise.resolve([]);
-    const [catsR, listingsR, dealsR] = await Promise.allSettled([
-      getCategories(),
-      getListings(),
-      dealsPromise,
-    ]);
-
-    const cats =
-      catsR.status === 'fulfilled' ? catsR.value : null;
-    const listings =
-      listingsR.status === 'fulfilled' ? listingsR.value : null;
-    const deals =
-      dealsR.status === 'fulfilled' ? dealsR.value : [];
-
-    setCategories(mergeApiCategoriesWithCatalog(cats || []));
-
-    if (listings) {
+    try {
+      const dealsPromise = userId ? getMyDeals(userId).catch(() => []) : Promise.resolve([]);
+      const [cats, listings, deals] = await Promise.all([
+        getCategories(),
+        getListings(),
+        dealsPromise,
+      ]);
+      setCategories(mergeApiCategoriesWithCatalog(Array.isArray(cats) ? cats : []));
       buildPendingFromDeals(deals);
-      const processed = (listings || []).map(item => ({
+      const raw = Array.isArray(listings) ? listings : [];
+      const processed = raw.map((item) => ({
         ...item,
-        workerId:  item.workerId,
+        workerId: item.workerId,
         workerName: [item.workerName, item.workerLastName].filter(Boolean).join(' ') || 'Мастер',
-        priceFrom:  getListingPublishedPriceNumber(item) || 0,
+        priceFrom: getListingPublishedPriceNumber(item) || 0,
         verified: item.workerVerified === true,
       }));
       setServices(processed);
-      const ids = [...new Set(processed.map(s => s.workerId))];
-      ids.forEach(async (wid) => {
-        try {
-          const r = await fetch(`${API}/workers/${wid}/stats`);
-          if (r.ok) {
-            const st = await r.json();
-            setWorkerStats(prev => ({ ...prev, [wid]: st }));
-          }
-        } catch {}
-      });
-    } else {
+      const ids = [...new Set(processed.map((s) => s.workerId).filter(Boolean))];
+      setWorkerStats(await fetchStatsMap(ids, getWorkerStats));
+    } catch (e) {
+      setCategories(mergeApiCategoriesWithCatalog([]));
       setServices([]);
+      setError(e?.message || 'Ошибка загрузки');
+    } finally {
+      setLoading(false);
     }
-
-    const failed = [catsR, listingsR].filter((r) => r.status === 'rejected');
-    if (failed.length > 0) {
-      const msg = failed[0].reason?.message || 'Ошибка загрузки';
-      setError(msg);
-    }
-
-    setLoading(false);
   }, [userId, buildPendingFromDeals]);
 
   useEffect(() => { reloadCatalog(); }, [reloadCatalog]);
@@ -1545,9 +1531,9 @@ export default function FindMasterPage() {
             </div>
           ) : (
             <>
-              {error && (
+              {error && services.length === 0 && (
                 <div className="fmp-catalog-warn" role="status">
-                  <span>{error} Объявления могут быть недоступны — категории ниже всё равно можно открыть.</span>
+                  <span>{error}</span>
                   <button type="button" onClick={reloadCatalog}>Повторить</button>
                 </div>
               )}
