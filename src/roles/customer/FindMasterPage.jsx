@@ -1550,7 +1550,7 @@ export default function FindMasterPage() {
                   <Link
                     key={cat.slug}
                     to={urlQ ? `/find-master/${cat.slug}?q=${encodeURIComponent(urlQ)}` : `/find-master/${cat.slug}`}
-                    className="fmp-cat-card"
+                    className={`fmp-cat-card${count > 0 ? ' fmp-cat-card--has-items' : ''}`}
                     onMouseEnter={() => setHeroCatSlug(cat.slug)}
                   >
                     <div className="fmp-cat-img-wrap">

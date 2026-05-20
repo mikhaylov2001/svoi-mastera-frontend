@@ -988,7 +988,7 @@ const fw2css = `
   }
   @media(max-width: 620px) {
     .fw2-list { grid-template-columns: 1fr; }
-    .fw2-cats-grid { grid-template-columns: 1fr; gap: 10px; }
+    .fw2-cats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .fw2-hero { height: var(--page-hero-h-mobile); }
   }
 `;
@@ -2238,7 +2238,7 @@ export default function FindWorkPage() {
                   <button
                     key={cat.slug}
                     type="button"
-                    className="fw2-cat-card"
+                    className={`fw2-cat-card${count > 0 ? ' fw2-cat-card--has-items' : ''}`}
                     onMouseEnter={() => setHeroCatSlug(cat.slug)}
                     onClick={() => {
                       setSelectedCategory(cat);
