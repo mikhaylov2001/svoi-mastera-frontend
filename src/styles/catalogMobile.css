@@ -446,69 +446,97 @@
     font-weight: 600;
   }
 
+  /* Крошки — одна строка, серые ссылки и счётчик, жирная категория */
   .jl-page.fw-jl-cat-feed .jl-crumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
     font-size: 13px;
-    margin-bottom: 14px;
-    line-height: 1.45;
-    flex-wrap: wrap;
+    line-height: 1.35;
+    color: #888;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-crumbs-link {
+    color: #888 !important;
+    font-weight: 500;
+    flex-shrink: 0;
   }
 
   .jl-page.fw-jl-cat-feed .jl-crumbs .cur {
     font-weight: 700;
-    color: #111827;
+    color: #1a1a1a;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-crumbs-meta {
+    color: #888;
+    font-weight: 500;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .jl-page.fw-jl-cat-feed .jl-crumbs .sep {
-    color: #d1d5db;
+    color: #ccc;
+    flex-shrink: 0;
+    font-size: 12px;
   }
 
-  /* Сортировка — крупные pill-кнопки, перенос строк */
+  /* Сортировка — компактные chip'ы в одну линию */
   .jl-page.fw-jl-cat-feed .jl-toolbar {
-    flex-wrap: wrap;
-    overflow: visible;
-    gap: 10px;
-    row-gap: 10px;
-    padding-bottom: 6px;
-    margin-bottom: 16px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
     align-items: center;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-toolbar::-webkit-scrollbar {
+    display: none;
   }
 
   .jl-page.fw-jl-cat-feed .jl-toolbar-label {
     flex-shrink: 0;
-    font-size: 15px;
-    font-weight: 700;
-    color: #6b7280;
-    margin-right: 2px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #888;
   }
 
   .jl-page.fw-jl-cat-feed .jl-toolbar-count {
-    flex: 1 1 auto;
-    min-width: 120px;
+    flex-shrink: 0;
     margin-left: auto;
-    text-align: right;
-    font-size: 14px;
-    font-weight: 600;
-    color: #9ca3af;
+    font-size: 13px;
+    font-weight: 500;
+    color: #888;
     white-space: nowrap;
   }
 
   .jl-page.fw-jl-cat-feed .jl-chip {
     flex-shrink: 0;
-    padding: 12px 20px;
-    min-height: 44px;
-    font-size: 15px;
-    font-weight: 800;
+    padding: 7px 12px;
+    min-height: 0;
+    font-size: 13px;
+    font-weight: 700;
     white-space: nowrap;
     border-radius: 999px;
-    border-width: 1.5px;
+    border-width: 1px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    box-sizing: border-box;
+    line-height: 1.2;
   }
 
   .jl-page.fw-jl-cat-feed .jl-chip.is-active {
-    box-shadow: 0 2px 10px rgba(232, 65, 10, 0.28);
+    box-shadow: none;
   }
 
   .jl-page.fw-jl-cat-feed .jl-list.jl-feed-list {

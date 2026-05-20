@@ -1821,7 +1821,7 @@ export default function FindWorkPage() {
           {!loading && (
             <>
               <span className="sep">·</span>
-              <span>{pluralRequests(filtered.length)}</span>
+              <span className="jl-crumbs-meta">{pluralRequests(filtered.length)}</span>
             </>
           )}
         </div>

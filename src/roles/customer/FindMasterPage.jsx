@@ -1735,7 +1735,9 @@ export default function FindMasterPage() {
           {!loading && (
             <>
               <span className="sep">·</span>
-              <span>{visible.length} {visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}</span>
+              <span className="jl-crumbs-meta">
+                {visible.length} {visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}
+              </span>
             </>
           )}
         </div>
