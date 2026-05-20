@@ -251,43 +251,53 @@
     max-width: 100%;
   }
 
-  /* Поиск сверху */
+  /* Поиск сверху — в одну строку (поле + «Найти»), как на макете */
   .jl-page.fw-jl-cat-feed .fmp-topbar,
   .jl-page.fw-jl-cat-feed .fw2-topbar {
-    padding: 10px 0;
+    background: #fff;
+    border-bottom: 1px solid #e8e8e8;
+    padding: 12px 0;
   }
 
   .jl-page.fw-jl-cat-feed .fmp-topbar-inner,
   .jl-page.fw-jl-cat-feed .fw2-topbar-inner {
-    flex-direction: column;
+    flex-direction: row !important;
     align-items: stretch;
-    gap: 8px;
+    gap: 10px;
     padding: 0 max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
     max-width: 100%;
   }
 
-  .jl-page.fw-jl-cat-feed .fmp-topbar-btn,
-  .jl-page.fw-jl-cat-feed .fw2-topbar .fw2-search-wrap + button,
-  .jl-page.fw-jl-cat-feed .fw2-topbar-inner > button {
-    width: 100%;
-    min-height: 48px;
-    border-radius: 12px;
-    font-size: 15px;
-    font-weight: 800;
+  .jl-page.fw-jl-cat-feed .fmp-search-dd-wrap {
+    flex: 1;
+    min-width: 0;
   }
 
   .jl-page.fw-jl-cat-feed .fmp-topbar-btn,
   .jl-page.fw-jl-cat-feed .fw2-topbar-btn {
+    width: auto !important;
+    min-width: 84px;
+    flex-shrink: 0;
+    min-height: 48px;
+    padding: 0 18px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 800;
     background: #e8410a;
     color: #fff;
     border: none;
     box-shadow: 0 4px 14px rgba(232, 65, 10, 0.28);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .jl-page.fw-jl-cat-feed .fmp-search-wrap,
   .jl-page.fw-jl-cat-feed .fw2-search-wrap {
     border-radius: 12px;
     padding: 0 12px;
+    min-height: 48px;
+    border-width: 1px;
   }
 
   .jl-page.fw-jl-cat-feed .fmp-search-wrap input,
@@ -334,10 +344,22 @@
     margin-bottom: 12px;
   }
 
-  .jl-page.fw-jl-cat-feed .jl-price-row input {
+  .jl-page.fw-jl-cat-feed .jl-side-row {
+    gap: 10px;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-side-field label {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-bottom: 6px;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-side-field input {
     border-radius: 12px;
     min-height: 44px;
     font-size: 16px;
+    padding: 10px 12px;
+    background: #fff;
   }
 
   .jl-page.fw-jl-cat-feed .jl-rating-opts {
@@ -346,9 +368,10 @@
     gap: 8px;
   }
 
-  .jl-page.fw-jl-cat-feed .jl-rating-opt {
+  .jl-page.fw-jl-cat-feed .jl-side-card .jl-rating-opt {
     width: 100%;
     min-height: 48px;
+    margin-top: 0;
     border-radius: 14px;
     justify-content: flex-start;
     padding: 10px 14px;
@@ -356,7 +379,7 @@
     font-weight: 700;
   }
 
-  .jl-page.fw-jl-cat-feed .jl-rating-opt.is-active {
+  .jl-page.fw-jl-cat-feed .jl-side-card .jl-rating-opt.is-active {
     border-color: #e8410a;
     background: #fff;
     color: #e8410a;
@@ -369,9 +392,16 @@
     color: #fff;
   }
 
-  .jl-page.fw-jl-cat-feed .jl-check {
+  .jl-page.fw-jl-cat-feed .jl-check,
+  .jl-page.fw-jl-cat-feed .jl-side-check,
+  .jl-page.fw-jl-cat-feed .jl-side-card .fmp-check-item {
     min-height: 44px;
     font-size: 14px;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-side-card .fmp-check-box.on {
+    background: #e8410a;
+    border-color: #e8410a;
   }
 
   .jl-page.fw-jl-cat-feed .jl-cat-cover {
@@ -387,7 +417,18 @@
 
   .jl-page.fw-jl-cat-feed .jl-crumbs {
     font-size: 12px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    line-height: 1.45;
+    flex-wrap: wrap;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-crumbs .cur {
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-crumbs .sep {
+    color: #d1d5db;
   }
 
   /* Сортировка */

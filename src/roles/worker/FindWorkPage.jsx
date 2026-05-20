@@ -1862,21 +1862,23 @@ export default function FindWorkPage() {
 
             <div className="jl-side-card">
               <div className="jl-side-title">Рейтинг заказчика</div>
-              {[
-                { r: 0, label: 'Любой', stars: '' },
-                { r: 4, label: '4.0+', stars: '★★★★☆' },
-                { r: 4.5, label: '4.5+', stars: '★★★★★' },
-              ].map(({ r, label, stars }) => (
-                <button
-                  key={String(r)}
-                  type="button"
-                  className={`jl-rating-opt${ratingMin === r ? ' is-active' : ''}`}
-                  onClick={() => setRatingMin(r)}
-                >
-                  {stars ? <span className="stars">{stars}</span> : null}
-                  {label}
-                </button>
-              ))}
+              <div className="jl-rating-opts">
+                {[
+                  { r: 0, label: 'Любой', stars: '' },
+                  { r: 4, label: '4.0+', stars: '★★★★☆' },
+                  { r: 4.5, label: '4.5+', stars: '★★★★★' },
+                ].map(({ r, label, stars }) => (
+                  <button
+                    key={String(r)}
+                    type="button"
+                    className={`jl-rating-opt${ratingMin === r ? ' is-active' : ''}`}
+                    onClick={() => setRatingMin(r)}
+                  >
+                    {stars ? <span className="stars">{stars}</span> : null}
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="jl-side-card">
