@@ -72,7 +72,9 @@ function AppContent() {
   const isAuthPage = ['/login', '/register', '/forgot-password'].includes(location.pathname);
   const isHomeCatalog = location.pathname === '/' || location.pathname === WORKER_HOME_PATH;
   const isCatalogPage =
-    location.pathname.startsWith('/find-master') || location.pathname.startsWith('/find-work');
+    location.pathname.startsWith('/find-master') ||
+    location.pathname.startsWith('/find-work') ||
+    location.pathname.startsWith('/listings/');
   const isContentPage = !isAuthPage && !isHomeCatalog;
 
   return (

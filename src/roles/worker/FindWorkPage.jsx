@@ -17,6 +17,7 @@ import { WORKER_HOME_PATH } from '../../constants/homePaths';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
+import { formatCatalogCountShort } from '../../utils/formatCatalogCountShort';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
 } from '../../utils/categoryPlaceholderPhoto';
@@ -2250,18 +2251,20 @@ export default function FindWorkPage() {
                       ) : (
                         <div className="fw2-cat-img-ph">{meta.emoji || '🛠️'}</div>
                       )}
-                      <span className="fw2-cat-badge">
-                        {count > 0 ? pluralRequests(count) : 'Нет заявок'}
-                      </span>
+                      {count > 0 && (
+                        <span className="fw2-cat-badge fw2-cat-badge--num" aria-label={pluralRequests(count)}>
+                          {count}
+                        </span>
+                      )}
                     </div>
                     <div className="fw2-cat-body">
                       <div className="fw2-cat-name">{cat.name}</div>
                       <div className="fw2-cat-desc">{meta.desc || 'Профессиональные заказы'}</div>
                       <div className="fw2-cat-footer">
                         {count > 0 ? (
-                          <span className="fw2-cat-count">{pluralRequests(count)}</span>
+                          <span className="fw2-cat-count">{formatCatalogCountShort(count)}</span>
                         ) : (
-                          <span className="fw2-cat-count-none">Нет активных заявок</span>
+                          <span className="fw2-cat-count-none">Нет заявок</span>
                         )}
                         <div className="fw2-cat-go">›</div>
                       </div>

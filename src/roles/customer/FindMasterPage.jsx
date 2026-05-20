@@ -9,6 +9,7 @@ import {
   getWorkerStats,
 } from '../../api';
 import { fetchStatsMap } from '../../utils/fetchStatsMap';
+import { formatCatalogCountShort } from '../../utils/formatCatalogCountShort';
 import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import {
@@ -1557,18 +1558,20 @@ export default function FindMasterPage() {
                         ? <img src={meta.photo} alt={cat.name} loading="lazy"/>
                         : <div className="fmp-cat-img-ph">{meta.emoji || '🛠️'}</div>
                       }
-                      <span className="fmp-cat-badge">
-                        {count > 0 ? pluralActiveListings(count) : 'Нет объявлений'}
-                      </span>
+                      {count > 0 && (
+                        <span className="fmp-cat-badge fmp-cat-badge--num" aria-label={pluralActiveListings(count)}>
+                          {count}
+                        </span>
+                      )}
                     </div>
                     <div className="fmp-cat-body">
                       <div className="fmp-cat-name">{cat.name}</div>
                       <div className="fmp-cat-desc">{meta.desc || cat.description || 'Профессиональные мастера'}</div>
                       <div className="fmp-cat-footer">
                         {count > 0 ? (
-                          <span className="fmp-cat-count">{pluralActiveListings(count)}</span>
+                          <span className="fmp-cat-count">{formatCatalogCountShort(count)}</span>
                         ) : (
-                          <span className="fmp-cat-count-none">Нет активных объявлений</span>
+                          <span className="fmp-cat-count-none">Нет объявлений</span>
                         )}
                         <div className="fmp-cat-go">›</div>
                       </div>
@@ -1805,6 +1808,7 @@ export default function FindMasterPage() {
               <span className="jl-toolbar-label">Сортировать:</span>
               {[
                 { val: 'recency', label: 'Новые' },
+                { val: 'rating', label: 'Рейтинг' },
                 { val: 'priceAsc', label: 'Цена ↑' },
                 { val: 'priceDesc', label: 'Цена ↓' },
               ].map(o => (
