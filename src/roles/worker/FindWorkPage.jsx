@@ -971,12 +971,12 @@ const fw2css = `
       padding-right: max(16px, env(safe-area-inset-right));
     }
     .fw2-list { grid-template-columns: 1fr; }
-    .fw2-card-actions {
+    .fw2-list .fw2-card-actions {
       flex-direction: column;
       gap: 8px;
     }
-    .fw2-btn-respond,
-    .fw2-btn-msg {
+    .fw2-list .fw2-btn-respond,
+    .fw2-list .fw2-btn-msg {
       width: 100%;
       min-height: 46px;
       box-sizing: border-box;
@@ -987,7 +987,7 @@ const fw2css = `
   }
   @media(max-width: 620px) {
     .fw2-list { grid-template-columns: 1fr; }
-    .fw2-cats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .fw2-cats-grid { grid-template-columns: 1fr; gap: 10px; }
     .fw2-hero { height: var(--page-hero-h-mobile); }
   }
 `;

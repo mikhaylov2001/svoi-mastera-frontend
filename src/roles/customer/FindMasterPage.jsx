@@ -1169,13 +1169,14 @@ const css = `
       padding-right: max(16px, env(safe-area-inset-right));
     }
     .fmp-list { grid-template-columns: 1fr; }
-    .fmp-card-actions {
+    /* Только сетка fmp-list, не карточки jl-bigcard в ленте категории */
+    .fmp-list .fmp-card-actions {
       flex-direction: column;
       flex-wrap: nowrap;
       gap: 8px;
     }
-    .fmp-btn-accept,
-    .fmp-btn-msg {
+    .fmp-list .fmp-btn-accept,
+    .fmp-list .fmp-btn-msg {
       flex: none;
       width: 100%;
       min-height: 46px;
