@@ -1189,7 +1189,7 @@ const css = `
   }
   @media(max-width: 620px) {
     .fmp-list { grid-template-columns: 1fr; }
-    .fmp-cats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .fmp-cats-grid { grid-template-columns: 1fr; gap: 12px; }
     .fmp-hero { height: var(--page-hero-h-mobile); }
   }
 `;
