@@ -1815,16 +1815,14 @@ export default function FindWorkPage() {
 
         <div className="jl-wrap">
         <div className="jl-crumbs">
-          <span className="jl-crumbs-path">
-            <button type="button" className="jl-crumbs-link" onClick={() => { setSelectedCategory(null); resetCategoryFilters(); }}>Все категории</button>
-            <span className="sep" aria-hidden>›</span>
-            <span className="cur">{selectedCategory.name}</span>
-          </span>
+          <button type="button" className="jl-crumbs-link" onClick={() => { setSelectedCategory(null); resetCategoryFilters(); }}>Все категории</button>
+          <span className="sep">›</span>
+          <span className="cur">{selectedCategory.name}</span>
           {!loading && (
-            <span className="jl-crumbs-tail">
-              <span className="sep" aria-hidden>·</span>
+            <>
+              <span className="sep">·</span>
               <span className="jl-crumbs-meta">{pluralRequests(filtered.length)}</span>
-            </span>
+            </>
           )}
         </div>
 

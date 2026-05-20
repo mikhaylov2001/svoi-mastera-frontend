@@ -21,6 +21,7 @@ import {
   getCategorySlugFromLabel,
 } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
+import { formatListingPriceLabel, formatListingPriceParts } from '../../utils/formatListingPrice';
 import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../../constants/homePaths';
 
 const BACKEND_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, '');
@@ -320,19 +321,13 @@ export default function ListingDetailPage() {
   const priceNum = getListingPublishedPriceNumber(listing);
   const priceHasAmount = priceNum != null;
   const priceUnitTrim = listing.priceUnit && String(listing.priceUnit).trim();
-  const priceConditionsLine =
-    priceHasAmount &&
-    `${priceMainLine}${priceUnitTrim ? (priceUnitTrim.startsWith('₽') ? ` ${priceUnitTrim}` : ` ₽${priceUnitTrim}`) : ' ₽'}`;
   const priceMainLine = priceHasAmount
     ? `${priceNum.toLocaleString('ru-RU')}`
     : listing.priceUnit || 'Договорная';
+  const priceParts = formatListingPriceParts(priceNum, priceUnitTrim);
   const priceSubLine = priceHasAmount
-    ? 'Окончательная цена согласовывается в чате с мастером'
+    ? `${priceUnitTrim && !priceUnitTrim.startsWith('₽') ? priceUnitTrim : 'за работу'} · оплата по договорённости`
     : listing.priceUnit || null;
-
-  const workerRatingVal = Number(listing.workerRating);
-  const workerReviewsCount = Number(listing.workerReviewsCount ?? listing.reviewsCount ?? 0);
-  const showWorkerRating = !Number.isNaN(workerRatingVal) && workerRatingVal > 0;
 
   const pubStr = listing.createdAt
     ? new Date(listing.createdAt).toLocaleDateString('ru-RU', {
@@ -377,7 +372,9 @@ export default function ListingDetailPage() {
     : refFrom === 'home'
       ? 'Главная'
       : refFrom === 'find-master'
-        ? 'Назад к объявлениям'
+        ? refCat
+          ? 'К категории'
+          : 'Найти мастера'
         : refFrom === 'favorites'
           ? 'Избранное'
           : !userId
@@ -606,17 +603,15 @@ export default function ListingDetailPage() {
                   listing.category && ['Категория', listing.category],
                   ['Город', listingCity],
                   ['Адрес', addressLine],
-                  priceConditionsLine && ['Стоимость', priceConditionsLine],
+                  priceHasAmount && ['Стоимость', formatListingPriceLabel(priceNum, priceUnitTrim)],
                   !priceHasAmount && listing.priceUnit && ['Стоимость', listing.priceUnit],
-                  ['Статус', listingActive ? 'Активно' : 'В архиве'],
-                  listing.workerVerified === true && ['Верификация', '✓ Проверенный мастер'],
                   listing.createdAt && ['Опубликована', timeAgo(listing.createdAt) || pubStr],
                 ]
                   .filter(Boolean)
                   .map(([label, value]) => (
                     <div key={label} className="ed-row">
                       <dt>{label}</dt>
-                      <dd className={label === 'Верификация' ? 'ed-row-verified' : undefined}>{value}</dd>
+                      <dd>{value}</dd>
                     </div>
                   ))}
               </dl>
@@ -627,12 +622,11 @@ export default function ListingDetailPage() {
             <div className="ed-card">
               <div className="ed-eyebrow">Стоимость</div>
               {priceHasAmount ? (
-                <div className="ed-price-row">
-                  <div className="ed-price-num">
-                    {priceMainLine}
-                    <small> ₽</small>
-                  </div>
-                  {priceUnitTrim ? <span className="ed-price-unit">{priceUnitTrim}</span> : null}
+                <div className="ed-price-num">
+                  <span className="ed-price-amount">{priceParts.main}</span>
+                  {priceParts.suffix ? (
+                    <small className="ed-price-suffix"> {priceParts.suffix}</small>
+                  ) : null}
                 </div>
               ) : (
                 <div className="ed-price-num" style={{ fontSize: 22, fontWeight: 700 }}>
@@ -682,14 +676,10 @@ export default function ListingDetailPage() {
                         onClick={handleAcceptWork}
                         disabled={accepting}
                       >
-                        {accepting
-                          ? 'Отправляем…'
-                          : userRole === 'WORKER'
-                            ? 'Откликнуться'
-                            : 'Принять мастера'}
+                        {accepting ? 'Отправляем…' : 'Откликнуться'}
                       </button>
                       <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-btn ed-btn-ghost">
-                        Написать в чат
+                        Написать сообщение
                       </Link>
                     </>
                   )}
@@ -801,14 +791,6 @@ export default function ListingDetailPage() {
                   <div className="ed-cust-info">
                     <div className="ed-cust-name">{workerName}</div>
                     <div className="ed-cust-meta">Активный мастер</div>
-                    {showWorkerRating && (
-                      <div className="ed-master-rating">
-                        <strong>{workerRatingVal.toFixed(1)}</strong>
-                        {workerReviewsCount > 0
-                          ? ` (${workerReviewsCount} ${workerReviewsCount === 1 ? 'отзыв' : workerReviewsCount < 5 ? 'отзыва' : 'отзывов'})`
-                          : ''}
-                      </div>
-                    )}
                   </div>
                   <div className="ed-cust-arrow">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">

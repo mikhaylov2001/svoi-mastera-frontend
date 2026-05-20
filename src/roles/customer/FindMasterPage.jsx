@@ -1729,18 +1729,16 @@ export default function FindMasterPage() {
 
       <div className="jl-wrap">
         <div className="jl-crumbs">
-          <span className="jl-crumbs-path">
-            <Link to="/find-master" className="jl-crumbs-link">Все категории</Link>
-            <span className="sep" aria-hidden>›</span>
-            <span className="cur">{selectedCategory?.name}</span>
-          </span>
+          <Link to="/find-master" className="jl-crumbs-link">Все категории</Link>
+          <span className="sep">›</span>
+          <span className="cur">{selectedCategory?.name}</span>
           {!loading && (
-            <span className="jl-crumbs-tail">
-              <span className="sep" aria-hidden>·</span>
+            <>
+              <span className="sep">·</span>
               <span className="jl-crumbs-meta">
                 {visible.length} {visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}
               </span>
-            </span>
+            </>
           )}
         </div>
 
