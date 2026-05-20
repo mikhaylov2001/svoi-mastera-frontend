@@ -333,15 +333,15 @@
     background: #fff;
     border: 1px solid #ebebeb;
     border-radius: 20px;
-    padding: 16px;
-    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+    padding: 18px 16px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
   }
 
   .jl-page.fw-jl-cat-feed .jl-side-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 800;
     color: #111827;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
 
   .jl-page.fw-jl-cat-feed .jl-side-row {
@@ -356,10 +356,11 @@
 
   .jl-page.fw-jl-cat-feed .jl-side-field input {
     border-radius: 12px;
-    min-height: 44px;
+    min-height: 48px;
     font-size: 16px;
-    padding: 10px 12px;
+    padding: 12px 14px;
     background: #fff;
+    border-width: 1.5px;
   }
 
   .jl-page.fw-jl-cat-feed .jl-rating-opts {
@@ -370,13 +371,18 @@
 
   .jl-page.fw-jl-cat-feed .jl-side-card .jl-rating-opt {
     width: 100%;
-    min-height: 48px;
+    min-height: 52px;
     margin-top: 0;
     border-radius: 14px;
     justify-content: flex-start;
-    padding: 10px 14px;
-    font-size: 14px;
+    padding: 12px 16px;
+    font-size: 15px;
     font-weight: 700;
+    border-width: 1.5px;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-side-card .jl-rating-opt .stars {
+    font-size: 16px;
   }
 
   .jl-page.fw-jl-cat-feed .jl-side-card .jl-rating-opt.is-active {
@@ -405,19 +411,44 @@
   }
 
   .jl-page.fw-jl-cat-feed .jl-cat-cover {
-    aspect-ratio: 2.2 / 1;
-    border-radius: 20px;
+    aspect-ratio: 16 / 10;
+    min-height: 200px;
+    border-radius: 24px;
     overflow: hidden;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.1);
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-cat-cover::after {
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.78) 0%,
+      rgba(0, 0, 0, 0.25) 45%,
+      transparent 70%
+    );
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-cat-cover-body {
+    left: 18px;
+    right: 18px;
+    bottom: 18px;
   }
 
   .jl-page.fw-jl-cat-feed .jl-cat-cover-title {
-    font-size: 22px;
-    font-weight: 800;
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-cat-cover-back {
+    font-size: 14px;
+    margin-top: 8px;
+    font-weight: 600;
   }
 
   .jl-page.fw-jl-cat-feed .jl-crumbs {
-    font-size: 12px;
-    margin-bottom: 12px;
+    font-size: 13px;
+    margin-bottom: 14px;
     line-height: 1.45;
     flex-wrap: wrap;
   }
@@ -431,42 +462,53 @@
     color: #d1d5db;
   }
 
-  /* Сортировка */
+  /* Сортировка — крупные pill-кнопки, перенос строк */
   .jl-page.fw-jl-cat-feed .jl-toolbar {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    gap: 6px;
-    padding-bottom: 4px;
-    margin-bottom: 12px;
+    flex-wrap: wrap;
+    overflow: visible;
+    gap: 10px;
+    row-gap: 10px;
+    padding-bottom: 6px;
+    margin-bottom: 16px;
     align-items: center;
-  }
-
-  .jl-page.fw-jl-cat-feed .jl-toolbar::-webkit-scrollbar {
-    display: none;
   }
 
   .jl-page.fw-jl-cat-feed .jl-toolbar-label {
     flex-shrink: 0;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
     color: #6b7280;
+    margin-right: 2px;
   }
 
   .jl-page.fw-jl-cat-feed .jl-toolbar-count {
-    flex-shrink: 0;
+    flex: 1 1 auto;
+    min-width: 120px;
     margin-left: auto;
-    font-size: 13px;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 600;
     color: #9ca3af;
     white-space: nowrap;
   }
 
   .jl-page.fw-jl-cat-feed .jl-chip {
     flex-shrink: 0;
-    padding: 7px 14px;
-    font-size: 13px;
+    padding: 12px 20px;
+    min-height: 44px;
+    font-size: 15px;
+    font-weight: 800;
     white-space: nowrap;
+    border-radius: 999px;
+    border-width: 1.5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-chip.is-active {
+    box-shadow: 0 2px 10px rgba(232, 65, 10, 0.28);
   }
 
   .jl-page.fw-jl-cat-feed .jl-list.jl-feed-list {
