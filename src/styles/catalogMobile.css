@@ -246,8 +246,8 @@
   }
 
   .jl-page.fw-jl-cat-feed .jl-wrap {
-    padding-left: max(12px, env(safe-area-inset-left));
-    padding-right: max(12px, env(safe-area-inset-right));
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
     max-width: 100%;
   }
 
@@ -446,28 +446,51 @@
     font-weight: 600;
   }
 
-  /* Крошки — одна строка, серые ссылки и счётчик, жирная категория */
+  /* Крошки — как на макете: воздух, серая цепочка, жирная категория, счётчик отдельно */
   .jl-page.fw-jl-cat-feed .jl-crumbs {
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
-    gap: 6px;
-    font-size: 13px;
-    line-height: 1.35;
-    color: #888;
-    margin-bottom: 12px;
-    overflow: hidden;
+    gap: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #9a9a9a;
+    padding: 14px 0 18px;
+    margin-bottom: 2px;
+    overflow: visible;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-crumbs-path,
+  .jl-page.fw-jl-cat-feed .jl-crumbs-tail {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 10px;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-crumbs-path {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 12px;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-crumbs-tail {
+    margin-left: 14px;
+    gap: 12px;
   }
 
   .jl-page.fw-jl-cat-feed .jl-crumbs-link {
-    color: #888 !important;
+    color: #9a9a9a !important;
     font-weight: 500;
+    font-size: 14px;
     flex-shrink: 0;
   }
 
   .jl-page.fw-jl-cat-feed .jl-crumbs .cur {
-    font-weight: 700;
-    color: #1a1a1a;
+    font-weight: 800 !important;
+    color: #111 !important;
+    font-size: 15px;
+    letter-spacing: -0.02em;
     flex-shrink: 1;
     min-width: 0;
     overflow: hidden;
@@ -476,16 +499,19 @@
   }
 
   .jl-page.fw-jl-cat-feed .jl-crumbs-meta {
-    color: #888;
+    color: #9a9a9a !important;
     font-weight: 500;
+    font-size: 14px;
     flex-shrink: 0;
     white-space: nowrap;
   }
 
   .jl-page.fw-jl-cat-feed .jl-crumbs .sep {
-    color: #ccc;
+    color: #c8c8c8;
     flex-shrink: 0;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1;
   }
 
   /* Сортировка — компактные chip'ы в одну линию */

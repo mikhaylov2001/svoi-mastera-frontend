@@ -320,6 +320,9 @@ export default function ListingDetailPage() {
   const priceNum = getListingPublishedPriceNumber(listing);
   const priceHasAmount = priceNum != null;
   const priceUnitTrim = listing.priceUnit && String(listing.priceUnit).trim();
+  const priceConditionsLine =
+    priceHasAmount &&
+    `${priceMainLine}${priceUnitTrim ? (priceUnitTrim.startsWith('₽') ? ` ${priceUnitTrim}` : ` ₽${priceUnitTrim}`) : ' ₽'}`;
   const priceMainLine = priceHasAmount
     ? `${priceNum.toLocaleString('ru-RU')}`
     : listing.priceUnit || 'Договорная';
@@ -603,7 +606,7 @@ export default function ListingDetailPage() {
                   listing.category && ['Категория', listing.category],
                   ['Город', listingCity],
                   ['Адрес', addressLine],
-                  priceHasAmount && ['Стоимость', `${priceMainLine} ₽${priceUnitTrim ? ` ${priceUnitTrim}` : ''}`],
+                  priceConditionsLine && ['Стоимость', priceConditionsLine],
                   !priceHasAmount && listing.priceUnit && ['Стоимость', listing.priceUnit],
                   ['Статус', listingActive ? 'Активно' : 'В архиве'],
                   listing.workerVerified === true && ['Верификация', '✓ Проверенный мастер'],
