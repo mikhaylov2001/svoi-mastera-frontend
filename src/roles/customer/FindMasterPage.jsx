@@ -263,6 +263,35 @@ const css = `
     padding-top: 4px;
   }
 
+  .fmp-catalog-warn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fff8f0;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .fmp-catalog-warn button {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid #e8410a;
+    background: #fff;
+    color: #e8410a;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .fmp-catalog-warn button:hover { background: #fff5f0; }
+
   .fmp-cats-label {
     font-size: 12px;
     font-weight: 700;
@@ -1133,16 +1162,7 @@ const css = `
       padding-left: max(16px, env(safe-area-inset-left));
       padding-right: max(16px, env(safe-area-inset-right));
     }
-    .fmp-list { grid-template-columns: 1fr; gap: 16px; }
-    .fmp-gcard {
-      border-radius: 24px;
-      border-color: #ebebeb;
-      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
-    }
-    .fmp-gcard-photo { aspect-ratio: 16 / 9; }
-    .fmp-gcard-body { padding: 16px; gap: 8px; }
-    .fmp-gcard-title { font-size: 17px; }
-    .fmp-gcard-price { font-size: 20px; color: #e8410a; font-weight: 900; }
+    .fmp-list { grid-template-columns: 1fr; }
     .fmp-card-actions {
       flex-direction: column;
       flex-wrap: nowrap;
@@ -1306,10 +1326,23 @@ export default function FindMasterPage() {
     setLoading(true);
     setError('');
     setWorkerStats({});
-    try {
-      const dealsPromise = userId ? getMyDeals(userId).catch(() => []) : Promise.resolve([]);
-      const [cats, listings, deals] = await Promise.all([getCategories(), getListings(), dealsPromise]);
-      setCategories(mergeApiCategoriesWithCatalog(cats || []));
+    const dealsPromise = userId ? getMyDeals(userId).catch(() => []) : Promise.resolve([]);
+    const [catsR, listingsR, dealsR] = await Promise.allSettled([
+      getCategories(),
+      getListings(),
+      dealsPromise,
+    ]);
+
+    const cats =
+      catsR.status === 'fulfilled' ? catsR.value : null;
+    const listings =
+      listingsR.status === 'fulfilled' ? listingsR.value : null;
+    const deals =
+      dealsR.status === 'fulfilled' ? dealsR.value : [];
+
+    setCategories(mergeApiCategoriesWithCatalog(cats || []));
+
+    if (listings) {
       buildPendingFromDeals(deals);
       const processed = (listings || []).map(item => ({
         ...item,
@@ -1329,11 +1362,17 @@ export default function FindMasterPage() {
           }
         } catch {}
       });
-    } catch (e) {
-      setError(e?.message || 'Ошибка загрузки');
-    } finally {
-      setLoading(false);
+    } else {
+      setServices([]);
     }
+
+    const failed = [catsR, listingsR].filter((r) => r.status === 'rejected');
+    if (failed.length > 0) {
+      const msg = failed[0].reason?.message || 'Ошибка загрузки';
+      setError(msg);
+    }
+
+    setLoading(false);
   }, [userId, buildPendingFromDeals]);
 
   useEffect(() => { reloadCatalog(); }, [reloadCatalog]);
@@ -1504,12 +1543,14 @@ export default function FindMasterPage() {
                 </div>
               ))}
             </div>
-          ) : error ? (
-            <div style={{ textAlign: 'center', padding: 40 }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>😕</div>
-              <p style={{ color: '#888' }}>{error}</p>
-            </div>
           ) : (
+            <>
+              {error && (
+                <div className="fmp-catalog-warn" role="status">
+                  <span>{error} Объявления могут быть недоступны — категории ниже всё равно можно открыть.</span>
+                  <button type="button" onClick={reloadCatalog}>Повторить</button>
+                </div>
+              )}
             <div className="fmp-cats-grid" onMouseLeave={() => setHeroCatSlug(null)}>
               {categories.map(cat => {
                 const meta  = CAT_ALL[cat.slug] || {};
@@ -1549,6 +1590,7 @@ export default function FindMasterPage() {
                 );
               })}
             </div>
+            </>
           )}
           </div>
       </div>
