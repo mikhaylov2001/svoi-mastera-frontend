@@ -446,49 +446,53 @@
     font-weight: 600;
   }
 
-  /* Крошки — одна строка, серые ссылки и счётчик, жирная категория */
+  /* Крошки: одна строка, как на макете */
   .jl-page.fw-jl-cat-feed .jl-crumbs {
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
     gap: 6px;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.35;
-    color: #888;
-    margin-bottom: 12px;
-    overflow: hidden;
+    margin-bottom: 10px;
+    color: #9ca3af;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
 
-  .jl-page.fw-jl-cat-feed .jl-crumbs-link {
-    color: #888 !important;
+  .jl-page.fw-jl-cat-feed .jl-crumbs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-crumbs a,
+  .jl-page.fw-jl-cat-feed .jl-crumbs .jl-crumbs-link {
+    color: #9ca3af;
     font-weight: 500;
     flex-shrink: 0;
+    text-decoration: none;
   }
 
   .jl-page.fw-jl-cat-feed .jl-crumbs .cur {
     font-weight: 700;
-    color: #1a1a1a;
-    flex-shrink: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    color: #111827;
+    flex-shrink: 0;
   }
 
-  .jl-page.fw-jl-cat-feed .jl-crumbs-meta {
-    color: #888;
+  .jl-page.fw-jl-cat-feed .jl-crumbs .sep {
+    color: #d1d5db;
+    flex-shrink: 0;
+    font-size: 11px;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-crumbs > span:not(.sep):not(.cur) {
+    color: #9ca3af;
     font-weight: 500;
     flex-shrink: 0;
     white-space: nowrap;
   }
 
-  .jl-page.fw-jl-cat-feed .jl-crumbs .sep {
-    color: #ccc;
-    flex-shrink: 0;
-    font-size: 12px;
-  }
-
-  /* Сортировка — компактные chip'ы в одну линию */
+  /* Сортировка — компактные чипы в одну линию */
   .jl-page.fw-jl-cat-feed .jl-toolbar {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -508,16 +512,11 @@
     flex-shrink: 0;
     font-size: 13px;
     font-weight: 600;
-    color: #888;
+    color: #9ca3af;
   }
 
   .jl-page.fw-jl-cat-feed .jl-toolbar-count {
-    flex-shrink: 0;
-    margin-left: auto;
-    font-size: 13px;
-    font-weight: 500;
-    color: #888;
-    white-space: nowrap;
+    display: none;
   }
 
   .jl-page.fw-jl-cat-feed .jl-chip {
@@ -529,9 +528,6 @@
     white-space: nowrap;
     border-radius: 999px;
     border-width: 1px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     line-height: 1.2;
   }
 
@@ -792,22 +788,15 @@
   }
 
   /* Деталь объявления / заявки */
-  .app-main--catalog:has(.ed--listing-detail),
-  .app-main--content:has(.ed--listing-detail) {
-    background: #f5f5f5;
-  }
-
   .ed.ed--listing-detail {
     font-family: Manrope, system-ui, sans-serif;
-    background: #f5f5f5 !important;
-    padding: 12px 0 calc(32px + env(safe-area-inset-bottom, 0px));
-    min-height: 100%;
+    background: #f2f2f2;
   }
 
   .ed.ed--listing-detail .ed-wrap {
     padding-left: max(12px, env(safe-area-inset-left));
     padding-right: max(12px, env(safe-area-inset-right));
-    padding-bottom: 0;
+    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
   }
 
   .ed.ed--listing-detail .ed-back {
@@ -852,31 +841,17 @@
     gap: 12px;
   }
 
-  .ed.ed--listing-detail .ed-gallery {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    border-radius: 0;
-    overflow: visible;
-  }
-
   .ed.ed--listing-detail .ed-main,
   .ed.ed--listing-detail .ed-gallery .ed-main {
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
   }
 
   .ed.ed--listing-detail .ed-card {
-    background: #fff;
     border-radius: 20px;
     border: 1px solid #ebebeb;
     padding: 18px 16px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
-  }
-
-  .ed.ed--listing-detail .ed-side .ed-card {
-    background: #fff;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
   }
 
   .ed.ed--listing-detail .ed-eyebrow,
@@ -893,19 +868,10 @@
     font-weight: 900;
     color: #111827;
     letter-spacing: -0.03em;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 2px 6px;
   }
 
-  .ed.ed--listing-detail .ed-price-amount {
-    font-size: inherit;
-    font-weight: inherit;
-  }
-
-  .ed.ed--listing-detail .ed-price-suffix {
-    font-size: 16px;
+  .ed.ed--listing-detail .ed-price-num small {
+    font-size: 15px;
     color: #9ca3af;
     font-weight: 600;
   }
@@ -982,9 +948,7 @@
   }
 
   .ed.ed--listing-detail .ed-thumbs {
-    background: transparent;
-    border-top: none;
-    padding: 10px 0 0;
+    display: none;
   }
 
   .ed.ed--listing-detail .ed-cust-row,
