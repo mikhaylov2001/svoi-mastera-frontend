@@ -1133,7 +1133,16 @@ const css = `
       padding-left: max(16px, env(safe-area-inset-left));
       padding-right: max(16px, env(safe-area-inset-right));
     }
-    .fmp-list { grid-template-columns: 1fr; }
+    .fmp-list { grid-template-columns: 1fr; gap: 16px; }
+    .fmp-gcard {
+      border-radius: 24px;
+      border-color: #ebebeb;
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+    }
+    .fmp-gcard-photo { aspect-ratio: 16 / 9; }
+    .fmp-gcard-body { padding: 16px; gap: 8px; }
+    .fmp-gcard-title { font-size: 17px; }
+    .fmp-gcard-price { font-size: 20px; color: #e8410a; font-weight: 900; }
     .fmp-card-actions {
       flex-direction: column;
       flex-wrap: nowrap;
@@ -2051,7 +2060,7 @@ export default function FindMasterPage() {
                                 <div className="jl-bigcard-price">
                                   {Number(s.priceFrom).toLocaleString('ru-RU')} ₽
                                 </div>
-                                <div className="jl-bigcard-price-hint">за работу</div>
+                                <div className="jl-bigcard-price-hint">{s.priceUnit || 'за работу'}</div>
                               </>
                             ) : (
                               <>
