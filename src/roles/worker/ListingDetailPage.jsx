@@ -324,8 +324,12 @@ export default function ListingDetailPage() {
     ? `${priceNum.toLocaleString('ru-RU')}`
     : listing.priceUnit || 'Договорная';
   const priceSubLine = priceHasAmount
-    ? `${priceUnitTrim || 'за работу'} · оплата по договорённости`
+    ? 'Окончательная цена согласовывается в чате с мастером'
     : listing.priceUnit || null;
+
+  const workerRatingVal = Number(listing.workerRating);
+  const workerReviewsCount = Number(listing.workerReviewsCount ?? listing.reviewsCount ?? 0);
+  const showWorkerRating = !Number.isNaN(workerRatingVal) && workerRatingVal > 0;
 
   const pubStr = listing.createdAt
     ? new Date(listing.createdAt).toLocaleDateString('ru-RU', {
@@ -370,9 +374,7 @@ export default function ListingDetailPage() {
     : refFrom === 'home'
       ? 'Главная'
       : refFrom === 'find-master'
-        ? refCat
-          ? 'К категории'
-          : 'Найти мастера'
+        ? 'Назад к объявлениям'
         : refFrom === 'favorites'
           ? 'Избранное'
           : !userId
@@ -603,13 +605,15 @@ export default function ListingDetailPage() {
                   ['Адрес', addressLine],
                   priceHasAmount && ['Стоимость', `${priceMainLine} ₽${priceUnitTrim ? ` ${priceUnitTrim}` : ''}`],
                   !priceHasAmount && listing.priceUnit && ['Стоимость', listing.priceUnit],
+                  ['Статус', listingActive ? 'Активно' : 'В архиве'],
+                  listing.workerVerified === true && ['Верификация', '✓ Проверенный мастер'],
                   listing.createdAt && ['Опубликована', timeAgo(listing.createdAt) || pubStr],
                 ]
                   .filter(Boolean)
                   .map(([label, value]) => (
                     <div key={label} className="ed-row">
                       <dt>{label}</dt>
-                      <dd>{value}</dd>
+                      <dd className={label === 'Верификация' ? 'ed-row-verified' : undefined}>{value}</dd>
                     </div>
                   ))}
               </dl>
@@ -620,9 +624,12 @@ export default function ListingDetailPage() {
             <div className="ed-card">
               <div className="ed-eyebrow">Стоимость</div>
               {priceHasAmount ? (
-                <div className="ed-price-num">
-                  {priceMainLine}
-                  <small> ₽</small>
+                <div className="ed-price-row">
+                  <div className="ed-price-num">
+                    {priceMainLine}
+                    <small> ₽</small>
+                  </div>
+                  {priceUnitTrim ? <span className="ed-price-unit">{priceUnitTrim}</span> : null}
                 </div>
               ) : (
                 <div className="ed-price-num" style={{ fontSize: 22, fontWeight: 700 }}>
@@ -672,10 +679,14 @@ export default function ListingDetailPage() {
                         onClick={handleAcceptWork}
                         disabled={accepting}
                       >
-                        {accepting ? 'Отправляем…' : 'Откликнуться'}
+                        {accepting
+                          ? 'Отправляем…'
+                          : userRole === 'WORKER'
+                            ? 'Откликнуться'
+                            : 'Принять мастера'}
                       </button>
                       <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-btn ed-btn-ghost">
-                        Написать сообщение
+                        Написать в чат
                       </Link>
                     </>
                   )}
@@ -787,6 +798,14 @@ export default function ListingDetailPage() {
                   <div className="ed-cust-info">
                     <div className="ed-cust-name">{workerName}</div>
                     <div className="ed-cust-meta">Активный мастер</div>
+                    {showWorkerRating && (
+                      <div className="ed-master-rating">
+                        <strong>{workerRatingVal.toFixed(1)}</strong>
+                        {workerReviewsCount > 0
+                          ? ` (${workerReviewsCount} ${workerReviewsCount === 1 ? 'отзыв' : workerReviewsCount < 5 ? 'отзыва' : 'отзывов'})`
+                          : ''}
+                      </div>
+                    )}
                   </div>
                   <div className="ed-cust-arrow">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
