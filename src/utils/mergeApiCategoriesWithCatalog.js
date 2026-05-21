@@ -220,3 +220,32 @@ export function listingMatchesCatalogCategory(listing, categoryRow) {
     String(listing.categoryId) === String(rowId)
   );
 }
+
+/**
+ * Заявка в карточке категории хаба «Найти работу».
+ * Не дублируем одну заявку во все категории с общим API id (santehnika/elektrika → remont-kvartir).
+ */
+export function jobRequestMatchesCatalogCategory(req, categoryRow) {
+  if (!req || !categoryRow) return false;
+
+  const catSlug = normSlug(categoryRow.slug);
+  const catName = normName(categoryRow.name);
+  const reqName = normName(req.categoryName);
+  const reqSlug = normSlug(getCategorySlugFromLabel(req.categoryName || '') || '');
+
+  if (reqName && catName && reqName === catName) return true;
+  if (reqSlug && catSlug && reqSlug === catSlug) return true;
+
+  const rowId = pickCategoryId(categoryRow);
+  if (rowId == null || req.categoryId == null) return false;
+  const idMatch =
+    String(req.categoryId) === String(rowId) || req.categoryId === categoryRow.id;
+  if (!idMatch) return false;
+
+  if (reqSlug) return reqSlug === catSlug;
+  if (reqName) return reqName === catName;
+
+  if (catSlug && CATALOG_SLUG_API_FALLBACK_SLUG[catSlug]) return false;
+
+  return true;
+}

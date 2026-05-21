@@ -1043,58 +1043,8 @@ a.jd-btn.jd-btn-ghost {
   gap: 8px;
   font-size: 13px;
   color: #888;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   flex-wrap: wrap;
-  line-height: 1.4;
-}
-
-.jl-page.fw-jl-cat-feed .jl-wrap {
-  padding-top: 18px;
-}
-
-.jl-page.fw-jl-cat-feed .jl-side {
-  gap: 16px;
-}
-
-.jl-page.fw-jl-cat-feed .jl-cat-cover {
-  border-radius: 20px;
-  aspect-ratio: 16 / 10;
-}
-
-.jl-search-active {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  margin: 0 0 14px;
-  padding: 12px 16px;
-  background: #fff;
-  border: 1px solid #ebebeb;
-  border-radius: 14px;
-  font-size: 14px;
-  color: #555;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
-}
-
-.jl-search-active strong {
-  color: #1a1a1a;
-  font-weight: 800;
-}
-
-.jl-search-active-clear {
-  margin-left: auto;
-  border: none;
-  background: none;
-  color: #e8410a;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  padding: 0;
-}
-
-.jl-search-active-clear:hover {
-  text-decoration: underline;
 }
 .jl-crumbs a,
 .jl-crumbs-link {
@@ -1116,6 +1066,30 @@ a.jd-btn.jd-btn-ghost {
 .jl-crumbs .cur {
   color: #555;
   font-weight: 600;
+}
+
+/* Десктоп: крошки и поиск в одной колонке с .jl-wrap (мобилку не трогаем) */
+@media (min-width: 769px) {
+  .jl-page.fw-jl-cat-feed .jl-crumbs.jl-crumbs--full {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 16px 14px;
+    box-sizing: border-box;
+  }
+
+  .jl-page.fw-jl-cat-feed .fmp-topbar-inner {
+    max-width: 1200px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .fmp-page .fmp-cats-wrap {
+    max-width: 1200px;
+    padding-left: 16px;
+    padding-right: 16px;
+    box-sizing: border-box;
+  }
 }
 
 .jl-list.jl-feed-list {

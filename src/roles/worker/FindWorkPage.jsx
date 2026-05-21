@@ -23,7 +23,7 @@ import { formatCatalogCountShort } from '../../utils/formatCatalogCountShort';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
 } from '../../utils/categoryPlaceholderPhoto';
-import { mergeApiCategoriesWithCatalog } from '../../utils/mergeApiCategoriesWithCatalog';
+import { jobRequestMatchesCatalogCategory, mergeApiCategoriesWithCatalog } from '../../utils/mergeApiCategoriesWithCatalog';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
@@ -249,7 +249,7 @@ export default function FindWorkPage() {
 
   const fwDdMatches = useMemo(() => {
     if (!selectedCategory || !debouncedFwSearch || debouncedFwSearch.length < 2) return [];
-    const pool = requests.filter((r) => r.categoryId === selectedCategory.id);
+    const pool = requests.filter((r) => jobRequestMatchesCatalogCategory(r, selectedCategory));
     return rankItemsBySmartMatch(pool, debouncedFwSearch, jobRequestHaystack, { limit: 8 });
   }, [requests, selectedCategory, debouncedFwSearch]);
 
@@ -327,7 +327,7 @@ export default function FindWorkPage() {
       }
       return;
     }
-    const cat = categories.find(c => c.id === req.categoryId);
+    const cat = categories.find((c) => jobRequestMatchesCatalogCategory(req, c));
     if (cat) setSelectedCategory(cat);
     setSelectedRequest(req);
     setActivePhotoIdx(0);
@@ -386,7 +386,7 @@ export default function FindWorkPage() {
   }, [requests]);
 
   const getRequestsForCategory = (cat) =>
-    requests.filter(r => r.categoryId === cat.id);
+    requests.filter((r) => jobRequestMatchesCatalogCategory(r, cat));
 
   const openRequestDetail = useCallback((req) => {
     bumpJobRequestView(req?.id);
