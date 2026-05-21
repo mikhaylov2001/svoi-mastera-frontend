@@ -256,6 +256,8 @@
     width: 100%;
     max-width: 100%;
     margin: 0;
+    padding-top: 16px !important;
+    padding-bottom: 8px !important;
     padding-left: max(var(--catalog-mobile-gutter), env(safe-area-inset-left)) !important;
     padding-right: max(var(--catalog-mobile-gutter), env(safe-area-inset-right)) !important;
     box-sizing: border-box;
@@ -273,7 +275,7 @@
   .jl-page.fw-jl-cat-feed .fw2-topbar {
     background: #fff;
     border-bottom: 1px solid #e8e8e8;
-    padding: 12px 0;
+    padding: 14px 0;
   }
 
   .jl-page.fw-jl-cat-feed .fmp-topbar-inner,
@@ -328,7 +330,7 @@
   .jl-page.fw-jl-cat-feed .jl-layout {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
   }
 
   .jl-page.fw-jl-cat-feed .jl-layout > aside,
@@ -338,7 +340,7 @@
     top: auto;
     width: 100%;
     min-width: 0;
-    gap: 12px;
+    gap: 16px;
   }
 
   .jl-page.fw-jl-cat-feed .jl-layout > main {
@@ -471,10 +473,10 @@
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
-    gap: 6px;
+    gap: 8px;
     font-size: 13px;
-    line-height: 1.35;
-    margin: 0 0 12px;
+    line-height: 1.4;
+    margin: 0 0 18px;
     width: 100%;
     color: #9ca3af;
     overflow-x: auto;
@@ -514,6 +516,38 @@
   }
 
   /* Сортировка — компактные чипы в одну линию */
+  .jl-page.fw-jl-cat-feed .jl-search-active {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    font-size: 14px;
+    color: #374151;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-search-active strong {
+    color: #111827;
+    font-weight: 800;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-search-active-clear {
+    margin-left: auto;
+    border: none;
+    background: none;
+    color: #e8410a;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+  }
+
   .jl-page.fw-jl-cat-feed .jl-toolbar {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -521,7 +555,7 @@
     scrollbar-width: none;
     gap: 6px;
     padding-bottom: 4px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     align-items: center;
   }
 

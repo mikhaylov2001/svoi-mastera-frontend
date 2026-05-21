@@ -1330,6 +1330,30 @@ export default function FindMasterPage() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
+  const applyCategorySearch = useCallback(
+    (value) => {
+      const q = (value !== undefined ? String(value) : searchInput).trim();
+      setSearchInput(q);
+      setSearchTerm(q);
+      setFmpSearchFocused(false);
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (q) next.set('q', q);
+          else next.delete('q');
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [searchInput, setSearchParams],
+  );
+
+  useEffect(() => {
+    if (!categorySlug) return;
+    setSearchTerm(debouncedSearchInput);
+  }, [debouncedSearchInput, categorySlug]);
+
   useEffect(() => {
     if (!fmpSearchFocused) return;
     const onDoc = (e) => {
@@ -1678,8 +1702,8 @@ export default function FindMasterPage() {
                 onFocus={() => setFmpSearchFocused(true)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    setFmpSearchFocused(false);
-                    setSearchTerm(searchInput);
+                    e.preventDefault();
+                    applyCategorySearch(searchInput);
                   }
                 }}
                 placeholder={`Поиск в «${selectedCategory?.name || '...'}»`}
@@ -1688,8 +1712,12 @@ export default function FindMasterPage() {
                 aria-controls="fmp-search-dropdown-list"
               />
               {searchInput && (
-                <button type="button" onClick={() => { setSearchInput(''); setSearchTerm(''); }}
-                  style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#bbb', fontSize: 18, lineHeight: 1, padding: 0 }}>
+                <button
+                  type="button"
+                  onClick={() => applyCategorySearch('')}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#bbb', fontSize: 18, lineHeight: 1, padding: 0 }}
+                  aria-label="Очистить поиск"
+                >
                   ×
                 </button>
               )}
@@ -1731,10 +1759,7 @@ export default function FindMasterPage() {
                     <button
                       type="button"
                       className="fmp-search-footer"
-                      onClick={() => {
-                        setSearchTerm(debouncedSearchInput);
-                        setFmpSearchFocused(false);
-                      }}
+                      onClick={() => applyCategorySearch(debouncedSearchInput)}
                     >
                       Показать все совпадения в списке →
                     </button>
@@ -1743,7 +1768,9 @@ export default function FindMasterPage() {
               </div>
             )}
           </div>
-          <button type="button" className="fmp-topbar-btn" onClick={() => { setFmpSearchFocused(false); setSearchTerm(searchInput); }}>Найти</button>
+          <button type="button" className="fmp-topbar-btn" onClick={() => applyCategorySearch(searchInput)}>
+            Найти
+          </button>
         </div>
       </div>
 
@@ -1826,6 +1853,21 @@ export default function FindMasterPage() {
           </aside>
 
           <main>
+            {qSearch ? (
+              <div className="jl-search-active" role="status">
+                <span>
+                  Поиск: <strong>«{qSearch}»</strong>
+                </span>
+                <span>
+                  {visible.length}{' '}
+                  {visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}
+                </span>
+                <button type="button" className="jl-search-active-clear" onClick={() => applyCategorySearch('')}>
+                  Сбросить
+                </button>
+              </div>
+            ) : null}
+
             <div className="jl-toolbar">
               <span className="jl-toolbar-label">Сортировать:</span>
               {[
