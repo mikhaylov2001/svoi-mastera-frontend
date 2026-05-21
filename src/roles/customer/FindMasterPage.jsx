@@ -1236,6 +1236,7 @@ export default function FindMasterPage() {
   const navigate  = useNavigate();
   const { categorySlug } = useParams();
   const { userId } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [categories,  setCategories]  = useState([]);
   const [services,    setServices]    = useState([]);
@@ -1411,7 +1412,6 @@ export default function FindMasterPage() {
 
   useSameRouteRefetch('/find-master', reloadCatalog);
 
-  const [searchParams, setSearchParams] = useSearchParams();
   const urlQ = (searchParams.get('q') || '').trim();
 
   useEffect(() => {
