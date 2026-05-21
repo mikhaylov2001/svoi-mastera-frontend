@@ -12,8 +12,7 @@ import {
 } from '../../api';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
-import { dealsDetailEdCss, listingDetailLightboxCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
-import { listingDetailSurfaceExtraCss } from '../shared/listingDetailSurfaceExtraCss';
+import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import DealDetailEdProgress from '../shared/DealDetailEdProgress';
 import { getDealEdProgress } from '../../utils/dealDetailEdProgress';
 import {
@@ -48,8 +47,6 @@ function timeAgo(d) {
 }
 
 const TERMINAL_DEAL_STATUSES = ['CANCELLED', 'REFUNDED'];
-
-const listingStyles = `${dealsDetailEdCss}\n${listingDetailLightboxCss}\n${listingDetailSurfaceExtraCss}`;
 
 export default function ListingDetailPage() {
   const { id } = useParams();
@@ -270,7 +267,7 @@ export default function ListingDetailPage() {
   if (loading) {
     return (
       <div className="ed ed--listing-detail">
-        <style>{listingStyles}</style>
+        <style>{edListingDetailMergedCss}</style>
         <div className="ed-wrap">
           <div
             style={{
@@ -307,7 +304,7 @@ export default function ListingDetailPage() {
   if (!listing) {
     return (
       <div className="ed ed--listing-detail">
-        <style>{listingStyles}</style>
+        <style>{edListingDetailMergedCss}</style>
         <div className="ed-wrap" style={{ textAlign: 'center', padding: '80px 24px' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>😕</div>
           <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Объявление не найдено</h2>
@@ -409,7 +406,7 @@ export default function ListingDetailPage() {
 
   return (
     <div className="ed ed--listing-detail">
-      <style>{listingStyles}</style>
+      <style>{edListingDetailMergedCss}</style>
 
       {lightbox && (
         <div className="jd-lightbox" onClick={() => setLightbox(false)} role="presentation">

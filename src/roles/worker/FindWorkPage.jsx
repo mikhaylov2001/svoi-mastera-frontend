@@ -24,11 +24,10 @@ import {
 } from '../../utils/categoryPlaceholderPhoto';
 import { mergeApiCategoriesWithCatalog } from '../../utils/mergeApiCategoriesWithCatalog';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
-import { dealsDetailEdCss, listingDetailLightboxCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
-import { listingDetailSurfaceExtraCss } from '../shared/listingDetailSurfaceExtraCss';
+import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
 
-const JOB_REQUEST_DETAIL_STYLES = `${dealsDetailEdCss}\n${listingDetailLightboxCss}\n${listingDetailSurfaceExtraCss}`;
+const JOB_REQUEST_DETAIL_STYLES = edListingDetailMergedCss;
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 

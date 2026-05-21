@@ -1,5 +1,6 @@
 import { PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { listingDetailSurfaceExtraCss } from './listingDetailSurfaceExtraCss';
+import { listingDetailMobileCss } from './listingDetailMobileCss';
 
 /** Эмодзи категории для строки категории в карточке сделок (md-cat). */
 export const DEAL_CATEGORY_EMOJI = {
@@ -1030,5 +1031,5 @@ export const listingDetailLightboxCss = `
 `;
 
 /** Карточка объявления / заявки: ed + лайтбокк (как FindWorkPage, ListingDetailPage). */
-export const edListingDetailMergedCss = `${dealsDetailEdCss}\n${listingDetailLightboxCss}\n${listingDetailSurfaceExtraCss}`;
+export const edListingDetailMergedCss = `${dealsDetailEdCss}\n${listingDetailLightboxCss}\n${listingDetailSurfaceExtraCss}\n${listingDetailMobileCss}`;
 

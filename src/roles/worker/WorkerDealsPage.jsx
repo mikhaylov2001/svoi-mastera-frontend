@@ -6,7 +6,12 @@ import {
 } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import {
-  dealsWdCss, dealsMdListCss, dealsDetailEdCss, dealCategoryEmoji, dealInitialsFromFullName, dealToUiStatus,
+  dealsWdCss,
+  dealsMdListCss,
+  edListingDetailMergedCss,
+  dealCategoryEmoji,
+  dealInitialsFromFullName,
+  dealToUiStatus,
 } from '../shared/dealsWdStyles';
 import DealDetailEdProgress, { DealDetailEdCheck, DealDetailEdHourglass } from '../shared/DealDetailEdProgress';
 import { getDealEdProgress } from '../../utils/dealDetailEdProgress';
@@ -15,7 +20,6 @@ import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEven
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
-import { listingDetailSurfaceExtraCss } from '../shared/listingDetailSurfaceExtraCss';
 
 const MY_DEALS_HERO_PHOTO =
   'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=max&w=2400&q=86';
@@ -307,7 +311,7 @@ export default function WorkerDealsPage() {
 
     return (
       <div className="ed ed--listing-detail">
-        <style>{`${dealsWdCss}\n${dealsDetailEdCss}\n${listingDetailSurfaceExtraCss}`}</style>
+        <style>{`${dealsWdCss}\n${edListingDetailMergedCss}`}</style>
         <div className="ed-wrap">
           <button
             type="button"
