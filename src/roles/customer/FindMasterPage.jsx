@@ -31,6 +31,7 @@ import {
   mergeApiCategoriesWithCatalog,
 } from '../../utils/mergeApiCategoriesWithCatalog';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
 import '../worker/jobListings.css';
 
 /* Плоский словарь slug → данные категории (фото, описание, цена, …) */
@@ -1651,6 +1652,7 @@ export default function FindMasterPage() {
   return (
     <div className={`jl-page fw-jl-cat-feed${showFmpSearchDd ? ' cat-feed-search-active' : ''}`}>
       <style>{css}</style>
+      <style>{catalogCatFeedMobileCss}</style>
 
       {showFmpSearchDd ? (
         <button

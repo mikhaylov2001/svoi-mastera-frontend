@@ -26,6 +26,7 @@ import { mergeApiCategoriesWithCatalog } from '../../utils/mergeApiCategoriesWit
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import { dealsDetailEdCss, listingDetailLightboxCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { listingDetailSurfaceExtraCss } from '../shared/listingDetailSurfaceExtraCss';
+import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
 
 const JOB_REQUEST_DETAIL_STYLES = `${dealsDetailEdCss}\n${listingDetailLightboxCss}\n${listingDetailSurfaceExtraCss}`;
 
@@ -1792,6 +1793,7 @@ export default function FindWorkPage() {
     return (
       <div className={`jl-page fw-jl-cat-feed${showFwSearchDd ? ' cat-feed-search-active' : ''}`}>
         <style>{fw2css}</style>
+        <style>{catalogCatFeedMobileCss}</style>
 
         {showFwSearchDd ? (
           <button
