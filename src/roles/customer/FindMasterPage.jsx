@@ -1160,6 +1160,26 @@ const css = `
     .fmp-list { grid-template-columns: 1fr 1fr; }
   }
   @media(max-width: 768px) {
+    .jl-page.fw-jl-cat-feed .fmp-topbar-inner {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      align-items: stretch !important;
+      gap: 10px !important;
+    }
+    .jl-page.fw-jl-cat-feed .fmp-search-dd-wrap {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+    .jl-page.fw-jl-cat-feed .fmp-topbar-btn {
+      width: auto !important;
+      min-width: 84px !important;
+      flex-shrink: 0 !important;
+      min-height: 48px !important;
+      border-radius: 12px !important;
+      font-size: 15px !important;
+      font-weight: 800 !important;
+    }
     .fmp-hero-body {
       padding-left: max(16px, env(safe-area-inset-left));
       padding-right: max(16px, env(safe-area-inset-right));
@@ -1735,9 +1755,7 @@ export default function FindMasterPage() {
           {!loading && (
             <>
               <span className="sep">·</span>
-              <span className="jl-crumbs-meta">
-                {visible.length} {visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}
-              </span>
+              <span>{visible.length} {visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}</span>
             </>
           )}
         </div>
