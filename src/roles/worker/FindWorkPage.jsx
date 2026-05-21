@@ -1445,8 +1445,7 @@ export default function FindWorkPage() {
                       {dealCategoryEmoji(categoryLabel)} {categoryLabel}
                     </span>
                   )}
-                  {addressLine ? <span>📍 {addressLine}</span> : null}
-                  {req.createdAt ? <span>📅 {jdFmtDateLong(req.createdAt)}</span> : null}
+                  {jobCity && jobCity !== '—' ? <span>📍 {jobCity}</span> : null}
                 </div>
               </div>
               <div className="ed-head-right">
@@ -1559,10 +1558,8 @@ export default function FindWorkPage() {
                   <h3 className="ed-section-title">Условия</h3>
                   <dl className="ed-rows">
                     {[
-                      categoryLabel && ['Категория', categoryLabel],
                       ['Город', jobCity],
                       addressLine && ['Адрес', addressLine],
-                      ['Стоимость', priceIsNegotiable ? JOB_REQUEST_PRICE_MISSING_LABEL : budget],
                       req.createdAt && ['Опубликована', timeAgo(req.createdAt) || jdFmtDateLong(req.createdAt)],
                     ]
                       .filter(Boolean)
@@ -1591,8 +1588,8 @@ export default function FindWorkPage() {
                   )}
                   <p className="ed-price-sub">
                     {priceIsNegotiable
-                      ? 'заказчик не указал сумму — уточните в личных сообщениях'
-                      : 'окончательная цена в заявке; детали — в чате'}
+                      ? 'Заказчик не указал сумму — уточните в чате'
+                      : 'Окончательная цена согласовывается в чате с заказчиком'}
                   </p>
                   <div className="ed-actions">
                     <button type="button" className="ed-btn ed-btn-confirm" onClick={() => handleOpenOfferModal(req)}>

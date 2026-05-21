@@ -75,9 +75,15 @@ export const listingDetailSurfaceExtraCss = `
   color: var(--surface-eyebrow);
   margin-left: 4px;
 }
+.ed--listing-detail .ed-price-unit {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--surface-eyebrow);
+  margin-left: 6px;
+}
 .ed--listing-detail .ed-price-sub {
-  margin: 8px 0 0;
-  font-size: 12px;
+  margin: 10px 0 16px;
+  font-size: 14px;
   color: var(--surface-eyebrow);
   line-height: 1.45;
 }
@@ -86,8 +92,8 @@ export const listingDetailSurfaceExtraCss = `
 .ed--listing-detail .ed-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 10px;
+  margin-top: 0;
 }
 
 .ed--listing-detail .ed-btn,

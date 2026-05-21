@@ -326,10 +326,6 @@ export default function ListingDetailPage() {
   const priceSubLine = priceHasAmount
     ? 'Окончательная цена согласовывается в чате с мастером'
     : listing.priceUnit || null;
-  const priceConditionsLine = priceHasAmount
-    ? `${priceMainLine} ₽${priceUnitTrim ? ` ${priceUnitTrim}` : ''}`
-    : listing.priceUnit || 'Договорная';
-
   const pubStr = listing.createdAt
     ? new Date(listing.createdAt).toLocaleDateString('ru-RU', {
         day: 'numeric',
@@ -473,8 +469,7 @@ export default function ListingDetailPage() {
                   {dealCategoryEmoji(listing.category)} {listing.category}
                 </span>
               )}
-              <span>📍 {addressLine}</span>
-              {listing.createdAt && <span>📅 {pubStr}</span>}
+              {listingCity && listingCity !== '—' && <span>📍 {listingCity}</span>}
             </div>
           </div>
           <div className="ed-head-right">
@@ -601,11 +596,8 @@ export default function ListingDetailPage() {
               <h3 className="ed-section-title">Условия</h3>
               <dl className="ed-rows">
                 {[
-                  listing.category && ['Категория', listing.category],
                   ['Город', listingCity],
                   ['Адрес', addressLine],
-                  priceHasAmount && ['Стоимость', priceConditionsLine],
-                  !priceHasAmount && listing.priceUnit && ['Стоимость', listing.priceUnit],
                   listing.createdAt && ['Опубликована', timeAgo(listing.createdAt) || pubStr],
                 ]
                   .filter(Boolean)

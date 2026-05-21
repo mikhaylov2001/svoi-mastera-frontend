@@ -858,6 +858,19 @@
     margin-top: 4px !important;
   }
 
+  .ed.ed--listing-detail .ed-price-unit {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #9ca3af !important;
+    margin-left: 6px !important;
+  }
+
+  .ed.ed--listing-detail .ed-price-sub {
+    font-size: 14px !important;
+    margin: 10px 0 16px !important;
+    color: #6b7280 !important;
+  }
+
   .ed.ed--listing-detail .ed-btn-confirm {
     background: #e8410a !important;
     color: #fff !important;
