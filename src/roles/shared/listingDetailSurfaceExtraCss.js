@@ -369,4 +369,70 @@ export const listingDetailSurfaceExtraCss = `
 }
 .ed-sim-price { font-size: 13px; font-weight: 800; color: #111827; margin-top: 2px; }
 .ed-error { font-size: 12px; color: #ef4444; font-weight: 600; padding: 4px 0; }
+
+/* Мобилка: деталь объявления — широкие карточки (после dealsDetailEdCss в <style>) */
+@media (max-width: 768px) {
+  .ed.ed--listing-detail {
+    padding: 0 !important;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  .ed--listing-detail .ed-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 12px 16px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+    box-sizing: border-box;
+  }
+  .ed--listing-detail .ed-grid,
+  .ed--listing-detail .ed-col,
+  .ed--listing-detail .ed-side {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0;
+  }
+  .ed--listing-detail .ed-gallery {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 12px !important;
+    padding: 0 !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 24px !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07) !important;
+    box-sizing: border-box;
+  }
+  .ed--listing-detail .ed-gallery .ed-main,
+  .ed--listing-detail .ed-main {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+  .ed--listing-detail .ed-col > .ed-card,
+  .ed--listing-detail .ed-col > section.ed-card,
+  .ed--listing-detail .ed-side > .ed-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 24px !important;
+    border: 1px solid #e5e7eb !important;
+    padding: 20px 24px !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07) !important;
+    box-sizing: border-box;
+  }
+  .ed--listing-detail .ed-back {
+    margin-bottom: 16px !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  .ed--listing-detail .ed-floats,
+  .ed--listing-detail .ed-thumbs {
+    display: none !important;
+  }
+}
 `;
