@@ -3,354 +3,51 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
+import {
+  publicTimeAgo,
+  publicMemberSince,
+  publicReviewsLabel,
+  publicStarsRow,
+  publicFirstName,
+} from '../../utils/publicProfileUtils';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import '../../styles/publicProfilePage.css';
+
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
 
-function timeAgo(d) {
-  if (!d) return '';
-  const days = Math.floor((Date.now() - new Date(d)) / 86400000);
-  if (days === 0) return 'сегодня';
-  if (days === 1) return 'вчера';
-  if (days < 30) return `${days} дн. назад`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months} мес. назад`;
-  return `${Math.floor(months / 12)} г. назад`;
-}
+const MSG_ICON = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path
+      d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
-function memberSince(d) {
-  if (!d) return null;
-  return 'На сервисе с ' + new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
-}
-
-const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  .pw-page {
-    background: #fff;
-    min-height: 100vh;
-    font-family: Inter, Arial, sans-serif;
-    color: #1a1a1a;
-  }
-
-  /* ── breadcrumb (как публичный профиль заказчика) ── */
-  .pw-breadcrumb {
-    background: #f6f6f6;
-    border-bottom: 1px solid #e8e8e8;
-  }
-  .pw-breadcrumb .pw-wrap {
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
-  .pw-breadcrumb-btn {
-    background: none; border: none; cursor: pointer;
-    font-size: 13px; font-weight: 500;
-    color: #e8410a; font-family: inherit;
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 0;
-  }
-  .pw-breadcrumb-btn svg { flex-shrink: 0; color: #e8410a; }
-  .pw-breadcrumb-btn:hover { color: #c73208; text-decoration: underline; }
-  .pw-breadcrumb-btn:hover svg { color: #c73208; }
-
-  /* ── wrap & layout ── */
-  .pw-wrap { max-width: 1176px; margin: 0 auto; padding: 0 20px; }
-  .pw-layout {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 24px;
-    padding: 20px 0 60px;
-    align-items: flex-start;
-  }
-
-  /* ══════════ SIDEBAR ══════════ */
-  .pw-sidebar {}
-
-  .pw-avatar {
-    width: 88px; height: 88px;
-    border-radius: 50%;
-    object-fit: cover;
-    display: block;
-    margin-bottom: 12px;
-  }
-  .pw-avatar-fb {
-    width: 88px; height: 88px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #e8410a, #ff7043);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 30px; font-weight: 800; color: #fff;
-    margin-bottom: 12px;
-  }
-
-  .pw-name {
-    font-size: 22px; font-weight: 700;
-    line-height: 1.2; margin-bottom: 4px;
-  }
-
-  .pw-review-link {
-    display: inline-block;
-    font-size: 14px; color: #777;
-    text-decoration: none; margin-bottom: 6px;
-    cursor: pointer; background: none; border: none;
-    font-family: inherit; padding: 0;
-    font-weight: 400;
-  }
-  .pw-review-link:hover { color: #333; text-decoration: underline; }
-
-  .pw-meta {
-    font-size: 13px; color: #777;
-    line-height: 1.7; margin-bottom: 14px;
-  }
-
-  .pw-rating-row { display: flex; align-items: center; gap: 7px; padding: 12px 0; border-top: 1px solid #f2f2f2; border-bottom: 1px solid #f2f2f2; margin-bottom: 12px; }
-  .pw-rating-num { font-size: 22px; font-weight: 800; color: #111; line-height: 1; }
-  .pw-stars { display: flex; gap: 2px; }
-  .pw-star-f { color: #f59e0b; font-size: 15px; }
-  .pw-star-e { color: #e5e7eb; font-size: 15px; }
-  .pw-rating-cnt { font-size: 13px; color: #aaa; }
-
-  /* бейджи — фирменный оранжевый */
-  .pw-badges { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-  .pw-badge {
-    display: flex; align-items: center; gap: 8px;
-    background: rgba(232, 65, 10, 0.09);
-    border: 1px solid rgba(232, 65, 10, 0.18);
-    border-radius: 10px;
-    padding: 9px 12px;
-    font-size: 13px; color: #9a3412; font-weight: 600;
-  }
-  .pw-badge svg { flex-shrink: 0; color: #e8410a; }
-
-  .pw-responds { font-size: 13px; color: #777; margin-bottom: 14px; }
-
-  .pw-stats-strip {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    border: 1px solid #f0f0f0;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 14px;
-    background: #fff;
-  }
-  .pw-strip-cell {
-    padding: 12px 6px;
-    text-align: center;
-    border-right: 1px solid #f0f0f0;
-  }
-  .pw-strip-cell:last-child { border-right: none; }
-  .pw-strip-num { font-size: 20px; font-weight: 800; color: #111; line-height: 1; }
-  .pw-strip-lbl {
-    font-size: 10px;
-    color: #aaa;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    margin-top: 4px;
-    display: block;
-  }
-
-  /* кнопки */
-  .pw-btn-msg {
-    display: block; width: 100%;
-    background: #e8410a; border: none; border-radius: 8px;
-    color: #fff; font-size: 15px; font-weight: 700;
-    padding: 13px 0; cursor: pointer;
-    font-family: inherit; text-align: center;
-    margin-bottom: 8px;
-    transition: background .15s;
-  }
-  .pw-btn-msg:hover { background: #d03a09; }
-
-  /* ══════════ MAIN ══════════ */
-  .pw-main {}
-
-  /* табы */
-  .pw-tabs {
-    display: flex; gap: 0;
-    border-bottom: 1px solid #e8e8e8;
-    margin-bottom: 20px;
-  }
-  .pw-tab {
-    background: none; border: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    padding: 12px 0;
-    margin-right: 28px;
-    cursor: pointer;
-    font-size: 16px; font-weight: 400;
-    color: #777; font-family: inherit;
-    transition: color .15s;
-    white-space: nowrap;
-  }
-  .pw-tab.active {
-    color: #e8410a; font-weight: 700;
-    border-bottom-color: #e8410a;
-  }
-  .pw-tab:hover:not(.active) { color: #333; }
-
-  /* листинг-сетка */
-  .pw-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-  }
-
-  .pw-card {
-    display: block;
-    text-decoration: none; color: inherit;
-    padding: 12px;
-    cursor: pointer;
-    transition: background .15s;
-    border-radius: 8px;
-    position: relative;
-  }
-  .pw-card:hover { background: #f7f7f7; }
-
-  .pw-card-img-wrap {
-    position: relative;
-    aspect-ratio: 4/3;
-    background: #f0f0f0;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 32px; color: #ccc;
-  }
-  .pw-card-img-wrap img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
-  }
-  .pw-card-done {
-    position: absolute; bottom: 8px; left: 8px;
-    background: rgba(0,0,0,.48); color: #fff;
-    font-size: 11px; font-weight: 600;
-    padding: 2px 8px; border-radius: 4px;
-  }
-
-  .pw-card-title {
-    font-size: 14px; font-weight: 400; line-height: 1.4;
-    color: #1a1a1a; margin-bottom: 4px;
-    display: -webkit-box; -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical; overflow: hidden;
-  }
-  .pw-card-price {
-    font-size: 16px; font-weight: 700;
-    color: #1a1a1a; margin-bottom: 3px;
-  }
-  .pw-card-price-sub { font-size: 12px; font-weight: 400; color: #999; }
-  .pw-card-loc {
-    font-size: 12px; color: #999;
-    display: flex; align-items: center; gap: 3px;
-    margin-bottom: 2px;
-  }
-  .pw-card-date { font-size: 12px; color: #bbb; }
-
-  /* пагинация */
-  .pw-pagination {
-    display: flex; align-items: center; gap: 8px;
-    margin-top: 16px;
-  }
-  .pw-pag-btn {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: none; border: 1px solid #d0d0d0;
-    cursor: pointer; font-size: 18px; color: #555;
-    display: flex; align-items: center; justify-content: center;
-    transition: border-color .15s;
-  }
-  .pw-pag-btn:hover { border-color: #888; }
-  .pw-pag-btn:disabled { opacity: .35; cursor: not-allowed; }
-
-  /* пустое */
-  .pw-empty {
-    padding: 48px 0;
-    text-align: center; color: #aaa; font-size: 15px;
-  }
-  .pw-empty-ico { font-size: 40px; margin-bottom: 10px; }
-
-  /* ══════════ СЕКЦИЯ ОТЗЫВОВ (под контентом) ══════════ */
-  .pw-reviews-section { margin-top: 32px; border-top: 1px solid #e8e8e8; padding-top: 28px; }
-  .pw-reviews-heading { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
-
-  .pw-rating-block {
-    display: flex; gap: 32px; margin-bottom: 24px;
-  }
-  .pw-rating-left { text-align: center; flex-shrink: 0; }
-  .pw-rating-big { font-size: 48px; font-weight: 800; line-height: 1; color: #1a1a1a; }
-  .pw-rating-stars-big { color: #f59e0b; font-size: 18px; letter-spacing: 2px; display: block; margin: 6px 0 4px; }
-  .pw-rating-hint { font-size: 12px; color: #aaa; }
-
-  .pw-rating-bars { flex: 1; display: flex; flex-direction: column; gap: 5px; }
-  .pw-bar-row { display: flex; align-items: center; gap: 8px; }
-  .pw-bar-stars { font-size: 12px; color: #f59e0b; white-space: nowrap; width: 80px; }
-  .pw-bar-track { flex: 1; height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden; }
-  .pw-bar-fill { height: 100%; background: #f59e0b; border-radius: 3px; transition: width .3s; }
-  .pw-bar-cnt { font-size: 12px; color: #aaa; width: 20px; text-align: right; }
-
-  .pw-review-list { display: flex; flex-direction: column; }
-  .pw-review-item { padding: 20px 0; border-bottom: 1px solid #f0f0f0; }
-  .pw-review-item:last-child { border-bottom: none; }
-  .pw-review-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-  .pw-review-ava {
-    width: 46px; height: 46px; border-radius: 50%;
-    object-fit: cover; flex-shrink: 0;
-  }
-  .pw-review-ava-fb {
-    width: 46px; height: 46px; border-radius: 50%;
-    background: linear-gradient(135deg, #e8410a, #ff7043);
-    display: flex; align-items: center; justify-content: center;
-    color: #fff; font-weight: 700; font-size: 17px; flex-shrink: 0;
-  }
-  .pw-review-author { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
-  .pw-review-date { font-size: 12px; color: #aaa; }
-  .pw-review-rating { color: #f59e0b; font-size: 15px; margin-left: auto; letter-spacing: 1px; }
-  .pw-review-rating-empty { color: #e0e0e0; }
-  .pw-review-text { font-size: 14px; color: #333; line-height: 1.65; padding-left: 58px; }
-
-  /* ── LIGHTBOX ── */
-  .pw-lb-overlay {
-    position: fixed; inset: 0; z-index: 9999;
-    background: rgba(0,0,0,.92);
-    display: flex; align-items: center; justify-content: center;
-  }
-  .pw-lb-inner { position: relative; max-width: 90vw; max-height: 86vh; }
-  .pw-lb-img { max-width: 90vw; max-height: 86vh; border-radius: 10px; display: block; }
-  .pw-lb-counter {
-    position: absolute; top: 12px; left: 12px;
-    background: rgba(0,0,0,.55); color: #fff;
-    font-size: 12px; font-weight: 700;
-    padding: 4px 10px; border-radius: 999px;
-  }
-  .pw-lb-close {
-    position: absolute; top: 12px; right: 12px;
-    width: 38px; height: 38px; border-radius: 50%;
-    background: rgba(255,255,255,.18); border: none;
-    color: #fff; font-size: 22px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .pw-lb-prev, .pw-lb-next {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    width: 44px; height: 44px; border-radius: 50%;
-    background: rgba(255,255,255,.18); border: none;
-    color: #fff; font-size: 28px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .pw-lb-prev { left: -56px; }
-  .pw-lb-next { right: -56px; }
-
-  @media(max-width: 960px) {
-    .pw-layout { grid-template-columns: 1fr; }
-    .pw-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media(max-width: 768px) {
-    .pw-lb-prev { left: max(8px, env(safe-area-inset-left)); }
-    .pw-lb-next { right: max(8px, env(safe-area-inset-right)); }
-  }
-  @media(max-width: 520px) {
-    .pw-grid { grid-template-columns: 1fr; }
-    .pw-tab { font-size: 14px; margin-right: 18px; }
-  }
-`;
+const PIN_ICON = (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+    <path
+      d="M8 1.75a3.25 3.25 0 00-3.25 3.25c0 2.44 3.25 6 3.25 6s3.25-3.56 3.25-6A3.25 3.25 0 008 1.75z"
+      stroke="currentColor"
+      strokeWidth="1.2"
+    />
+    <circle cx="8" cy="5" r="1" fill="currentColor" />
+  </svg>
+);
 
 const PAGE_SIZE = 8;
+
+function TabButton({ active, label, count, onClick }) {
+  return (
+    <button type="button" className={`pw-tab${active ? ' active' : ''}`} onClick={onClick}>
+      {label}
+      {count > 0 ? <span className="pw-tab-count">{count}</span> : null}
+    </button>
+  );
+}
 
 export default function PublicWorkerProfilePage() {
   const { workerId } = useParams();
@@ -358,21 +55,21 @@ export default function PublicWorkerProfilePage() {
   const location = useLocation();
   const { userId } = useAuth();
 
-  const [worker,         setWorker]        = useState(null);
-  const [services,       setServices]      = useState([]);
-  const [reviews,        setReviews]       = useState([]);
-  const [completedWorks, setCompletedWorks]= useState([]);
-  const [loading,        setLoading]       = useState(true);
-  const [tab,            setTab]           = useState('active');
-  const [page,           setPage]          = useState(0);
-  const [lightbox,       setLightbox]      = useState(null);
+  const [worker, setWorker] = useState(null);
+  const [services, setServices] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [completedWorks, setCompletedWorks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('active');
+  const [page, setPage] = useState(0);
+  const [lightbox, setLightbox] = useState(null);
 
   useEffect(() => {
     if (!lightbox) return;
-    const h = e => {
-      if (e.key === 'ArrowRight') setLightbox(l => l ? {...l, index:(l.index+1)%l.photos.length} : l);
-      if (e.key === 'ArrowLeft')  setLightbox(l => l ? {...l, index:(l.index-1+l.photos.length)%l.photos.length} : l);
-      if (e.key === 'Escape')     setLightbox(null);
+    const h = (e) => {
+      if (e.key === 'ArrowRight') setLightbox((l) => (l ? { ...l, index: (l.index + 1) % l.photos.length } : l));
+      if (e.key === 'ArrowLeft') setLightbox((l) => (l ? { ...l, index: (l.index - 1 + l.photos.length) % l.photos.length } : l));
+      if (e.key === 'Escape') setLightbox(null);
     };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
@@ -382,27 +79,31 @@ export default function PublicWorkerProfilePage() {
     if (!workerId) return;
     setLoading(true);
     Promise.all([
-      fetch(`${API}/workers/${workerId}/listings`).then(r => r.ok ? r.json() : []),
-      fetch(`${API}/workers/${workerId}/stats`).then(r => r.ok ? r.json() : {}),
-      fetch(`${API}/workers/${workerId}/reviews`).then(r => r.ok ? r.json() : []),
-      fetch(`${API}/workers/${workerId}/completed-works`).then(r => r.ok ? r.json() : []),
-    ]).then(([svc, stats, rev, works]) => {
-      setServices(Array.isArray(svc) ? svc : []);
-      setReviews(Array.isArray(rev) ? rev.filter(r => r.status === 'APPROVED') : []);
-      setCompletedWorks(Array.isArray(works) ? works : []);
-      setWorker({
-        name: stats?.displayName || 'Мастер',
-        lastName: stats?.lastName || '',
-        avatarUrl: stats?.avatarUrl || null,
-        city: stats?.city || 'Йошкар-Ола',
-        rating: stats?.averageRating || 0,
-        reviewsCount: stats?.reviewsCount || 0,
-        registeredAt: stats?.registeredAt || null,
-        verified: stats?.verified === true,
-      });
-    }).catch(() => {
-      setWorker({ name: 'Мастер', lastName: '', city: 'Йошкар-Ола', rating: 0, reviewsCount: 0, verified: false });
-    }).finally(() => setLoading(false));
+      fetch(`${API}/workers/${workerId}/listings`).then((r) => (r.ok ? r.json() : [])),
+      fetch(`${API}/workers/${workerId}/stats`).then((r) => (r.ok ? r.json() : {})),
+      fetch(`${API}/workers/${workerId}/reviews`).then((r) => (r.ok ? r.json() : [])),
+      fetch(`${API}/workers/${workerId}/completed-works`).then((r) => (r.ok ? r.json() : [])),
+    ])
+      .then(([svc, stats, rev, works]) => {
+        setServices(Array.isArray(svc) ? svc : []);
+        setReviews(Array.isArray(rev) ? rev.filter((r) => r.status === 'APPROVED') : []);
+        setCompletedWorks(Array.isArray(works) ? works : []);
+        setWorker({
+          name: stats?.displayName || 'Мастер',
+          lastName: stats?.lastName || '',
+          avatarUrl: stats?.avatarUrl || null,
+          city: stats?.city || 'Йошкар-Ола',
+          rating: stats?.averageRating || 0,
+          reviewsCount: Number(stats?.reviewsCount) || 0,
+          completedCount: Number(stats?.completedWorksCount) || 0,
+          registeredAt: stats?.registeredAt || null,
+          verified: stats?.verified === true,
+        });
+      })
+      .catch(() => {
+        setWorker({ name: 'Мастер', lastName: '', city: 'Йошкар-Ола', rating: 0, reviewsCount: 0, verified: false });
+      })
+      .finally(() => setLoading(false));
   }, [workerId]);
 
   useEffect(() => {
@@ -414,265 +115,252 @@ export default function PublicWorkerProfilePage() {
     return () => window.clearTimeout(timer);
   }, [loading, location.hash, workerId]);
 
-  if (loading) return (
-    <div style={{ minHeight:'60vh', display:'flex', alignItems:'center', justifyContent:'center', color:'#999', fontFamily:'Inter,Arial,sans-serif' }}>
-      <div style={{ textAlign:'center' }}>
-        <div style={{ fontSize:36, marginBottom:8 }}>⏳</div>
-        <p>Загружаем профиль...</p>
+  if (loading) {
+    return (
+      <div className="pw-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <div style={{ textAlign: 'center', color: '#888' }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>⏳</div>
+          <p>Загружаем профиль...</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
-  const fullName  = [worker?.name, worker?.lastName].filter(Boolean).join(' ');
-  const initials  = fullName.split(' ').map(x => x[0]||'').join('').toUpperCase().slice(0,2) || '?';
-  const since     = memberSince(worker?.registeredAt);
+  const fullName = [worker?.name, worker?.lastName].filter(Boolean).join(' ');
+  const initials = fullName.split(' ').map((x) => x[0] || '').join('').toUpperCase().slice(0, 2) || '?';
+  const since = publicMemberSince(worker?.registeredAt);
+  const reviewsCountDisplay = worker?.reviewsCount ?? reviews.length;
+  const closedCount = worker?.completedCount ?? completedWorks.length;
 
-  const avgRating = reviews.length > 0
-    ? (reviews.reduce((s, r) => s + (r.rating||0), 0) / reviews.length)
-    : (worker?.rating > 0 ? Number(worker.rating) : 0);
-  const avgRatingStr = avgRating > 0 ? avgRating.toFixed(1) : '0,0';
-  const starsFilled = Math.round(avgRating);
+  const avgRating =
+    reviews.length > 0
+      ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length
+      : worker?.rating > 0
+        ? Number(worker.rating)
+        : 0;
+  const avgRatingDisplay = avgRating > 0 ? avgRating.toFixed(1) : '0.0';
 
-  // rating distribution
-  const starCounts = [5,4,3,2,1].map(s => reviews.filter(r => r.rating === s).length);
-  const maxStarCount = Math.max(...starCounts, 1);
+  const starCounts = [5, 4, 3, 2, 1].map((s) => reviews.filter((r) => r.rating === s).length);
+  const reviewsTotal = reviews.length || 1;
 
-  // current tab items + pagination
   const tabItems = tab === 'active' ? services : completedWorks;
   const totalPages = Math.ceil(tabItems.length / PAGE_SIZE);
   const pageItems = tabItems.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const switchTab = (t) => {
+    setTab(t);
+    setPage(0);
+  };
 
-  const switchTab = (t) => { setTab(t); setPage(0); };
+  const renderListing = (item) => {
+    const hasPhoto = item.photos && item.photos.length > 0;
+    const price = getListingPublishedPriceNumber(item);
+    const photoSrc = hasPhoto
+      ? item.photos[0]
+      : getCategoryPlaceholderPhotoUrlOrDefault({ category: item.category });
+    const when = publicTimeAgo(item.createdAt || item.completedAt);
+    const isActive = tab === 'active';
+
+    return (
+      <article
+        key={item.id || item.title}
+        className="pw-listing-card"
+        onClick={() => {
+          if (isActive && item.id) {
+            navigate(`/listings/${item.id}`);
+            return;
+          }
+          if (hasPhoto) setLightbox({ photos: item.photos, index: 0 });
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && isActive && item.id) navigate(`/listings/${item.id}`);
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <div className="pw-listing-img">
+          {hasPhoto ? (
+            <img src={photoSrc} alt="" />
+          ) : (
+            <div className="pw-listing-placeholder">🛠️</div>
+          )}
+          <span className={isActive ? 'pw-listing-badge-open' : 'pw-listing-badge-done'}>
+            {isActive ? 'Открыта' : 'Завершено'}
+          </span>
+          {isActive && item.id ? (
+            <div className="pw-listing-fav" onClick={(e) => e.stopPropagation()}>
+              <FavoriteHeartButton kind="listing" id={item.id} />
+            </div>
+          ) : null}
+        </div>
+        <div className="pw-listing-body">
+          <h3 className="pw-listing-title">{item.title || 'Без названия'}</h3>
+          <div className="pw-listing-price">
+            {price ? (
+              <>
+                {Number(price).toLocaleString('ru-RU')} ₽
+                {item.priceUnit ? ` ${item.priceUnit}` : ''}
+              </>
+            ) : (
+              <span className="pw-listing-price-muted">Договорная</span>
+            )}
+          </div>
+          <div className="pw-listing-loc">
+            {PIN_ICON}
+            {worker?.city || 'Йошкар-Ола'}
+          </div>
+          {when ? <div className="pw-listing-when">{when}</div> : null}
+        </div>
+      </article>
+    );
+  };
 
   return (
     <div className="pw-page">
-      <style>{css}</style>
-
-      {/* Хлебная крошка */}
-      <div className="pw-breadcrumb">
-        <div className="pw-wrap">
-          <button type="button" className="pw-breadcrumb-btn" onClick={() => navigate('/find-master')}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-              <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Назад
-          </button>
-        </div>
-      </div>
-
       <div className="pw-wrap">
+        <button type="button" className="pw-back" onClick={() => navigate(-1)}>
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden>
+            <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Назад
+        </button>
+
         <div className="pw-layout">
+          <div className="pw-sidebar-wrap">
+            <aside className="pw-sidebar-card">
+              <div className="pw-sidebar-inner">
+                <div className="pw-avatar-wrap">
+                  {worker?.avatarUrl ? (
+                    <img src={worker.avatarUrl} alt={fullName} className="pw-avatar" />
+                  ) : (
+                    <div className="pw-avatar-fb">{initials}</div>
+                  )}
+                </div>
 
-          {/* ══════════ САЙДБАР ══════════ */}
-          <div className="pw-sidebar">
+                <h1 className="pw-name">{fullName}</h1>
 
-            {worker?.avatarUrl
-              ? <img src={worker.avatarUrl} alt={fullName} className="pw-avatar" />
-              : <div className="pw-avatar-fb">{initials}</div>
-            }
+                {reviewsCountDisplay > 0 ? (
+                  <div className="pw-rating-inline">
+                    <span className="pw-stars" aria-hidden>
+                      {publicStarsRow(avgRating)}
+                    </span>
+                    <span className="pw-rating-num-bold">{avgRatingDisplay.replace('.', ',')}</span>
+                    <span className="pw-rating-count-muted">({publicReviewsLabel(reviewsCountDisplay)})</span>
+                  </div>
+                ) : (
+                  <div className="pw-no-reviews">Отзывов пока нет</div>
+                )}
 
-            <h1 className="pw-name">{fullName}</h1>
+                {since ? <p className="pw-meta-since">{since}</p> : null}
 
-            {reviews.length === 0
-              ? <button type="button" className="pw-review-link" onClick={() => document.getElementById('pw-reviews-anchor')?.scrollIntoView({behavior:'smooth'})}>
-                  Отзывов пока нет
+                <div className="pw-city-pill">
+                  {PIN_ICON}
+                  {worker?.city || 'Йошкар-Ола'}
+                </div>
+
+                {worker?.verified === true ? (
+                  <div className="pw-badge-verified">✓ Документы проверены</div>
+                ) : null}
+
+                <p className="pw-responds">Отвечает в течение дня</p>
+
+                <div className="pw-stats-strip">
+                  <div className="pw-strip-cell">
+                    <div className="pw-strip-num">{services.length}</div>
+                    <span className="pw-strip-lbl">заявок</span>
+                  </div>
+                  <div className="pw-strip-cell">
+                    <div className="pw-strip-num">{closedCount}</div>
+                    <span className="pw-strip-lbl">закрыто</span>
+                  </div>
+                  <div className="pw-strip-cell">
+                    <div className="pw-strip-num">{reviewsCountDisplay}</div>
+                    <span className="pw-strip-lbl">отзывов</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="pw-btn-msg"
+                  onClick={() => (userId ? navigate(`/chat/${workerId}`) : navigate('/login'))}
+                >
+                  {MSG_ICON}
+                  Написать
                 </button>
-              : <button type="button" className="pw-review-link" onClick={() => document.getElementById('pw-reviews-anchor')?.scrollIntoView({behavior:'smooth'})}>
-                  {reviews.length} {reviews.length===1?'отзыв':reviews.length<5?'отзыва':'отзывов'}
-                </button>
-            }
-
-            <div className="pw-meta">
-              {completedWorks.length > 0 && <span>{completedWorks.length} завершённых работ<br /></span>}
-              {since && <span>{since}</span>}
-            </div>
-
-            {avgRating > 0 && (
-              <div className="pw-rating-row">
-                <span className="pw-rating-num">{avgRatingStr}</span>
-                <div className="pw-stars">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span key={i} className={i < starsFilled ? 'pw-star-f' : 'pw-star-e'}>★</span>
-                  ))}
-                </div>
-                <span className="pw-rating-cnt">
-                  {reviews.length} {reviews.length === 1 ? 'отзыв' : reviews.length < 5 ? 'отзыва' : 'отзывов'}
-                </span>
               </div>
-            )}
-
-            <div className="pw-badges">
-              {worker?.verified === true && (
-                <div className="pw-badge">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1"/>
-                    <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Документы проверены
-                </div>
-              )}
-              <div className="pw-badge">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                  <path d="M8 1.75a3.25 3.25 0 0 0-3.25 3.25c0 2.44 3.25 6 3.25 6s3.25-3.56 3.25-6A3.25 3.25 0 0 0 8 1.75z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-                  <circle cx="8" cy="5" r="1" fill="currentColor"/>
-                </svg>
-                {worker?.city || 'Йошкар-Ола'}
-              </div>
-              {completedWorks.length >= 1 && (
-                <div className="pw-badge">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                    <path d="M5 6V4.5A1.5 1.5 0 0 1 6.5 3h3A1.5 1.5 0 0 1 11 4.5V6M3.5 6h9a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-                  </svg>
-                  {completedWorks.length}{' '}
-                  {completedWorks.length === 1 ? 'сделка завершена' : completedWorks.length < 5 ? 'сделки завершено' : 'сделок завершено'}
-                </div>
-              )}
-            </div>
-
-            <div className="pw-responds">Отвечает в течение дня</div>
-
-            <div className="pw-stats-strip">
-              <div className="pw-strip-cell">
-                <div className="pw-strip-num">{services.length}</div>
-                <span className="pw-strip-lbl">Объявлений</span>
-              </div>
-              <div className="pw-strip-cell">
-                <div className="pw-strip-num">{completedWorks.length}</div>
-                <span className="pw-strip-lbl">Завершено</span>
-              </div>
-              <div className="pw-strip-cell">
-                <div className="pw-strip-num">{reviews.length}</div>
-                <span className="pw-strip-lbl">Отзывов</span>
-              </div>
-            </div>
-
-            {userId && userId !== workerId && (
-              <button className="pw-btn-msg" onClick={() => navigate(`/chat/${workerId}`)}>
-                Написать
-              </button>
-            )}
+            </aside>
           </div>
 
-          {/* ══════════ ПРАВАЯ КОЛОНКА ══════════ */}
           <div className="pw-main">
-
-            {/* Табы */}
             <div className="pw-tabs">
-              <button
-                className={`pw-tab${tab==='active'?' active':''}`}
-                onClick={() => switchTab('active')}
-              >
-                Активные {services.length > 0 && <sup style={{fontSize:13,fontWeight:700}}>{services.length}</sup>}
-              </button>
-              <button
-                className={`pw-tab${tab==='works'?' active':''}`}
-                onClick={() => switchTab('works')}
-              >
-                Завершённые {completedWorks.length > 0 && <sup style={{fontSize:13,fontWeight:700}}>{completedWorks.length}</sup>}
-              </button>
+              <TabButton active={tab === 'active'} label="Активные" count={services.length} onClick={() => switchTab('active')} />
+              <TabButton
+                active={tab === 'completed'}
+                label="Завершённые"
+                count={completedWorks.length}
+                onClick={() => switchTab('completed')}
+              />
             </div>
 
-            {/* Карточки */}
-            {pageItems.length === 0
-              ? (
-                <div className="pw-empty">
-                  <div className="pw-empty-ico">{tab === 'active' ? '⚙️' : '🔨'}</div>
-                  <p>{tab === 'active' ? 'Нет активных объявлений' : 'Выполненных работ пока нет'}</p>
-                </div>
-              )
-              : (
-                <>
-                  <div className="pw-grid">
-                    {pageItems.map(item => {
-                      const hasPhoto = item.photos && item.photos.length > 0;
-                      const price    = getListingPublishedPriceNumber(item);
-                      return (
-                        <div
-                          key={item.id}
-                          className="pw-card"
-                          onClick={() => {
-                            if (tab === 'active' && item.id) {
-                              navigate(`/listings/${item.id}`);
-                              return;
-                            }
-                            if (hasPhoto) setLightbox({ photos: item.photos, index: 0 });
-                          }}
-                        >
-                          <div className="pw-card-img-wrap">
-                            {hasPhoto
-                              ? <img src={item.photos[0]} alt={item.title} />
-                              : <img src={getCategoryPlaceholderPhotoUrlOrDefault({ category: item.category })} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            }
-                            {tab === 'works' && <div className="pw-card-done">Завершена</div>}
-                            {tab === 'active' && item.id ? (
-                              <FavoriteHeartButton kind="listing" id={item.id} />
-                            ) : null}
-                          </div>
-                          <div className="pw-card-title">{item.title || 'Без названия'}</div>
-                          {price && (
-                            <div className="pw-card-price">
-                              {Number(price).toLocaleString('ru-RU')} ₽
-                              {item.priceUnit && <span className="pw-card-price-sub"> {item.priceUnit}</span>}
-                            </div>
-                          )}
-                          <div className="pw-card-loc">
-                            <span>📍</span>
-                            <span>{worker?.city || 'Йошкар-Ола'}</span>
-                          </div>
-                          {(item.createdAt || item.completedAt) && (
-                            <div className="pw-card-date">
-                              {new Date(item.completedAt || item.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+            {pageItems.length === 0 ? (
+              <div className="pw-empty">
+                <div className="pw-empty-ico">{tab === 'active' ? '📋' : '✅'}</div>
+                <p>Объявлений пока нет</p>
+              </div>
+            ) : (
+              <>
+                <div className="pw-listings-grid">{pageItems.map(renderListing)}</div>
+                {totalPages > 1 && (
+                  <div className="pw-pagination">
+                    <button type="button" className="pw-pag-btn" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
+                      ‹
+                    </button>
+                    {Array.from({ length: totalPages }).map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        className={`pw-pag-num${i === page ? ' active' : ''}`}
+                        onClick={() => setPage(i)}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      className="pw-pag-btn"
+                      disabled={page === totalPages - 1}
+                      onClick={() => setPage((p) => p + 1)}
+                    >
+                      ›
+                    </button>
                   </div>
+                )}
+              </>
+            )}
 
-                  {totalPages > 1 && (
-                    <div className="pw-pagination">
-                      <button className="pw-pag-btn" disabled={page===0} onClick={() => setPage(p=>p-1)}>‹</button>
-                      {Array.from({length:totalPages}).map((_,i) => (
-                        <button
-                          key={i}
-                          onClick={() => setPage(i)}
-                          style={{
-                            width:36,height:36,borderRadius:'50%',border:'none',
-                            background: i===page ? '#e8410a' : 'none',
-                            color: i===page ? '#fff' : '#555',
-                            cursor:'pointer', fontWeight: i===page?700:400,
-                            fontSize:14,
-                          }}
-                        >{i+1}</button>
-                      ))}
-                      <button className="pw-pag-btn" disabled={page===totalPages-1} onClick={() => setPage(p=>p+1)}>›</button>
-                    </div>
-                  )}
-                </>
-              )
-            }
-
-            {/* ══ СЕКЦИЯ ОТЗЫВОВ ══ */}
-            <div className="pw-reviews-section" id="pw-reviews-anchor">
-              <h2 className="pw-reviews-heading">Отзывы о {worker?.name || 'мастере'}</h2>
+            <div className="pw-reviews-card" id="pw-reviews-anchor">
+              <h2 className="pw-reviews-heading">Отзывы о {publicFirstName(fullName)}</h2>
 
               <div className="pw-rating-block">
                 <div className="pw-rating-left">
-                  <div className="pw-rating-big">{avgRatingStr.replace('.', ',')}</div>
-                  <span className="pw-rating-stars-big">
-                    {Array.from({length:5}).map((_,i) => (
-                      <span key={i} style={{ color: i < starsFilled ? '#f59e0b' : '#e0e0e0' }}>★</span>
+                  <div className="pw-rating-big">{avgRatingDisplay.replace('.', ',')}</div>
+                  <div className="pw-rating-stars-big" aria-hidden>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <span key={i} style={{ color: i < Math.round(avgRating) ? '#f59e0b' : '#e5e7eb' }}>
+                        ★
+                      </span>
                     ))}
-                  </span>
-                  <div className="pw-rating-hint">рейтинг{reviews.length===0?' пока нет':''}</div>
+                  </div>
+                  <div className="pw-rating-hint">{reviews.length > 0 ? 'рейтинг' : 'рейтинг пока нет'}</div>
                 </div>
-
                 <div className="pw-rating-bars">
-                  {[5,4,3,2,1].map((s,idx) => (
+                  {[5, 4, 3, 2, 1].map((s, idx) => (
                     <div className="pw-bar-row" key={s}>
                       <span className="pw-bar-stars">{'★'.repeat(s)}</span>
                       <div className="pw-bar-track">
-                        <div className="pw-bar-fill" style={{ width: `${(starCounts[idx]/maxStarCount)*100}%` }} />
+                        <div
+                          className="pw-bar-fill"
+                          style={{ width: reviews.length > 0 ? `${(starCounts[idx] / reviewsTotal) * 100}%` : '0%' }}
+                        />
                       </div>
                       <span className="pw-bar-cnt">{starCounts[idx]}</span>
                     </div>
@@ -680,59 +368,82 @@ export default function PublicWorkerProfilePage() {
                 </div>
               </div>
 
-              {reviews.length === 0
-                ? <p style={{ color:'#aaa', fontSize:14 }}>Отзывов пока нет</p>
-                : (
-                  <div className="pw-review-list">
-                    {reviews.map(r => {
-                      const rStars = r.rating || 0;
-                      return (
-                        <div key={r.id} className="pw-review-item">
-                          <div className="pw-review-head">
-                            {r.authorAvatarUrl
-                              ? <img src={r.authorAvatarUrl} alt="" className="pw-review-ava" />
-                              : <div className="pw-review-ava-fb">{(r.authorName||'К')[0].toUpperCase()}</div>
-                            }
-                            <div style={{ flex:1, minWidth:0 }}>
-                              <div className="pw-review-author">
-                                {[r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Клиент'}
-                              </div>
-                              <div className="pw-review-date">
-                                {r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}
-                              </div>
-                            </div>
-                            <div className="pw-review-rating">
-                              {Array.from({length:5}).map((_,i) => (
-                                <span key={i} className={i < rStars ? '' : 'pw-review-rating-empty'}>★</span>
-                              ))}
+              {reviews.length === 0 ? (
+                <p className="pw-reviews-empty">Отзывов пока нет</p>
+              ) : (
+                <div className="pw-review-list">
+                  {reviews.map((r) => {
+                    const authorName = [r.authorName, r.authorLastName].filter(Boolean).join(' ') || 'Клиент';
+                    const initial = (r.authorName || 'К')[0].toUpperCase();
+                    const rStars = r.rating || 0;
+                    return (
+                      <div key={r.id} className="pw-review-item">
+                        <div className="pw-review-head">
+                          {r.authorAvatarUrl ? (
+                            <img src={r.authorAvatarUrl} alt="" className="pw-review-ava" />
+                          ) : (
+                            <div className="pw-review-ava-fb">{initial}</div>
+                          )}
+                          <div className="pw-review-meta">
+                            <div className="pw-review-author">{authorName}</div>
+                            <div className="pw-review-sub">
+                              <span className="pw-review-stars-inline">
+                                {'★'.repeat(rStars)}
+                                {'☆'.repeat(5 - rStars)}
+                              </span>
+                              {r.createdAt ? (
+                                <>
+                                  <span className="pw-review-date">· {publicTimeAgo(r.createdAt)}</span>
+                                </>
+                              ) : null}
                             </div>
                           </div>
-                          {(r.text || r.comment) && (
-                            <p className="pw-review-text">{r.text || r.comment}</p>
-                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                )
-              }
+                        {(r.text || r.comment) && <p className="pw-review-text">{r.text || r.comment}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-
-          </div>{/* pw-main */}
+          </div>
         </div>
       </div>
 
-      {/* LIGHTBOX */}
       {lightbox && (
         <div className="pw-lb-overlay" onClick={() => setLightbox(null)}>
-          <div className="pw-lb-inner" onClick={e => e.stopPropagation()}>
+          <div className="pw-lb-inner" onClick={(e) => e.stopPropagation()}>
             <img src={lightbox.photos[lightbox.index]} alt="" className="pw-lb-img" />
-            <div className="pw-lb-counter">{lightbox.index+1} / {lightbox.photos.length}</div>
-            <button className="pw-lb-close" onClick={() => setLightbox(null)}>×</button>
-            {lightbox.photos.length > 1 && (<>
-              <button className="pw-lb-prev" onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index:(l.index-1+l.photos.length)%l.photos.length})); }}>‹</button>
-              <button className="pw-lb-next" onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index:(l.index+1)%l.photos.length})); }}>›</button>
-            </>)}
+            <div className="pw-lb-counter">
+              {lightbox.index + 1} / {lightbox.photos.length}
+            </div>
+            <button type="button" className="pw-lb-close" onClick={() => setLightbox(null)}>
+              ×
+            </button>
+            {lightbox.photos.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="pw-lb-prev"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightbox((l) => ({ ...l, index: (l.index - 1 + l.photos.length) % l.photos.length }));
+                  }}
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className="pw-lb-next"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightbox((l) => ({ ...l, index: (l.index + 1) % l.photos.length }));
+                  }}
+                >
+                  ›
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
