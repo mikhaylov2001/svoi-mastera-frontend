@@ -1538,7 +1538,7 @@ export default function FindWorkPage() {
 
                 {req.description && req.description !== 'Без описания' ? (
                   <section className="ed-card">
-                    <div className="ed-eyebrow">Описание</div>
+                    <h3 className="ed-section-title">Описание</h3>
                     <p className="ed-desc">{formatListingOriginDescription('WORKER', req.description)}</p>
                     {req.urgency ? (
                       <p className="ed-desc" style={{ marginTop: 14, color: '#c2410c', fontWeight: 600 }}>
@@ -1548,7 +1548,7 @@ export default function FindWorkPage() {
                   </section>
                 ) : (
                   <section className="ed-card">
-                    <div className="ed-eyebrow">Описание</div>
+                    <h3 className="ed-section-title">Описание</h3>
                     <p className="ed-desc" style={{ color: '#a1a1aa', fontStyle: 'italic' }}>
                       Описание не добавлено
                     </p>
@@ -1556,7 +1556,7 @@ export default function FindWorkPage() {
                 )}
 
                 <section className="ed-card">
-                  <div className="ed-eyebrow">Условия</div>
+                  <h3 className="ed-section-title">Условия</h3>
                   <dl className="ed-rows">
                     {[
                       categoryLabel && ['Категория', categoryLabel],

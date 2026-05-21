@@ -324,8 +324,11 @@ export default function ListingDetailPage() {
     ? `${priceNum.toLocaleString('ru-RU')}`
     : listing.priceUnit || 'Договорная';
   const priceSubLine = priceHasAmount
-    ? `${priceUnitTrim || 'за работу'} · оплата по договорённости`
+    ? 'Окончательная цена согласовывается в чате с мастером'
     : listing.priceUnit || null;
+  const priceConditionsLine = priceHasAmount
+    ? `${priceMainLine} ₽${priceUnitTrim ? ` ${priceUnitTrim}` : ''}`
+    : listing.priceUnit || 'Договорная';
 
   const pubStr = listing.createdAt
     ? new Date(listing.createdAt).toLocaleDateString('ru-RU', {
@@ -369,14 +372,14 @@ export default function ListingDetailPage() {
     ? 'Мои объявления'
     : refFrom === 'home'
       ? 'Главная'
-      : refFrom === 'find-master'
+        : refFrom === 'find-master'
         ? refCat
-          ? 'К категории'
-          : 'Найти мастера'
+          ? 'Назад к объявлениям'
+          : 'Назад к объявлениям'
         : refFrom === 'favorites'
           ? 'Избранное'
-          : !userId
-            ? 'К поиску'
+            : !userId
+            ? 'Назад к объявлениям'
             : userRole === 'WORKER'
               ? 'Найти мастера'
               : 'Мои заказы';
@@ -567,7 +570,7 @@ export default function ListingDetailPage() {
 
             {bodyText ? (
               <section className="ed-card">
-                <div className="ed-eyebrow">Описание</div>
+                <h3 className="ed-section-title">Описание</h3>
                 <p className="ed-desc">{visibleBody}</p>
                 {showDescToggle && (
                   <button
@@ -587,7 +590,7 @@ export default function ListingDetailPage() {
               </section>
             ) : (
               <section className="ed-card">
-                <div className="ed-eyebrow">Описание</div>
+                <h3 className="ed-section-title">Описание</h3>
                 <p className="ed-desc" style={{ color: '#a1a1aa', fontStyle: 'italic' }}>
                   Описание не добавлено
                 </p>
@@ -595,13 +598,13 @@ export default function ListingDetailPage() {
             )}
 
             <section className="ed-card">
-              <div className="ed-eyebrow">Условия</div>
+              <h3 className="ed-section-title">Условия</h3>
               <dl className="ed-rows">
                 {[
                   listing.category && ['Категория', listing.category],
                   ['Город', listingCity],
                   ['Адрес', addressLine],
-                  priceHasAmount && ['Стоимость', `${priceMainLine} ₽${priceUnitTrim ? ` ${priceUnitTrim}` : ''}`],
+                  priceHasAmount && ['Стоимость', priceConditionsLine],
                   !priceHasAmount && listing.priceUnit && ['Стоимость', listing.priceUnit],
                   listing.createdAt && ['Опубликована', timeAgo(listing.createdAt) || pubStr],
                 ]
@@ -623,9 +626,10 @@ export default function ListingDetailPage() {
                 <div className="ed-price-num">
                   {priceMainLine}
                   <small> ₽</small>
+                  {priceUnitTrim ? <span className="ed-price-unit">{priceUnitTrim}</span> : null}
                 </div>
               ) : (
-                <div className="ed-price-num" style={{ fontSize: 22, fontWeight: 700 }}>
+                <div className="ed-price-num ed-price-num--contract">
                   {priceMainLine}
                 </div>
               )}

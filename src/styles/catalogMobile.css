@@ -10,10 +10,11 @@
   }
 
   /* ── Хаб «Найти мастера» (.fmp-page) ── */
-  .fmp-page {
+  .fmp-page,
+  .jl-page.fw-jl-cat-feed {
     overflow-x: hidden;
     font-family: Manrope, system-ui, sans-serif;
-    background: #f5f5f5;
+    background: #f6f6f4;
   }
 
   .fmp-hero,
@@ -331,10 +332,10 @@
 
   .jl-page.fw-jl-cat-feed .jl-side-card {
     background: #fff;
-    border: 1px solid #ebebeb;
-    border-radius: 20px;
-    padding: 18px 16px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
   }
 
   .jl-page.fw-jl-cat-feed .jl-side-title {
@@ -545,9 +546,9 @@
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    border-radius: 24px;
-    border-color: #ebebeb;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+    border-radius: 16px;
+    border-color: #e5e7eb;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
   }
 
   .jl-page.fw-jl-cat-feed .jl-bigcard::before {
@@ -556,8 +557,8 @@
 
   .jl-page.fw-jl-cat-feed .jl-bigcard:hover {
     transform: none;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
-    border-color: #ebebeb;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
+    border-color: #e5e7eb;
   }
 
   .jl-page.fw-jl-cat-feed .jl-bigcard-cover {
@@ -790,21 +791,30 @@
   /* Деталь объявления — перебиваем inline dealsDetailEdCss */
   .ed.ed--listing-detail {
     font-family: Manrope, system-ui, sans-serif;
-    background: #f2f2f2 !important;
+    background: #f5f5f5 !important;
   }
 
   .ed.ed--listing-detail .ed-card {
-    border-radius: 20px !important;
-    border: 1px solid #ebebeb !important;
-    padding: 18px 16px !important;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+    border-radius: 16px !important;
+    border: 1px solid #e5e7eb !important;
+    padding: 20px !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07) !important;
+  }
+
+  .ed.ed--listing-detail .ed-section-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    color: #111 !important;
+    margin-bottom: 12px !important;
   }
 
   .ed.ed--listing-detail .ed-eyebrow,
   .ed.ed--listing-detail .ed-eyebrow--block {
-    font-size: 11px !important;
-    font-weight: 800 !important;
-    letter-spacing: 0.06em !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.05em !important;
     text-transform: uppercase !important;
     color: #9ca3af !important;
   }
@@ -849,8 +859,8 @@
 
   .ed.ed--listing-detail .ed-ava {
     border-radius: 50% !important;
-    width: 44px !important;
-    height: 44px !important;
+    width: 48px !important;
+    height: 48px !important;
   }
 
   .jl-page.fw-jl-cat-feed .jl-side-card .jl-side-title {
@@ -875,11 +885,11 @@
     font-size: 14px;
     font-weight: 600;
     color: #6b7280;
-    margin-bottom: 12px;
-    padding: 8px 14px;
-    border-radius: 999px;
-    border: 1px solid #e5e7eb;
-    background: #fff;
+    margin-bottom: 20px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
   }
 
   .ed.ed--listing-detail .ed-head h1,
