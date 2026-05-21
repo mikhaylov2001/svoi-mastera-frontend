@@ -38,6 +38,17 @@ const PIN_ICON = (
   </svg>
 );
 
+const LISTING_PIN = (
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
+    <path
+      d="M8 1.75a3.25 3.25 0 00-3.25 3.25c0 2.44 3.25 6 3.25 6s3.25-3.56 3.25-6A3.25 3.25 0 008 1.75z"
+      stroke="#9ca3af"
+      strokeWidth="1.2"
+    />
+    <circle cx="8" cy="5" r="1" fill="#9ca3af" />
+  </svg>
+);
+
 const PAGE_SIZE = 8;
 
 function TabButton({ active, label, count, onClick }) {
@@ -204,11 +215,13 @@ export default function PublicWorkerProfilePage() {
               <span className="pw-listing-price-muted">Договорная</span>
             )}
           </div>
-          <div className="pw-listing-loc">
-            {PIN_ICON}
-            {worker?.city || 'Йошкар-Ола'}
+          <div className="pw-listing-meta">
+            <div className="pw-listing-loc">
+              {LISTING_PIN}
+              {worker?.city || 'Йошкар-Ола'}
+            </div>
+            {when ? <div className="pw-listing-when">{when}</div> : null}
           </div>
-          {when ? <div className="pw-listing-when">{when}</div> : null}
         </div>
       </article>
     );

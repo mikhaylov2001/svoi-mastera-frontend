@@ -43,6 +43,17 @@ const PIN_ICON = (
   </svg>
 );
 
+const LISTING_PIN = (
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
+    <path
+      d="M8 1.75a3.25 3.25 0 00-3.25 3.25c0 2.44 3.25 6 3.25 6s3.25-3.56 3.25-6A3.25 3.25 0 008 1.75z"
+      stroke="#9ca3af"
+      strokeWidth="1.2"
+    />
+    <circle cx="8" cy="5" r="1" fill="#9ca3af" />
+  </svg>
+);
+
 const STATUS_LABEL = {
   OPEN: 'Открыта', IN_NEGOTIATION: 'Обсуждение', ASSIGNED: 'Назначена',
   IN_PROGRESS: 'В работе', COMPLETED: 'Завершена', CANCELLED: 'Отменена',
@@ -165,22 +176,28 @@ export default function PublicCustomerProfilePage() {
         })
     );
     const stLabel = isDeal ? 'Завершена' : (STATUS_LABEL[item.status] || item.status);
+    const isOpen = !isDeal && ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'].includes(item.status);
+    const badgeClass = isOpen ? 'pw-listing-badge-open' : 'pw-card-done';
     return (
-      <div key={`${isDeal?'d':'r'}-${item.id}`} className="pw-card"
-        onClick={hasPhoto ? () => setLightbox({ photos: item.photos, index: 0 }) : undefined}>
+      <article key={`${isDeal?'d':'r'}-${item.id}`} className="pw-card"
+        onClick={hasPhoto ? () => setLightbox({ photos: item.photos, index: 0 }) : undefined}
+        role={hasPhoto ? 'button' : undefined}
+        tabIndex={hasPhoto ? 0 : undefined}>
         <div className="pw-card-img-wrap">
           {hasPhoto ? (
             <img src={item.photos[0]} alt={item.title} />
           ) : (
-            <img src={noPhotoThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={noPhotoThumb} alt="" />
           )}
-          <div className="pw-card-pill">{stLabel}</div>
-          {!isDeal && ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'].includes(item.status) ? (
-            <FavoriteHeartButton kind="jobRequest" id={item.id} />
+          <span className={badgeClass}>{isOpen ? 'Открыта' : stLabel}</span>
+          {isOpen ? (
+            <div className="pw-listing-fav" onClick={(e) => e.stopPropagation()}>
+              <FavoriteHeartButton kind="jobRequest" id={item.id} />
+            </div>
           ) : null}
         </div>
         <div className="pw-card-body">
-        <div className="pw-card-title">{item.title || 'Задача'}</div>
+        <h3 className="pw-card-title">{item.title || 'Задача'}</h3>
         {(() => {
           if (isDeal && item.agreedPrice != null && Number(item.agreedPrice) > 0) {
             return (
@@ -195,8 +212,10 @@ export default function PublicCustomerProfilePage() {
           if (!hasJobRequestPublishedPrice(item)) return null;
           return <div className="pw-card-price">{formatJobRequestBudgetLabel(item)}</div>;
         })()}
-        <div className="pw-card-loc"><span>📍</span><span>{customer?.city || 'Йошкар-Ола'}</span></div>
-        {item.createdAt && <div className="pw-card-date">{publicTimeAgo(item.createdAt)}</div>}
+        <div className="pw-listing-meta">
+          <div className="pw-card-loc">{LISTING_PIN}{customer?.city || 'Йошкар-Ола'}</div>
+          {item.createdAt && <div className="pw-card-date">{publicTimeAgo(item.createdAt)}</div>}
+        </div>
 
         {isDeal && userId === customerId && dealEligibleForReviews(item) && !item.hasReview && (
           <button className="pw-card-review-btn" onClick={e => { e.stopPropagation(); setReviewDeal({...item,_reviewByWorker:false}); setReviewModal(true); setReviewDone(false); setReviewForm({rating:5,text:''}); }}>
@@ -215,7 +234,7 @@ export default function PublicCustomerProfilePage() {
           <div className="pw-card-review-done">✓ Отзыв оставлен</div>
         )}
         </div>
-      </div>
+      </article>
     );
   };
 

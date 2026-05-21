@@ -271,36 +271,43 @@
   color: #e8410a;
 }
 
-/* Сетка объявлений 2 колонки (Base44) */
-.pw-listings-grid {
+/* Сетка карточек 2×2 (профиль мастера / заказчика) */
+.pw-listings-grid,
+.pw-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
   margin-bottom: 24px;
 }
 
-.pw-listing-card {
+.pw-listing-card,
+.pw-grid .pw-card {
   background: #fff;
-  border: 1px solid #ececec;
-  border-radius: 16px;
+  border: 1px solid #efe8e4;
+  border-radius: 24px;
   overflow: hidden;
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  min-width: 0;
 }
 
-.pw-listing-card:hover {
-  border-color: #f0c4b4;
+.pw-listing-card:hover,
+.pw-grid .pw-card:hover {
+  border-color: #f0d4c8;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
 }
 
-.pw-listing-img {
+.pw-listing-img,
+.pw-card-img-wrap {
   position: relative;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 1 / 1;
   background: #f3f4f6;
   overflow: hidden;
 }
 
-.pw-listing-img img {
+.pw-listing-img img,
+.pw-card-img-wrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -313,80 +320,119 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36px;
+  font-size: 32px;
+  background: linear-gradient(135deg, #fafaf8, #efece8);
 }
 
-.pw-listing-badge-open {
+.pw-listing-badge-open,
+.pw-card-pill {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  background: #16a34a;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  background: #44a34d;
   color: #fff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
 }
 
-.pw-listing-badge-done {
+.pw-listing-badge-done,
+.pw-card-done {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
   background: #6b7280;
   color: #fff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  line-height: 1.2;
 }
 
 .pw-listing-fav {
   position: absolute;
   top: 8px;
   right: 8px;
+  z-index: 3;
 }
 
-.pw-listing-body {
-  padding: 12px;
+.pw-card-img-wrap .favorite-heart-btn,
+.pw-card-img-wrap > button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
 }
 
-.pw-listing-title {
+.pw-listing-body,
+.pw-card-body {
+  padding: 12px 14px 14px;
+}
+
+.pw-listing-title,
+.pw-card-title {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
   color: #111;
-  line-height: 1.35;
-  margin: 0 0 4px;
+  line-height: 1.3;
+  margin: 0 0 6px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  letter-spacing: -0.2px;
 }
 
-.pw-listing-price {
-  font-size: 14px;
+.pw-listing-price,
+.pw-card-price {
+  font-size: 15px;
   font-weight: 800;
   color: #111;
-  margin-bottom: 4px;
+  margin: 0 0 6px;
+  letter-spacing: -0.3px;
 }
 
 .pw-listing-price-muted {
+  font-size: 14px;
   font-weight: 700;
   color: #888;
 }
 
-.pw-listing-loc {
+.pw-listing-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pw-listing-loc,
+.pw-card-loc {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
-  color: #aaa;
-  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #888;
+  margin: 0;
 }
 
-.pw-listing-when {
-  font-size: 11px;
-  color: #bbb;
-  margin-top: 2px;
+.pw-listing-loc svg,
+.pw-card-loc svg {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+.pw-listing-when,
+.pw-card-date {
+  font-size: 12px;
+  font-weight: 500;
+  color: #b0b0b0;
+  margin: 0;
 }
 
 /* Лента (мобильная альтернатива — одна колонка) */
@@ -397,91 +443,7 @@
   margin-bottom: 24px;
 }
 
-/* Сетка заявок заказчика */
-.pw-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.pw-card {
-  background: #fff;
-  border: 1px solid #ececec;
-  border-radius: 16px;
-  overflow: hidden;
-  cursor: pointer;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
-  transition: border-color 0.15s;
-}
-
-.pw-card:hover {
-  border-color: #f0c4b4;
-}
-
-.pw-card-img-wrap {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  background: #f3f4f6;
-  overflow: hidden;
-}
-
-.pw-card-img-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.pw-card-pill {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 8px;
-  color: #fff;
-  background: #16a34a;
-}
-
-.pw-card-done {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 8px;
-  color: #fff;
-  background: #6b7280;
-}
-
-.pw-card-body {
-  padding: 12px;
-}
-
-.pw-card-title {
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.35;
-  margin-bottom: 4px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.pw-card-price {
-  font-size: 14px;
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-
-.pw-card-loc,
-.pw-card-date {
-  font-size: 11px;
-  color: #aaa;
-}
+/* Доп. элементы в карточке заказчика (отзыв) */
 
 .pw-card-review-btn {
   margin-top: 10px;
