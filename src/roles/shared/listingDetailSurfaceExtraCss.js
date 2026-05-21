@@ -436,9 +436,27 @@ export const listingDetailSurfaceExtraCss = `
     box-shadow: none !important;
     border-radius: 0 !important;
   }
-  .ed--listing-detail .ed-floats,
-  .ed--listing-detail .ed-thumbs {
+  .ed--listing-detail .ed-floats {
     display: none !important;
+  }
+  .ed--listing-detail .ed-thumbs {
+    display: flex !important;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px;
+    padding: 10px 12px 12px;
+    scrollbar-width: none;
+  }
+  .ed--listing-detail .ed-thumbs::-webkit-scrollbar {
+    display: none;
+  }
+  .ed--listing-detail .ed-thumb {
+    flex: 0 0 72px;
+    width: 72px;
+    max-width: 72px;
+    aspect-ratio: 1;
+    border-radius: 10px;
   }
 }
 `;

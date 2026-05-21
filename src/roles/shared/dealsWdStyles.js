@@ -661,6 +661,9 @@ export const dealsDetailEdCss = `
 .ed-thumb:hover { opacity: .85; }
 .ed-thumb.on { opacity: 1; }
 .ed-thumb.on::after { content:''; position:absolute; inset:0; border-radius: 8px; box-shadow: inset 0 0 0 2px #0a0a0a; }
+.ed-swipeable { cursor: grab; user-select: none; -webkit-user-select: none; }
+.ed-swipeable:active { cursor: grabbing; }
+.ed-swipeable img { pointer-events: none; }
 
 .ed-prog-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 28px; gap: 16px; flex-wrap: wrap; }
 .ed-prog-title { margin: 0; font-size: 15px; font-weight: 600; color: #0a0a0a; letter-spacing: -.01em; line-height: 1.3; }
@@ -1022,6 +1025,8 @@ export const listingDetailLightboxCss = `
 .jd-lb-next { right: 20px; }
 .jd-lb-counter { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.7); font-size: 14px; font-weight: 600; background: rgba(255,255,255,.1); padding: 5px 16px; border-radius: 20px; z-index: 10; }
 .jd-lb-hint { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.35); font-size: 12px; white-space: nowrap; pointer-events: none; }
+.jd-lightbox-img-wrap.ed-swipeable { cursor: grab; user-select: none; }
+.jd-lightbox-img-wrap.ed-swipeable img { pointer-events: none; }
 `;
 
 /** Карточка объявления / заявки: ed + лайтбокк (как FindWorkPage, ListingDetailPage). */

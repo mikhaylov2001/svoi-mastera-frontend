@@ -15,6 +15,7 @@ import './jobListings.css';
 import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { WORKER_HOME_PATH } from '../../constants/homePaths';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
+import { useSwipeNavigation, useSwipeNavigationLightbox } from '../../hooks/useSwipeNavigation';
 import { smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { formatCatalogCountShort } from '../../utils/formatCatalogCountShort';
@@ -1151,16 +1152,62 @@ export default function FindWorkPage() {
 
   const showFwSearchDd = fwSearchFocused && debouncedFwSearch.length >= 2;
 
+  const jobDetailUploadedPhotos = useMemo(() => {
+    if (!selectedRequest?.photos?.length) return [];
+    return selectedRequest.photos.map(jdPhotoUrl).filter(Boolean);
+  }, [selectedRequest]);
+
+  const jobDetailPhotoCount = jobDetailUploadedPhotos.length;
+  const jobDetailCanSwipe = jobDetailPhotoCount > 1;
+
+  const jobDetailPrevPhoto = useCallback(() => {
+    setActivePhotoIdx((i) =>
+      jobDetailPhotoCount > 1 ? (i - 1 + jobDetailPhotoCount) % jobDetailPhotoCount : i,
+    );
+  }, [jobDetailPhotoCount]);
+
+  const jobDetailNextPhoto = useCallback(() => {
+    setActivePhotoIdx((i) => (jobDetailPhotoCount > 1 ? (i + 1) % jobDetailPhotoCount : i));
+  }, [jobDetailPhotoCount]);
+
+  const jobLbPrev = useCallback(() => {
+    if (!lightbox || lightbox.photos.length <= 1) return;
+    const next = (lightbox.index - 1 + lightbox.photos.length) % lightbox.photos.length;
+    setActivePhotoIdx(next);
+    setLightbox({ ...lightbox, index: next });
+  }, [lightbox]);
+
+  const jobLbNext = useCallback(() => {
+    if (!lightbox || lightbox.photos.length <= 1) return;
+    const next = (lightbox.index + 1) % lightbox.photos.length;
+    setActivePhotoIdx(next);
+    setLightbox({ ...lightbox, index: next });
+  }, [lightbox]);
+
+  const jobGallerySwipe = useSwipeNavigation(
+    jobDetailPrevPhoto,
+    jobDetailNextPhoto,
+    !!selectedRequest && jobDetailCanSwipe,
+  );
+  const jobLbSwipe = useSwipeNavigationLightbox(jobLbPrev, jobLbNext, !!lightbox && lightbox.photos.length > 1);
+  const jobThumbStripRef = useRef(null);
+
+  useEffect(() => {
+    if (!jobDetailCanSwipe || !jobThumbStripRef.current) return;
+    const active = jobThumbStripRef.current.querySelector('.ed-thumb.on');
+    active?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+  }, [activePhotoIdx, jobDetailCanSwipe]);
+
   React.useEffect(() => {
     if (!lightbox) return;
     const handler = (e) => {
-      if (e.key === 'ArrowRight') setLightbox(l => l ? {...l, index: l.index < l.photos.length - 1 ? l.index + 1 : 0} : l);
-      if (e.key === 'ArrowLeft')  setLightbox(l => l ? {...l, index: l.index > 0 ? l.index - 1 : l.photos.length - 1} : l);
-      if (e.key === 'Escape')     setLightbox(null);
+      if (e.key === 'ArrowRight') jobLbNext();
+      if (e.key === 'ArrowLeft') jobLbPrev();
+      if (e.key === 'Escape') setLightbox(null);
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [lightbox]);
+  }, [lightbox, jobLbNext, jobLbPrev]);
 
   const requestIdFromUrl = searchParams.get('request');
 
@@ -1362,7 +1409,14 @@ export default function FindWorkPage() {
                   </button>
                 </>
               )}
-              <div className="jd-lightbox-img-wrap" onClick={(e) => e.stopPropagation()}>
+              <div
+                className={`jd-lightbox-img-wrap ${jobLbSwipe.className}`}
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={jobLbSwipe.onPointerDown}
+                onPointerUp={jobLbSwipe.onPointerUp}
+                onPointerCancel={jobLbSwipe.onPointerCancel}
+                style={jobLbSwipe.style}
+              >
                 {lightbox.photos.length > 1 && (
                   <>
                     <div
@@ -1398,7 +1452,7 @@ export default function FindWorkPage() {
                   {lightbox.index + 1} / {lightbox.photos.length}
                 </div>
               )}
-              <div className="jd-lb-hint">← → по краям · Esc — закрыть</div>
+              <div className="jd-lb-hint">Свайп или ← → · Esc — закрыть</div>
             </div>
           )}
 
@@ -1461,9 +1515,14 @@ export default function FindWorkPage() {
               <div className="ed-col">
                 <div className="ed-gallery">
                   <div
-                    className="ed-main"
+                    className={`ed-main ${jobGallerySwipe.className}`}
                     role="presentation"
                     onClick={() => jdPhotos.length > 0 && setLightbox({ photos: jdPhotos, index: activePhotoIdx })}
+                    onClickCapture={jobGallerySwipe.onClickCapture}
+                    onPointerDown={jobGallerySwipe.onPointerDown}
+                    onPointerUp={jobGallerySwipe.onPointerUp}
+                    onPointerCancel={jobGallerySwipe.onPointerCancel}
+                    style={jobGallerySwipe.style}
                   >
                     {mainSrc ? (
                       <img src={mainSrc} alt={req.title || ''} key={`${photoCount}-${activePhotoIdx}`} />
@@ -1520,7 +1579,7 @@ export default function FindWorkPage() {
                     ) : null}
                   </div>
                   {hasMultiplePhotos ? (
-                    <div className="ed-thumbs">
+                    <div className="ed-thumbs" ref={jobThumbStripRef}>
                       {jdPhotos.map((p, i) => (
                         <div
                           key={i}

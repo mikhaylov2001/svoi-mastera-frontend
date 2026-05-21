@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -22,6 +22,7 @@ import {
 } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../../constants/homePaths';
+import { useSwipeNavigation, useSwipeNavigationLightbox } from '../../hooks/useSwipeNavigation';
 
 const BACKEND_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, '');
 
@@ -184,6 +185,17 @@ export default function ListingDetailPage() {
     () => setActivePhoto(i => (photoCount > 1 ? (i - 1 + photoCount) % photoCount : i)),
     [photoCount],
   );
+
+  const canSwipePhotos = hasUploadedPhotos && photoCount > 1;
+  const gallerySwipe = useSwipeNavigation(prevPhoto, nextPhoto, canSwipePhotos);
+  const lightboxSwipe = useSwipeNavigationLightbox(prevPhoto, nextPhoto, lightbox && canSwipePhotos);
+  const thumbStripRef = useRef(null);
+
+  useEffect(() => {
+    if (!canSwipePhotos || !thumbStripRef.current) return;
+    const active = thumbStripRef.current.querySelector('.ed-thumb.on');
+    active?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+  }, [activePhoto, canSwipePhotos]);
 
   useEffect(() => {
     if (!lightbox || photoCount <= 1) return;
@@ -428,7 +440,14 @@ export default function ListingDetailPage() {
               </button>
             </>
           )}
-          <div className="jd-lightbox-img-wrap" onClick={e => e.stopPropagation()}>
+          <div
+            className={`jd-lightbox-img-wrap ${lightboxSwipe.className}`}
+            onClick={e => e.stopPropagation()}
+            onPointerDown={lightboxSwipe.onPointerDown}
+            onPointerUp={lightboxSwipe.onPointerUp}
+            onPointerCancel={lightboxSwipe.onPointerCancel}
+            style={lightboxSwipe.style}
+          >
             {lightboxPhotos.length > 1 && (
               <>
                 <div className="jd-lb-zone jd-lb-zone-prev" onClick={prevPhoto} role="presentation" />
@@ -446,7 +465,7 @@ export default function ListingDetailPage() {
               {lbIdx + 1} / {lightboxPhotos.length}
             </div>
           )}
-          <div className="jd-lb-hint">← → по краям · Esc — закрыть</div>
+          <div className="jd-lb-hint">Свайп или ← → · Esc — закрыть</div>
         </div>
       )}
 
@@ -485,8 +504,13 @@ export default function ListingDetailPage() {
           <div className="ed-col">
             <div className="ed-gallery">
               <div
-                className="ed-main"
+                className={`ed-main ${gallerySwipe.className}`}
                 onClick={() => (hasUploadedPhotos || displayPhoto) && setLightbox(true)}
+                onClickCapture={gallerySwipe.onClickCapture}
+                onPointerDown={gallerySwipe.onPointerDown}
+                onPointerUp={gallerySwipe.onPointerUp}
+                onPointerCancel={gallerySwipe.onPointerCancel}
+                style={gallerySwipe.style}
                 role="presentation"
               >
                 {displayPhoto ? (
@@ -544,7 +568,7 @@ export default function ListingDetailPage() {
                 ) : null}
               </div>
               {hasUploadedPhotos && photoCount > 1 ? (
-                <div className="ed-thumbs">
+                <div className="ed-thumbs" ref={thumbStripRef}>
                   {photoList.map((p, i) => (
                     <div
                       key={i}
