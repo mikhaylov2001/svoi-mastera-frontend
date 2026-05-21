@@ -1160,26 +1160,6 @@ const css = `
     .fmp-list { grid-template-columns: 1fr 1fr; }
   }
   @media(max-width: 768px) {
-    .jl-page.fw-jl-cat-feed .fmp-topbar-inner {
-      display: flex !important;
-      flex-direction: row !important;
-      flex-wrap: nowrap !important;
-      align-items: stretch !important;
-      gap: 10px !important;
-    }
-    .jl-page.fw-jl-cat-feed .fmp-search-dd-wrap {
-      flex: 1 !important;
-      min-width: 0 !important;
-    }
-    .jl-page.fw-jl-cat-feed .fmp-topbar-btn {
-      width: auto !important;
-      min-width: 84px !important;
-      flex-shrink: 0 !important;
-      min-height: 48px !important;
-      border-radius: 12px !important;
-      font-size: 15px !important;
-      font-weight: 800 !important;
-    }
     .fmp-hero-body {
       padding-left: max(16px, env(safe-area-inset-left));
       padding-right: max(16px, env(safe-area-inset-right));
@@ -1236,7 +1216,6 @@ export default function FindMasterPage() {
   const navigate  = useNavigate();
   const { categorySlug } = useParams();
   const { userId } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
 
   const [categories,  setCategories]  = useState([]);
   const [services,    setServices]    = useState([]);
@@ -1331,29 +1310,13 @@ export default function FindMasterPage() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const applyCategorySearch = useCallback(
-    (value) => {
-      const q = (value !== undefined ? String(value) : searchInput).trim();
-      setSearchInput(q);
-      setSearchTerm(q);
-      setFmpSearchFocused(false);
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (q) next.set('q', q);
-          else next.delete('q');
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [searchInput, setSearchParams],
-  );
-
   useEffect(() => {
-    if (!categorySlug) return;
-    setSearchTerm(debouncedSearchInput);
-  }, [debouncedSearchInput, categorySlug]);
+    if (!selectedCategory) return;
+    const q = debouncedSearchInput.trim();
+    if (q.length === 0 || q.length >= 2) {
+      setSearchTerm(q);
+    }
+  }, [debouncedSearchInput, selectedCategory]);
 
   useEffect(() => {
     if (!fmpSearchFocused) return;
@@ -1412,6 +1375,7 @@ export default function FindMasterPage() {
 
   useSameRouteRefetch('/find-master', reloadCatalog);
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const urlQ = (searchParams.get('q') || '').trim();
 
   useEffect(() => {
@@ -1685,8 +1649,17 @@ export default function FindMasterPage() {
   const hasFilters = !showActive || onlyVerified || onlyWithPhoto || priceMin || priceMax || ratingMin > 0 || searchTerm;
 
   return (
-    <div className="jl-page fw-jl-cat-feed">
+    <div className={`jl-page fw-jl-cat-feed${showFmpSearchDd ? ' cat-feed-search-active' : ''}`}>
       <style>{css}</style>
+
+      {showFmpSearchDd ? (
+        <button
+          type="button"
+          className="cat-feed-search-backdrop"
+          aria-label="Закрыть поиск"
+          onClick={() => setFmpSearchFocused(false)}
+        />
+      ) : null}
 
       {/* Топ-бар поиска */}
       <div className="fmp-topbar">
@@ -1702,8 +1675,8 @@ export default function FindMasterPage() {
                 onFocus={() => setFmpSearchFocused(true)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    e.preventDefault();
-                    applyCategorySearch(searchInput);
+                    setFmpSearchFocused(false);
+                    setSearchTerm(searchInput);
                   }
                 }}
                 placeholder={`Поиск в «${selectedCategory?.name || '...'}»`}
@@ -1712,12 +1685,8 @@ export default function FindMasterPage() {
                 aria-controls="fmp-search-dropdown-list"
               />
               {searchInput && (
-                <button
-                  type="button"
-                  onClick={() => applyCategorySearch('')}
-                  style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#bbb', fontSize: 18, lineHeight: 1, padding: 0 }}
-                  aria-label="Очистить поиск"
-                >
+                <button type="button" onClick={() => { setSearchInput(''); setSearchTerm(''); }}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#bbb', fontSize: 18, lineHeight: 1, padding: 0 }}>
                   ×
                 </button>
               )}
@@ -1759,7 +1728,10 @@ export default function FindMasterPage() {
                     <button
                       type="button"
                       className="fmp-search-footer"
-                      onClick={() => applyCategorySearch(debouncedSearchInput)}
+                      onClick={() => {
+                        setSearchTerm(debouncedSearchInput);
+                        setFmpSearchFocused(false);
+                      }}
                     >
                       Показать все совпадения в списке →
                     </button>
@@ -1768,9 +1740,7 @@ export default function FindMasterPage() {
               </div>
             )}
           </div>
-          <button type="button" className="fmp-topbar-btn" onClick={() => applyCategorySearch(searchInput)}>
-            Найти
-          </button>
+          <button type="button" className="fmp-topbar-btn" onClick={() => { setFmpSearchFocused(false); setSearchTerm(searchInput); }}>Найти</button>
         </div>
       </div>
 
@@ -1853,21 +1823,6 @@ export default function FindMasterPage() {
           </aside>
 
           <main>
-            {qSearch ? (
-              <div className="jl-search-active" role="status">
-                <span>
-                  Поиск: <strong>«{qSearch}»</strong>
-                </span>
-                <span>
-                  {visible.length}{' '}
-                  {visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}
-                </span>
-                <button type="button" className="jl-search-active-clear" onClick={() => applyCategorySearch('')}>
-                  Сбросить
-                </button>
-              </div>
-            ) : null}
-
             <div className="jl-toolbar">
               <span className="jl-toolbar-label">Сортировать:</span>
               {[

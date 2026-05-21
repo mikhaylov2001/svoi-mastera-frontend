@@ -6,7 +6,7 @@
 @media (max-width: 768px) {
   :root {
     /* Боковой отступ как на макете (~12–16px), без двойного padding у .ed */
-    --catalog-mobile-gutter: 12px;
+    --catalog-mobile-gutter: 16px;
     --catalog-mobile-card-radius: 24px;
   }
 
@@ -256,10 +256,8 @@
     width: 100%;
     max-width: 100%;
     margin: 0;
-    padding-top: 16px !important;
-    padding-bottom: 8px !important;
-    padding-left: max(var(--catalog-mobile-gutter), env(safe-area-inset-left)) !important;
-    padding-right: max(var(--catalog-mobile-gutter), env(safe-area-inset-right)) !important;
+    padding: 16px max(var(--catalog-mobile-gutter), env(safe-area-inset-right)) 20px
+      max(var(--catalog-mobile-gutter), env(safe-area-inset-left)) !important;
     box-sizing: border-box;
   }
 
@@ -270,38 +268,61 @@
     max-width: 100%;
   }
 
-  /* Поиск сверху — в одну строку (поле + «Найти»), как на макете */
+  /* Поиск: на всю ширину экрана, кнопка под полем */
   .jl-page.fw-jl-cat-feed .fmp-topbar,
   .jl-page.fw-jl-cat-feed .fw2-topbar {
     background: #fff;
     border-bottom: 1px solid #e8e8e8;
-    padding: 14px 0;
+    padding: 0;
+    position: relative;
+    z-index: 1600;
   }
 
   .jl-page.fw-jl-cat-feed .fmp-topbar-inner,
   .jl-page.fw-jl-cat-feed .fw2-topbar-inner {
-    flex-direction: row !important;
-    align-items: stretch;
-    gap: 10px;
-    padding: 0 max(var(--catalog-mobile-gutter), env(safe-area-inset-right)) 0
-      max(var(--catalog-mobile-gutter), env(safe-area-inset-left));
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 14px max(var(--catalog-mobile-gutter), env(safe-area-inset-right)) 14px
+      max(var(--catalog-mobile-gutter), env(safe-area-inset-left)) !important;
     max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  .jl-page.fw-jl-cat-feed .fmp-search-dd-wrap {
-    flex: 1;
+  .jl-page.fw-jl-cat-feed .fmp-search-dd-wrap,
+  .jl-page.fw-jl-cat-feed .fw2-search-dd-wrap {
+    width: 100% !important;
+    flex: none !important;
     min-width: 0;
+  }
+
+  .jl-page.fw-jl-cat-feed .fmp-search-wrap,
+  .jl-page.fw-jl-cat-feed .fw2-search-wrap {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 14px;
+    padding: 0 14px;
+    min-height: 52px;
+    border-width: 1.5px;
+  }
+
+  .jl-page.fw-jl-cat-feed .fmp-search-wrap input,
+  .jl-page.fw-jl-cat-feed .fw2-search-wrap input {
+    padding: 14px 0;
+    font-size: 16px;
+    width: 100%;
   }
 
   .jl-page.fw-jl-cat-feed .fmp-topbar-btn,
   .jl-page.fw-jl-cat-feed .fw2-topbar-btn {
-    width: auto !important;
-    min-width: 84px;
+    width: 100% !important;
+    min-width: 0 !important;
     flex-shrink: 0;
-    min-height: 48px;
+    min-height: 52px;
     padding: 0 18px;
-    border-radius: 12px;
-    font-size: 15px;
+    border-radius: 14px;
+    font-size: 16px;
     font-weight: 800;
     background: #e8410a;
     color: #fff;
@@ -312,18 +333,31 @@
     justify-content: center;
   }
 
-  .jl-page.fw-jl-cat-feed .fmp-search-wrap,
-  .jl-page.fw-jl-cat-feed .fw2-search-wrap {
-    border-radius: 12px;
-    padding: 0 12px;
-    min-height: 48px;
-    border-width: 1px;
+  .jl-page.fw-jl-cat-feed .cat-feed-search-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 1500;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: default;
   }
 
-  .jl-page.fw-jl-cat-feed .fmp-search-wrap input,
-  .jl-page.fw-jl-cat-feed .fw2-search-wrap input {
-    padding: 12px 0;
-    font-size: 16px;
+  .jl-page.fw-jl-cat-feed .fmp-search-dropdown,
+  .jl-page.fw-jl-cat-feed .fw2-search-dropdown {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
+    max-height: min(72vh, calc(100dvh - 120px)) !important;
+    border-radius: 20px 20px 0 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    z-index: 1700 !important;
+    box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.18) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   /* Сначала фильтры, потом лента (как в макете) */
@@ -473,10 +507,10 @@
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
-    gap: 8px;
+    gap: 6px;
     font-size: 13px;
-    line-height: 1.4;
-    margin: 0 0 18px;
+    line-height: 1.35;
+    margin: 0 0 20px;
     width: 100%;
     color: #9ca3af;
     overflow-x: auto;
@@ -516,38 +550,6 @@
   }
 
   /* Сортировка — компактные чипы в одну линию */
-  .jl-page.fw-jl-cat-feed .jl-search-active {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px 12px;
-    margin: 0 0 14px;
-    padding: 12px 14px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    font-size: 14px;
-    color: #374151;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-  }
-
-  .jl-page.fw-jl-cat-feed .jl-search-active strong {
-    color: #111827;
-    font-weight: 800;
-  }
-
-  .jl-page.fw-jl-cat-feed .jl-search-active-clear {
-    margin-left: auto;
-    border: none;
-    background: none;
-    color: #e8410a;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    padding: 0;
-  }
-
   .jl-page.fw-jl-cat-feed .jl-toolbar {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -555,7 +557,7 @@
     scrollbar-width: none;
     gap: 6px;
     padding-bottom: 4px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     align-items: center;
   }
 

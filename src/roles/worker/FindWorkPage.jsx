@@ -1124,34 +1124,12 @@ export default function FindWorkPage() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const applyFwCategorySearch = useCallback(
-    (value) => {
-      const q = (value !== undefined ? String(value) : searchInput).trim();
-      setSearchInput(q);
-      setSearchTerm(q);
-      setFwSearchFocused(false);
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (q) next.set('q', q);
-          else next.delete('q');
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [searchInput, setSearchParams],
-  );
-
-  useEffect(() => {
-    const q = (searchParams.get('q') || '').trim();
-    setSearchInput(q);
-    setSearchTerm(q);
-  }, [searchParams]);
-
   useEffect(() => {
     if (!selectedCategory) return;
-    setSearchTerm(debouncedFwSearch);
+    const q = debouncedFwSearch.trim();
+    if (q.length === 0 || q.length >= 2) {
+      setSearchTerm(q);
+    }
   }, [debouncedFwSearch, selectedCategory]);
 
   useEffect(() => {
@@ -1360,22 +1338,10 @@ export default function FindWorkPage() {
   };
 
   const resetCategoryFilters = useCallback(() => {
-    setSearchInput('');
-    setSearchTerm('');
-    setPriceMin('');
-    setPriceMax('');
-    setOnlyWithPhoto(false);
-    setSortBy('recency');
-    setRatingMin(0);
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        next.delete('q');
-        return next;
-      },
-      { replace: true },
-    );
-  }, [setSearchParams]);
+    setSearchInput(''); setSearchTerm('');
+    setPriceMin(''); setPriceMax('');
+    setOnlyWithPhoto(false); setSortBy('recency'); setRatingMin(0);
+  }, []);
 
   // ═══ ЭКРАН 3: детальная заявка (вёрстка jd-* из jobListings.css) ═══
   if (selectedRequest) {
@@ -1824,8 +1790,17 @@ export default function FindWorkPage() {
     const hasFilters = onlyWithPhoto || priceMin || priceMax || searchTerm || ratingMin > 0;
 
     return (
-      <div className="jl-page fw-jl-cat-feed">
+      <div className={`jl-page fw-jl-cat-feed${showFwSearchDd ? ' cat-feed-search-active' : ''}`}>
         <style>{fw2css}</style>
+
+        {showFwSearchDd ? (
+          <button
+            type="button"
+            className="cat-feed-search-backdrop"
+            aria-label="Закрыть поиск"
+            onClick={() => setFwSearchFocused(false)}
+          />
+        ) : null}
 
         {/* Топ-бар поиска */}
         <div className="fw2-topbar">
@@ -1841,8 +1816,8 @@ export default function FindWorkPage() {
                   onFocus={() => setFwSearchFocused(true)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      e.preventDefault();
-                      applyFwCategorySearch(searchInput);
+                      setFwSearchFocused(false);
+                      setSearchTerm(searchInput);
                     }
                   }}
                   placeholder={`Поиск в «${selectedCategory.name}»`}
@@ -1851,12 +1826,8 @@ export default function FindWorkPage() {
                   aria-controls="fw2-search-dropdown-list"
                 />
                 {searchInput && (
-                  <button
-                    type="button"
-                    onClick={() => applyFwCategorySearch('')}
-                    style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#bbb', fontSize: 18, lineHeight: 1, padding: 0 }}
-                    aria-label="Очистить поиск"
-                  >
+                  <button type="button" onClick={() => { setSearchInput(''); setSearchTerm(''); }}
+                    style={{ border:'none', background:'none', cursor:'pointer', color:'#bbb', fontSize:18, lineHeight:1, padding:0 }}>
                     ×
                   </button>
                 )}
@@ -1899,7 +1870,10 @@ export default function FindWorkPage() {
                       <button
                         type="button"
                         className="fw2-search-footer"
-                        onClick={() => applyFwCategorySearch(debouncedFwSearch)}
+                        onClick={() => {
+                          setSearchTerm(debouncedFwSearch);
+                          setFwSearchFocused(false);
+                        }}
                       >
                         Показать все совпадения в списке →
                       </button>
@@ -1908,9 +1882,7 @@ export default function FindWorkPage() {
                 </div>
               )}
             </div>
-            <button type="button" className="fw2-topbar-btn" onClick={() => applyFwCategorySearch(searchInput)}>
-              Найти
-            </button>
+            <button type="button" className="fw2-topbar-btn" onClick={() => { setFwSearchFocused(false); setSearchTerm(searchInput); }}>Найти</button>
           </div>
         </div>
 
@@ -1996,18 +1968,6 @@ export default function FindWorkPage() {
           </aside>
 
           <main>
-            {qFw ? (
-              <div className="jl-search-active" role="status">
-                <span>
-                  Поиск: <strong>«{qFw}»</strong>
-                </span>
-                <span>{pluralRequests(filtered.length)}</span>
-                <button type="button" className="jl-search-active-clear" onClick={() => applyFwCategorySearch('')}>
-                  Сбросить
-                </button>
-              </div>
-            ) : null}
-
             <div className="jl-toolbar">
               <span className="jl-toolbar-label">Сортировать:</span>
               {[
