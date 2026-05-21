@@ -228,21 +228,24 @@
   min-width: 0;
 }
 
-.pw-tabs {
+/* Табы: серая линия + оранжевый индикатор у активного (::after — не сбивается reset кнопок) */
+.pw-page .pw-tabs {
   display: flex;
   align-items: flex-end;
   gap: 0;
   border-bottom: 1px solid #e5e7eb;
   margin-bottom: 20px;
+  width: 100%;
 }
 
-.pw-tab {
+.pw-page .pw-tab {
+  position: relative;
   background: none;
   border: none;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -1px;
-  padding: 12px 4px 10px;
-  margin-right: 20px;
+  outline: none;
+  box-shadow: none;
+  margin: 0 20px 0 0;
+  padding: 12px 2px 11px;
   cursor: pointer;
   font-size: 15px;
   font-weight: 700;
@@ -252,40 +255,58 @@
   align-items: baseline;
   gap: 6px;
   white-space: nowrap;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.pw-tab:last-child {
+.pw-page .pw-tab:last-child {
   margin-right: 0;
 }
 
-.pw-tab:hover:not(.active) {
+.pw-page .pw-tab::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 0;
+  background: #e8410a;
+  border-radius: 2px 2px 0 0;
+  transition: height 0.15s;
+}
+
+.pw-page .pw-tab:hover:not(.active) {
   color: #555;
 }
 
-.pw-tab.active {
+.pw-page .pw-tab.active {
   color: #e8410a;
-  border-bottom-color: #e8410a;
 }
 
-.pw-tab-count {
+.pw-page .pw-tab.active::after {
+  height: 3px;
+}
+
+.pw-page .pw-tab-count {
   font-size: 15px;
   font-weight: 700;
   color: #888;
   line-height: 1;
 }
 
-/* Сетка карточек 2×2 (профиль мастера / заказчика) */
-.pw-listings-grid,
-.pw-grid {
+/* Сетка карточек 2×2 — и на мобиле (макет Base44) */
+.pw-page .pw-listings-grid,
+.pw-page .pw-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 24px;
+  width: 100%;
 }
 
-.pw-listing-card,
-.pw-grid .pw-card {
+.pw-page .pw-listing-card,
+.pw-page .pw-grid .pw-card {
   background: #fff;
   border: 1px solid #efe8e4;
   border-radius: 24px;
@@ -296,8 +317,8 @@
   min-width: 0;
 }
 
-.pw-listing-card:hover,
-.pw-grid .pw-card:hover {
+.pw-page .pw-listing-card:hover,
+.pw-page .pw-grid .pw-card:hover {
   border-color: #f0d4c8;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
 }
@@ -814,9 +835,24 @@
 }
 
 @media (max-width: 640px) {
-  .pw-listings-grid,
-  .pw-grid {
-    grid-template-columns: 1fr;
+  .pw-page .pw-listings-grid,
+  .pw-page .pw-grid {
+    gap: 8px;
+  }
+
+  .pw-page .pw-listing-body,
+  .pw-page .pw-card-body {
+    padding: 10px 10px 12px;
+  }
+
+  .pw-page .pw-listing-title,
+  .pw-page .pw-card-title {
+    font-size: 13px;
+  }
+
+  .pw-page .pw-tab {
+    font-size: 14px;
+    margin-right: 16px;
   }
 
   .pw-rating-block {

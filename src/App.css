@@ -2,6 +2,7 @@
 @import './mobile.css';
 @import './styles/catalogMobile.css';
 @import './styles/listingDetailSurface.css';
+@import './styles/publicProfilePage.css';
 
 :root {
   --primary: #e8410a; --primary-light: #fff5f2; --primary-mid: #ffcfc2;
