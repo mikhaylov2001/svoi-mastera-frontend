@@ -1886,8 +1886,7 @@ export default function FindWorkPage() {
           </div>
         </div>
 
-        <div className="jl-wrap">
-        <div className="jl-crumbs">
+        <nav className="jl-crumbs jl-crumbs--full" aria-label="Навигация по категориям">
           <button type="button" className="jl-crumbs-link" onClick={() => { setSelectedCategory(null); resetCategoryFilters(); }}>Все категории</button>
           <span className="sep">›</span>
           <span className="cur">{selectedCategory.name}</span>
@@ -1897,8 +1896,9 @@ export default function FindWorkPage() {
               <span>{pluralRequests(filtered.length)}</span>
             </>
           )}
-        </div>
+        </nav>
 
+        <div className="jl-wrap">
         <div className="jl-layout">
 
           <aside className="jl-side">

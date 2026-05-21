@@ -261,6 +261,32 @@
     box-sizing: border-box;
   }
 
+  /* Крошки — полоса на всю ширину экрана (как поиск) */
+  .jl-page.fw-jl-cat-feed .jl-crumbs.jl-crumbs--full {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 14px max(var(--catalog-mobile-gutter), env(safe-area-inset-right)) 14px
+      max(var(--catalog-mobile-gutter), env(safe-area-inset-left));
+    box-sizing: border-box;
+    background: #fff;
+    border-bottom: 1px solid #e8e8e8;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #9ca3af;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-crumbs.jl-crumbs--full::-webkit-scrollbar {
+    display: none;
+  }
+
   .jl-page.fw-jl-cat-feed .jl-layout,
   .jl-page.fw-jl-cat-feed .jl-layout > main,
   .jl-page.fw-jl-cat-feed .jl-list.jl-feed-list {
@@ -502,47 +528,32 @@
     font-weight: 600;
   }
 
-  /* Крошки: одна строка на всю ширину, как на макете */
-  .jl-page.fw-jl-cat-feed .jl-crumbs {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    gap: 6px;
-    font-size: 13px;
-    line-height: 1.35;
-    margin: 0 0 20px;
-    width: 100%;
-    color: #9ca3af;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .jl-page.fw-jl-cat-feed .jl-crumbs::-webkit-scrollbar {
-    display: none;
-  }
-
   .jl-page.fw-jl-cat-feed .jl-crumbs a,
-  .jl-page.fw-jl-cat-feed .jl-crumbs .jl-crumbs-link {
+  .jl-page.fw-jl-cat-feed .jl-crumbs .jl-crumbs-link,
+  .jl-page.fw-jl-cat-feed .jl-crumbs.jl-crumbs--full a,
+  .jl-page.fw-jl-cat-feed .jl-crumbs.jl-crumbs--full .jl-crumbs-link {
     color: #9ca3af;
     font-weight: 500;
     flex-shrink: 0;
     text-decoration: none;
   }
 
-  .jl-page.fw-jl-cat-feed .jl-crumbs .cur {
+  .jl-page.fw-jl-cat-feed .jl-crumbs .cur,
+  .jl-page.fw-jl-cat-feed .jl-crumbs.jl-crumbs--full .cur {
     font-weight: 700;
     color: #111827;
     flex-shrink: 0;
   }
 
-  .jl-page.fw-jl-cat-feed .jl-crumbs .sep {
+  .jl-page.fw-jl-cat-feed .jl-crumbs .sep,
+  .jl-page.fw-jl-cat-feed .jl-crumbs.jl-crumbs--full .sep {
     color: #d1d5db;
     flex-shrink: 0;
     font-size: 11px;
   }
 
-  .jl-page.fw-jl-cat-feed .jl-crumbs > span:not(.sep):not(.cur) {
+  .jl-page.fw-jl-cat-feed .jl-crumbs > span:not(.sep):not(.cur),
+  .jl-page.fw-jl-cat-feed .jl-crumbs.jl-crumbs--full > span:not(.sep):not(.cur) {
     color: #9ca3af;
     font-weight: 500;
     flex-shrink: 0;

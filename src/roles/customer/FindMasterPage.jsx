@@ -1744,19 +1744,21 @@ export default function FindMasterPage() {
         </div>
       </div>
 
-      <div className="jl-wrap">
-        <div className="jl-crumbs">
-          <Link to="/find-master" className="jl-crumbs-link">Все категории</Link>
-          <span className="sep">›</span>
-          <span className="cur">{selectedCategory?.name}</span>
-          {!loading && (
-            <>
-              <span className="sep">·</span>
-              <span>{visible.length} {visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}</span>
-            </>
-          )}
-        </div>
+      <nav className="jl-crumbs jl-crumbs--full" aria-label="Навигация по категориям">
+        <Link to="/find-master" className="jl-crumbs-link">Все категории</Link>
+        <span className="sep">›</span>
+        <span className="cur">{selectedCategory?.name}</span>
+        {!loading && (
+          <>
+            <span className="sep">·</span>
+            <span>
+              {visible.length} {visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}
+            </span>
+          </>
+        )}
+      </nav>
 
+      <div className="jl-wrap">
         <div className="jl-layout">
           <aside className="jl-side">
             <div className="jl-cat-cover">
