@@ -914,15 +914,16 @@ a.jd-btn.jd-btn-ghost {
 }
 .jl-side-card {
   background: #fff;
-  border: 1px solid #ececec;
-  border-radius: 14px;
-  padding: 14px 16px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
-  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+  border: 1px solid #ebebeb;
+  border-radius: 20px;
+  padding: 18px 16px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
-.jl-side-card:hover {
-  border-color: #f0d4c8;
-  box-shadow: 0 6px 18px rgba(232, 65, 10, 0.08);
+@media (hover: hover) {
+  .jl-side-card:hover {
+    border-color: #ebebeb;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  }
 }
 .jl-side-title {
   font-size: 14px;

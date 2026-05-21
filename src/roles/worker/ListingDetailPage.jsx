@@ -21,7 +21,6 @@ import {
   getCategorySlugFromLabel,
 } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
-import { formatListingPriceLabel, formatListingPriceParts } from '../../utils/formatListingPrice';
 import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../../constants/homePaths';
 
 const BACKEND_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, '');
@@ -324,9 +323,8 @@ export default function ListingDetailPage() {
   const priceMainLine = priceHasAmount
     ? `${priceNum.toLocaleString('ru-RU')}`
     : listing.priceUnit || 'Договорная';
-  const priceParts = formatListingPriceParts(priceNum, priceUnitTrim);
   const priceSubLine = priceHasAmount
-    ? `${priceUnitTrim && !priceUnitTrim.startsWith('₽') ? priceUnitTrim : 'за работу'} · оплата по договорённости`
+    ? `${priceUnitTrim || 'за работу'} · оплата по договорённости`
     : listing.priceUnit || null;
 
   const pubStr = listing.createdAt
@@ -603,7 +601,7 @@ export default function ListingDetailPage() {
                   listing.category && ['Категория', listing.category],
                   ['Город', listingCity],
                   ['Адрес', addressLine],
-                  priceHasAmount && ['Стоимость', formatListingPriceLabel(priceNum, priceUnitTrim)],
+                  priceHasAmount && ['Стоимость', `${priceMainLine} ₽${priceUnitTrim ? ` ${priceUnitTrim}` : ''}`],
                   !priceHasAmount && listing.priceUnit && ['Стоимость', listing.priceUnit],
                   listing.createdAt && ['Опубликована', timeAgo(listing.createdAt) || pubStr],
                 ]
@@ -623,10 +621,8 @@ export default function ListingDetailPage() {
               <div className="ed-eyebrow">Стоимость</div>
               {priceHasAmount ? (
                 <div className="ed-price-num">
-                  <span className="ed-price-amount">{priceParts.main}</span>
-                  {priceParts.suffix ? (
-                    <small className="ed-price-suffix"> {priceParts.suffix}</small>
-                  ) : null}
+                  {priceMainLine}
+                  <small> ₽</small>
                 </div>
               ) : (
                 <div className="ed-price-num" style={{ fontSize: 22, fontWeight: 700 }}>
@@ -662,7 +658,7 @@ export default function ListingDetailPage() {
                         </div>
                       )}
                       <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-msg-btn">
-                        Написать сообщение
+                        Написать в чат
                       </Link>
                       <button type="button" className="ed-link-deals" onClick={() => navigate('/deals')}>
                         Перейти к сделкам →
@@ -676,10 +672,10 @@ export default function ListingDetailPage() {
                         onClick={handleAcceptWork}
                         disabled={accepting}
                       >
-                        {accepting ? 'Отправляем…' : 'Откликнуться'}
+                        {accepting ? 'Отправляем…' : 'Принять мастера'}
                       </button>
                       <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-btn ed-btn-ghost">
-                        Написать сообщение
+                        Написать в чат
                       </Link>
                     </>
                   )}
@@ -785,12 +781,12 @@ export default function ListingDetailPage() {
                     {listing.workerAvatar?.length > 10 ? (
                       <img src={listing.workerAvatar} alt="" />
                     ) : (
-                      <div className="ed-ava-fallback neutral">{initials}</div>
+                      <div className="ed-ava-fallback">{initials}</div>
                     )}
                   </div>
                   <div className="ed-cust-info">
                     <div className="ed-cust-name">{workerName}</div>
-                    <div className="ed-cust-meta">Активный мастер</div>
+                    <div className="ed-cust-meta ed-cust-meta--active">Активный мастер</div>
                   </div>
                   <div className="ed-cust-arrow">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -799,7 +795,7 @@ export default function ListingDetailPage() {
                   </div>
                 </div>
                 <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-msg-btn">
-                  Написать мастеру
+                  Написать в чат
                 </Link>
               </div>
             )}

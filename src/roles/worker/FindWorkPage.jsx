@@ -1600,7 +1600,7 @@ export default function FindWorkPage() {
                     </button>
                     {req.customerId ? (
                       <Link to={`/chat/${req.customerId}?jobRequestId=${req.id}`} className="ed-btn ed-btn-ghost">
-                        Написать сообщение
+                        Написать в чат
                       </Link>
                     ) : null}
                   </div>
@@ -1623,12 +1623,12 @@ export default function FindWorkPage() {
                           </div>
                         ) : (
                           <div className="ed-ava">
-                            <div className="ed-ava-fallback neutral">{(custNameFull[0] || '?').toUpperCase()}</div>
+                            <div className="ed-ava-fallback">{(custNameFull[0] || '?').toUpperCase()}</div>
                           </div>
                         )}
                         <div className="ed-cust-info">
                           <div className="ed-cust-name">{custNameFull}</div>
-                          <div className="ed-cust-meta">Активный заказчик</div>
+                          <div className="ed-cust-meta ed-cust-meta--active">Активный заказчик</div>
                         </div>
                         <div className="ed-cust-arrow">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -1639,17 +1639,17 @@ export default function FindWorkPage() {
                     ) : (
                       <div className="ed-cust-row" style={{ cursor: 'default', pointerEvents: 'none' }}>
                         <div className="ed-ava">
-                          <div className="ed-ava-fallback neutral">{(custNameFull[0] || '?').toUpperCase()}</div>
+                          <div className="ed-ava-fallback">{(custNameFull[0] || '?').toUpperCase()}</div>
                         </div>
                         <div className="ed-cust-info">
                           <div className="ed-cust-name">{custNameFull}</div>
-                          <div className="ed-cust-meta">Активный заказчик</div>
+                          <div className="ed-cust-meta ed-cust-meta--active">Активный заказчик</div>
                         </div>
                       </div>
                     )}
                     {req.customerId ? (
                       <Link to={`/chat/${req.customerId}?jobRequestId=${req.id}`} className="ed-msg-btn">
-                        Написать заказчику
+                        Написать в чат
                       </Link>
                     ) : null}
                   </div>
@@ -1821,7 +1821,7 @@ export default function FindWorkPage() {
           {!loading && (
             <>
               <span className="sep">·</span>
-              <span className="jl-crumbs-meta">{pluralRequests(filtered.length)}</span>
+              <span>{pluralRequests(filtered.length)}</span>
             </>
           )}
         </div>
