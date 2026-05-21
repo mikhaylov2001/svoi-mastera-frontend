@@ -5,7 +5,9 @@
 
 @media (max-width: 768px) {
   :root {
-    --catalog-mobile-gutter: 10px;
+    /* Боковой отступ как на макете (~12–16px), без двойного padding у .ed */
+    --catalog-mobile-gutter: 12px;
+    --catalog-mobile-card-radius: 24px;
   }
 
   .app-main--catalog {
@@ -251,8 +253,18 @@
   }
 
   .jl-page.fw-jl-cat-feed .jl-wrap {
-    padding-left: max(var(--catalog-mobile-gutter), env(safe-area-inset-left));
-    padding-right: max(var(--catalog-mobile-gutter), env(safe-area-inset-right));
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding-left: max(var(--catalog-mobile-gutter), env(safe-area-inset-left)) !important;
+    padding-right: max(var(--catalog-mobile-gutter), env(safe-area-inset-right)) !important;
+    box-sizing: border-box;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-layout,
+  .jl-page.fw-jl-cat-feed .jl-layout > main,
+  .jl-page.fw-jl-cat-feed .jl-list.jl-feed-list {
+    width: 100%;
     max-width: 100%;
   }
 
@@ -336,9 +348,11 @@
   }
 
   .jl-page.fw-jl-cat-feed .jl-side-card {
+    width: 100%;
+    box-sizing: border-box;
     background: #fff;
     border: 1px solid #e5e7eb;
-    border-radius: 16px;
+    border-radius: var(--catalog-mobile-card-radius);
     padding: 20px;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
   }
@@ -547,12 +561,13 @@
     width: 100%;
   }
 
-  /* Карточка объявления / заявки (Base44) */
+  /* Карточка объявления / заявки (Base44) — почти на всю ширину */
   .jl-page.fw-jl-cat-feed .jl-bigcard {
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    border-radius: 16px;
+    box-sizing: border-box;
+    border-radius: var(--catalog-mobile-card-radius);
     border-color: #e5e7eb;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
   }
@@ -794,17 +809,28 @@
     margin-top: 8px;
   }
 
-  /* Деталь объявления — перебиваем inline dealsDetailEdCss */
+  /* Деталь объявления — перебиваем inline dealsDetailEdCss (.ed { padding: 24px }) */
   .ed.ed--listing-detail {
     font-family: Manrope, system-ui, sans-serif;
     background: #f5f5f5 !important;
+    padding: 0 !important;
+    min-height: 100vh;
   }
 
   .ed.ed--listing-detail .ed-card {
-    border-radius: 16px !important;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: var(--catalog-mobile-card-radius) !important;
     border: 1px solid #e5e7eb !important;
-    padding: 20px !important;
+    padding: 20px 24px !important;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07) !important;
+  }
+
+  .ed.ed--listing-detail .ed-col {
+    width: 100%;
+    max-width: 100%;
+    gap: 12px;
   }
 
   .ed.ed--listing-detail .ed-section-title {
@@ -879,19 +905,26 @@
   }
 
   .ed.ed--listing-detail .ed-wrap {
-    padding: 16px max(var(--catalog-mobile-gutter), env(safe-area-inset-right))
-      calc(28px + env(safe-area-inset-bottom, 0px)) max(var(--catalog-mobile-gutter), env(safe-area-inset-left));
+    width: 100%;
     max-width: 100%;
+    margin: 0;
+    padding: 12px max(var(--catalog-mobile-gutter), env(safe-area-inset-right))
+      calc(24px + env(safe-area-inset-bottom, 0px)) max(var(--catalog-mobile-gutter), env(safe-area-inset-left));
+    box-sizing: border-box;
   }
 
   /* Галерея и карточки на всю ширину колонки */
   .ed.ed--listing-detail .ed-gallery {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     background: #fff;
     border: 1px solid #e5e7eb;
-    border-radius: 16px;
+    border-radius: var(--catalog-mobile-card-radius);
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
-    margin-bottom: 16px;
+    margin-bottom: 12px;
+    padding: 0 !important;
   }
 
   .ed.ed--listing-detail .ed-gallery .ed-main {
@@ -951,7 +984,13 @@
   .ed.ed--listing-detail .ed-grid {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .ed.ed--listing-detail .ed-side > .ed-card {
+    border-radius: var(--catalog-mobile-card-radius) !important;
+    width: 100%;
   }
 
   .ed.ed--listing-detail .ed-col {
