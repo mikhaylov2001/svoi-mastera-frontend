@@ -315,11 +315,13 @@ export default function PublicCustomerProfilePage() {
           <div className="pw-main">
 
             <div className="pw-tabs">
-              <button type="button" className={`pw-tab${tab==='open'?' active':''}`} onClick={() => setTab('open')}>
-                Активные {openReqs.length > 0 && <span className="pw-tab-count">{openReqs.length}</span>}
+              <button type="button" className={`pw-tab${tab === 'open' ? ' active' : ''}`} onClick={() => setTab('open')}>
+                Активные
+                {openReqs.length > 0 ? <span className="pw-tab-count">{openReqs.length}</span> : null}
               </button>
-              <button type="button" className={`pw-tab${tab==='completed'?' active':''}`} onClick={() => setTab('completed')}>
-                Завершённые {completedCount > 0 && <span className="pw-tab-count">{completedCount}</span>}
+              <button type="button" className={`pw-tab${tab === 'completed' ? ' active' : ''}`} onClick={() => setTab('completed')}>
+                Завершённые
+                {completedCount > 0 ? <span className="pw-tab-count">{completedCount}</span> : null}
               </button>
             </div>
 

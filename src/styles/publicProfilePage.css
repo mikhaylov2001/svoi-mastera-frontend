@@ -230,6 +230,7 @@
 
 .pw-tabs {
   display: flex;
+  align-items: flex-end;
   gap: 0;
   border-bottom: 1px solid #e5e7eb;
   margin-bottom: 20px;
@@ -238,18 +239,28 @@
 .pw-tab {
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-bottom: 3px solid transparent;
   margin-bottom: -1px;
-  padding: 12px 4px;
+  padding: 12px 4px 10px;
   margin-right: 20px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #888;
   font-family: inherit;
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 6px;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.pw-tab:last-child {
+  margin-right: 0;
+}
+
+.pw-tab:hover:not(.active) {
+  color: #555;
 }
 
 .pw-tab.active {
@@ -258,17 +269,10 @@
 }
 
 .pw-tab-count {
-  font-size: 12px;
-  font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 999px;
-  background: #f3f4f6;
+  font-size: 15px;
+  font-weight: 700;
   color: #888;
-}
-
-.pw-tab.active .pw-tab-count {
-  background: #fff0ec;
-  color: #e8410a;
+  line-height: 1;
 }
 
 /* Сетка карточек 2×2 (профиль мастера / заказчика) */
