@@ -1311,14 +1311,6 @@ export default function FindMasterPage() {
   }, [searchInput]);
 
   useEffect(() => {
-    if (!selectedCategory) return;
-    const q = debouncedSearchInput.trim();
-    if (q.length === 0 || q.length >= 2) {
-      setSearchTerm(q);
-    }
-  }, [debouncedSearchInput, selectedCategory]);
-
-  useEffect(() => {
     if (!fmpSearchFocused) return;
     const onDoc = (e) => {
       if (fmpSearchDdRef.current && !fmpSearchDdRef.current.contains(e.target)) {
@@ -1385,6 +1377,14 @@ export default function FindMasterPage() {
   }, [searchParams]);
 
   const selectedCategory = categories.find(c => c.slug === categorySlug);
+
+  useEffect(() => {
+    if (!selectedCategory) return;
+    const q = debouncedSearchInput.trim();
+    if (q.length === 0 || q.length >= 2) {
+      setSearchTerm(q);
+    }
+  }, [debouncedSearchInput, selectedCategory]);
 
   const fmpDdMatches = useMemo(() => {
     if (!selectedCategory || !debouncedSearchInput || debouncedSearchInput.length < 2) return [];
