@@ -4,6 +4,10 @@
  */
 
 @media (max-width: 768px) {
+  :root {
+    --catalog-mobile-gutter: 10px;
+  }
+
   .app-main--catalog {
     overflow-x: hidden;
     min-height: auto;
@@ -247,8 +251,8 @@
   }
 
   .jl-page.fw-jl-cat-feed .jl-wrap {
-    padding-left: max(12px, env(safe-area-inset-left));
-    padding-right: max(12px, env(safe-area-inset-right));
+    padding-left: max(var(--catalog-mobile-gutter), env(safe-area-inset-left));
+    padding-right: max(var(--catalog-mobile-gutter), env(safe-area-inset-right));
     max-width: 100%;
   }
 
@@ -265,7 +269,8 @@
     flex-direction: row !important;
     align-items: stretch;
     gap: 10px;
-    padding: 0 max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
+    padding: 0 max(var(--catalog-mobile-gutter), env(safe-area-inset-right)) 0
+      max(var(--catalog-mobile-gutter), env(safe-area-inset-left));
     max-width: 100%;
   }
 
@@ -447,15 +452,16 @@
     font-weight: 600;
   }
 
-  /* Крошки: одна строка, как на макете */
+  /* Крошки: одна строка на всю ширину, как на макете */
   .jl-page.fw-jl-cat-feed .jl-crumbs {
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
     gap: 6px;
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.35;
-    margin-bottom: 10px;
+    margin: 0 0 12px;
+    width: 100%;
     color: #9ca3af;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -873,9 +879,46 @@
   }
 
   .ed.ed--listing-detail .ed-wrap {
-    padding-left: max(12px, env(safe-area-inset-left));
-    padding-right: max(12px, env(safe-area-inset-right));
-    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+    padding: 16px max(var(--catalog-mobile-gutter), env(safe-area-inset-right))
+      calc(28px + env(safe-area-inset-bottom, 0px)) max(var(--catalog-mobile-gutter), env(safe-area-inset-left));
+    max-width: 100%;
+  }
+
+  /* Галерея и карточки на всю ширину колонки */
+  .ed.ed--listing-detail .ed-gallery {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
+    margin-bottom: 16px;
+  }
+
+  .ed.ed--listing-detail .ed-gallery .ed-main {
+    border-radius: 0;
+  }
+
+  .ed.ed--listing-detail .ed-floats,
+  .ed.ed--listing-detail .ed-thumbs {
+    display: none !important;
+  }
+
+  .ed.ed--listing-detail .ed-head {
+    margin-bottom: 16px;
+  }
+
+  .ed.ed--listing-detail .ed-head-right .ed-status-pill {
+    display: none;
+  }
+
+  .ed.ed--listing-detail .ed-listing-meta {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 12px;
+  }
+
+  .ed.ed--listing-detail .ed-cust-arrow {
+    display: none;
   }
 
   .ed.ed--listing-detail .ed-back {

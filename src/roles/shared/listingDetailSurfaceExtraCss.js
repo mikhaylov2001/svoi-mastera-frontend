@@ -2,11 +2,11 @@
 export const listingDetailSurfaceExtraCss = `
 .ed--listing-detail {
   --surface-card-bg: #fff;
-  --surface-card-border: #e5e7eb;
-  --surface-card-radius: 16px;
-  --surface-card-shadow: 0 1px 3px rgba(15, 23, 42, 0.07);
-  --surface-card-pad-y: 20px;
-  --surface-card-pad-x: 20px;
+  --surface-card-border: #ebebeb;
+  --surface-card-radius: 20px;
+  --surface-card-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  --surface-card-pad-y: 18px;
+  --surface-card-pad-x: 16px;
   --surface-eyebrow: #9ca3af;
   --surface-accent: #e8410a;
   font-family: Manrope, system-ui, sans-serif;
@@ -43,17 +43,17 @@ export const listingDetailSurfaceExtraCss = `
   font-weight: 700;
   color: #111;
   line-height: 1.3;
-  text-transform: none;
   letter-spacing: normal;
+  text-transform: none;
 }
 
 .ed--listing-detail .ed-eyebrow,
 .ed--listing-detail .ed-eyebrow--block {
   display: block;
-  margin: 0 0 8px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--surface-eyebrow);
   line-height: 1.3;
