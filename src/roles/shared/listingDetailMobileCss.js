@@ -274,7 +274,7 @@ export const listingDetailMobileCss = `
   .ed.ed--listing-detail .ed-wrap {
     display: flex !important;
     flex-direction: column !important;
-    padding: 16px 16px calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 16px 16px calc(36px + env(safe-area-inset-bottom, 0px)) !important;
     gap: 0 !important;
   }
 
@@ -386,7 +386,48 @@ export const listingDetailMobileCss = `
   }
 
   .ed.ed--listing-detail .ed-card .ed-rows {
-    display: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    margin: 12px 0 0 !important;
+  }
+
+  .ed.ed--listing-detail .ed-card .ed-row {
+    display: grid !important;
+    grid-template-columns: minmax(88px, 38%) 1fr !important;
+    align-items: start !important;
+    gap: 8px 12px !important;
+    padding: 14px 0 !important;
+    border-top: 1px solid #f0f0f2 !important;
+    font-size: 14px !important;
+  }
+
+  .ed.ed--listing-detail .ed-card .ed-row:first-child {
+    border-top: none !important;
+    padding-top: 0 !important;
+  }
+
+  .ed.ed--listing-detail .ed-card .ed-row dt {
+    margin: 0 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #9ca3af !important;
+    line-height: 1.35 !important;
+  }
+
+  .ed.ed--listing-detail .ed-card .ed-row dd {
+    margin: 0 !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    text-align: right !important;
+    line-height: 1.4 !important;
+    max-width: none !important;
+    word-break: break-word !important;
+  }
+
+  .ed.ed--listing-detail .ed-col > .ed-card:has(.ed-rows) {
+    padding-bottom: 22px !important;
   }
 
   .ed.ed--listing-detail .ed-grid {
