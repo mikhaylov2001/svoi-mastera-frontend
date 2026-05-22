@@ -1229,20 +1229,21 @@ export default function MyListingsPage() {
                           className={`nl-photo${i === 0 ? ' main' : ''}`}
                           style={isDragging ? { borderColor: '#e8410a', background: '#fff5f2' } : undefined}
                         >
-                          <button type="button" className="nl-photo-add" onClick={() => photoRef.current?.click()}>
-                            {i === 0 ? (
-                              <>
-                                <span aria-hidden>📷</span>
-                                <span>Главное фото</span>
-                              </>
-                            ) : (
-                              <span className="plus">+</span>
-                            )}
+                          <button type="button" className="nl-photo-add" onClick={() => photoRef.current?.click()} aria-label="Добавить фото">
+                            <span className="plus">+</span>
                           </button>
                         </div>
                       );
                     })}
                   </div>
+                  <button
+                    type="button"
+                    className="nl-photo-add-explicit"
+                    disabled={photos.length >= 5}
+                    onClick={() => photoRef.current?.click()}
+                  >
+                    {photos.length >= 5 ? 'Максимум 5 фото' : 'Добавить фото'}
+                  </button>
                   <input
                     ref={photoRef}
                     type="file"
@@ -1254,7 +1255,7 @@ export default function MyListingsPage() {
                   <p className="nl-hint">
                     {photos.length > 0
                       ? `${photos.length}/5 фото · Нажмите на фото для просмотра`
-                      : 'Перетащите файлы сюда или кликните по ячейке · до 10 МБ'}
+                      : 'Перетащите файлы сюда или нажмите «Добавить фото» · до 10 МБ'}
                   </p>
                 </section>
 
