@@ -60,164 +60,165 @@ export const moOrdersListShellCss = `
   .mo-orders-root .mo-search input:focus { border-color: #ff5722; box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.12); }
   .mo-orders-root .mo-search svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #94a3b8; }
 
-  .mo-orders-root .mo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-  @media (max-width: 880px) { .mo-orders-root .mo-grid { grid-template-columns: 1fr; } }
+  /* alias Base44: mo-page */
+  .mo-orders-root.mo-page,
+  .mo-page.mo-orders-root { padding-bottom: 80px; background: #f5f5f7; }
 
-  /* —— Premium cabinet cards (desktop + mobile), без иконок в тегах/кнопках —— */
+  .mo-orders-root .mo-grid,
+  .mo-orders-root .listing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+  }
+  @media (max-width: 880px) {
+    .mo-orders-root .mo-grid,
+    .mo-orders-root .listing-grid { grid-template-columns: 1fr; gap: 18px; }
+  }
+
+  /* —— Cabinet cards (Base44 / moCabinetStyle), без иконок —— */
   .mo-orders-root .mo-card {
     background: #fff;
-    border: 1px solid #ececec;
-    border-radius: 20px;
+    border: 1px solid #ebebeb;
+    border-radius: 18px;
     overflow: hidden;
     position: relative;
-    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    transition: transform .2s ease, box-shadow .2s ease;
     display: flex;
     flex-direction: column;
     animation: mo-orders-fade .45s both;
     cursor: pointer;
-    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 2px 14px rgba(15, 23, 42, 0.06);
   }
-  @keyframes mo-orders-fade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @keyframes mo-orders-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   .mo-orders-root .mo-card:hover {
-    transform: translateY(-4px);
-    border-color: #ffd4bf;
-    box-shadow: 0 20px 44px -14px rgba(232, 65, 10, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.1);
   }
 
   .mo-orders-root .mo-card-media {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 10;
-    min-height: 168px;
-    background: #f1f5f9;
+    aspect-ratio: 5 / 4;
+    min-height: 176px;
+    background: #eef1f5;
     overflow: hidden;
   }
   @media (min-width: 769px) {
-    .mo-orders-root .mo-card-media { min-height: 200px; aspect-ratio: 16 / 9; }
+    .mo-orders-root .mo-card-media { min-height: 198px; }
   }
   .mo-orders-root .mo-card-media img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center center;
     display: block;
-    transition: transform .45s ease;
   }
-  .mo-orders-root .mo-card:hover .mo-card-media img { transform: scale(1.04); }
 
   .mo-orders-root .mo-card-status-on-img {
     position: absolute;
-    top: 12px;
-    left: 12px;
+    top: 10px;
+    left: 10px;
     z-index: 2;
-    padding: 6px 12px;
+    padding: 5px 11px;
     border-radius: 999px;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.01em;
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.2;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
   }
-  .mo-orders-root .mo-card-status-on-img.open { background: #dcfce7; color: #15803d; }
+  .mo-orders-root .mo-card-status-on-img.open { background: #e8f7ed; color: #16a34a; }
   .mo-orders-root .mo-card-status-on-img.wait { background: #fef9c3; color: #a16207; }
   .mo-orders-root .mo-card-status-on-img.work { background: #dbeafe; color: #1d4ed8; }
   .mo-orders-root .mo-card-status-on-img.neutral { background: #f1f5f9; color: #64748b; }
 
   .mo-orders-root .mo-card-urgent {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 10px;
+    right: 10px;
     z-index: 2;
-    background: linear-gradient(135deg, #ef4444, #f97316);
+    background: #ef4444;
     color: #fff;
     font-size: 11px;
-    font-weight: 800;
-    padding: 6px 10px;
+    font-weight: 700;
+    padding: 5px 10px;
     border-radius: 999px;
-    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45);
   }
 
   .mo-orders-root .mo-card-price-on-img {
     position: absolute;
-    right: 12px;
-    bottom: 12px;
+    right: 10px;
+    bottom: 10px;
     z-index: 2;
-    max-width: calc(100% - 24px);
-    padding: 8px 14px;
-    border-radius: 12px;
-    background: rgba(15, 23, 42, 0.78);
+    max-width: calc(100% - 20px);
+    padding: 7px 12px;
+    border-radius: 10px;
+    background: rgba(17, 24, 39, 0.72);
     color: #fff;
-    font-size: 13px;
-    font-weight: 800;
-    line-height: 1.25;
-    backdrop-filter: blur(6px);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
   }
 
   .mo-orders-root .mo-card-content {
-    padding: 16px 18px 0;
+    padding: 14px 16px 0;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     flex: 1;
     min-width: 0;
   }
 
   .mo-orders-root .mo-card-headline {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
   }
   .mo-orders-root .mo-card-title {
     margin: 0;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 800;
-    color: #0f172a;
+    color: #111827;
     letter-spacing: -0.02em;
-    line-height: 1.3;
+    line-height: 1.25;
     flex: 1;
     min-width: 0;
   }
   .mo-orders-root .mo-card-time {
     flex-shrink: 0;
     font-size: 12px;
-    font-weight: 600;
-    color: #94a3b8;
+    font-weight: 500;
+    color: #9ca3af;
     white-space: nowrap;
-    padding-top: 2px;
   }
 
   .mo-orders-root .mo-card-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
   }
   .mo-orders-root .mo-tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 5px 11px;
+    display: inline-block;
+    padding: 4px 10px;
     border-radius: 999px;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 11.5px;
+    font-weight: 600;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-  .mo-orders-root .mo-tag-cat.elec { background: #e0f2fe; color: #0e7490; }
-  .mo-orders-root .mo-tag-cat.plumb { background: #f1f5f9; color: #475569; }
-  .mo-orders-root .mo-tag-cat.beauty { background: #f3e8ff; color: #7c3aed; }
-  .mo-orders-root .mo-tag-cat.hair { background: #fef9c3; color: #a16207; }
-  .mo-orders-root .mo-tag-cat.repair { background: #fff2e6; color: #c2410c; }
-  .mo-orders-root .mo-tag-addr {
-    background: #fff1eb;
+    background: #fff4ed;
     color: #ea580c;
-    border: 1px solid #ffedd5;
+    border: none;
   }
 
   .mo-orders-root .mo-card-desc {
     margin: 0;
     font-size: 13px;
-    color: #64748b;
-    line-height: 1.5;
+    font-weight: 400;
+    color: #6b7280;
+    line-height: 1.45;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -225,72 +226,56 @@ export const moOrdersListShellCss = `
   }
 
   .mo-orders-root .mo-card-hint {
-    margin: 0;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: #94a3b8;
+    margin: 0 0 2px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #9ca3af;
     line-height: 1.4;
   }
-  .mo-orders-root .mo-card-hint strong { color: #f97316; font-weight: 800; }
 
   .mo-orders-root .mo-actions {
     display: flex;
     gap: 10px;
-    padding: 14px 18px 18px;
+    padding: 12px 16px 10px;
     margin-top: auto;
   }
   .mo-orders-root .mo-btn {
     flex: 1;
     border: none;
-    border-radius: 14px;
-    padding: 13px 16px;
+    border-radius: 12px;
+    padding: 12px 14px;
     font: inherit;
-    font-weight: 800;
+    font-weight: 700;
     font-size: 14px;
     cursor: pointer;
-    transition: transform .2s, box-shadow .2s, background .2s;
+    transition: background .15s, border-color .15s, color .15s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 46px;
+    min-height: 44px;
   }
   .mo-orders-root .mo-btn-primary {
-    background: linear-gradient(135deg, #ff5722, #ff7043);
+    background: #ff5722;
     color: #fff;
-    box-shadow: 0 8px 22px rgba(255, 87, 34, 0.35);
+    box-shadow: none;
   }
-  .mo-orders-root .mo-btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 12px 28px rgba(255, 87, 34, 0.45);
-  }
+  .mo-orders-root .mo-btn-primary:hover { background: #f4511e; }
   .mo-orders-root .mo-btn-secondary {
-    background: #f8fafc;
-    color: #ea580c;
-    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #ff5722;
+    border: 1.5px solid #e5e7eb;
   }
   .mo-orders-root .mo-btn-secondary:hover {
-    background: #fff7ed;
-    border-color: #fed7aa;
-    color: #c2410c;
+    background: #fffaf8;
+    border-color: #fdba74;
+    color: #ea580c;
   }
-  .mo-orders-root .mo-btn-ghost {
-    background: #fff;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
-    flex: 0 0 auto;
-    padding-left: 14px;
-    padding-right: 14px;
-    font-size: 13px;
-    font-weight: 700;
-    min-height: 46px;
-  }
-  .mo-orders-root .mo-btn-ghost:hover { background: #f8fafc; color: #0f172a; }
-  .mo-orders-root .mo-btn-ghost.copied { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
 
   .mo-orders-root .mo-card-tools {
     display: flex;
-    gap: 8px;
-    padding: 0 18px 12px;
+    align-items: center;
+    gap: 18px;
+    padding: 0 16px 14px;
     flex-wrap: wrap;
   }
   .mo-orders-root .mo-card-tool {
@@ -299,14 +284,15 @@ export const moOrdersListShellCss = `
     padding: 0;
     font: inherit;
     font-size: 12px;
-    font-weight: 700;
-    color: #64748b;
+    font-weight: 500;
+    color: #6b7280;
     cursor: pointer;
     text-decoration: underline;
-    text-underline-offset: 2px;
+    text-underline-offset: 3px;
+    text-decoration-color: #cbd5e1;
   }
-  .mo-orders-root .mo-card-tool:hover { color: #ea580c; }
-  .mo-orders-root .mo-card-tool.copied { color: #166534; }
+  .mo-orders-root .mo-card-tool:hover { color: #ff5722; text-decoration-color: #fdba74; }
+  .mo-orders-root .mo-card-tool.copied { color: #16a34a; text-decoration-color: #86efac; }
   .mo-orders-root .mo-card-tool:disabled { opacity: 0.5; cursor: wait; }
 
   /* legacy blocks — скрыты */

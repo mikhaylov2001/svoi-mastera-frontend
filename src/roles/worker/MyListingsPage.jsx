@@ -1908,7 +1908,7 @@ export default function MyListingsPage() {
 
   // ══ СПИСОК ══
   return (
-    <div className="ml-page ml-list-shell mo-orders-root">
+    <div className="ml-page ml-list-shell mo-orders-root mo-page">
       <style>{css}</style>
 
       <header className="mo-hero">
@@ -1945,7 +1945,7 @@ export default function MyListingsPage() {
         </div>
 
         {loading ? (
-          <div className="mo-grid">
+          <div className="mo-grid listing-grid">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="mo-card mo-card--sk" aria-hidden>
                 <div className="mo-card-media"><div className="ml-sk" style={{ width: '100%', height: '100%' }} /></div>
@@ -1984,12 +1984,11 @@ export default function MyListingsPage() {
             </div>
           </div>
         ) : (
-          <div className="mo-grid">
+          <div className="mo-grid listing-grid">
             {shownFiltered.map((l) => {
               const catName = l.category || '';
               const categoryPhoto = getCategoryPlaceholderPhotoUrlOrDefault({ category: l.category });
               const thumbSrc = l.photos?.length ? l.photos[0] : categoryPhoto;
-              const views = getListingViewsCount(l);
               const desc = (l.description && String(l.description).trim()) ? l.description : '';
               const locked = listingLockedAfterDeal(l);
               const statusOpen = !!(l.active && !locked);
@@ -2041,17 +2040,12 @@ export default function MyListingsPage() {
                     </div>
                     {(catName || addrLine) && (
                       <div className="mo-card-tags">
-                        {!!catName && (
-                          <span className={`mo-tag mo-tag-cat ${moCatClassFromLabel(catName)}`}>{catName}</span>
-                        )}
-                        {!!addrLine && <span className="mo-tag mo-tag-addr">{addrLine}</span>}
+                        {!!catName && <span className="mo-tag">{catName}</span>}
+                        {!!addrLine && <span className="mo-tag">{addrLine}</span>}
                       </div>
                     )}
                     {!!desc && <p className="mo-card-desc">{desc}</p>}
-                    <p className="mo-card-hint">
-                      {statusOpen ? 'Ждём заказчиков' : 'В архиве'}
-                      {views > 0 ? ` · ${views} просмотров` : ''}
-                    </p>
+                    <p className="mo-card-hint">{statusOpen ? 'Ждём заказчиков' : 'В архиве'}</p>
                   </div>
 
                   <div className="mo-actions" onClick={(e) => e.stopPropagation()}>

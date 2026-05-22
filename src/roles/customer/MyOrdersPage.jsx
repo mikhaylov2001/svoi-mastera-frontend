@@ -1958,7 +1958,7 @@ export default function MyOrdersPage() {
 
   // ══ СПИСОК ══
   return (
-    <div className="ml-page ml-list-shell mo-orders-root">
+    <div className="ml-page ml-list-shell mo-orders-root mo-page">
       <style>{css}</style>
 
       <header className="mo-hero">
@@ -1995,7 +1995,7 @@ export default function MyOrdersPage() {
         </div>
 
         {loading ? (
-          <div className="mo-grid">
+          <div className="mo-grid listing-grid order-grid">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="mo-card mo-card--sk" aria-hidden>
                 <div className="mo-card-media"><div className="ml-sk" style={{ width: '100%', height: '100%' }} /></div>
@@ -2034,7 +2034,7 @@ export default function MyOrdersPage() {
             </div>
           </div>
         ) : (
-          <div className="mo-grid">
+          <div className="mo-grid listing-grid order-grid">
             {shownFiltered.map((req) => {
               const catName = jobRequestCategoryLabel(req);
               const categoryPhoto = getCategoryPlaceholderPhotoUrlOrDefault(
@@ -2050,7 +2050,6 @@ export default function MyOrdersPage() {
               const stPillLabel = moCardStatusPillLabel(req.status);
               const budget = getJobRequestPublishedBudgetNumber(req);
               const offers = Number(req.offersCount) || 0;
-              const views = getJobRequestViewsCount(req);
               const desc = (req.description && req.description !== 'Без описания') ? req.description : '';
               const urgent = !!(req.urgent || req.isUrgent);
               const openDetail = (showOffers) => {
@@ -2068,10 +2067,14 @@ export default function MyOrdersPage() {
                 if (canEdit) openEdit(req, e);
                 else openDetail(false);
               };
-              const onOffers = (e) => {
+              const onDetailBtn = (e) => {
                 e.stopPropagation();
-                openDetail(true);
+                if (offers > 0) openDetail(true);
+                else openDetail(false);
               };
+              const hintText = offers > 0
+                ? `${offers} ${pluralOffers(offers)} · Мастера могут откликнуться`
+                : 'Ждём первый отклик';
               return (
                 <article
                   key={req.id}
@@ -2100,39 +2103,21 @@ export default function MyOrdersPage() {
                     </div>
                     {(catName || addrLine) && (
                       <div className="mo-card-tags">
-                        {!!catName && (
-                          <span className={`mo-tag mo-tag-cat ${moCatClassFromLabel(catName)}`}>{catName}</span>
-                        )}
-                        {!!addrLine && <span className="mo-tag mo-tag-addr">{addrLine}</span>}
+                        {!!catName && <span className="mo-tag">{catName}</span>}
+                        {!!addrLine && <span className="mo-tag">{addrLine}</span>}
                       </div>
                     )}
                     {!!desc && <p className="mo-card-desc">{desc}</p>}
-                    <p className="mo-card-hint">
-                      {offers > 0 ? (
-                        <>
-                          <strong>{offers} {pluralOffers(offers)}</strong>
-                          {' · Мастера могут откликнуться'}
-                        </>
-                      ) : (
-                        'Ждём первый отклик'
-                      )}
-                      {views > 0 ? ` · ${views} просмотров` : ''}
-                    </p>
+                    <p className="mo-card-hint">{hintText}</p>
                   </div>
 
                   <div className="mo-actions" onClick={(e) => e.stopPropagation()}>
                     <button type="button" className="mo-btn mo-btn-primary" onClick={onEdit}>
                       {canEdit ? 'Редактировать' : 'Открыть'}
                     </button>
-                    {offers > 0 ? (
-                      <button type="button" className="mo-btn mo-btn-secondary" onClick={onOffers}>
-                        {`Отклики ${offers}`}
-                      </button>
-                    ) : (
-                      <button type="button" className="mo-btn mo-btn-secondary" onClick={(e) => { e.stopPropagation(); openDetail(false); }}>
-                        Подробнее
-                      </button>
-                    )}
+                    <button type="button" className="mo-btn mo-btn-secondary" onClick={onDetailBtn}>
+                      Подробнее
+                    </button>
                   </div>
 
                   <div className="mo-card-tools" onClick={(e) => e.stopPropagation()}>
