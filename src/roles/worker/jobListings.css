@@ -192,14 +192,25 @@
 }
 .jd-main-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 @media (min-width: 769px) {
-  .jd-main-photo { display: block; }
-  .jd-main-photo img {
-    position: absolute;
-    inset: 0;
-    min-width: 100%;
-    min-height: 100%;
-    object-fit: cover;
-    object-position: center;
+  .jd-main-photo,
+  .jd-gallery-main {
+    display: block !important;
+    overflow: hidden;
+  }
+  .jd-main-photo > img,
+  .jd-gallery-main > img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    object-fit: cover !important;
+    object-position: center center;
+    display: block;
   }
 }
 .jd-nav-btn {

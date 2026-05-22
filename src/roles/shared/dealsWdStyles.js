@@ -1207,12 +1207,15 @@ export const listingDetailLightboxCss = `
   z-index: 11;
 }
 
-/* Десктоп: главное фото галереи на всю рамку (объявление, заявка, сделка) */
+/* Десктоп: главное фото галереи на всю рамку (объявление, заявка, сделка, каталог) */
 @media (min-width: 769px) {
   .ed-gallery .ed-main,
   .ed-main,
   .wd-detail-main,
-  .jd-main-photo {
+  .jd-main-photo,
+  .jd-gallery-main,
+  .mlf-preview-ph,
+  .nl-preview-img {
     position: relative;
     display: block !important;
     overflow: hidden;
@@ -1222,7 +1225,10 @@ export const listingDetailLightboxCss = `
   .ed-gallery .ed-main > img,
   .ed-main > img,
   .wd-detail-main > img,
-  .jd-main-photo > img {
+  .jd-main-photo > img,
+  .jd-gallery-main > img,
+  .mlf-preview-ph > img,
+  .nl-preview-img > img {
     position: absolute !important;
     inset: 0 !important;
     width: 100% !important;

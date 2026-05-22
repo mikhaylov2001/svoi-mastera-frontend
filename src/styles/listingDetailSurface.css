@@ -387,7 +387,10 @@
   .ed--listing-detail .ed-main,
   .jd-main,
   .jd-main-photo,
-  .wd-detail-main {
+  .jd-gallery-main,
+  .wd-detail-main,
+  .mlf-preview-ph,
+  .nl-preview-img {
     position: relative;
     aspect-ratio: 16 / 9;
     max-height: 420px;
@@ -402,7 +405,10 @@
   .ed--listing-detail .ed-main > img,
   .jd-main > img,
   .jd-main-photo > img,
-  .wd-detail-main > img {
+  .jd-gallery-main > img,
+  .wd-detail-main > img,
+  .mlf-preview-ph > img,
+  .nl-preview-img > img {
     position: absolute !important;
     inset: 0 !important;
     width: 100% !important;
