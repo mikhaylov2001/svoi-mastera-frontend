@@ -363,4 +363,103 @@ export const moOrdersListShellCss = `
 
   .mo-orders-root .mo-card--sk { cursor: default; pointer-events: none; }
   .mo-orders-root .mo-card--sk .mo-card-media { background: #f1f5f9; }
+
+  /* —— Блок откликов: «Смотреть отклики • N» + «Изменить» / «Удалить» —— */
+  .mo-offers-actions,
+  .ed--listing-detail .mo-offers-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  .mo-btn-offers-main,
+  .ed--listing-detail .mo-btn-offers-main {
+    width: 100%;
+    min-height: 48px;
+    padding: 13px 18px;
+    border: none;
+    border-radius: 999px;
+    background: #e14e27;
+    color: #fff;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.2;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(225, 78, 39, 0.38);
+    transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
+  .mo-btn-offers-main:hover,
+  .ed--listing-detail .mo-btn-offers-main:hover {
+    background: #d63a09;
+    box-shadow: 0 10px 26px rgba(225, 78, 39, 0.44);
+    transform: translateY(-1px);
+  }
+  .mo-offers-actions-row,
+  .ed--listing-detail .mo-offers-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+  .mo-offers-actions-row:has(> :only-child) {
+    grid-template-columns: 1fr;
+  }
+  .mo-btn-edit-outline,
+  .mo-btn-delete-outline,
+  .ed--listing-detail .mo-btn-edit-outline,
+  .ed--listing-detail .mo-btn-delete-outline {
+    min-height: 44px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    background: #fff;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .mo-btn-edit-outline,
+  .ed--listing-detail .mo-btn-edit-outline {
+    border: 1px solid #e5e7eb;
+    color: #374151;
+  }
+  .mo-btn-edit-outline:hover,
+  .ed--listing-detail .mo-btn-edit-outline:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+  .mo-btn-delete-outline,
+  .ed--listing-detail .mo-btn-delete-outline {
+    border: 1px solid #fecaca;
+    color: #dc2626;
+  }
+  .mo-btn-delete-outline:hover:not(:disabled),
+  .ed--listing-detail .mo-btn-delete-outline:hover:not(:disabled) {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+  }
+  .mo-btn-delete-outline:disabled,
+  .ed--listing-detail .mo-btn-delete-outline:disabled {
+    opacity: 0.55;
+    cursor: wait;
+  }
+
+  .mo-orders-root .mo-actions.mo-actions--stacked {
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 10px;
+  }
+  .mo-orders-root .mo-actions.mo-actions--stacked .mo-btn-offers-main {
+    flex: none;
+    width: 100%;
+  }
+  .mo-orders-root .mo-actions.mo-actions--stacked .mo-offers-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
 `;

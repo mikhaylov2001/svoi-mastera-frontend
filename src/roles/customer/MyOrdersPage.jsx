@@ -1793,30 +1793,36 @@ export default function MyOrdersPage() {
               {(requestIsEditable(detail) || requestCanRemove(detail) || detail.status === 'OPEN') && (
                 <div className="ed-card">
                   <div className="ed-eyebrow ed-eyebrow--block">Управление</div>
-                  <div className="ed-actions">
-                    {requestIsEditable(detail) && (
-                      <button type="button" className="ed-btn ed-btn-confirm" onClick={() => openEdit(detail)}>
-                        Редактировать
-                      </button>
-                    )}
+                  <div className="mo-offers-actions">
                     {detail.status === 'OPEN' && (
                       <button
                         type="button"
-                        className="ed-btn ed-btn-ghost"
+                        className="mo-btn-offers-main"
                         onClick={() => setDetailShowOffersPanel((v) => !v)}
                       >
-                        {detailShowOffersPanel ? 'Скрыть отклики' : 'Смотреть отклики'}
+                        {detailShowOffersPanel
+                          ? 'Скрыть отклики'
+                          : `Смотреть отклики • ${Number(detail.offersCount) || detailOffers.length || 0}`}
                       </button>
                     )}
-                    {requestCanRemove(detail) && (
-                      <button
-                        type="button"
-                        className="ed-btn ed-btn-ghost"
-                        disabled={removeLoadingId === detail.id}
-                        onClick={(e) => handleRemoveRequest(detail, e)}
-                      >
-                        {removeLoadingId === detail.id ? 'Убираем…' : 'Убрать заявку'}
-                      </button>
+                    {(requestIsEditable(detail) || requestCanRemove(detail)) && (
+                      <div className="mo-offers-actions-row">
+                        {requestIsEditable(detail) && (
+                          <button type="button" className="mo-btn-edit-outline" onClick={() => openEdit(detail)}>
+                            Изменить
+                          </button>
+                        )}
+                        {requestCanRemove(detail) && (
+                          <button
+                            type="button"
+                            className="mo-btn-delete-outline"
+                            disabled={removeLoadingId === detail.id}
+                            onClick={(e) => handleRemoveRequest(detail, e)}
+                          >
+                            {removeLoadingId === detail.id ? 'Удаляем…' : 'Удалить'}
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -2118,17 +2124,43 @@ export default function MyOrdersPage() {
                     </p>
                   </div>
 
-                  <div className="mo-actions" onClick={(e) => e.stopPropagation()}>
-                    <button type="button" className="mo-btn mo-btn-primary" onClick={onEdit}>
-                      {canEdit ? 'Редактировать' : 'Открыть'}
-                    </button>
-                    <button
-                      type="button"
-                      className={`mo-btn mo-btn-secondary${hasOffers ? ' mo-btn-offers' : ''}`}
-                      onClick={onDetailBtn}
-                    >
-                      {hasOffers ? `Отклики ${offers}` : 'Подробнее'}
-                    </button>
+                  <div
+                    className={`mo-actions${hasOffers && req.status === 'OPEN' ? ' mo-actions--stacked' : ''}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {hasOffers && req.status === 'OPEN' ? (
+                      <>
+                        <button type="button" className="mo-btn-offers-main" onClick={onDetailBtn}>
+                          Смотреть отклики • {offers}
+                        </button>
+                        <div className="mo-offers-actions-row">
+                          {canEdit && (
+                            <button type="button" className="mo-btn-edit-outline" onClick={onEdit}>
+                              Изменить
+                            </button>
+                          )}
+                          {requestCanRemove(req) && (
+                            <button
+                              type="button"
+                              className="mo-btn-delete-outline"
+                              disabled={removeLoadingId === req.id}
+                              onClick={(e) => handleRemoveRequest(req, e)}
+                            >
+                              {removeLoadingId === req.id ? 'Удаляем…' : 'Удалить'}
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <button type="button" className="mo-btn mo-btn-primary" onClick={onEdit}>
+                          {canEdit ? 'Редактировать' : 'Открыть'}
+                        </button>
+                        <button type="button" className="mo-btn mo-btn-secondary" onClick={onDetailBtn}>
+                          Подробнее
+                        </button>
+                      </>
+                    )}
                   </div>
 
                   <div className="mo-card-tools" onClick={(e) => e.stopPropagation()}>
