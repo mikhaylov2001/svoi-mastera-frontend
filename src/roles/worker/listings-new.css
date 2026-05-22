@@ -26,7 +26,7 @@
 /* Hero — то же фото и оверлей, что в приложении (PAGE_HERO_*) */
 .nl-hero {
   position: relative;
-  padding: 32px 0 110px;
+  padding: 32px 0 148px;
   overflow: hidden;
   color: #fff;
 }
@@ -145,13 +145,22 @@
   font-weight: 700;
 }
 
-/* Layout */
+/* Layout — контент ниже фона hero (шаги «Раздел» / «Категория») */
 .nl-wrap {
   max-width: 1200px;
-  margin: -80px auto 0;
-  padding: 0 20px;
+  margin: -20px auto 0;
+  padding: 28px 20px 0;
   position: relative;
   z-index: 2;
+}
+@media (max-width: 768px) {
+  .nl-wrap {
+    margin-top: 0;
+    padding-top: 20px;
+  }
+  .nl-hero {
+    padding-bottom: 120px;
+  }
 }
 .nl-grid {
   display: grid;

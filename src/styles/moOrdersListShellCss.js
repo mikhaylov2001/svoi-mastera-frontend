@@ -40,7 +40,7 @@ export const moOrdersListShellCss = `
   }
   .mo-orders-root .mo-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(255, 87, 34, 0.5); }
 
-  .mo-orders-root .mo-main { max-width: 1200px; margin: 0 auto; padding: 24px 28px 28px; }
+  .mo-orders-root .mo-main { max-width: 1200px; margin: 0 auto; padding: 40px 28px 28px; }
 
   .mo-orders-root .mo-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 22px; }
   .mo-orders-root .mo-tabs { display: flex; gap: 4px; padding: 6px; background: #fff; border-radius: 14px; box-shadow: 0 4px 14px rgba(15,15,30,.05); }
