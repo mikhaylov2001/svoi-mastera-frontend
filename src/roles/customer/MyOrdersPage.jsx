@@ -968,6 +968,8 @@ export default function MyOrdersPage() {
     if (!form.title.trim())                           { setFormErr('Укажите название заявки'); return; }
     if (!form.categoryId)                             { setFormErr('Выберите категорию'); return; }
     if (!form.budget || Number(form.budget) <= 0)     { setFormErr('Укажите цену за работу (больше нуля)'); return; }
+    if (!form.city.trim())                            { setFormErr('Укажите город'); return; }
+    if (!form.address.trim())                       { setFormErr('Укажите адрес'); return; }
     if (!userId)                                      { setFormErr('Войдите в аккаунт и попробуйте снова.'); return; }
     setSaving(true); setFormErr('');
     try {
@@ -1384,21 +1386,19 @@ export default function MyOrdersPage() {
                   </div>
                   <div className="nl-loc-row">
                     <label className="nl-label nl-label--tight">
-                      <span>Город</span>
+                      <span>Город <em>*</em></span>
                       <input
                         className="nl-input"
                         value={form.city}
-                        onChange={e => setForm(p => ({ ...p, city: e.target.value }))}
-                        placeholder="Йошкар-Ола"
+                        onChange={e => { setFormErr(''); setForm(p => ({ ...p, city: e.target.value })); }}
                       />
                     </label>
                     <label className="nl-label nl-label--tight">
-                      <span>Адрес</span>
+                      <span>Адрес <em>*</em></span>
                       <input
                         className="nl-input"
                         value={form.address}
-                        onChange={e => setForm(p => ({ ...p, address: e.target.value }))}
-                        placeholder="ул. Ленина, 1"
+                        onChange={e => { setFormErr(''); setForm(p => ({ ...p, address: e.target.value })); }}
                       />
                     </label>
                   </div>
@@ -1445,7 +1445,15 @@ export default function MyOrdersPage() {
                   <button
                     type="button"
                     className="nl-publish"
-                    disabled={saving || !form.title.trim() || !form.categoryId || !form.budget || Number(form.budget) <= 0}
+                    disabled={
+                      saving
+                      || !form.title.trim()
+                      || !form.categoryId
+                      || !form.city.trim()
+                      || !form.address.trim()
+                      || !form.budget
+                      || Number(form.budget) <= 0
+                    }
                     onClick={handleSave}
                   >
                     <span>
@@ -1455,9 +1463,6 @@ export default function MyOrdersPage() {
                           ? 'Сохранить изменения'
                           : 'Разместить заявку'}
                     </span>
-                    {!saving && !isEdit && (
-                      <small>Размещение бесплатно · Мастера увидят сразу после публикации</small>
-                    )}
                   </button>
                 </section>
               </>

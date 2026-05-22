@@ -27,7 +27,7 @@ const CATEGORIES = [
   'Уборка','Парикмахер','Маникюр и педикюр','Красота и здоровье',
   'Репетиторство','Грузоперевозки','Сварочные работы','Другое',
 ];
-const EMPTY_FORM  = { title:'', description:'', price:'', priceUnit:'за работу', category:'', photos:[] };
+const EMPTY_FORM  = { title:'', description:'', price:'', priceUnit:'за работу', category:'', city:'', address:'', photos:[] };
 const MAX_DESC    = 2000;
 const MAX_TITLE   = 80;
 
@@ -84,9 +84,11 @@ function formatListingRelativeRu(iso) {
 }
 
 function cabinetListingAddressLine(listing) {
-  const raw = listing?.address || listing?.city || '';
-  const s = String(raw).trim();
-  if (s) return s;
+  const line = [listing?.city, listing?.addressText || listing?.address]
+    .map((s) => String(s || '').trim())
+    .filter(Boolean)
+    .join(', ');
+  if (line) return line;
   return 'Йошкар-Ола · выезд по договорённости';
 }
 
@@ -895,6 +897,8 @@ export default function MyListingsPage() {
       price: editPrice != null && editPrice > 0 ? String(editPrice) : '',
       priceUnit: 'за работу',
       category: l.category || '',
+      city: l.city || '',
+      address: l.addressText || l.address || '',
       photos: (l.photos || []).map((p, i) => ({ id: i, data: p })),
     });
     setFormErr('');
@@ -927,6 +931,8 @@ export default function MyListingsPage() {
   const handleSave = async () => {
     if (!form.title.trim()) { setFormErr('Укажите название объявления'); return; }
     if (!form.category)     { setFormErr('Выберите категорию'); return; }
+    if (!form.city.trim())  { setFormErr('Укажите город'); return; }
+    if (!form.address.trim()) { setFormErr('Укажите адрес'); return; }
     const numPrice = Number(form.price);
     if (!form.price || !Number.isFinite(numPrice) || numPrice <= 0) {
       setFormErr('Укажите цену (больше нуля)');
@@ -947,6 +953,8 @@ export default function MyListingsPage() {
         price:       numPrice,
         priceUnit:   'за работу',
         category:    form.category,
+        city:        form.city.trim(),
+        addressText: form.address.trim(),
         photos:      (form.photos || []).map(p => p.data).filter(Boolean),
       };
       const r = await fetch(isEdit ? `${API}/listings/${view.edit.id}` : `${API}/listings`, {
@@ -1026,7 +1034,14 @@ export default function MyListingsPage() {
     const chipSource = pickedSection ? (CATEGORIES_BY_SECTION[pickedSection] || []).map((c) => c.name).filter(Boolean) : [];
     const categoriesForChips = chipSource.length ? chipSource : CATEGORIES;
     const previewPhotoData = photos[0]?.data;
-    const canSubmitForm = !!(form.title.trim() && form.category && form.price && Number(form.price) > 0);
+    const canSubmitForm = !!(
+      form.title.trim()
+      && form.category
+      && form.city.trim()
+      && form.address.trim()
+      && form.price
+      && Number(form.price) > 0
+    );
 
     let heroSrc = DEFAULT_MY_LISTINGS_BG;
     if (isEdit && form.category) heroSrc = photoForCategoryName(form.category);
@@ -1327,6 +1342,33 @@ export default function MyListingsPage() {
                 <section className="nl-card">
                   <div className="nl-card-head">
                     <div>
+                      <h2 className="nl-card-title">Где оказываете услугу</h2>
+                      <p className="nl-card-sub">Город и адрес — заказчику проще понять выезд и район</p>
+                    </div>
+                  </div>
+                  <div className="nl-loc-row">
+                    <label className="nl-label nl-label--tight">
+                      <span>Город <em>*</em></span>
+                      <input
+                        className="nl-input"
+                        value={form.city}
+                        onChange={e => { setFormErr(''); setForm(p => ({ ...p, city: e.target.value })); }}
+                      />
+                    </label>
+                    <label className="nl-label nl-label--tight">
+                      <span>Адрес <em>*</em></span>
+                      <input
+                        className="nl-input"
+                        value={form.address}
+                        onChange={e => { setFormErr(''); setForm(p => ({ ...p, address: e.target.value })); }}
+                      />
+                    </label>
+                  </div>
+                </section>
+
+                <section className="nl-card">
+                  <div className="nl-card-head">
+                    <div>
                       <h2 className="nl-card-title">Цена на услугу</h2>
                     </div>
                   </div>
@@ -1491,10 +1533,9 @@ export default function MyListingsPage() {
     const mainSrc = jdPhotos[photoIdx] || jdPhotos[0];
     const pubPrice = getListingPublishedPriceNumber(detail);
     const priceNegotiable = String(detail.priceUnit || '').toLowerCase().includes('договор') || pubPrice == null;
-    const addressLine = detail.address || 'Йошкар-Ола · выезд по договорённости';
-    const cityGuess = addressLine.includes('·')
-      ? addressLine.split('·')[0].trim()
-      : (addressLine.includes(',') ? addressLine.split(',')[0].trim() : addressLine);
+    const addressLine = cabinetListingAddressLine(detail);
+    const cityGuess = (detail.city && String(detail.city).trim())
+      || (addressLine.includes(',') ? addressLine.split(',')[0].trim() : addressLine);
     const viewsCount = getListingViewsCount(detail);
     const { bodyText, urgencyLabel } = parseListingDescription(detail.description || '');
     const showDescCard = !!(bodyText && String(bodyText).trim());

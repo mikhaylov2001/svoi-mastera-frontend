@@ -332,7 +332,11 @@ export default function ListingDetailPage() {
       })
     : '—';
 
-  const addressLine = (listing.address || 'Йошкар-Ола, выезд по договорённости').replace(/\s*·\s*/g, ', ');
+  const addressLine = [listing.city, listing.addressText || listing.address]
+    .map((s) => String(s || '').trim())
+    .filter(Boolean)
+    .join(', ')
+    || 'Йошкар-Ола, выезд по договорённости';
   const listingCity =
     (listing.city && String(listing.city).trim()) ||
     (addressLine.includes(',') ? addressLine.split(',')[0].trim() : '—');
