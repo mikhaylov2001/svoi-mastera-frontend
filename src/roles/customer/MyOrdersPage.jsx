@@ -2072,9 +2072,7 @@ export default function MyOrdersPage() {
                 if (offers > 0) openDetail(true);
                 else openDetail(false);
               };
-              const hintText = offers > 0
-                ? `${offers} ${pluralOffers(offers)} · Мастера могут откликнуться`
-                : 'Ждём первый отклик';
+              const hasOffers = offers > 0;
               return (
                 <article
                   key={req.id}
@@ -2103,20 +2101,33 @@ export default function MyOrdersPage() {
                     </div>
                     {(catName || addrLine) && (
                       <div className="mo-card-tags">
-                        {!!catName && <span className="mo-tag">{catName}</span>}
-                        {!!addrLine && <span className="mo-tag">{addrLine}</span>}
+                        {!!catName && <span className="mo-tag mo-tag-cat">{catName}</span>}
+                        {!!addrLine && <span className="mo-tag mo-tag-addr">{addrLine}</span>}
                       </div>
                     )}
                     {!!desc && <p className="mo-card-desc">{desc}</p>}
-                    <p className="mo-card-hint">{hintText}</p>
+                    <p className="mo-card-hint">
+                      {hasOffers ? (
+                        <>
+                          <span className="mo-card-hint-main">{offers} {pluralOffers(offers)}</span>
+                          <span className="mo-card-hint-sub">Мастера могут откликнуться</span>
+                        </>
+                      ) : (
+                        <span className="mo-card-hint-sub">Ждём первый отклик</span>
+                      )}
+                    </p>
                   </div>
 
                   <div className="mo-actions" onClick={(e) => e.stopPropagation()}>
                     <button type="button" className="mo-btn mo-btn-primary" onClick={onEdit}>
                       {canEdit ? 'Редактировать' : 'Открыть'}
                     </button>
-                    <button type="button" className="mo-btn mo-btn-secondary" onClick={onDetailBtn}>
-                      Подробнее
+                    <button
+                      type="button"
+                      className={`mo-btn mo-btn-secondary${hasOffers ? ' mo-btn-offers' : ''}`}
+                      onClick={onDetailBtn}
+                    >
+                      {hasOffers ? `Отклики ${offers}` : 'Подробнее'}
                     </button>
                   </div>
 

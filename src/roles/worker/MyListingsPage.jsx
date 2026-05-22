@@ -5,7 +5,7 @@ import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
 import { SECTIONS } from '../../pages/SectionsPage';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
-import { API_BASE, getMyDeals } from '../../api';
+import { API_BASE, getMyDeals, getWorkerStats } from '../../api';
 import ReviewForm from '../../components/ReviewForm';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
@@ -760,6 +760,7 @@ export default function MyListingsPage() {
 
   const [listings, setListings] = useState([]);
   const [workerDeals, setWorkerDeals] = useState([]);
+  const [workerStats, setWorkerStats] = useState(null);
   const [workerReviewDealId, setWorkerReviewDealId] = useState(null);
   const [loading,  setLoading]  = useState(true);
   const [tab,      setTab]      = useState('active');
@@ -808,9 +809,10 @@ export default function MyListingsPage() {
     if (!userId) return;
     setLoading(true);
     try {
-      const [lr, dealsRaw] = await Promise.all([
+      const [lr, dealsRaw, statsRaw] = await Promise.all([
         fetch(`${API}/workers/${userId}/listings`).then((r) => (r.ok ? r.json() : [])),
         getMyDeals(userId).catch(() => []),
+        getWorkerStats(userId).catch(() => null),
       ]);
       const list = Array.isArray(lr) ? lr : [];
       setListings(list);
@@ -818,6 +820,7 @@ export default function MyListingsPage() {
         (d) => String(d.workerId) === String(userId),
       );
       setWorkerDeals(wd);
+      setWorkerStats(statsRaw && typeof statsRaw === 'object' ? statsRaw : null);
       setDetail((prev) => {
         if (!prev) return null;
         return list.find((l) => l.id === prev.id) || prev;
@@ -1908,7 +1911,7 @@ export default function MyListingsPage() {
 
   // ══ СПИСОК ══
   return (
-    <div className="ml-page ml-list-shell mo-orders-root mo-page">
+    <div className="ml-page ml-list-shell mo-orders-root mo-page mo-listings-cabinet">
       <style>{css}</style>
 
       <header className="mo-hero">
@@ -1993,7 +1996,9 @@ export default function MyListingsPage() {
               const locked = listingLockedAfterDeal(l);
               const statusOpen = !!(l.active && !locked);
               const pillClass = statusOpen ? 'open' : 'neutral';
-              const stPillLabel = statusOpen ? 'Открыта' : 'В архиве';
+              const stPillLabel = locked
+                ? 'Завершено'
+                : (l.active ? 'В каталоге' : 'В архиве');
               const priceNum = getListingPublishedPriceNumber(l);
               const negotiable =
                 priceKindFromListing(l) === 'negotiable' || priceNum == null;
@@ -2001,7 +2006,6 @@ export default function MyListingsPage() {
                 setDetail(l);
                 setPhotoIdx(0);
               };
-              const addrLine = cabinetListingAddressLine(l);
               const priceOnImg = negotiable
                 ? 'Договорная'
                 : `${Number(priceNum).toLocaleString('ru-RU')} ₽ ${l.priceUnit || 'за работу'}`;
@@ -2012,6 +2016,11 @@ export default function MyListingsPage() {
                 else openDetail();
               };
               const showArchiveBtn = !locked;
+              const ratingVal = Number(workerStats?.averageRating) || 0;
+              const reviewsCount = Number(workerStats?.reviewsCount) || 0;
+              const completedCount = Number(workerStats?.completedWorksCount)
+                || workerDeals.filter((d) => d.status === 'COMPLETED').length;
+              const ratingDisplay = ratingVal > 0 ? ratingVal.toFixed(1) : '—';
 
               return (
                 <article
@@ -2038,23 +2047,40 @@ export default function MyListingsPage() {
                       <h3 className="mo-card-title">{l.title}</h3>
                       <time className="mo-card-time">{formatListingRelativeRu(l.createdAt)}</time>
                     </div>
-                    {(catName || addrLine) && (
+                    {!!catName && (
                       <div className="mo-card-tags">
-                        {!!catName && <span className="mo-tag">{catName}</span>}
-                        {!!addrLine && <span className="mo-tag">{addrLine}</span>}
+                        <span className="mo-tag mo-tag-cat">{catName}</span>
                       </div>
                     )}
                     {!!desc && <p className="mo-card-desc">{desc}</p>}
-                    <p className="mo-card-hint">{statusOpen ? 'Ждём заказчиков' : 'В архиве'}</p>
+                    <p className="mo-card-stats">
+                      <span className="mo-card-stats-rating">{ratingDisplay}</span>
+                      <span className="mo-card-stats-muted">отзывов: {reviewsCount}</span>
+                      <span className="mo-card-stats-muted">{completedCount} выполнено</span>
+                    </p>
                   </div>
 
                   <div className="mo-actions" onClick={(e) => e.stopPropagation()}>
                     <button type="button" className="mo-btn mo-btn-primary" onClick={onEdit}>
                       {canEdit ? 'Редактировать' : 'Открыть'}
                     </button>
-                    <button type="button" className="mo-btn mo-btn-secondary" onClick={(e) => { e.stopPropagation(); openDetail(); }}>
-                      Подробнее
-                    </button>
+                    {showArchiveBtn ? (
+                      <button
+                        type="button"
+                        className="mo-btn mo-btn-secondary"
+                        onClick={(e) => handleToggle(l, e)}
+                      >
+                        {l.active ? 'В архив' : 'Восстановить'}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="mo-btn mo-btn-secondary"
+                        onClick={(e) => { e.stopPropagation(); openDetail(); }}
+                      >
+                        Подробнее
+                      </button>
+                    )}
                   </div>
 
                   <div className="mo-card-tools" onClick={(e) => e.stopPropagation()}>

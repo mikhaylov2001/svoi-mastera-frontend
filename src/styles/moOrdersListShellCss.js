@@ -119,17 +119,28 @@ export const moOrdersListShellCss = `
     top: 10px;
     left: 10px;
     z-index: 2;
-    padding: 5px 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
     border-radius: 999px;
     font-size: 11.5px;
     font-weight: 700;
     line-height: 1.2;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
   }
-  .mo-orders-root .mo-card-status-on-img.open { background: #e8f7ed; color: #16a34a; }
-  .mo-orders-root .mo-card-status-on-img.wait { background: #fef9c3; color: #a16207; }
-  .mo-orders-root .mo-card-status-on-img.work { background: #dbeafe; color: #1d4ed8; }
-  .mo-orders-root .mo-card-status-on-img.neutral { background: #f1f5f9; color: #64748b; }
+  .mo-orders-root .mo-card-status-on-img::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .mo-orders-root .mo-card-status-on-img.open { background: #22c55e; color: #fff; }
+  .mo-orders-root .mo-card-status-on-img.wait { background: #f59e0b; color: #fff; }
+  .mo-orders-root .mo-card-status-on-img.work { background: #3b82f6; color: #fff; }
+  .mo-orders-root .mo-card-status-on-img.neutral { background: #94a3b8; color: #fff; }
 
   .mo-orders-root .mo-card-urgent {
     position: absolute;
@@ -150,9 +161,9 @@ export const moOrdersListShellCss = `
     bottom: 10px;
     z-index: 2;
     max-width: calc(100% - 20px);
-    padding: 7px 12px;
-    border-radius: 10px;
-    background: rgba(17, 24, 39, 0.72);
+    padding: 7px 14px;
+    border-radius: 999px;
+    background: rgba(17, 24, 39, 0.82);
     color: #fff;
     font-size: 12px;
     font-weight: 700;
@@ -200,7 +211,7 @@ export const moOrdersListShellCss = `
   }
   .mo-orders-root .mo-tag {
     display: inline-block;
-    padding: 4px 10px;
+    padding: 5px 11px;
     border-radius: 999px;
     font-size: 11.5px;
     font-weight: 600;
@@ -208,17 +219,23 @@ export const moOrdersListShellCss = `
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    border: none;
+  }
+  .mo-orders-root .mo-tag-cat {
+    background: #f3f4f6;
+    color: #4b5563;
+  }
+  .mo-orders-root .mo-tag-addr {
     background: #fff4ed;
     color: #ea580c;
-    border: none;
   }
 
   .mo-orders-root .mo-card-desc {
     margin: 0;
     font-size: 13px;
     font-weight: 400;
-    color: #6b7280;
-    line-height: 1.45;
+    color: #374151;
+    line-height: 1.5;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -228,9 +245,39 @@ export const moOrdersListShellCss = `
   .mo-orders-root .mo-card-hint {
     margin: 0 0 2px;
     font-size: 12px;
+    line-height: 1.45;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .mo-orders-root .mo-card-hint-main {
+    font-weight: 700;
+    color: #111827;
+  }
+  .mo-orders-root .mo-card-hint-sub {
     font-weight: 500;
     color: #9ca3af;
-    line-height: 1.4;
+  }
+
+  .mo-orders-root .mo-card-stats {
+    margin: 0 0 2px;
+    font-size: 12px;
+    line-height: 1.45;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    color: #9ca3af;
+  }
+  .mo-orders-root .mo-card-stats-rating {
+    font-weight: 800;
+    color: #111827;
+    font-size: 13px;
+  }
+  .mo-orders-root .mo-card-stats-muted {
+    font-weight: 500;
+    color: #9ca3af;
   }
 
   .mo-orders-root .mo-actions {
@@ -257,18 +304,24 @@ export const moOrdersListShellCss = `
   .mo-orders-root .mo-btn-primary {
     background: #ff5722;
     color: #fff;
-    box-shadow: none;
+    box-shadow: 0 6px 18px rgba(255, 87, 34, 0.28);
   }
   .mo-orders-root .mo-btn-primary:hover { background: #f4511e; }
   .mo-orders-root .mo-btn-secondary {
-    background: #fff;
-    color: #ff5722;
-    border: 1.5px solid #e5e7eb;
+    background: #f3f4f6;
+    color: #374151;
+    border: none;
   }
   .mo-orders-root .mo-btn-secondary:hover {
-    background: #fffaf8;
-    border-color: #fdba74;
-    color: #ea580c;
+    background: #e5e7eb;
+    color: #111827;
+  }
+  .mo-orders-root .mo-btn-secondary.mo-btn-offers {
+    color: #dc2626;
+  }
+  .mo-orders-root .mo-btn-secondary.mo-btn-offers:hover {
+    background: #fee2e2;
+    color: #b91c1c;
   }
 
   .mo-orders-root .mo-card-tools {
@@ -294,6 +347,9 @@ export const moOrdersListShellCss = `
   .mo-orders-root .mo-card-tool:hover { color: #ff5722; text-decoration-color: #fdba74; }
   .mo-orders-root .mo-card-tool.copied { color: #16a34a; text-decoration-color: #86efac; }
   .mo-orders-root .mo-card-tool:disabled { opacity: 0.5; cursor: wait; }
+
+  /* На карточках — только две кнопки, как в макете */
+  .mo-orders-root .mo-card .mo-card-tools { display: none; }
 
   /* legacy blocks — скрыты */
   .mo-orders-root .mo-card-top,
