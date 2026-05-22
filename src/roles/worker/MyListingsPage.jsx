@@ -778,7 +778,6 @@ export default function MyListingsPage() {
   const [hoverSectionSlug, setHoverSectionSlug] = useState(null); // превью фона шага «разделы»
   const [hoverCategoryName, setHoverCategoryName] = useState(null); // превью фона шага «категории»
   const [form,     setForm]     = useState(EMPTY_FORM);
-  const [priceKind, setPriceKind] = useState('fixed'); // 'fixed' | 'from' | 'negotiable'
   const [saving,   setSaving]   = useState(false);
   const [formErr,  setFormErr]  = useState('');
   const [lightbox, setLightbox] = useState(null); // { photos, index }
@@ -898,7 +897,6 @@ export default function MyListingsPage() {
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
-    setPriceKind('fixed');
     setFormErr('');
     setPickedSection(null);
     setHoverSectionSlug(null);
@@ -909,8 +907,15 @@ export default function MyListingsPage() {
   const openEdit = (l, e) => {
     e?.stopPropagation();
     if (listingLockedAfterDeal(l)) return;
-    setForm({ title: l.title, description: l.description || '', price: l.price, priceUnit: l.priceUnit || 'за работу', category: l.category || '', photos: (l.photos || []).map((p, i) => ({ id: i, data: p })) });
-    setPriceKind(priceKindFromListing(l));
+    const editPrice = getListingPublishedPriceNumber(l);
+    setForm({
+      title: l.title,
+      description: l.description || '',
+      price: editPrice != null && editPrice > 0 ? String(editPrice) : '',
+      priceUnit: 'за работу',
+      category: l.category || '',
+      photos: (l.photos || []).map((p, i) => ({ id: i, data: p })),
+    });
     setFormErr('');
     setView({ edit: l });
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -941,9 +946,8 @@ export default function MyListingsPage() {
   const handleSave = async () => {
     if (!form.title.trim()) { setFormErr('Укажите название объявления'); return; }
     if (!form.category)     { setFormErr('Выберите категорию'); return; }
-    const negotiable = priceKind === 'negotiable';
     const numPrice = Number(form.price);
-    if (!negotiable && (!form.price || !Number.isFinite(numPrice) || numPrice <= 0)) {
+    if (!form.price || !Number.isFinite(numPrice) || numPrice <= 0) {
       setFormErr('Укажите цену (больше нуля)');
       return;
     }
@@ -959,8 +963,8 @@ export default function MyListingsPage() {
       const payload = {
         title:       form.title.trim(),
         description: (form.description || '').trim(),
-        price:       negotiable ? 0 : numPrice,
-        priceUnit:   negotiable ? 'договорная' : priceKind === 'from' ? 'от' : (form.priceUnit || 'за работу'),
+        price:       numPrice,
+        priceUnit:   'за работу',
         category:    form.category,
         photos:      (form.photos || []).map(p => p.data).filter(Boolean),
       };
@@ -1041,7 +1045,7 @@ export default function MyListingsPage() {
     const chipSource = pickedSection ? (CATEGORIES_BY_SECTION[pickedSection] || []).map((c) => c.name).filter(Boolean) : [];
     const categoriesForChips = chipSource.length ? chipSource : CATEGORIES;
     const previewPhotoData = photos[0]?.data;
-    const canSubmitForm = !!(form.title.trim() && form.category && (priceKind === 'negotiable' || (form.price && Number(form.price) > 0)));
+    const canSubmitForm = !!(form.title.trim() && form.category && form.price && Number(form.price) > 0);
 
     let heroSrc = DEFAULT_MY_LISTINGS_BG;
     if (isEdit && form.category) heroSrc = photoForCategoryName(form.category);
@@ -1064,7 +1068,7 @@ export default function MyListingsPage() {
       ? Math.min(100, Math.round(
         (form.title.trim() ? 25 : 0)
         + (form.description.length >= 30 ? 25 : Math.round((form.description.length / 30) * 25))
-        + (priceKind === 'negotiable' || (form.price && Number(form.price) > 0) ? 25 : 0)
+        + (form.price && Number(form.price) > 0 ? 25 : 0)
         + (filledPhotos > 0 ? 25 : 0),
       ))
       : 0;
@@ -1344,75 +1348,31 @@ export default function MyListingsPage() {
                       <h2 className="nl-card-title">Цена на услугу</h2>
                     </div>
                   </div>
-                  <div className="nl-segmented" role="group" aria-label="Тип цены">
-                    <button
-                      type="button"
-                      className={`nl-seg${priceKind === 'fixed' ? ' is-active' : ''}`}
-                      onClick={() => {
-                        setPriceKind('fixed');
-                        setFormErr('');
-                        setForm((p) => ({ ...p, priceUnit: 'за работу' }));
-                      }}
-                    >
-                      Фиксированная
-                    </button>
-                    <button
-                      type="button"
-                      className={`nl-seg${priceKind === 'from' ? ' is-active' : ''}`}
-                      onClick={() => {
-                        setPriceKind('from');
-                        setFormErr('');
-                        setForm((p) => ({ ...p, priceUnit: 'от' }));
-                      }}
-                    >
-                      От …
-                    </button>
-                    <button
-                      type="button"
-                      className={`nl-seg${priceKind === 'negotiable' ? ' is-active' : ''}`}
-                      onClick={() => {
-                        setPriceKind('negotiable');
-                        setFormErr('');
-                        setForm((p) => ({ ...p, price: '', priceUnit: 'договорная' }));
-                      }}
-                    >
-                      Договорная
-                    </button>
-                  </div>
-                  {priceKind !== 'negotiable' ? (
-                    <label className="nl-label nl-label--tight">
-                      <span>Стоимость, ₽ <em>*</em></span>
-                      <div className="nl-price-input">
-                        <input
-                          className="nl-input"
-                          type="number"
-                          min="1"
-                          value={form.price}
-                          onChange={e => { setFormErr(''); setForm(p => ({...p, price: e.target.value})); }}
-                        />
-                        <span className="nl-price-suffix">₽</span>
-                      </div>
-                      <small className="nl-help">
-                        Заказчик увидит эту цену в карточке
-                        <span />
-                      </small>
-                    </label>
-                  ) : (
-                    <div className="nl-negot">
-                      Цена обсуждается с заказчиком в чате после отклика.
+                  <label className="nl-label nl-label--tight">
+                    <span>Стоимость, ₽ <em>*</em></span>
+                    <div className="nl-price-input">
+                      <input
+                        className="nl-input"
+                        type="number"
+                        min="1"
+                        value={form.price}
+                        onChange={e => { setFormErr(''); setForm(p => ({...p, price: e.target.value})); }}
+                      />
+                      <span className="nl-price-suffix">₽</span>
                     </div>
-                  )}
-                  {priceKind !== 'negotiable' && form.price && Number(form.price) > 0 ? (
+                    <small className="nl-help">
+                      Заказчик увидит эту цену в карточке
+                      <span />
+                    </small>
+                  </label>
+                  {form.price && Number(form.price) > 0 ? (
                     <div className="nl-price-hint nl-price-hint--ok">
                       <strong>В объявлении:</strong>{' '}
                       {Number(form.price).toLocaleString('ru-RU')} ₽
-                      {priceKind === 'from' ? ' · пометка «от»' : ''}
-                      <div style={{ fontSize: 12, marginTop: 4, opacity: 0.9 }}>Заказчики видят эту цену при поиске.</div>
                     </div>
-                  ) : null}
-                  {priceKind !== 'negotiable' && (!form.price || Number(form.price) <= 0) ? (
+                  ) : (
                     <div className="nl-price-hint nl-price-hint--muted">Укажите стоимость — она попадёт в объявление</div>
-                  ) : null}
+                  )}
 
                   <button
                     type="button"
@@ -1427,11 +1387,6 @@ export default function MyListingsPage() {
                           ? 'Сохранить изменения'
                           : 'Опубликовать объявление'}
                     </span>
-                    {!saving && (
-                      <small>
-                        {isEdit ? 'Изменения сразу увидят заказчики' : 'Размещение бесплатно · Заказчики увидят сразу'}
-                      </small>
-                    )}
                   </button>
                   {isEdit && view?.edit?.id && (
                     <button
@@ -1439,7 +1394,7 @@ export default function MyListingsPage() {
                       className="nl-btn-outline"
                       onClick={(e) => copyListingPublicLink(view.edit.id, e)}
                     >
-                      {copyFlashId === view.edit.id ? '✓ Ссылка скопирована' : 'Копировать ссылку на объявление'}
+                      {copyFlashId === view.edit.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
                     </button>
                   )}
                 </section>
@@ -1465,13 +1420,8 @@ export default function MyListingsPage() {
                   </div>
                   <div className="nl-preview-body">
                     <div className="nl-preview-price">
-                      {priceKind === 'negotiable' ? (
-                        <span className="muted">Договорная</span>
-                      ) : form.price && Number(form.price) > 0 ? (
-                        <>
-                          {priceKind === 'from' && <span className="from">от</span>}
-                          {Number(form.price).toLocaleString('ru-RU')} ₽
-                        </>
+                      {form.price && Number(form.price) > 0 ? (
+                        <>{Number(form.price).toLocaleString('ru-RU')} ₽</>
                       ) : (
                         <span className="muted">Цена</span>
                       )}
