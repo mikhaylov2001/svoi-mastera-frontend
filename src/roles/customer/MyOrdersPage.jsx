@@ -276,7 +276,12 @@ const css = `
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   }
   .ml-offer-card:last-child { margin-bottom: 0; }
-  .ml-offers-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 14px; letter-spacing: -0.02em; }
+  .ml-offers-title { font-size: 15px; font-weight: 800; color: #111827; margin: 0 0 14px; letter-spacing: -0.02em; }
+  .ed--listing-detail .ed-card--offers .ml-offer-card {
+    border-radius: 16px;
+    border: 1px solid #e8eaed;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  }
   .ml-offer-price { font-size: 18px; font-weight: 800; color: #1a1a1a; }
   .ml-offer-days { font-size: 13px; color: #6b7280; margin-left: 6px; }
   .ml-offer-name { font-size: 13px; color: #555; margin-top: 4px; }
@@ -1791,13 +1796,13 @@ export default function MyOrdersPage() {
               </div>
 
               {(requestIsEditable(detail) || requestCanRemove(detail) || detail.status === 'OPEN') && (
-                <div className="ed-card">
+                <div className="ed-card ed-card--manage">
                   <div className="ed-eyebrow ed-eyebrow--block">Управление</div>
                   <div className="mo-offers-actions">
                     {detail.status === 'OPEN' && (
                       <button
                         type="button"
-                        className="mo-btn-offers-main"
+                        className={`mo-btn-offers-main${detailShowOffersPanel ? ' is-active' : ''}`}
                         onClick={() => setDetailShowOffersPanel((v) => !v)}
                       >
                         {detailShowOffersPanel
@@ -1829,7 +1834,7 @@ export default function MyOrdersPage() {
               )}
 
               {detail.status === 'OPEN' && detailShowOffersPanel && (
-                <div className="ed-card">
+                <div className="ed-card ed-card--offers">
                   <div className="ml-offers-title">Отклики мастеров</div>
                   {detailOffersLoading && <div className="ml-sk" style={{ height: 60, borderRadius: 12 }} />}
                   {!detailOffersLoading && detailOffers.length === 0 && (
@@ -2130,8 +2135,12 @@ export default function MyOrdersPage() {
                   >
                     {hasOffers && req.status === 'OPEN' ? (
                       <>
-                        <button type="button" className="mo-btn-offers-main" onClick={onDetailBtn}>
-                          Смотреть отклики • {offers}
+                        <button
+                          type="button"
+                          className="mo-btn-offers-main"
+                          onClick={onDetailBtn}
+                        >
+                          {`Смотреть отклики • ${offers}`}
                         </button>
                         <div className="mo-offers-actions-row">
                           {canEdit && (

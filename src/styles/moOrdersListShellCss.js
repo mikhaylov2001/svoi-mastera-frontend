@@ -364,36 +364,80 @@ export const moOrdersListShellCss = `
   .mo-orders-root .mo-card--sk { cursor: default; pointer-events: none; }
   .mo-orders-root .mo-card--sk .mo-card-media { background: #f1f5f9; }
 
-  /* —— Блок откликов: «Смотреть отклики • N» + «Изменить» / «Удалить» —— */
+  /* —— Карточка «Управление» + отклики —— */
+  .ed--listing-detail .ed-card.ed-card--manage {
+    border-radius: 24px;
+    padding: 20px 18px 18px;
+    border: 1px solid #efefef;
+    box-shadow: 0 4px 22px rgba(15, 23, 42, 0.06);
+  }
+  .ed--listing-detail .ed-card.ed-card--manage .ed-eyebrow--block {
+    margin: 0 0 14px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #9ca3af;
+  }
+  .ed--listing-detail .ed-card.ed-card--offers {
+    border-radius: 20px;
+    padding: 18px 16px;
+    border: 1px solid #eef0f3;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+  }
+
   .mo-offers-actions,
   .ed--listing-detail .mo-offers-actions {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     width: 100%;
   }
   .mo-btn-offers-main,
   .ed--listing-detail .mo-btn-offers-main {
     width: 100%;
-    min-height: 48px;
-    padding: 13px 18px;
+    min-height: 52px;
+    padding: 14px 20px;
     border: none;
     border-radius: 999px;
-    background: #e14e27;
+    background: linear-gradient(180deg, #e85a32 0%, #d1522d 55%, #c94b28 100%);
     color: #fff;
     font: inherit;
     font-size: 15px;
-    font-weight: 800;
-    line-height: 1.2;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
     cursor: pointer;
-    box-shadow: 0 8px 22px rgba(225, 78, 39, 0.38);
-    transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+    box-shadow:
+      0 12px 28px rgba(209, 82, 45, 0.36),
+      0 3px 8px rgba(209, 82, 45, 0.18);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
   }
   .mo-btn-offers-main:hover,
   .ed--listing-detail .mo-btn-offers-main:hover {
-    background: #d63a09;
-    box-shadow: 0 10px 26px rgba(225, 78, 39, 0.44);
+    background: linear-gradient(180deg, #ef6339 0%, #d85a30 55%, #c45227 100%);
+    box-shadow:
+      0 14px 32px rgba(209, 82, 45, 0.42),
+      0 4px 10px rgba(209, 82, 45, 0.22);
     transform: translateY(-1px);
+  }
+  .mo-btn-offers-main:active,
+  .ed--listing-detail .mo-btn-offers-main:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 18px rgba(209, 82, 45, 0.32);
+  }
+  .mo-btn-offers-main.is-active,
+  .ed--listing-detail .mo-btn-offers-main.is-active {
+    background: linear-gradient(180deg, #cf4f28 0%, #b84522 100%);
+    box-shadow: 0 8px 20px rgba(209, 82, 45, 0.3);
+  }
+  .mo-btn-offers-main:focus-visible,
+  .mo-btn-edit-outline:focus-visible,
+  .mo-btn-delete-outline:focus-visible,
+  .ed--listing-detail .mo-btn-offers-main:focus-visible,
+  .ed--listing-detail .mo-btn-edit-outline:focus-visible,
+  .ed--listing-detail .mo-btn-delete-outline:focus-visible {
+    outline: 2px solid rgba(209, 82, 45, 0.45);
+    outline-offset: 2px;
   }
   .mo-offers-actions-row,
   .ed--listing-detail .mo-offers-actions-row {
@@ -409,37 +453,42 @@ export const moOrdersListShellCss = `
   .mo-btn-delete-outline,
   .ed--listing-detail .mo-btn-edit-outline,
   .ed--listing-detail .mo-btn-delete-outline {
-    min-height: 44px;
-    padding: 11px 14px;
-    border-radius: 12px;
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 14px;
+    border-radius: 14px;
     font: inherit;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.2;
     cursor: pointer;
     background: #fff;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
   }
   .mo-btn-edit-outline,
   .ed--listing-detail .mo-btn-edit-outline {
-    border: 1px solid #e5e7eb;
-    color: #374151;
+    border: 1px solid #e8eaed;
+    color: #4b5563;
   }
   .mo-btn-edit-outline:hover,
   .ed--listing-detail .mo-btn-edit-outline:hover {
-    background: #f9fafb;
+    background: #fafafa;
     border-color: #d1d5db;
+    color: #111827;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
   }
   .mo-btn-delete-outline,
   .ed--listing-detail .mo-btn-delete-outline {
-    border: 1px solid #fecaca;
-    color: #dc2626;
+    border: 1px solid #fad4d4;
+    color: #e11d48;
   }
   .mo-btn-delete-outline:hover:not(:disabled),
   .ed--listing-detail .mo-btn-delete-outline:hover:not(:disabled) {
-    background: #fef2f2;
-    border-color: #fca5a5;
-    color: #b91c1c;
+    background: #fff5f5;
+    border-color: #f9a8a8;
+    color: #be123c;
+    box-shadow: 0 2px 6px rgba(225, 29, 72, 0.08);
   }
   .mo-btn-delete-outline:disabled,
   .ed--listing-detail .mo-btn-delete-outline:disabled {
@@ -449,8 +498,8 @@ export const moOrdersListShellCss = `
 
   .mo-orders-root .mo-actions.mo-actions--stacked {
     flex-direction: column;
-    gap: 10px;
-    padding-top: 10px;
+    gap: 12px;
+    padding: 12px 16px 14px;
   }
   .mo-orders-root .mo-actions.mo-actions--stacked .mo-btn-offers-main {
     flex: none;
