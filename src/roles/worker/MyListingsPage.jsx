@@ -17,6 +17,7 @@ import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPla
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 import { getListingViewsCount } from '../../utils/jobRequestViews';
 import { moOrdersListShellCss } from '../../styles/moOrdersListShellCss.js';
+import { moCabinetMobileCss } from '../../styles/moCabinetMobileCss.js';
 import './listings-new.css';
 
 const API = API_BASE;
@@ -245,6 +246,7 @@ const css = `
   .ml-page { background: #f2f2f2; min-height: 100vh; font-family: Inter, Arial, sans-serif; color: #1a1a1a; }
 
   ${moOrdersListShellCss}
+  ${moCabinetMobileCss}
 
   .ml-page.ml-list-shell.mo-orders-root {
     font-family: 'Manrope', Inter, system-ui, sans-serif;

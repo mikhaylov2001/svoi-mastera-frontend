@@ -30,6 +30,7 @@ import {
 } from '../../utils/mergeApiCategoriesWithCatalog';
 import '../worker/listings-new.css';
 import { moOrdersListShellCss } from '../../styles/moOrdersListShellCss.js';
+import { moCabinetMobileCss } from '../../styles/moCabinetMobileCss.js';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -251,6 +252,7 @@ const css = `
   .ml-page { background: #f5f5f7; min-height: 100vh; font-family: 'Manrope', Inter, system-ui, sans-serif; color: #0f172a; }
 
   ${moOrdersListShellCss}
+  ${moCabinetMobileCss}
 
   /* .ml-list, .ml-row … — см. src/styles/unifiedListingCards.css */
 

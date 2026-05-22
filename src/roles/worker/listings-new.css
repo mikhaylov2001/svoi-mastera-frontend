@@ -153,15 +153,7 @@
   position: relative;
   z-index: 2;
 }
-@media (max-width: 768px) {
-  .nl-wrap {
-    margin-top: 0;
-    padding-top: 20px;
-  }
-  .nl-hero {
-    padding-bottom: 120px;
-  }
-}
+/* Мобильные отступы nl-* / mo-* — src/styles/moCabinetMobileCss.js */
 .nl-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
