@@ -11,6 +11,7 @@ import {
   API_BASE,
 } from '../../api';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import PhotoLightbox from '../../components/PhotoLightbox';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import DealDetailEdProgress from '../shared/DealDetailEdProgress';
@@ -21,7 +22,7 @@ import {
 } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../../constants/homePaths';
-import { useSwipeNavigation, useSwipeNavigationLightbox } from '../../hooks/useSwipeNavigation';
+import { useSwipeNavigation } from '../../hooks/useSwipeNavigation';
 
 const BACKEND_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, '');
 
@@ -60,7 +61,7 @@ export default function ListingDetailPage() {
   const [similar, setSimilar] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
-  const [lightbox, setLightbox] = useState(false);
+  const [lightbox, setLightbox] = useState(null);
   const [accepting, setAccepting] = useState(false);
   const [customerListingDeal, setCustomerListingDeal] = useState(null);
   const [actionError, setActionError] = useState('');
@@ -185,7 +186,6 @@ export default function ListingDetailPage() {
 
   const canSwipePhotos = hasUploadedPhotos && photoCount > 1;
   const gallerySwipe = useSwipeNavigation(prevPhoto, nextPhoto, canSwipePhotos);
-  const lightboxSwipe = useSwipeNavigationLightbox(prevPhoto, nextPhoto, lightbox && canSwipePhotos);
   const thumbStripRef = useRef(null);
 
   useEffect(() => {
@@ -193,17 +193,6 @@ export default function ListingDetailPage() {
     const active = thumbStripRef.current.querySelector('.ed-thumb.on');
     active?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
   }, [activePhoto, canSwipePhotos]);
-
-  useEffect(() => {
-    if (!lightbox || photoCount <= 1) return;
-    const onKey = e => {
-      if (e.key === 'Escape') setLightbox(false);
-      if (e.key === 'ArrowRight') nextPhoto();
-      if (e.key === 'ArrowLeft') prevPhoto();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [lightbox, photoCount, nextPhoto, prevPhoto]);
 
   const handleAcceptWork = async () => {
     if (!userId) {
@@ -408,63 +397,12 @@ export default function ListingDetailPage() {
     <div className="ed ed--listing-detail">
       <style>{edListingDetailMergedCss}</style>
 
-      {lightbox && (
-        <div className="jd-lightbox" onClick={() => setLightbox(false)} role="presentation">
-          <button type="button" className="jd-lb-close" onClick={e => { e.stopPropagation(); setLightbox(false); }}>
-            ✕
-          </button>
-          {lightboxPhotos.length > 1 && (
-            <>
-              <button
-                type="button"
-                className="jd-lb-nav jd-lb-prev"
-                onClick={e => {
-                  e.stopPropagation();
-                  prevPhoto();
-                }}
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                className="jd-lb-nav jd-lb-next"
-                onClick={e => {
-                  e.stopPropagation();
-                  nextPhoto();
-                }}
-              >
-                ›
-              </button>
-            </>
-          )}
-          <div
-            className={`jd-lightbox-img-wrap ${lightboxSwipe.className}`}
-            onClick={e => e.stopPropagation()}
-            onPointerDown={lightboxSwipe.onPointerDown}
-            onPointerUp={lightboxSwipe.onPointerUp}
-            onPointerCancel={lightboxSwipe.onPointerCancel}
-            style={lightboxSwipe.style}
-          >
-            {lightboxPhotos.length > 1 && (
-              <>
-                <div className="jd-lb-zone jd-lb-zone-prev" onClick={prevPhoto} role="presentation" />
-                <div className="jd-lb-zone jd-lb-zone-next" onClick={nextPhoto} role="presentation" />
-              </>
-            )}
-            <img
-              src={lightboxPhotos[lbIdx]}
-              alt={listing.title || ''}
-              onClick={() => lightboxPhotos.length <= 1 && setLightbox(false)}
-            />
-          </div>
-          {lightboxPhotos.length > 1 && (
-            <div className="jd-lb-counter">
-              {lbIdx + 1} / {lightboxPhotos.length}
-            </div>
-          )}
-          <div className="jd-lb-hint">Свайп или ← → · Esc — закрыть</div>
-        </div>
-      )}
+      <PhotoLightbox
+        lightbox={lightbox}
+        setLightbox={setLightbox}
+        onIndexChange={hasUploadedPhotos ? setActivePhoto : undefined}
+        alt={listing.title || ''}
+      />
 
       <div className="ed-wrap">
         <button type="button" className="ed-back" onClick={goBack}>
@@ -502,7 +440,10 @@ export default function ListingDetailPage() {
             <div className="ed-gallery">
               <div
                 className={`ed-main ${gallerySwipe.className}`}
-                onClick={() => (hasUploadedPhotos || displayPhoto) && setLightbox(true)}
+                onClick={() =>
+                  (hasUploadedPhotos || displayPhoto) &&
+                  setLightbox({ photos: lightboxPhotos, index: lbIdx })
+                }
                 onClickCapture={gallerySwipe.onClickCapture}
                 onPointerDown={gallerySwipe.onPointerDown}
                 onPointerUp={gallerySwipe.onPointerUp}

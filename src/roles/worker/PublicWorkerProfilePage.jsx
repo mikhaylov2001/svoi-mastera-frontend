@@ -11,6 +11,7 @@ import {
   publicFirstName,
 } from '../../utils/publicProfileUtils';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import PhotoLightbox from '../../components/PhotoLightbox';
 import '../../styles/publicProfilePage.css';
 
 const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
@@ -74,17 +75,6 @@ export default function PublicWorkerProfilePage() {
   const [tab, setTab] = useState('active');
   const [page, setPage] = useState(0);
   const [lightbox, setLightbox] = useState(null);
-
-  useEffect(() => {
-    if (!lightbox) return;
-    const h = (e) => {
-      if (e.key === 'ArrowRight') setLightbox((l) => (l ? { ...l, index: (l.index + 1) % l.photos.length } : l));
-      if (e.key === 'ArrowLeft') setLightbox((l) => (l ? { ...l, index: (l.index - 1 + l.photos.length) % l.photos.length } : l));
-      if (e.key === 'Escape') setLightbox(null);
-    };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [lightbox]);
 
   useEffect(() => {
     if (!workerId) return;
@@ -423,43 +413,7 @@ export default function PublicWorkerProfilePage() {
         </div>
       </div>
 
-      {lightbox && (
-        <div className="pw-lb-overlay" onClick={() => setLightbox(null)}>
-          <div className="pw-lb-inner" onClick={(e) => e.stopPropagation()}>
-            <img src={lightbox.photos[lightbox.index]} alt="" className="pw-lb-img" />
-            <div className="pw-lb-counter">
-              {lightbox.index + 1} / {lightbox.photos.length}
-            </div>
-            <button type="button" className="pw-lb-close" onClick={() => setLightbox(null)}>
-              ×
-            </button>
-            {lightbox.photos.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  className="pw-lb-prev"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setLightbox((l) => ({ ...l, index: (l.index - 1 + l.photos.length) % l.photos.length }));
-                  }}
-                >
-                  ‹
-                </button>
-                <button
-                  type="button"
-                  className="pw-lb-next"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setLightbox((l) => ({ ...l, index: (l.index + 1) % l.photos.length }));
-                  }}
-                >
-                  ›
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      <PhotoLightbox lightbox={lightbox} setLightbox={setLightbox} />
     </div>
   );
 }

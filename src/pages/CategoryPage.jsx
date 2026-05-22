@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import PhotoLightbox from '../components/PhotoLightbox';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { createJobRequest, getCategories } from '../api';
 import { useAuth } from '../context/AuthContext';
@@ -77,23 +78,6 @@ const css = `
   .cp-photo-zoom { position: absolute; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; }
   .cp-photo-zoom-text { font-size: 12px; font-weight: 700; color: #fff; letter-spacing: .04em; text-transform: uppercase; }
   .cp-photo-cell.filled:hover .cp-photo-zoom { opacity: 1; }
-  /* ── LIGHTBOX ── */
-  .cp-lb { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.94); display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .cp-lb-img-wrap { position: relative; max-width: 92vw; max-height: 82vh; display: flex; align-items: center; justify-content: center; }
-  .cp-lb-img { max-width: 90vw; max-height: 80vh; border-radius: 8px; box-shadow: 0 24px 80px rgba(0,0,0,.5); display: block; object-fit: contain; }
-  .cp-lb-close { position: fixed; top: 18px; right: 18px; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; }
-  .cp-lb-close:hover { background: rgba(255,255,255,.28); }
-  .cp-lb-counter { position: fixed; top: 22px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: 14px; font-weight: 700; padding: 6px 18px; border-radius: 20px; }
-  .cp-lb-btn { position: fixed; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; }
-  .cp-lb-btn:hover { background: rgba(255,255,255,.3); }
-  .cp-lb-prev { left: 18px; }
-  .cp-lb-next { right: 18px; }
-  .cp-lb-thumbs { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
-  .cp-lb-thumb { width: 56px; height: 42px; border-radius: 6px; overflow: hidden; cursor: pointer; border: 2px solid transparent; opacity: .55; transition: all .2s; }
-  .cp-lb-thumb.active { border-color: #fff; opacity: 1; }
-  .cp-lb-thumb:hover { opacity: .85; }
-  .cp-lb-thumb img { width: 100%; height: 100%; object-fit: cover; }
-
   /* ── ФОРМА ПОЛЯ ── */
   .cp-fields { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 16px; }
   .cp-field label { display: block; font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; }
@@ -189,22 +173,8 @@ export default function CategoryPage() {
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [apiCategoryId, setApiCategoryId] = useState(null);
-  const [lightbox, setLightbox] = useState(null); // { index: 0 }
+  const [lightbox, setLightbox] = useState(null);
   const tips = CAT_TIPS[slug] || [];
-
-  // ── Keyboard for lightbox ──
-  const handleLbKey = useCallback((e) => {
-    if (!lightbox) return;
-    const n = form.photos.length;
-    if (e.key === 'ArrowRight') setLightbox(l => ({ index: (l.index + 1) % n }));
-    if (e.key === 'ArrowLeft')  setLightbox(l => ({ index: (l.index - 1 + n) % n }));
-    if (e.key === 'Escape')     setLightbox(null);
-  }, [lightbox, form.photos.length]);
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleLbKey);
-    return () => window.removeEventListener('keydown', handleLbKey);
-  }, [handleLbKey]);
 
   useEffect(() => {
     const qp = new URLSearchParams(location.search);
@@ -266,7 +236,7 @@ export default function CategoryPage() {
 
   const openLightbox = (i, e) => {
     e.stopPropagation();
-    setLightbox({ index: i });
+    setLightbox({ photos: form.photos.map((p) => p.data), index: i });
   };
 
   const setAddr = (key, val) => {
@@ -660,44 +630,7 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* ═══ LIGHTBOX ═══ */}
-      {lightbox !== null && photos.length > 0 && (
-        <div className="cp-lb" onClick={() => setLightbox(null)}>
-          <div className="cp-lb-counter">{lightbox.index + 1} / {n}</div>
-          <button className="cp-lb-close" onClick={() => setLightbox(null)}>×</button>
-
-          {n > 1 && (
-            <>
-              <button
-                className="cp-lb-btn cp-lb-prev"
-                onClick={e => { e.stopPropagation(); setLightbox(l => ({ index: (l.index - 1 + n) % n })); }}
-              >‹</button>
-              <button
-                className="cp-lb-btn cp-lb-next"
-                onClick={e => { e.stopPropagation(); setLightbox(l => ({ index: (l.index + 1) % n })); }}
-              >›</button>
-            </>
-          )}
-
-          <div className="cp-lb-img-wrap" onClick={e => e.stopPropagation()}>
-            <img src={photos[lightbox.index].data} alt="" className="cp-lb-img" />
-          </div>
-
-          {n > 1 && (
-            <div className="cp-lb-thumbs" onClick={e => e.stopPropagation()}>
-              {photos.map((p, i) => (
-                <div
-                  key={p.id}
-                  className={`cp-lb-thumb${i === lightbox.index ? ' active' : ''}`}
-                  onClick={() => setLightbox({ index: i })}
-                >
-                  <img src={p.data} alt="" />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      <PhotoLightbox lightbox={lightbox} setLightbox={setLightbox} />
     </div>
   );
 }

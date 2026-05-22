@@ -1,13 +1,28 @@
 import React, { useCallback, useEffect } from 'react';
 import { useSwipeNavigationLightbox } from '../hooks/useSwipeNavigation';
+import { listingDetailLightboxCss } from '../roles/shared/dealsWdStyles';
+
+const LB_STYLE_ID = 'photo-lightbox-styles';
+
+function ensureLightboxStyles() {
+  if (typeof document === 'undefined' || document.getElementById(LB_STYLE_ID)) return;
+  const el = document.createElement('style');
+  el.id = LB_STYLE_ID;
+  el.textContent = listingDetailLightboxCss;
+  document.head.appendChild(el);
+}
 
 /**
  * Полноэкранный просмотр фото: свайп на мобильном, стрелки и клавиатура на десктопе.
  * @param {{ photos: string[], index: number } | null} lightbox
  * @param {(value: null | { photos: string[], index: number }) => void} setLightbox
  * @param {string} [alt]
+ * @param {(index: number) => void} [onIndexChange] — синхронизация с галереей на странице
  */
-export default function PhotoLightbox({ lightbox, setLightbox, alt = '' }) {
+export default function PhotoLightbox({ lightbox, setLightbox, alt = '', onIndexChange }) {
+  useEffect(() => {
+    ensureLightboxStyles();
+  }, []);
   const photos = lightbox?.photos;
   const index = lightbox?.index ?? 0;
   const count = photos?.length ?? 0;
@@ -50,6 +65,11 @@ export default function PhotoLightbox({ lightbox, setLightbox, alt = '' }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [lightbox, multi, close, goNext, goPrev]);
+
+  useEffect(() => {
+    if (lightbox == null || onIndexChange == null) return;
+    onIndexChange(lightbox.index);
+  }, [lightbox?.index, onIndexChange]);
 
   useEffect(() => {
     if (!lightbox) return;

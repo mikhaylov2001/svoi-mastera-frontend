@@ -16,7 +16,8 @@ import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes } from '../../constants/pageHer
 import { findCatalogPageCss } from '../shared/findCatalogPageCss';
 import { WORKER_HOME_PATH } from '../../constants/homePaths';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
-import { useSwipeNavigation, useSwipeNavigationLightbox } from '../../hooks/useSwipeNavigation';
+import { useSwipeNavigation } from '../../hooks/useSwipeNavigation';
+import PhotoLightbox from '../../components/PhotoLightbox';
 import { smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { formatCatalogCountShort } from '../../utils/formatCatalogCountShort';
@@ -273,26 +274,11 @@ export default function FindWorkPage() {
     setActivePhotoIdx((i) => (jobDetailPhotoCount > 1 ? (i + 1) % jobDetailPhotoCount : i));
   }, [jobDetailPhotoCount]);
 
-  const jobLbPrev = useCallback(() => {
-    if (!lightbox || lightbox.photos.length <= 1) return;
-    const next = (lightbox.index - 1 + lightbox.photos.length) % lightbox.photos.length;
-    setActivePhotoIdx(next);
-    setLightbox({ ...lightbox, index: next });
-  }, [lightbox]);
-
-  const jobLbNext = useCallback(() => {
-    if (!lightbox || lightbox.photos.length <= 1) return;
-    const next = (lightbox.index + 1) % lightbox.photos.length;
-    setActivePhotoIdx(next);
-    setLightbox({ ...lightbox, index: next });
-  }, [lightbox]);
-
   const jobGallerySwipe = useSwipeNavigation(
     jobDetailPrevPhoto,
     jobDetailNextPhoto,
     !!selectedRequest && jobDetailCanSwipe,
   );
-  const jobLbSwipe = useSwipeNavigationLightbox(jobLbPrev, jobLbNext, !!lightbox && lightbox.photos.length > 1);
   const jobThumbStripRef = useRef(null);
 
   useEffect(() => {
@@ -300,17 +286,6 @@ export default function FindWorkPage() {
     const active = jobThumbStripRef.current.querySelector('.ed-thumb.on');
     active?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
   }, [activePhotoIdx, jobDetailCanSwipe]);
-
-  React.useEffect(() => {
-    if (!lightbox) return;
-    const handler = (e) => {
-      if (e.key === 'ArrowRight') jobLbNext();
-      if (e.key === 'ArrowLeft') jobLbPrev();
-      if (e.key === 'Escape') setLightbox(null);
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [lightbox, jobLbNext, jobLbPrev]);
 
   const requestIdFromUrl = searchParams.get('request');
 
@@ -470,94 +445,12 @@ export default function FindWorkPage() {
         <div className="ed ed--listing-detail">
           <style>{JOB_REQUEST_DETAIL_STYLES}</style>
 
-          {lightbox && (
-            <div className="jd-lightbox" onClick={() => setLightbox(null)} role="presentation">
-              <button
-                type="button"
-                className="jd-lb-close"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setLightbox(null);
-                }}
-              >
-                ✕
-              </button>
-              {lightbox.photos.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    className="jd-lb-nav jd-lb-prev"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setLightbox((l) => ({
-                        ...l,
-                        index: l.index > 0 ? l.index - 1 : l.photos.length - 1,
-                      }));
-                    }}
-                  >
-                    ‹
-                  </button>
-                  <button
-                    type="button"
-                    className="jd-lb-nav jd-lb-next"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setLightbox((l) => ({
-                        ...l,
-                        index: l.index < l.photos.length - 1 ? l.index + 1 : 0,
-                      }));
-                    }}
-                  >
-                    ›
-                  </button>
-                </>
-              )}
-              <div
-                className={`jd-lightbox-img-wrap ${jobLbSwipe.className}`}
-                onClick={(e) => e.stopPropagation()}
-                onPointerDown={jobLbSwipe.onPointerDown}
-                onPointerUp={jobLbSwipe.onPointerUp}
-                onPointerCancel={jobLbSwipe.onPointerCancel}
-                style={jobLbSwipe.style}
-              >
-                {lightbox.photos.length > 1 && (
-                  <>
-                    <div
-                      className="jd-lb-zone jd-lb-zone-prev"
-                      onClick={() =>
-                        setLightbox((l) => ({
-                          ...l,
-                          index: l.index > 0 ? l.index - 1 : l.photos.length - 1,
-                        }))
-                      }
-                      role="presentation"
-                    />
-                    <div
-                      className="jd-lb-zone jd-lb-zone-next"
-                      onClick={() =>
-                        setLightbox((l) => ({
-                          ...l,
-                          index: l.index < l.photos.length - 1 ? l.index + 1 : 0,
-                        }))
-                      }
-                      role="presentation"
-                    />
-                  </>
-                )}
-                <img
-                  src={lightbox.photos[lightbox.index]}
-                  alt={req.title || ''}
-                  onClick={() => lightbox.photos.length <= 1 && setLightbox(null)}
-                />
-              </div>
-              {lightbox.photos.length > 1 && (
-                <div className="jd-lb-counter">
-                  {lightbox.index + 1} / {lightbox.photos.length}
-                </div>
-              )}
-              <div className="jd-lb-hint">Свайп или ← → · Esc — закрыть</div>
-            </div>
-          )}
+          <PhotoLightbox
+            lightbox={lightbox}
+            setLightbox={setLightbox}
+            onIndexChange={setActivePhotoIdx}
+            alt={req.title || ''}
+          />
 
           <div className="ed-wrap">
             <button
