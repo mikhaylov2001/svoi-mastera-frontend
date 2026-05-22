@@ -1589,7 +1589,7 @@ export default function MyListingsPage() {
       (d) => String(d.listingId || '') === String(detail.id),
     ).length;
     const ordersStat = listingDealsCount > 0 ? listingDealsCount : completedCount;
-    const ratingDisplay = ratingVal > 0 ? ratingVal.toFixed(1) : '—';
+    const ratingDisplay = ratingVal > 0 ? ratingVal.toFixed(1) : '0';
     const priceUnitRaw = String(detail.priceUnit || 'за работу').trim();
     const priceUnitShort = priceUnitRaw.toLowerCase().startsWith('от')
       ? 'от'
@@ -2057,7 +2057,7 @@ export default function MyListingsPage() {
               const reviewsCount = Number(workerStats?.reviewsCount) || 0;
               const completedCount = Number(workerStats?.completedWorksCount)
                 || workerDeals.filter((d) => d.status === 'COMPLETED').length;
-              const ratingDisplay = ratingVal > 0 ? ratingVal.toFixed(1) : '—';
+              const ratingDisplay = ratingVal > 0 ? ratingVal.toFixed(1) : '0';
 
               return (
                 <article
