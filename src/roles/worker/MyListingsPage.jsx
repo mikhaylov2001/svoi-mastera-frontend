@@ -75,6 +75,13 @@ function formatListingRelativeRu(iso) {
   return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
+function cabinetListingAddressLine(listing) {
+  const raw = listing?.address || listing?.city || '';
+  const s = String(raw).trim();
+  if (s) return s;
+  return 'Йошкар-Ола · выезд по договорённости';
+}
+
 function priceKindFromListing(l) {
   const u = String(l?.priceUnit || '').trim().toLowerCase();
   if (u.includes('договор')) return 'negotiable';
@@ -1941,23 +1948,15 @@ export default function MyListingsPage() {
           <div className="mo-grid">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="mo-card mo-card--sk" aria-hidden>
-                <div className="mo-card-top">
-                  <div className="mo-card-photo"><div className="ml-sk" style={{ width: '100%', height: '100%', borderRadius: 14 }} /></div>
-                  <div className="mo-card-body">
-                    <div className="ml-sk" style={{ height: 16, width: '70%' }} />
-                    <div className="ml-sk" style={{ height: 12, width: '90%', marginTop: 8 }} />
-                    <div className="ml-sk" style={{ height: 12, width: '40%', marginTop: 8 }} />
-                    <div className="ml-sk" style={{ height: 28, width: '45%', marginTop: 12 }} />
-                  </div>
-                </div>
-                <div className="mo-meta">
-                  <div className="ml-sk" style={{ height: 12, width: 80 }} />
-                  <div className="ml-sk" style={{ height: 12, width: 100, marginLeft: 'auto' }} />
+                <div className="mo-card-media"><div className="ml-sk" style={{ width: '100%', height: '100%' }} /></div>
+                <div className="mo-card-content">
+                  <div className="ml-sk" style={{ height: 18, width: '75%' }} />
+                  <div className="ml-sk" style={{ height: 12, width: '55%', marginTop: 10 }} />
+                  <div className="ml-sk" style={{ height: 12, width: '90%', marginTop: 8 }} />
                 </div>
                 <div className="mo-actions">
-                  <div className="ml-sk mo-btn" style={{ flex: 1, minHeight: 44, borderRadius: 13 }} />
-                  <div className="ml-sk mo-btn mo-btn-icon" style={{ width: 42, height: 42, borderRadius: 13 }} />
-                  <div className="ml-sk mo-btn mo-btn-icon" style={{ width: 42, height: 42, borderRadius: 13 }} />
+                  <div className="ml-sk mo-btn" style={{ flex: 1, minHeight: 46, borderRadius: 14 }} />
+                  <div className="ml-sk mo-btn" style={{ flex: 1, minHeight: 46, borderRadius: 14 }} />
                 </div>
               </div>
             ))}
@@ -2003,14 +2002,14 @@ export default function MyListingsPage() {
                 setDetail(l);
                 setPhotoIdx(0);
               };
-              const primaryLabel = locked ? 'Открыть' : (l.active ? 'Редактировать' : 'Открыть');
-              const onPrimary = (e) => {
+              const addrLine = cabinetListingAddressLine(l);
+              const priceOnImg = negotiable
+                ? 'Договорная'
+                : `${Number(priceNum).toLocaleString('ru-RU')} ₽ ${l.priceUnit || 'за работу'}`;
+              const canEdit = !locked && l.active;
+              const onEdit = (e) => {
                 e.stopPropagation();
-                if (locked) {
-                  openDetail();
-                  return;
-                }
-                if (l.active) openEdit(l, e);
+                if (canEdit) openEdit(l, e);
                 else openDetail();
               };
               const showArchiveBtn = !locked;
@@ -2029,102 +2028,65 @@ export default function MyListingsPage() {
                     }
                   }}
                 >
-                  <div className="mo-card-top">
-                    <div className="mo-card-photo">
-                      <img src={thumbSrc} alt="" />
-                    </div>
-                    <div className="mo-card-body">
-                      <div className="mo-card-row">
-                        <h3 className="mo-card-title">{l.title}</h3>
-                        <span className={`mo-status ${pillClass}`}>
-                          <span className="dot" aria-hidden />
-                          {stPillLabel}
-                        </span>
-                      </div>
-                      {!!desc && <div className="mo-card-desc">{desc}</div>}
-                      {!!catName && (
-                        <span className={`mo-cat ${moCatClassFromLabel(catName)}`}>
-                          {categoryEmoji(catName)} {catName}
-                        </span>
-                      )}
-                      <div className="mo-price-row">
-                        <div className="mo-price">
-                          {negotiable ? (
-                            <span className="mo-price-lbl" style={{ fontSize: 15, fontWeight: 700, color: '#64748b' }}>Договорная</span>
-                          ) : (
-                            <>
-                              <span className="mo-price-num">{Number(priceNum).toLocaleString('ru-RU')} ₽</span>
-                              <span className="mo-price-lbl">{l.priceUnit || 'за работу'}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                  <div className="mo-card-media">
+                    <img src={thumbSrc} alt="" />
+                    <span className={`mo-card-status-on-img ${pillClass}`}>{stPillLabel}</span>
+                    <div className="mo-card-price-on-img">{priceOnImg}</div>
                   </div>
 
-                  <div className="mo-meta">
-                    <div className="mo-meta-start">
-                      <span className="mo-meta-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
-                        {formatListingRelativeRu(l.createdAt)}
-                      </span>
-                      <span className="mo-meta-item mo-meta-views">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>
-                        {views}
-                      </span>
+                  <div className="mo-card-content">
+                    <div className="mo-card-headline">
+                      <h3 className="mo-card-title">{l.title}</h3>
+                      <time className="mo-card-time">{formatListingRelativeRu(l.createdAt)}</time>
                     </div>
-                    {statusOpen ? (
-                      <span className="mo-meta-trail mo-offers mo-offers--wait">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                          <path d="M5 2h14v3l-4 5 4 5v3H5v-3l4-5-4-5V2z" />
-                          <path d="M9 12h6" />
-                        </svg>
-                        Ждём заказчиков
-                      </span>
-                    ) : (
-                      <span className="mo-meta-trail mo-offers mo-offers--wait" style={{ color: '#64748b', fontWeight: 600 }}>
-                        В архиве
-                      </span>
+                    {(catName || addrLine) && (
+                      <div className="mo-card-tags">
+                        {!!catName && (
+                          <span className={`mo-tag mo-tag-cat ${moCatClassFromLabel(catName)}`}>{catName}</span>
+                        )}
+                        {!!addrLine && <span className="mo-tag mo-tag-addr">{addrLine}</span>}
+                      </div>
                     )}
+                    {!!desc && <p className="mo-card-desc">{desc}</p>}
+                    <p className="mo-card-hint">
+                      {statusOpen ? 'Ждём заказчиков' : 'В архиве'}
+                      {views > 0 ? ` · ${views} просмотров` : ''}
+                    </p>
                   </div>
 
                   <div className="mo-actions" onClick={(e) => e.stopPropagation()}>
-                    <button type="button" className="mo-btn mo-btn-primary" onClick={onPrimary}>
-                      {primaryLabel}
+                    <button type="button" className="mo-btn mo-btn-primary" onClick={onEdit}>
+                      {canEdit ? 'Редактировать' : 'Открыть'}
                     </button>
+                    <button type="button" className="mo-btn mo-btn-secondary" onClick={(e) => { e.stopPropagation(); openDetail(); }}>
+                      Подробнее
+                    </button>
+                  </div>
+
+                  <div className="mo-card-tools" onClick={(e) => e.stopPropagation()}>
                     <button
                       type="button"
-                      className={`mo-btn mo-btn-ghost mo-btn-icon${copyFlashId === l.id ? ' copied' : ''}`}
-                      title={copyFlashId === l.id ? 'Скопировано' : 'Копировать ссылку'}
-                      aria-label="Копировать ссылку"
+                      className="mo-card-tool"
                       onClick={(e) => copyListingPublicLink(l.id, e)}
                     >
-                      🔗
+                      {copyFlashId === l.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
                     </button>
+                    {showArchiveBtn && (
+                      <button type="button" className="mo-card-tool" onClick={(e) => handleToggle(l, e)}>
+                        {l.active ? 'Снять с публикации' : 'Восстановить'}
+                      </button>
+                    )}
                     {showWorkerReviewForListing(l.id) && (
                       <button
                         type="button"
-                        className="mo-btn mo-btn-ghost mo-btn-icon"
-                        title="Отзыв о заказчике"
-                        aria-label="Отзыв о заказчике"
+                        className="mo-card-tool"
                         onClick={(e) => {
                           e.stopPropagation();
                           const d = completedDealForListing(l.id);
                           if (d) setWorkerReviewDealId(d.id);
                         }}
                       >
-                        ⭐
-                      </button>
-                    )}
-                    {showArchiveBtn && (
-                      <button
-                        type="button"
-                        className="mo-btn mo-btn-ghost mo-btn-icon"
-                        title={l.active ? 'Снять с публикации' : 'Восстановить'}
-                        aria-label={l.active ? 'Снять с публикации' : 'Восстановить'}
-                        onClick={(e) => handleToggle(l, e)}
-                      >
-                        📦
+                        Отзыв о заказчике
                       </button>
                     )}
                   </div>

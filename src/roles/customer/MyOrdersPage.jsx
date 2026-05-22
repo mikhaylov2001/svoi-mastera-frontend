@@ -512,6 +512,10 @@ function formatJobRequestRelativeRu(iso) {
   return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
+function cabinetAddressLine(city, address) {
+  return [city, address].map((s) => String(s || '').trim()).filter(Boolean).join(', ');
+}
+
 function isActiveStatus(s) {
   return ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'].includes(s);
 }
@@ -1994,23 +1998,15 @@ export default function MyOrdersPage() {
           <div className="mo-grid">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="mo-card mo-card--sk" aria-hidden>
-                <div className="mo-card-top">
-                  <div className="mo-card-photo"><div className="ml-sk" style={{ width: '100%', height: '100%', borderRadius: 14 }} /></div>
-                  <div className="mo-card-body">
-                    <div className="ml-sk" style={{ height: 16, width: '70%' }} />
-                    <div className="ml-sk" style={{ height: 12, width: '90%', marginTop: 8 }} />
-                    <div className="ml-sk" style={{ height: 12, width: '40%', marginTop: 8 }} />
-                    <div className="ml-sk" style={{ height: 28, width: '45%', marginTop: 12 }} />
-                  </div>
-                </div>
-                <div className="mo-meta">
-                  <div className="ml-sk" style={{ height: 12, width: 80 }} />
-                  <div className="ml-sk" style={{ height: 12, width: 100, marginLeft: 'auto' }} />
+                <div className="mo-card-media"><div className="ml-sk" style={{ width: '100%', height: '100%' }} /></div>
+                <div className="mo-card-content">
+                  <div className="ml-sk" style={{ height: 18, width: '75%' }} />
+                  <div className="ml-sk" style={{ height: 12, width: '55%', marginTop: 10 }} />
+                  <div className="ml-sk" style={{ height: 12, width: '90%', marginTop: 8 }} />
                 </div>
                 <div className="mo-actions">
-                  <div className="ml-sk mo-btn" style={{ flex: 1, minHeight: 44, borderRadius: 13 }} />
-                  <div className="ml-sk mo-btn mo-btn-icon" style={{ width: 42, height: 42, borderRadius: 13 }} />
-                  <div className="ml-sk mo-btn mo-btn-icon" style={{ width: 42, height: 42, borderRadius: 13 }} />
+                  <div className="ml-sk mo-btn" style={{ flex: 1, minHeight: 46, borderRadius: 14 }} />
+                  <div className="ml-sk mo-btn" style={{ flex: 1, minHeight: 46, borderRadius: 14 }} />
                 </div>
               </div>
             ))}
@@ -2062,12 +2058,19 @@ export default function MyOrdersPage() {
                 setDetail(req);
                 setPhotoIdx(0);
               };
-              const primaryLabel = offers > 0 ? 'Смотреть отклики' : (requestIsEditable(req) ? 'Редактировать' : 'Открыть');
-              const onPrimary = (e) => {
+              const addrLine = cabinetAddressLine(req.city, req.addressText || req.address);
+              const priceOnImg = budget && Number(budget) > 0
+                ? `${Number(budget).toLocaleString('ru-RU')} ₽ в заявке`
+                : JOB_REQUEST_PRICE_MISSING_LABEL;
+              const canEdit = requestIsEditable(req);
+              const onEdit = (e) => {
                 e.stopPropagation();
-                if (offers > 0) openDetail(true);
-                else if (requestIsEditable(req)) openEdit(req, e);
+                if (canEdit) openEdit(req, e);
                 else openDetail(false);
+              };
+              const onOffers = (e) => {
+                e.stopPropagation();
+                openDetail(true);
               };
               return (
                 <article
@@ -2083,96 +2086,74 @@ export default function MyOrdersPage() {
                     }
                   }}
                 >
-                  <div className="mo-card-top">
-                    <div className="mo-card-photo">
-                      {urgent && <span className="mo-card-urgent">⚡ Срочно</span>}
-                      <img src={thumbSrc} alt="" />
-                    </div>
-                    <div className="mo-card-body">
-                      <div className="mo-card-row">
-                        <h3 className="mo-card-title">{req.title}</h3>
-                        <span className={`mo-status ${pillClass}`}>
-                          <span className="dot" aria-hidden />
-                          {stPillLabel}
-                        </span>
-                      </div>
-                      {!!desc && <div className="mo-card-desc">{desc}</div>}
-                      {!!catName && (
-                        <span className={`mo-cat ${moCatClassFromLabel(catName)}`}>
-                          {categoryEmoji(catName)} {catName}
-                        </span>
-                      )}
-                      <div className="mo-price-row">
-                        <div className="mo-price">
-                          {budget && Number(budget) > 0 ? (
-                            <>
-                              <span className="mo-price-num">{Number(budget).toLocaleString('ru-RU')} ₽</span>
-                              <span className="mo-price-lbl">в заявке</span>
-                            </>
-                          ) : (
-                            <span className="mo-price-lbl" style={{ fontSize: 15, fontWeight: 700, color: '#64748b' }}>{JOB_REQUEST_PRICE_MISSING_LABEL}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                  <div className="mo-card-media">
+                    <img src={thumbSrc} alt="" />
+                    <span className={`mo-card-status-on-img ${pillClass}`}>{stPillLabel}</span>
+                    {urgent && <span className="mo-card-urgent">Срочно</span>}
+                    <div className="mo-card-price-on-img">{priceOnImg}</div>
                   </div>
 
-                  <div className="mo-meta">
-                    <div className="mo-meta-start">
-                      <span className="mo-meta-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
-                        {formatJobRequestRelativeRu(req.createdAt)}
-                      </span>
-                      <span className="mo-meta-item mo-meta-views">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>
-                        {views}
-                      </span>
+                  <div className="mo-card-content">
+                    <div className="mo-card-headline">
+                      <h3 className="mo-card-title">{req.title}</h3>
+                      <time className="mo-card-time">{formatJobRequestRelativeRu(req.createdAt)}</time>
                     </div>
-                    {offers > 0 ? (
-                      <span className="mo-meta-trail mo-offers mo-offers--has">
-                        <span className="mo-avatars" aria-hidden>
-                          {Array.from({ length: Math.min(offers, 3) }).map((_, i) => (
-                            <span key={i}>{['А', 'М', 'С', 'К'][i]}</span>
-                          ))}
-                        </span>
-                        {offers} {pluralOffers(offers)} →
-                      </span>
-                    ) : (
-                      <span className="mo-meta-trail mo-offers mo-offers--wait">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                          <path d="M5 2h14v3l-4 5 4 5v3H5v-3l4-5-4-5V2z" />
-                          <path d="M9 12h6" />
-                        </svg>
-                        Ждём первый отклик
-                      </span>
+                    {(catName || addrLine) && (
+                      <div className="mo-card-tags">
+                        {!!catName && (
+                          <span className={`mo-tag mo-tag-cat ${moCatClassFromLabel(catName)}`}>{catName}</span>
+                        )}
+                        {!!addrLine && <span className="mo-tag mo-tag-addr">{addrLine}</span>}
+                      </div>
                     )}
+                    {!!desc && <p className="mo-card-desc">{desc}</p>}
+                    <p className="mo-card-hint">
+                      {offers > 0 ? (
+                        <>
+                          <strong>{offers} {pluralOffers(offers)}</strong>
+                          {' · Мастера могут откликнуться'}
+                        </>
+                      ) : (
+                        'Ждём первый отклик'
+                      )}
+                      {views > 0 ? ` · ${views} просмотров` : ''}
+                    </p>
                   </div>
 
                   <div className="mo-actions" onClick={(e) => e.stopPropagation()}>
-                    <button type="button" className="mo-btn mo-btn-primary" onClick={onPrimary}>
-                      {primaryLabel}
+                    <button type="button" className="mo-btn mo-btn-primary" onClick={onEdit}>
+                      {canEdit ? 'Редактировать' : 'Открыть'}
                     </button>
-                    <button
-                      type="button"
-                      className={`mo-btn mo-btn-ghost mo-btn-icon${copyFlashId === req.id ? ' copied' : ''}`}
-                      title={copyFlashId === req.id ? 'Скопировано' : 'Копировать ссылку'}
-                      aria-label="Копировать ссылку"
-                      onClick={(e) => copyRequestLink(req.id, e)}
-                    >
-                      🔗
-                    </button>
-                    {requestCanRemove(req) && (
-                      <button
-                        type="button"
-                        className="mo-btn mo-btn-ghost mo-btn-icon"
-                        title="Убрать заявку"
-                        aria-label="Убрать заявку"
-                        disabled={removeLoadingId === req.id}
-                        onClick={(e) => handleRemoveRequest(req, e)}
-                      >
-                        {removeLoadingId === req.id ? '…' : '📦'}
+                    {offers > 0 ? (
+                      <button type="button" className="mo-btn mo-btn-secondary" onClick={onOffers}>
+                        {`Отклики ${offers}`}
+                      </button>
+                    ) : (
+                      <button type="button" className="mo-btn mo-btn-secondary" onClick={(e) => { e.stopPropagation(); openDetail(false); }}>
+                        Подробнее
                       </button>
                     )}
+                  </div>
+
+                  <div className="mo-card-tools" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className={`mo-card-tool${copyFlashId === req.id ? ' copied' : ''}`}
+                        aria-label="Копировать ссылку"
+                        onClick={(e) => copyRequestLink(req.id, e)}
+                      >
+                        {copyFlashId === req.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
+                      </button>
+                      {requestCanRemove(req) && (
+                        <button
+                          type="button"
+                          className="mo-card-tool"
+                          disabled={removeLoadingId === req.id}
+                          onClick={(e) => handleRemoveRequest(req, e)}
+                        >
+                          {removeLoadingId === req.id ? 'Убираем…' : 'Убрать заявку'}
+                        </button>
+                      )}
                   </div>
                 </article>
               );
