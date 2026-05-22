@@ -9,6 +9,7 @@ import {
   getCategories, createJobRequest, updateJobRequest,
   getMyDeals,
   cancelJobRequest,
+  getWorkerStats,
 } from '../../api';
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
@@ -88,6 +89,24 @@ function workerOfferFullName(offer) {
   const first = (offer.workerName || '').trim();
   if (last) return `${first} ${last}`.trim();
   return first || 'Мастер';
+}
+
+/** «Сергей Н.» для карточки отклика */
+function workerOfferShortName(offer) {
+  const first = (offer?.workerName || '').trim();
+  const last = (offer?.workerLastName || '').trim();
+  if (first && last) return `${first} ${last[0]}.`;
+  return workerOfferFullName(offer);
+}
+
+function reviewsCountLabel(n) {
+  const num = Number(n) || 0;
+  const a = Math.abs(num) % 100;
+  const b = a % 10;
+  if (a > 10 && a < 20) return `${num} отзывов`;
+  if (b === 1) return `${num} отзыв`;
+  if (b > 1 && b < 5) return `${num} отзыва`;
+  return `${num} отзывов`;
 }
 
 function pluralOffers(n) {
@@ -575,6 +594,7 @@ export default function MyOrdersPage() {
   const [detailOffersLoading, setDetailOffersLoading] = useState(false);
   /** Блок откликов на деталке (OPEN) только после кнопки «Смотреть отклики» */
   const [detailShowOffersPanel, setDetailShowOffersPanel] = useState(false);
+  const [offerWorkerStats, setOfferWorkerStats] = useState({});
 
   const photoRef = useRef();
   const titleRef = useRef();
@@ -733,6 +753,46 @@ export default function MyOrdersPage() {
       });
     return () => { cancelled = true; };
   }, [detail?.id, detail?.status, detailShowOffersPanel]);
+
+  useEffect(() => {
+    if (!detailShowOffersPanel || !detailOffers.length) {
+      setOfferWorkerStats({});
+      return undefined;
+    }
+    const ids = [
+      ...new Set(
+        detailOffers
+          .map((o) => o.workerUserId || o.workerId)
+          .filter(Boolean)
+          .map(String),
+      ),
+    ];
+    let cancelled = false;
+    Promise.all(
+      ids.map((id) =>
+        getWorkerStats(id)
+          .then((s) => [id, s])
+          .catch(() => [id, null]),
+      ),
+    ).then((entries) => {
+      if (!cancelled) setOfferWorkerStats(Object.fromEntries(entries));
+    });
+    return () => { cancelled = true; };
+  }, [detailShowOffersPanel, detailOffers]);
+
+  useEffect(() => {
+    if (!detailShowOffersPanel) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => {
+      if (e.key === 'Escape') setDetailShowOffersPanel(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [detailShowOffersPanel]);
 
   // Lightbox keyboard
   useEffect(() => {
@@ -1533,6 +1593,7 @@ export default function MyOrdersPage() {
     const showDescCard = !!(detail.description && String(detail.description).trim() && detail.description !== 'Без описания');
     const photoCount = jdPhotos.length;
     const hasMultiplePhotos = photoCount > 1;
+    const offersCountDisplay = Number(detail.offersCount) || detailOffers.length || 0;
 
     return (
       <div className="ed ed--listing-detail">
@@ -1618,6 +1679,142 @@ export default function MyOrdersPage() {
               </div>
             )}
             <div className="jd-lb-hint">← → по краям · Esc — закрыть</div>
+          </div>
+        )}
+
+        {detail.status === 'OPEN' && detailShowOffersPanel && (
+          <div
+            className="mo-offers-sheet-overlay"
+            onClick={() => setDetailShowOffersPanel(false)}
+            role="presentation"
+          >
+            <div
+              className="mo-offers-sheet"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="mo-offers-sheet-title"
+            >
+              <header className="mo-offers-sheet-head">
+                <div className="mo-offers-sheet-head-text">
+                  <h2 id="mo-offers-sheet-title" className="mo-offers-sheet-title">Отклики</h2>
+                  <p className="mo-offers-sheet-subtitle">{detail.title}</p>
+                  <span className="mo-offers-sheet-badge">
+                    {offersCountDisplay} {pluralOffers(offersCountDisplay)}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="mo-offers-sheet-close"
+                  aria-label="Закрыть"
+                  onClick={() => setDetailShowOffersPanel(false)}
+                >
+                  ×
+                </button>
+              </header>
+
+              <div className="mo-offers-sheet-body">
+                {detailOffersLoading && (
+                  <div className="mo-offers-sheet-loading">
+                    <div className="ml-sk" style={{ height: 120, borderRadius: 16 }} />
+                  </div>
+                )}
+                {!detailOffersLoading && detailOffers.length === 0 && (
+                  <p className="mo-offers-sheet-empty">
+                    Откликов пока нет. Мастера увидят вашу заявку и предложат цену.
+                  </p>
+                )}
+                {!detailOffersLoading && detailOffers.map((offer) => {
+                  const workerId = offer.workerUserId || offer.workerId;
+                  const stats = workerId ? offerWorkerStats[String(workerId)] : null;
+                  const rating = Number(stats?.averageRating) || 0;
+                  const reviewsN = Number(stats?.reviewsCount) || 0;
+                  const showTop = rating >= 4.5 && reviewsN >= 5;
+                  const workerAv = workerOfferAvatarSrc(offer, BACKEND);
+                  const workerInitial = (workerOfferShortName(offer) || 'М')[0].toUpperCase();
+                  const timeLabel = offer.createdAt
+                    ? formatJobRequestRelativeRu(offer.createdAt)
+                    : '';
+                  const chatHref = workerId
+                    ? `/chat/${workerId}?jobRequestId=${detail.id}`
+                    : null;
+                  const isAccepted = offer.status === 'ACCEPTED';
+                  const agreedPrice = budget && Number(offer.price) === Number(budget);
+
+                  return (
+                    <article
+                      key={offer.id}
+                      className={`mo-offer-sheet-card${isAccepted ? ' is-accepted' : ''}`}
+                    >
+                      <div className="mo-offer-sheet-card-head">
+                        <div className="mo-offer-sheet-worker">
+                          {workerAv ? (
+                            <img className="mo-offer-sheet-ava" src={workerAv} alt="" />
+                          ) : (
+                            <div className="mo-offer-sheet-ava mo-offer-sheet-ava--fallback">
+                              {workerInitial}
+                            </div>
+                          )}
+                          <div className="mo-offer-sheet-worker-info">
+                            <div className="mo-offer-sheet-name-row">
+                              <span className="mo-offer-sheet-name">{workerOfferShortName(offer)}</span>
+                              {showTop && <span className="mo-offer-sheet-top">ТОП</span>}
+                            </div>
+                            <div className="mo-offer-sheet-meta">
+                              {rating > 0 && (
+                                <span>
+                                  {rating.toFixed(1)} ({reviewsCountLabel(reviewsN)})
+                                </span>
+                              )}
+                              {timeLabel && <span>{timeLabel}</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mo-offer-sheet-price">
+                          {Number(offer.price).toLocaleString('ru-RU')} ₽
+                        </div>
+                      </div>
+
+                      {offer.message && (
+                        <div className="mo-offer-sheet-msg">{offer.message}</div>
+                      )}
+
+                      {agreedPrice && !isAccepted && (
+                        <p className="mo-offer-sheet-note">Принял вашу цену в заявке</p>
+                      )}
+
+                      {isAccepted ? (
+                        <p className="mo-offer-sheet-accepted">Отклик принят</p>
+                      ) : requestIsEditable(detail) ? (
+                        <div className="mo-offer-sheet-actions">
+                          <button
+                            type="button"
+                            className="mo-offer-sheet-btn mo-offer-sheet-btn--accept"
+                            disabled={actionLoading === offer.id}
+                            onClick={(e) => handleAccept(detail.id, offer.id, e)}
+                          >
+                            {actionLoading === offer.id ? 'Принимаем…' : 'Принять'}
+                          </button>
+                          {chatHref ? (
+                            <Link
+                              to={chatHref}
+                              className="mo-offer-sheet-btn mo-offer-sheet-btn--write"
+                              onClick={() => setDetailShowOffersPanel(false)}
+                            >
+                              Написать
+                            </Link>
+                          ) : (
+                            <button type="button" className="mo-offer-sheet-btn mo-offer-sheet-btn--write" disabled>
+                              Написать
+                            </button>
+                          )}
+                        </div>
+                      ) : null}
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
@@ -1803,11 +2000,9 @@ export default function MyOrdersPage() {
                       <button
                         type="button"
                         className={`mo-btn-offers-main${detailShowOffersPanel ? ' is-active' : ''}`}
-                        onClick={() => setDetailShowOffersPanel((v) => !v)}
+                        onClick={() => setDetailShowOffersPanel(true)}
                       >
-                        {detailShowOffersPanel
-                          ? 'Скрыть отклики'
-                          : `Смотреть отклики • ${Number(detail.offersCount) || detailOffers.length || 0}`}
+                        {`Смотреть отклики • ${Number(detail.offersCount) || detailOffers.length || 0}`}
                       </button>
                     )}
                     {(requestIsEditable(detail) || requestCanRemove(detail)) && (
@@ -1830,67 +2025,6 @@ export default function MyOrdersPage() {
                       </div>
                     )}
                   </div>
-                </div>
-              )}
-
-              {detail.status === 'OPEN' && detailShowOffersPanel && (
-                <div className="ed-card ed-card--offers">
-                  <div className="ml-offers-title">Отклики мастеров</div>
-                  {detailOffersLoading && <div className="ml-sk" style={{ height: 60, borderRadius: 12 }} />}
-                  {!detailOffersLoading && detailOffers.length === 0 && (
-                    <p style={{ fontSize: 13, color: '#9ca3af', margin: 0, lineHeight: 1.45 }}>
-                      Откликов пока нет. Мастера увидят вашу заявку и предложат цену.
-                    </p>
-                  )}
-                  {!detailOffersLoading && detailOffers.map((offer) => {
-                    const agreedPrice = budget && Number(offer.price) === Number(budget);
-                    const cheaper = budget && Number(offer.price) < Number(budget);
-                    return (
-                      <div
-                        key={offer.id}
-                        className="ml-offer-card"
-                        style={agreedPrice || offer.status === 'ACCEPTED' ? { borderColor: '#22c55e', background: '#f0fdf4' } : {}}
-                      >
-                        <div className="ml-offer-top">
-                          <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                              <span className="ml-offer-price">{Number(offer.price).toLocaleString('ru-RU')} ₽</span>
-                              {offer.estimatedDays && <span className="ml-offer-days">· {offer.estimatedDays} дн.</span>}
-                              {agreedPrice && (
-                                <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', background: '#dcfce7', padding: '2px 8px', borderRadius: 12 }}>✅ Принял вашу цену</span>
-                              )}
-                              {cheaper && !agreedPrice && (
-                                <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', background: '#dbeafe', padding: '2px 8px', borderRadius: 12 }}>
-                                  −{(Number(budget) - Number(offer.price)).toLocaleString('ru-RU')} ₽ дешевле
-                                </span>
-                              )}
-                              {budget && Number(offer.price) > Number(budget) && (
-                                <span style={{ fontSize: 12, fontWeight: 600, color: '#d97706', background: '#fef3c7', padding: '2px 8px', borderRadius: 12 }}>
-                                  +{(Number(offer.price) - Number(budget)).toLocaleString('ru-RU')} ₽ к цене в заявке
-                                </span>
-                              )}
-                            </div>
-                            {offer.workerName && (
-                              <div className="ml-offer-name">{workerOfferFullName(offer)}</div>
-                            )}
-                          </div>
-                          {requestIsEditable(detail) && offer.status !== 'ACCEPTED' && (
-                            <button
-                              className="ml-accept-btn"
-                              disabled={actionLoading === offer.id}
-                              onClick={(e) => handleAccept(detail.id, offer.id, e)}
-                            >
-                              {actionLoading === offer.id ? '...' : 'Принять'}
-                            </button>
-                          )}
-                          {offer.status === 'ACCEPTED' && (
-                            <span style={{ fontSize: 13, fontWeight: 700, color: '#16a34a', whiteSpace: 'nowrap' }}>✓ Принят</span>
-                          )}
-                        </div>
-                        {offer.message && <p className="ml-offer-msg">{offer.message}</p>}
-                      </div>
-                    );
-                  })}
                 </div>
               )}
 
