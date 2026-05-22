@@ -10,9 +10,6 @@ export const moOrdersListShellCss = `
     position: relative; width: 100%; height: 240px; overflow: hidden;
     border-radius: 0; box-shadow: none;
   }
-  @media (max-width: 768px) {
-    .mo-orders-root .mo-hero { height: 200px; }
-  }
   .mo-orders-root .mo-hero img {
     position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover; object-position: center 40%;
@@ -27,10 +24,7 @@ export const moOrdersListShellCss = `
     padding: 0 clamp(24px, 5vw, 52px);
     display: flex; align-items: center; justify-content: space-between; gap: 24px; color: #fff;
   }
-  @media (max-width: 600px) {
-    .mo-orders-root .mo-hero-inner { flex-direction: column; align-items: flex-start; justify-content: center; gap: 14px; padding: 0 20px; }
-    .mo-orders-root .mo-cta { align-self: stretch; text-align: center; justify-content: center; }
-  }
+  /* Мобильный hero — src/styles/moCabinetMobile.css */
   .mo-orders-root .mo-hero h1 { margin: 0 0 6px; font-size: 32px; font-weight: 900; letter-spacing: -0.02em; color: #fff; }
   .mo-orders-root .mo-hero p { margin: 0; color: rgba(255,255,255,.92); font-size: 14px; font-weight: 500; }
   .mo-orders-root .mo-cta {

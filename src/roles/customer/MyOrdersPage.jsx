@@ -30,7 +30,6 @@ import {
 } from '../../utils/mergeApiCategoriesWithCatalog';
 import '../worker/listings-new.css';
 import { moOrdersListShellCss } from '../../styles/moOrdersListShellCss.js';
-import { moCabinetMobileCss } from '../../styles/moCabinetMobileCss.js';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -252,9 +251,9 @@ const css = `
   .ml-page { background: #f5f5f7; min-height: 100vh; font-family: 'Manrope', Inter, system-ui, sans-serif; color: #0f172a; }
 
   ${moOrdersListShellCss}
-  ${moCabinetMobileCss}
 
   /* .ml-list, .ml-row … — см. src/styles/unifiedListingCards.css */
+  /* Мобилка кабинета: src/styles/moCabinetMobile.css (App.css) */
 
   .ml-btn-edit {
     width: 100%; box-sizing: border-box; min-height: 40px; padding: 10px 12px;
@@ -2151,7 +2150,7 @@ export default function MyOrdersPage() {
       <header className="mo-hero">
         <img src={MY_ORDERS_HERO_PHOTO} alt="" />
         <div className="mo-hero-inner">
-          <div>
+          <div className="mo-hero-copy">
             <h1>Мои заявки</h1>
             <p>Управляйте заявками и откликами мастеров</p>
           </div>

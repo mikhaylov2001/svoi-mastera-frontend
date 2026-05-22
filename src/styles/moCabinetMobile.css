@@ -1,0 +1,233 @@
+/**
+ * Мобильная вёрстка «Мои заявки» / «Мои объявления» (≤768px).
+ * Подключение в App.css — всегда после базовых стилей страницы.
+ */
+@media (max-width: 768px) {
+  .mo-orders-root.mo-page,
+  .ml-page.mo-orders-root {
+    overflow-x: hidden;
+    background: #f0f0f2;
+  }
+
+  /* —— Hero: текст слева внизу, кнопка на всю ширину —— */
+  .mo-orders-root .mo-hero {
+    height: auto !important;
+    min-height: var(--page-hero-h-mobile, 260px) !important;
+    max-height: none !important;
+  }
+
+  .mo-orders-root .mo-hero::after {
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.2) 0%,
+      rgba(0, 0, 0, 0.45) 45%,
+      rgba(0, 0, 0, 0.78) 100%
+    ) !important;
+  }
+
+  .mo-orders-root .mo-hero-inner {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+    height: 100% !important;
+    min-height: var(--page-hero-h-mobile, 260px) !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 12px max(16px, env(safe-area-inset-right)) 20px
+      max(16px, env(safe-area-inset-left)) !important;
+    gap: 14px !important;
+  }
+
+  .mo-orders-root .mo-hero-copy {
+    width: 100%;
+    text-align: left !important;
+  }
+
+  .mo-orders-root .mo-hero h1 {
+    margin: 0 0 6px !important;
+    text-align: left !important;
+    font-size: clamp(26px, 7.5vw, 30px) !important;
+    font-weight: 900 !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.03em !important;
+    color: #fff !important;
+  }
+
+  .mo-orders-root .mo-hero p {
+    margin: 0 !important;
+    text-align: left !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    color: rgba(255, 255, 255, 0.88) !important;
+    max-width: 28em;
+  }
+
+  .mo-orders-root .mo-cta {
+    width: 100% !important;
+    align-self: stretch !important;
+    margin: 0 !important;
+    padding: 14px 20px !important;
+    min-height: 50px !important;
+    border-radius: 14px !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    text-align: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 8px 24px rgba(255, 87, 34, 0.45) !important;
+  }
+
+  /* —— Контент под hero: белая «подложка» —— */
+  .mo-orders-root .mo-main {
+    position: relative;
+    z-index: 2;
+    max-width: none !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    padding: 20px max(16px, env(safe-area-inset-right)) 32px
+      max(16px, env(safe-area-inset-left)) !important;
+    background: #fff !important;
+    border-radius: 24px 24px 0 0 !important;
+    box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .mo-orders-root .mo-toolbar {
+    margin-bottom: 18px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .mo-orders-root .mo-tabs {
+    width: 100% !important;
+    padding: 5px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .mo-orders-root .mo-tab {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 11px 8px !important;
+    font-size: 13px !important;
+    border-radius: 12px !important;
+  }
+
+  .mo-orders-root .mo-search {
+    max-width: none !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .mo-orders-root .mo-search input {
+    padding: 14px 16px 14px 44px !important;
+    border-radius: 16px !important;
+    font-size: 15px !important;
+  }
+
+  .mo-orders-root .mo-grid,
+  .mo-orders-root .listing-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    margin-top: 4px !important;
+  }
+
+  .mo-orders-root .mo-card {
+    border-radius: 20px !important;
+    border: 1px solid #ececf0 !important;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07) !important;
+  }
+
+  .mo-orders-root .mo-card-media {
+    aspect-ratio: 16 / 10 !important;
+    min-height: 0 !important;
+    border-radius: 20px 20px 0 0 !important;
+  }
+
+  .mo-orders-root .mo-card-content {
+    padding: 16px 16px 4px !important;
+    gap: 10px !important;
+  }
+
+  .mo-orders-root .mo-card-headline {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .mo-orders-root .mo-card-title {
+    font-size: 17px !important;
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  .mo-orders-root .mo-card-time {
+    display: none !important;
+  }
+
+  .mo-orders-root .mo-actions {
+    padding: 12px 14px 14px !important;
+    gap: 10px !important;
+  }
+
+  .mo-orders-root .mo-btn {
+    min-height: 48px !important;
+    border-radius: 14px !important;
+    font-size: 14px !important;
+  }
+
+  /* —— Мастер создания (.nl-page) —— */
+  .nl-page {
+    overflow-x: hidden;
+    background: #f6f6f4;
+  }
+
+  .nl-page .nl-hero {
+    padding: 20px 0 28px;
+    min-height: var(--page-hero-h-mobile, 260px);
+  }
+
+  .nl-page .nl-hero-inner {
+    padding: 0 max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
+  }
+
+  .nl-page .nl-wrap {
+    margin-top: 12px !important;
+    padding: 20px max(16px, env(safe-area-inset-right)) 40px max(16px, env(safe-area-inset-left)) !important;
+    background: #fff !important;
+    border-radius: 24px 24px 0 0 !important;
+    box-shadow: 0 -4px 24px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .nl-page .mlf-sec-grid {
+    gap: 10px;
+  }
+
+  /* —— Деталка в кабинете —— */
+  .ed.ed--listing-detail .ed-listing-meta {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .ed.ed--listing-detail .ed-listing-meta span {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .nl-page .mlf-sec-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 152px;
+    gap: 8px;
+  }
+
+  .nl-page .mlf-sec-featured,
+  .nl-page .mlf-sec-5,
+  .nl-page .mlf-sec-6 {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
