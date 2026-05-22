@@ -405,13 +405,30 @@ export const listingDetailSurfaceExtraCss = `
     overflow: hidden;
   }
 
-  .ed--listing-detail .ed-main {
+  .ed--listing-detail .ed-main,
+  .ed-main,
+  .jd-main,
+  .jd-main-photo,
+  .wd-detail-main {
     aspect-ratio: 16 / 9;
     max-height: 420px;
+    display: block;
   }
 
-  .ed--listing-detail .ed-main img {
+  .ed--listing-detail .ed-main img,
+  .ed-main img,
+  .jd-main img,
+  .jd-main-photo img,
+  .wd-detail-main img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 100%;
+    min-height: 100%;
     object-fit: cover;
+    object-position: center;
+    display: block;
   }
 
   .ed--listing-detail .ed-thumbs {
