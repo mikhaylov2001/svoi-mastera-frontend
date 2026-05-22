@@ -1712,7 +1712,6 @@ export default function MyListingsPage() {
                   </span>
                 ) : null}
                 {addressLine ? <span>📍 {addressLine}</span> : null}
-                {detail.createdAt ? <span>📅 {mlDetailFmtDateLong(detail.createdAt)}</span> : null}
               </div>
             </div>
             <div className="ed-head-right">
@@ -1834,7 +1833,6 @@ export default function MyListingsPage() {
                         ? 'Договорная'
                         : `${Number(pubPrice).toLocaleString('ru-RU')} ₽${detail.priceUnit ? ` ${detail.priceUnit}` : ''}`,
                     ],
-                    detail.createdAt && ['Опубликована', mlDetailTimeAgo(detail.createdAt) || mlDetailFmtDateLong(detail.createdAt)],
                     viewsCount > 0 && ['Просмотры', String(viewsCount)],
                   ]
                     .filter(Boolean)
@@ -2086,7 +2084,6 @@ export default function MyListingsPage() {
                   <div className="mo-card-content">
                     <div className="mo-card-headline">
                       <h3 className="mo-card-title">{l.title}</h3>
-                      <time className="mo-card-time">{formatListingRelativeRu(l.createdAt)}</time>
                     </div>
                     {!!catName && (
                       <div className="mo-card-tags">

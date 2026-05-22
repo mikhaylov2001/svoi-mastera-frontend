@@ -1890,7 +1890,6 @@ export default function MyOrdersPage() {
                   </span>
                 ) : null}
                 {addressLine ? <span>📍 {addressLine}</span> : null}
-                {detail.createdAt ? <span>📅 {moDetailFmtDateLong(detail.createdAt)}</span> : null}
               </div>
             </div>
             <div className="ed-head-right">
@@ -2002,7 +2001,6 @@ export default function MyOrdersPage() {
                     ['Город', jobCity],
                     addressLine && ['Адрес', addressLine],
                     ['Стоимость', priceIsNegotiable ? JOB_REQUEST_PRICE_MISSING_LABEL : `${Number(budget).toLocaleString('ru-RU')} ₽`],
-                    detail.createdAt && ['Опубликована', moDetailTimeAgo(detail.createdAt) || moDetailFmtDateLong(detail.createdAt)],
                     viewsCount > 0 && ['Просмотры', String(viewsCount)],
                   ]
                     .filter(Boolean)
@@ -2286,7 +2284,6 @@ export default function MyOrdersPage() {
                   <div className="mo-card-content">
                     <div className="mo-card-headline">
                       <h3 className="mo-card-title">{req.title}</h3>
-                      <time className="mo-card-time">{formatJobRequestRelativeRu(req.createdAt)}</time>
                     </div>
                     {(catName || addrLine) && (
                       <div className="mo-card-tags">

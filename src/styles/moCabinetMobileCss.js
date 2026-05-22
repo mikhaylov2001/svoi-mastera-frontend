@@ -116,27 +116,32 @@ export const moCabinetMobileCss = `
 
   .mo-orders-root .mo-main {
     margin-top: 0;
-    padding: 20px max(var(--catalog-mobile-gutter), env(safe-area-inset-right))
-      28px max(var(--catalog-mobile-gutter), env(safe-area-inset-left));
+    padding: 8px max(var(--catalog-mobile-gutter), env(safe-area-inset-right))
+      32px max(var(--catalog-mobile-gutter), env(safe-area-inset-left));
+    background: #f5f5f7;
   }
 
   .mo-orders-root .mo-toolbar {
-    margin-bottom: 16px;
+    margin-bottom: 18px;
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
+    gap: 12px;
   }
 
   .mo-orders-root .mo-tabs {
     width: 100%;
     justify-content: stretch;
+    padding: 5px;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
   }
 
   .mo-orders-root .mo-tab {
     flex: 1;
     justify-content: center;
-    padding: 10px 10px;
+    padding: 11px 10px;
     font-size: 13px;
+    border-radius: 12px;
   }
 
   .mo-orders-root .mo-search {
@@ -146,17 +151,131 @@ export const moCabinetMobileCss = `
     width: 100%;
   }
 
+  .mo-orders-root .mo-search input {
+    padding: 14px 16px 14px 44px;
+    border-radius: 16px;
+    font-size: 15px;
+  }
+
   .mo-orders-root .mo-grid,
   .mo-orders-root .listing-grid {
-    gap: 14px;
+    gap: 16px;
+    margin-top: 4px;
   }
 
   .mo-orders-root .mo-card {
     border-radius: var(--catalog-mobile-card-radius);
+    border: 1px solid #e8e8ec;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.07);
+  }
+
+  .mo-orders-root .mo-card:active {
+    transform: scale(0.995);
   }
 
   .mo-orders-root .mo-card-media {
-    min-height: 160px;
+    aspect-ratio: 16 / 10;
+    min-height: 0;
+    border-radius: var(--catalog-mobile-card-radius) var(--catalog-mobile-card-radius) 0 0;
+  }
+
+  .mo-orders-root .mo-card-status-on-img {
+    top: 12px;
+    left: 12px;
+    font-size: 11px;
+    padding: 6px 11px;
+    border-radius: 999px;
+  }
+
+  .mo-orders-root .mo-card-price-on-img {
+    right: 12px;
+    bottom: 12px;
+    font-size: 12px;
+    padding: 7px 12px;
+    border-radius: 12px;
+  }
+
+  .mo-orders-root .mo-card-content {
+    padding: 16px 16px 4px;
+    gap: 10px;
+  }
+
+  .mo-orders-root .mo-card-headline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .mo-orders-root .mo-card-title {
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.3;
+    width: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .mo-orders-root .mo-card-time {
+    display: none !important;
+  }
+
+  .mo-orders-root .mo-card-tags {
+    gap: 8px;
+  }
+
+  .mo-orders-root .mo-tag {
+    font-size: 12px;
+    padding: 6px 12px;
+    max-width: 100%;
+  }
+
+  .mo-orders-root .mo-card-desc {
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-line-clamp: 3;
+  }
+
+  .mo-orders-root .mo-card-hint {
+    margin-bottom: 2px;
+  }
+
+  .mo-orders-root .mo-card-stats {
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  .mo-orders-root .mo-actions {
+    padding: 12px 14px 14px;
+    gap: 10px;
+  }
+
+  .mo-orders-root .mo-btn {
+    min-height: 48px;
+    border-radius: 14px;
+    font-size: 14px;
+  }
+
+  .mo-orders-root .mo-empty {
+    border-radius: var(--catalog-mobile-card-radius);
+    padding: 40px 20px;
+  }
+
+  /* Деталка заявки/объявления в кабинете */
+  .ed.ed--listing-detail .ed-listing-meta {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .ed.ed--listing-detail .ed-listing-meta span {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+  }
+
+  .ed.ed--listing-detail .ed-col > .ed-card {
+    margin-top: 4px;
   }
 }
 
