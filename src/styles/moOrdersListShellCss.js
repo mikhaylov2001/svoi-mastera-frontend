@@ -243,7 +243,7 @@ export const moOrdersListShellCss = `
   }
 
   .mo-orders-root .mo-card-hint {
-    margin: 0 0 2px;
+    margin: 0 0 4px;
     font-size: 12px;
     line-height: 1.45;
     display: flex;
@@ -254,10 +254,12 @@ export const moOrdersListShellCss = `
   .mo-orders-root .mo-card-hint-main {
     font-weight: 700;
     color: #111827;
+    font-size: 13px;
   }
   .mo-orders-root .mo-card-hint-sub {
     font-weight: 500;
     color: #9ca3af;
+    font-size: 12px;
   }
 
   .mo-orders-root .mo-card-stats {
@@ -283,45 +285,51 @@ export const moOrdersListShellCss = `
   .mo-orders-root .mo-actions {
     display: flex;
     gap: 10px;
-    padding: 12px 16px 10px;
+    padding: 12px 16px 14px;
     margin-top: auto;
   }
   .mo-orders-root .mo-btn {
     flex: 1;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 12px 14px;
     font: inherit;
     font-weight: 700;
     font-size: 14px;
     cursor: pointer;
-    transition: background .15s, border-color .15s, color .15s;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 44px;
+    min-height: 46px;
   }
   .mo-orders-root .mo-btn-primary {
-    background: #ff5722;
+    background: linear-gradient(180deg, #ef6339 0%, #e85a32 55%, #d1522d 100%);
     color: #fff;
-    box-shadow: 0 6px 18px rgba(255, 87, 34, 0.28);
+    box-shadow: 0 4px 14px rgba(209, 82, 45, 0.28);
   }
-  .mo-orders-root .mo-btn-primary:hover { background: #f4511e; }
+  .mo-orders-root .mo-btn-primary:hover {
+    background: linear-gradient(180deg, #f46b42 0%, #ec6036 55%, #d85a30 100%);
+    box-shadow: 0 6px 18px rgba(209, 82, 45, 0.34);
+  }
   .mo-orders-root .mo-btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
-    border: none;
+    background: #f5f5f7;
+    color: #4b5563;
+    border: 1px solid transparent;
   }
   .mo-orders-root .mo-btn-secondary:hover {
-    background: #e5e7eb;
+    background: #ececef;
     color: #111827;
   }
   .mo-orders-root .mo-btn-secondary.mo-btn-offers {
-    color: #dc2626;
+    background: #f5f5f7;
+    color: #e11d48;
+    font-weight: 700;
   }
   .mo-orders-root .mo-btn-secondary.mo-btn-offers:hover {
     background: #fee2e2;
-    color: #b91c1c;
+    color: #be123c;
+    border-color: #fecaca;
   }
 
   .mo-orders-root .mo-card-tools {
@@ -494,22 +502,6 @@ export const moOrdersListShellCss = `
   .ed--listing-detail .mo-btn-delete-outline:disabled {
     opacity: 0.55;
     cursor: wait;
-  }
-
-  .mo-orders-root .mo-actions.mo-actions--stacked {
-    flex-direction: column;
-    gap: 12px;
-    padding: 12px 16px 14px;
-  }
-  .mo-orders-root .mo-actions.mo-actions--stacked .mo-btn-offers-main {
-    flex: none;
-    width: 100%;
-  }
-  .mo-orders-root .mo-actions.mo-actions--stacked .mo-offers-actions-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    width: 100%;
   }
 
   /* —— Модалка «Отклики» (sheet) —— */

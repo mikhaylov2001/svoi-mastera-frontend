@@ -734,7 +734,7 @@ export default function MyOrdersPage() {
       setDetailOffersLoading(false);
       return undefined;
     }
-    if (detail.status === 'OPEN' && !detailShowOffersPanel) {
+    if (!detailShowOffersPanel) {
       setDetailOffers([]);
       setDetailOffersLoading(false);
       return undefined;
@@ -1682,7 +1682,7 @@ export default function MyOrdersPage() {
           </div>
         )}
 
-        {detail.status === 'OPEN' && detailShowOffersPanel && (
+        {detailShowOffersPanel && (
           <div
             className="mo-offers-sheet-overlay"
             onClick={() => setDetailShowOffersPanel(false)}
@@ -1996,13 +1996,13 @@ export default function MyOrdersPage() {
                 <div className="ed-card ed-card--manage">
                   <div className="ed-eyebrow ed-eyebrow--block">Управление</div>
                   <div className="mo-offers-actions">
-                    {detail.status === 'OPEN' && (
+                    {(detail.status === 'OPEN' || offersCountDisplay > 0) && (
                       <button
                         type="button"
                         className={`mo-btn-offers-main${detailShowOffersPanel ? ' is-active' : ''}`}
                         onClick={() => setDetailShowOffersPanel(true)}
                       >
-                        {`Смотреть отклики • ${Number(detail.offersCount) || detailOffers.length || 0}`}
+                        {`Смотреть отклики • ${offersCountDisplay}`}
                       </button>
                     )}
                     {(requestIsEditable(detail) || requestCanRemove(detail)) && (
@@ -2263,47 +2263,17 @@ export default function MyOrdersPage() {
                     </p>
                   </div>
 
-                  <div
-                    className={`mo-actions${hasOffers && req.status === 'OPEN' ? ' mo-actions--stacked' : ''}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {hasOffers && req.status === 'OPEN' ? (
-                      <>
-                        <button
-                          type="button"
-                          className="mo-btn-offers-main"
-                          onClick={onDetailBtn}
-                        >
-                          {`Смотреть отклики • ${offers}`}
-                        </button>
-                        <div className="mo-offers-actions-row">
-                          {canEdit && (
-                            <button type="button" className="mo-btn-edit-outline" onClick={onEdit}>
-                              Изменить
-                            </button>
-                          )}
-                          {requestCanRemove(req) && (
-                            <button
-                              type="button"
-                              className="mo-btn-delete-outline"
-                              disabled={removeLoadingId === req.id}
-                              onClick={(e) => handleRemoveRequest(req, e)}
-                            >
-                              {removeLoadingId === req.id ? 'Удаляем…' : 'Удалить'}
-                            </button>
-                          )}
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <button type="button" className="mo-btn mo-btn-primary" onClick={onEdit}>
-                          {canEdit ? 'Редактировать' : 'Открыть'}
-                        </button>
-                        <button type="button" className="mo-btn mo-btn-secondary" onClick={onDetailBtn}>
-                          Подробнее
-                        </button>
-                      </>
-                    )}
+                  <div className="mo-actions" onClick={(e) => e.stopPropagation()}>
+                    <button type="button" className="mo-btn mo-btn-primary" onClick={onEdit}>
+                      {canEdit ? 'Редактировать' : 'Открыть'}
+                    </button>
+                    <button
+                      type="button"
+                      className={`mo-btn mo-btn-secondary${hasOffers ? ' mo-btn-offers' : ''}`}
+                      onClick={onDetailBtn}
+                    >
+                      {hasOffers ? `Отклики ${offers}` : 'Подробнее'}
+                    </button>
                   </div>
 
                   <div className="mo-card-tools" onClick={(e) => e.stopPropagation()}>
