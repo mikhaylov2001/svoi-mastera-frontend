@@ -264,14 +264,10 @@ export const moCabinetMobileCss = `
 
   /* Деталка заявки/объявления в кабинете */
   .ed.ed--listing-detail .ed-listing-meta {
-    flex-direction: column;
-    align-items: flex-start !important;
-    gap: 8px !important;
-  }
-
-  .ed.ed--listing-detail .ed-listing-meta span {
-    font-size: 14px !important;
-    line-height: 1.4 !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 8px 16px !important;
   }
 
   .ed.ed--listing-detail .ed-col > .ed-card {

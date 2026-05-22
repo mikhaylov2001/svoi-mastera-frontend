@@ -204,16 +204,42 @@
     gap: 10px;
   }
 
-  /* —— Деталка в кабинете —— */
+  /* —— Деталка: категория и адрес в один ряд —— */
   .ed.ed--listing-detail .ed-listing-meta {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 8px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 8px 16px !important;
+    margin-top: 10px !important;
+    font-size: 14px !important;
+    color: #6b7280 !important;
+    line-height: 1.4 !important;
   }
 
   .ed.ed--listing-detail .ed-listing-meta span {
-    font-size: 14px !important;
-    line-height: 1.4 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ed.ed--listing-detail .ed-listing-meta span:last-child {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Теги на карточках списка — категория и адрес в ряд */
+  .mo-orders-root .mo-card-tags {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 8px !important;
   }
 }
 
