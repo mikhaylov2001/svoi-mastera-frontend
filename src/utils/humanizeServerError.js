@@ -41,6 +41,12 @@ export function humanizeServerErrorMessage(text) {
   if (/category not found/i.test(core)) {
     return 'Выберите корректную категорию заявки.';
   }
+  if (/user not found/i.test(core)) {
+    return 'Сессия устарела или аккаунт не найден на сервере. Выйдите из профиля и войдите снова.';
+  }
+  if (/customer profile not found/i.test(core)) {
+    return 'Профиль заказчика не настроен. Выйдите и войдите снова или обновите профиль в настройках.';
+  }
   if (/duplicate key|unique constraint/i.test(core)) {
     return 'Такая запись уже есть. Измените данные и сохраните снова.';
   }

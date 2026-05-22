@@ -31,14 +31,36 @@ export function AuthProvider({ children }) {
   const [userAvatar,   setUserAvatar]   = useState(() => getStoredAvatar());
   const [loading,      setLoading]      = useState(true);
 
+  const clearSession = () => {
+    setUserId(null);
+    setUserRole('CUSTOMER');
+    setUserName('');
+    setUserLastName('');
+    setUserAvatar('');
+    ['userId', 'userRole', 'userName', 'userLastName', 'userAvatar']
+      .forEach((k) => localStorage.removeItem(k));
+  };
+
   // При старте — подгружаем актуальный профиль с сервера
   useEffect(() => {
     const id = getStored('userId', null);
     if (!id) { setLoading(false); return; }
 
+    const staleSession = (status, bodyText) => {
+      const t = String(bodyText || '').toLowerCase();
+      return status === 404 || t.includes('user not found');
+    };
+
     fetch(`${API_BASE}/users/${id}/profile`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
+      .then(async (r) => {
+        const text = await r.text();
+        if (!r.ok) {
+          if (staleSession(r.status, text)) clearSession();
+          return null;
+        }
+        try { return text ? JSON.parse(text) : null; } catch { return null; }
+      })
+      .then((data) => {
         if (!data) return;
         // Всегда синхронизируем с бэком (в т.ч. пустая строка), чтобы фамилия не «пропадала» до следующего запроса
         const ln = data.lastName != null ? String(data.lastName) : '';
@@ -53,19 +75,23 @@ export function AuthProvider({ children }) {
       .catch(() => {})
       .finally(() => setLoading(false));
 
-    // Аватар грузим через /auth/me — обновляем только если сервер вернул непустой
+    // Аватар и валидность сессии — через /auth/me
     fetch(`${API_BASE}/auth/me`, { headers: { 'X-User-Id': id } })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
+      .then(async (r) => {
+        const text = await r.text();
+        if (!r.ok) {
+          if (staleSession(r.status, text)) clearSession();
+          return null;
+        }
+        try { return text ? JSON.parse(text) : null; } catch { return null; }
+      })
+      .then((data) => {
         if (!data) return;
         const av = data.avatarUrl || '';
         if (av && av.length > 10) {
-          // Сервер вернул аватар — сохраняем
           setUserAvatar(av);
           localStorage.setItem('userAvatar', av);
         }
-        // Если сервер вернул пустой — НЕ трогаем localStorage
-        // Это важно: аватар мог быть загружен в этой сессии как base64
       })
       .catch(() => {});
   }, []);
@@ -85,10 +111,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    setUserId(null); setUserRole('CUSTOMER');
-    setUserName(''); setUserLastName(''); setUserAvatar('');
-    ['userId','userRole','userName','userLastName','userAvatar']
-      .forEach(k => localStorage.removeItem(k));
+    clearSession();
   };
 
   const updateAvatar = (url) => {

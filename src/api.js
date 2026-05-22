@@ -116,10 +116,17 @@ export async function loginUser({ email, password }) {
 export async function getCategories() { return apiCall('/categories'); }
 
 // ── JOB REQUESTS ──
+function isUuidString(v) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v || '').trim());
+}
+
 export async function createJobRequest(userId, data) {
-  const body = { categoryId: data.categoryId, title: data.title, description: data.description || 'Без описания' };
+  const body = { title: data.title, description: data.description || 'Без описания' };
   const csl = data.categorySlug != null ? String(data.categorySlug).trim() : '';
   if (csl) body.categorySlug = csl;
+  const cid = data.categoryId != null ? String(data.categoryId).trim() : '';
+  if (cid && isUuidString(cid)) body.categoryId = cid;
+  else if (!csl) throw new Error('Выберите категорию заявки.');
   if (data.address) body.addressText = data.address;
   if (data.budget != null && data.budget !== '') {
     const n = Number(data.budget);
