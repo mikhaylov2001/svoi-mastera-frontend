@@ -1012,22 +1012,200 @@ export const listingsDetailJdCss = `
 `;
 
 export const listingDetailLightboxCss = `
-.jd-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.95); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-.jd-lightbox-img-wrap { position: relative; max-width: 92vw; max-height: 92vh; display: flex; align-items: center; justify-content: center; }
-.jd-lightbox img { max-width: 92vw; max-height: 88vh; object-fit: contain; border-radius: 6px; display: block; image-rendering: -webkit-optimize-contrast; box-shadow: 0 24px 80px rgba(0,0,0,.6); }
-.jd-lb-zone { position: absolute; top: 0; bottom: 0; width: 50%; cursor: pointer; z-index: 2; }
-.jd-lb-zone-prev { left: -60px; width: calc(50% + 60px); }
-.jd-lb-zone-next { right: -60px; width: calc(50% + 60px); }
-.jd-lb-close { position: fixed; top: 20px; right: 20px; background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.2); border-radius: 10px; width: 42px; height: 42px; color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; z-index: 10; font-weight: 300; border: none; font-family: inherit; }
-.jd-lb-close:hover { background: rgba(255,255,255,.2); }
-.jd-lb-nav { position: fixed; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.18); border-radius: 50%; width: 52px; height: 52px; color: #fff; font-size: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, transform .15s; z-index: 10; line-height: 1; border: none; font-family: inherit; }
-.jd-lb-nav:hover { background: rgba(255,255,255,.2); transform: translateY(-50%) scale(1.06); }
-.jd-lb-prev { left: 20px; }
-.jd-lb-next { right: 20px; }
-.jd-lb-counter { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.7); font-size: 14px; font-weight: 600; background: rgba(255,255,255,.1); padding: 5px 16px; border-radius: 20px; z-index: 10; }
-.jd-lb-hint { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.35); font-size: 12px; white-space: nowrap; pointer-events: none; }
-.jd-lightbox-img-wrap.ed-swipeable { cursor: grab; user-select: none; }
-.jd-lightbox-img-wrap.ed-swipeable img { pointer-events: none; }
+.jd-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.96);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+}
+.jd-lightbox-img-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: min(960px, 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.jd-lightbox img {
+  max-width: 100%;
+  max-height: min(72vh, calc(100dvh - 200px));
+  object-fit: contain;
+  border-radius: 12px;
+  display: block;
+  image-rendering: -webkit-optimize-contrast;
+  box-shadow: 0 24px 80px rgba(0,0,0,.6);
+}
+.jd-lb-zone { position: absolute; top: 0; bottom: 0; width: 38%; cursor: pointer; z-index: 2; }
+.jd-lb-zone-prev { left: 0; }
+.jd-lb-zone-next { right: 0; }
+.jd-lb-close {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top, 0px));
+  right: max(14px, env(safe-area-inset-right, 0px));
+  background: rgba(255,255,255,.14);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+  z-index: 12;
+  border: none;
+  font-family: inherit;
+}
+.jd-lb-close:hover { background: rgba(255,255,255,.24); }
+.jd-lb-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  color: #fff;
+  font-size: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, transform .15s;
+  z-index: 11;
+  line-height: 1;
+  border: none;
+  font-family: inherit;
+}
+.jd-lb-nav:hover { background: rgba(255,255,255,.22); transform: translateY(-50%) scale(1.05); }
+.jd-lb-prev { left: max(12px, env(safe-area-inset-left, 0px)); }
+.jd-lb-next { right: max(12px, env(safe-area-inset-right, 0px)); }
+.jd-lb-footer {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: min(960px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 4px;
+  z-index: 11;
+}
+.jd-lb-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.jd-lb-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,.35);
+  cursor: pointer;
+  transition: transform .15s, background .15s;
+}
+.jd-lb-dot.on {
+  background: #fff;
+  transform: scale(1.2);
+}
+.jd-lb-toolbar {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 320px;
+}
+.jd-lb-toolbar-btn {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(255,255,255,.12);
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.jd-lb-toolbar-btn:active { background: rgba(255,255,255,.22); }
+.jd-lb-counter {
+  flex: 1;
+  text-align: center;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.jd-lb-hint {
+  margin: 0;
+  color: rgba(255,255,255,.45);
+  font-size: 12px;
+  text-align: center;
+  pointer-events: none;
+}
+.jd-lb-hint--touch { display: none; }
+.jd-lb-hint--desktop { display: block; }
+.jd-lb-hint--solo {
+  position: fixed;
+  bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+}
+.jd-lightbox-img-wrap.ed-swipeable { cursor: grab; user-select: none; touch-action: none; }
+.jd-lightbox-img-wrap.ed-swipeable img { pointer-events: none; -webkit-user-drag: none; }
+
+@media (max-width: 768px) {
+  .jd-lightbox img { max-height: min(58vh, calc(100dvh - 240px)); border-radius: 10px; }
+  .jd-lb-nav { display: none; }
+  .jd-lb-zone { width: 28%; }
+  .jd-lb-toolbar { display: flex; }
+  .jd-lb-hint--touch { display: block; }
+  .jd-lb-hint--desktop { display: none; }
+  .jd-lb-close { width: 48px; height: 48px; font-size: 20px; }
+  .jd-lb-dot { width: 10px; height: 10px; }
+}
+
+/* Каталог / FindWork — счётчик и подсказка без footer */
+.jd-lightbox > .jd-lb-counter {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,.85);
+  font-size: 14px;
+  font-weight: 600;
+  background: rgba(255,255,255,.12);
+  padding: 6px 16px;
+  border-radius: 20px;
+  z-index: 11;
+}
+.jd-lightbox > .jd-lb-hint {
+  position: fixed;
+  bottom: max(56px, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: block;
+  z-index: 11;
+}
 `;
 
 /** Карточка объявления / заявки: ed + лайтбокк (как FindWorkPage, ListingDetailPage). */

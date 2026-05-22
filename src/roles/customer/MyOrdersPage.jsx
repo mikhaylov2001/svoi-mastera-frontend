@@ -30,6 +30,7 @@ import {
 } from '../../utils/mergeApiCategoriesWithCatalog';
 import '../worker/listings-new.css';
 import { moOrdersListShellCss } from '../../styles/moOrdersListShellCss.js';
+import PhotoLightbox from '../../components/PhotoLightbox';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -819,18 +820,6 @@ export default function MyOrdersPage() {
     };
   }, [detailShowOffersPanel]);
 
-  // Lightbox keyboard
-  useEffect(() => {
-    if (!lightbox) return;
-    const h = (e) => {
-      if (e.key === 'ArrowRight') setLightbox(l => l ? {...l, index:(l.index+1)%l.photos.length} : l);
-      if (e.key === 'ArrowLeft')  setLightbox(l => l ? {...l, index:(l.index-1+l.photos.length)%l.photos.length} : l);
-      if (e.key === 'Escape')     setLightbox(null);
-    };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [lightbox]);
-
   const active  = requests.filter(r => isActiveStatus(r.status));
   const archive = requests.filter(r => !isActiveStatus(r.status));
   const shown   = tab === 'active' ? active : archive;
@@ -1573,20 +1562,7 @@ export default function MyOrdersPage() {
           </div>
         </div>
 
-        {/* Lightbox */}
-        {lightbox && (
-          <div className="mlf-lb" onClick={() => setLightbox(null)}>
-            {lightbox.photos.length > 1 && (<>
-              <button className="mlf-lb-btn mlf-lb-prev" onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index:(l.index-1+l.photos.length)%l.photos.length})); }}>‹</button>
-              <button className="mlf-lb-btn mlf-lb-next" onClick={e => { e.stopPropagation(); setLightbox(l => ({...l, index:(l.index+1)%l.photos.length})); }}>›</button>
-              <div className="mlf-lb-counter">{lightbox.index+1} / {lightbox.photos.length}</div>
-            </>)}
-            <button className="mlf-lb-close" onClick={() => setLightbox(null)}>×</button>
-            <div onClick={e => e.stopPropagation()} style={{maxWidth:'85vw', maxHeight:'80vh'}}>
-              <img src={lightbox.photos[lightbox.index]} alt="" style={{maxWidth:'85vw', maxHeight:'80vh', borderRadius:10, display:'block', objectFit:'contain'}} />
-            </div>
-          </div>
-        )}
+        <PhotoLightbox lightbox={lightbox} setLightbox={setLightbox} />
       </div>
     );
   }
@@ -1624,87 +1600,7 @@ export default function MyOrdersPage() {
         <style>{css}</style>
         <style>{edListingDetailMergedCss}</style>
 
-        {lightbox && (
-          <div className="jd-lightbox" onClick={() => setLightbox(null)} role="presentation">
-            <button
-              type="button"
-              className="jd-lb-close"
-              onClick={(e) => {
-                e.stopPropagation();
-                setLightbox(null);
-              }}
-            >
-              ✕
-            </button>
-            {lightbox.photos.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  className="jd-lb-nav jd-lb-prev"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setLightbox((l) => ({
-                      ...l,
-                      index: l.index > 0 ? l.index - 1 : l.photos.length - 1,
-                    }));
-                  }}
-                >
-                  ‹
-                </button>
-                <button
-                  type="button"
-                  className="jd-lb-nav jd-lb-next"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setLightbox((l) => ({
-                      ...l,
-                      index: l.index < l.photos.length - 1 ? l.index + 1 : 0,
-                    }));
-                  }}
-                >
-                  ›
-                </button>
-              </>
-            )}
-            <div className="jd-lightbox-img-wrap" onClick={(e) => e.stopPropagation()}>
-              {lightbox.photos.length > 1 && (
-                <>
-                  <div
-                    className="jd-lb-zone jd-lb-zone-prev"
-                    onClick={() =>
-                      setLightbox((l) => ({
-                        ...l,
-                        index: l.index > 0 ? l.index - 1 : l.photos.length - 1,
-                      }))
-                    }
-                    role="presentation"
-                  />
-                  <div
-                    className="jd-lb-zone jd-lb-zone-next"
-                    onClick={() =>
-                      setLightbox((l) => ({
-                        ...l,
-                        index: l.index < l.photos.length - 1 ? l.index + 1 : 0,
-                      }))
-                    }
-                    role="presentation"
-                  />
-                </>
-              )}
-              <img
-                src={lightbox.photos[lightbox.index]}
-                alt={detail.title || ''}
-                onClick={() => lightbox.photos.length <= 1 && setLightbox(null)}
-              />
-            </div>
-            {lightbox.photos.length > 1 && (
-              <div className="jd-lb-counter">
-                {lightbox.index + 1} / {lightbox.photos.length}
-              </div>
-            )}
-            <div className="jd-lb-hint">← → по краям · Esc — закрыть</div>
-          </div>
-        )}
+        <PhotoLightbox lightbox={lightbox} setLightbox={setLightbox} alt={detail.title || ''} />
 
         {detailShowOffersPanel && (
           <div
