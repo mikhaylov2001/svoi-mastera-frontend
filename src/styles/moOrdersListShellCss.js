@@ -523,7 +523,7 @@ export const moOrdersListShellCss = `
   }
   .mo-offers-sheet {
     width: 100%;
-    max-width: 520px;
+    max-width: 560px;
     max-height: min(88vh, 720px);
     display: flex;
     flex-direction: column;
@@ -567,9 +567,10 @@ export const moOrdersListShellCss = `
   }
   .mo-offers-sheet-badge {
     display: inline-block;
-    padding: 4px 11px;
+    padding: 4px 12px;
     border-radius: 999px;
-    background: #fff4ed;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
     color: #ea580c;
     font-size: 12px;
     font-weight: 700;
@@ -599,8 +600,7 @@ export const moOrdersListShellCss = `
     flex-direction: column;
     gap: 14px;
   }
-  .mo-offers-sheet-empty,
-  .mo-offers-sheet-loading {
+  .mo-offers-sheet-empty {
     margin: 0;
     font-size: 14px;
     color: #9ca3af;
@@ -608,13 +608,21 @@ export const moOrdersListShellCss = `
     text-align: center;
     padding: 24px 12px;
   }
+  .mo-offers-sheet-loading {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .mo-offer-sheet-card--sk {
+    pointer-events: none;
+  }
 
   .mo-offer-sheet-card {
-    border: 1px solid #ececec;
-    border-radius: 18px;
+    border: 1px solid #e8eaed;
+    border-radius: 16px;
     padding: 16px;
     background: #fff;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
   }
   .mo-offer-sheet-card.is-accepted {
     border-color: #bbf7d0;
@@ -653,39 +661,42 @@ export const moOrdersListShellCss = `
   .mo-offer-sheet-worker-info {
     min-width: 0;
   }
-  .mo-offer-sheet-name-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 4px;
-  }
   .mo-offer-sheet-name {
+    margin: 0 0 4px;
     font-size: 15px;
     font-weight: 800;
     color: #111827;
-  }
-  .mo-offer-sheet-top {
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: #fff4ed;
-    color: #ea580c;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.04em;
+    line-height: 1.25;
   }
   .mo-offer-sheet-meta {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
     font-size: 12px;
     font-weight: 500;
     color: #9ca3af;
     line-height: 1.35;
   }
-  .mo-offer-sheet-meta span:first-child {
+  .mo-offer-sheet-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     color: #6b7280;
     font-weight: 600;
+  }
+  .mo-offer-sheet-star {
+    color: #f59e0b;
+    font-size: 13px;
+    line-height: 1;
+  }
+  .mo-offer-sheet-reviews {
+    color: #9ca3af;
+    font-weight: 500;
+  }
+  .mo-offer-sheet-time {
+    color: #9ca3af;
+    font-weight: 500;
   }
   .mo-offer-sheet-price {
     flex-shrink: 0;
@@ -697,14 +708,15 @@ export const moOrdersListShellCss = `
   }
   .mo-offer-sheet-msg {
     padding: 12px 14px;
-    border-radius: 14px;
-    background: #f8f9fb;
-    border: 1px solid #eef0f3;
+    border-radius: 12px;
+    background: #fafafa;
+    border: 1px solid #e8eaed;
     font-size: 14px;
     font-weight: 500;
     color: #374151;
     line-height: 1.5;
     margin-bottom: 12px;
+    min-height: 44px;
   }
   .mo-offer-sheet-note {
     margin: 0 0 10px;
@@ -759,7 +771,8 @@ export const moOrdersListShellCss = `
   .mo-offer-sheet-btn--write {
     border: 1px solid #e5e7eb;
     background: #fff;
-    color: #374151;
+    color: #111827;
+    font-weight: 600;
   }
   .mo-offer-sheet-btn--write:hover:not(:disabled) {
     background: #f9fafb;

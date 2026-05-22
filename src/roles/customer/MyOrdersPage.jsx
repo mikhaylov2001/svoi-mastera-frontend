@@ -525,6 +525,13 @@ function formatJobRequestRelativeRu(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
+  const diffMs = Date.now() - d.getTime();
+  if (diffMs < 0) return 'сегодня';
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  if (diffMins < 1) return 'только что';
+  if (diffMins < 60) return `${diffMins} мин. назад`;
+  if (diffHours < 24) return `${diffHours} ч. назад`;
   const startToday = new Date();
   startToday.setHours(0, 0, 0, 0);
   const startThat = new Date(d);
@@ -740,7 +747,8 @@ export default function MyOrdersPage() {
       return undefined;
     }
     let cancelled = false;
-    setDetailOffersLoading(true);
+    const skipLoad = detailOffers.length > 0;
+    if (!skipLoad) setDetailOffersLoading(true);
     getOffersForRequest(detail.id)
       .then((data) => {
         if (!cancelled) setDetailOffers(Array.isArray(data) ? data : []);
@@ -753,6 +761,22 @@ export default function MyOrdersPage() {
       });
     return () => { cancelled = true; };
   }, [detail?.id, detail?.status, detailShowOffersPanel]);
+
+  /** Предзагрузка откликов при открытой заявке — модалка открывается сразу с данными */
+  useEffect(() => {
+    if (!detail?.id) return undefined;
+    const expected = Number(detail.offersCount) || 0;
+    if (expected <= 0) return undefined;
+    let cancelled = false;
+    getOffersForRequest(detail.id)
+      .then((data) => {
+        if (!cancelled) setDetailOffers(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setDetailOffers([]);
+      });
+    return () => { cancelled = true; };
+  }, [detail?.id, detail?.offersCount]);
 
   useEffect(() => {
     if (!detailShowOffersPanel || !detailOffers.length) {
@@ -1716,7 +1740,16 @@ export default function MyOrdersPage() {
               <div className="mo-offers-sheet-body">
                 {detailOffersLoading && (
                   <div className="mo-offers-sheet-loading">
-                    <div className="ml-sk" style={{ height: 120, borderRadius: 16 }} />
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="mo-offer-sheet-card mo-offer-sheet-card--sk">
+                        <div className="ml-sk" style={{ height: 52, borderRadius: 12, marginBottom: 12 }} />
+                        <div className="ml-sk" style={{ height: 48, borderRadius: 14 }} />
+                        <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                          <div className="ml-sk" style={{ flex: 1, height: 44, borderRadius: 14 }} />
+                          <div className="ml-sk" style={{ flex: 1, height: 44, borderRadius: 14 }} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
                 {!detailOffersLoading && detailOffers.length === 0 && (
@@ -1729,7 +1762,6 @@ export default function MyOrdersPage() {
                   const stats = workerId ? offerWorkerStats[String(workerId)] : null;
                   const rating = Number(stats?.averageRating) || 0;
                   const reviewsN = Number(stats?.reviewsCount) || 0;
-                  const showTop = rating >= 4.5 && reviewsN >= 5;
                   const workerAv = workerOfferAvatarSrc(offer, BACKEND);
                   const workerInitial = (workerOfferShortName(offer) || 'М')[0].toUpperCase();
                   const timeLabel = offer.createdAt
@@ -1740,6 +1772,9 @@ export default function MyOrdersPage() {
                     : null;
                   const isAccepted = offer.status === 'ACCEPTED';
                   const agreedPrice = budget && Number(offer.price) === Number(budget);
+                  const msgText = (offer.message && String(offer.message).trim())
+                    ? String(offer.message).trim()
+                    : '';
 
                   return (
                     <article
@@ -1756,17 +1791,24 @@ export default function MyOrdersPage() {
                             </div>
                           )}
                           <div className="mo-offer-sheet-worker-info">
-                            <div className="mo-offer-sheet-name-row">
-                              <span className="mo-offer-sheet-name">{workerOfferShortName(offer)}</span>
-                              {showTop && <span className="mo-offer-sheet-top">ТОП</span>}
-                            </div>
+                            <div className="mo-offer-sheet-name">{workerOfferShortName(offer)}</div>
                             <div className="mo-offer-sheet-meta">
-                              {rating > 0 && (
-                                <span>
-                                  {rating.toFixed(1)} ({reviewsCountLabel(reviewsN)})
+                              {rating > 0 ? (
+                                <span className="mo-offer-sheet-rating">
+                                  <span className="mo-offer-sheet-star" aria-hidden>★</span>
+                                  {rating.toFixed(1)}
+                                  <span className="mo-offer-sheet-reviews">
+                                    ({reviewsCountLabel(reviewsN)})
+                                  </span>
                                 </span>
-                              )}
-                              {timeLabel && <span>{timeLabel}</span>}
+                              ) : reviewsN > 0 ? (
+                                <span className="mo-offer-sheet-reviews">
+                                  {reviewsCountLabel(reviewsN)}
+                                </span>
+                              ) : null}
+                              {timeLabel ? (
+                                <span className="mo-offer-sheet-time">{timeLabel}</span>
+                              ) : null}
                             </div>
                           </div>
                         </div>
@@ -1775,9 +1817,9 @@ export default function MyOrdersPage() {
                         </div>
                       </div>
 
-                      {offer.message && (
-                        <div className="mo-offer-sheet-msg">{offer.message}</div>
-                      )}
+                      <div className="mo-offer-sheet-msg">
+                        {msgText || 'Мастер не оставил сообщение к отклику.'}
+                      </div>
 
                       {agreedPrice && !isAccepted && (
                         <p className="mo-offer-sheet-note">Принял вашу цену в заявке</p>
