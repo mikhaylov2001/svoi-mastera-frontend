@@ -833,6 +833,171 @@ export const moOrdersListShellCss = `
     cursor: not-allowed;
   }
 
+  /* —— Боковая панель деталки объявления (мастер) —— */
+  .ed--listing-detail .ed-side--listing-cabinet {
+    gap: 14px;
+  }
+  .ed--listing-detail .ml-side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+  .ed--listing-detail .ml-side-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 14px 12px;
+    background: #fff;
+    border: 1px solid #efefef;
+    border-radius: 20px;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+  }
+  .ed--listing-detail .ml-side-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 12px 6px;
+    background: #f5f5f7;
+    border-radius: 14px;
+    min-height: 72px;
+    text-align: center;
+  }
+  .ed--listing-detail .ml-side-stat-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .ed--listing-detail .ml-side-stat-value--rating {
+    font-size: 20px;
+  }
+  .ed--listing-detail .ml-side-stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    line-height: 1.2;
+  }
+  .ed--listing-detail .ml-side-price {
+    padding: 18px 16px 16px;
+    border-radius: 20px;
+    border: 1px solid #efefef;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+    margin: 0;
+  }
+  .ed--listing-detail .ml-side-price-eyebrow {
+    display: block;
+    margin: 0 0 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #9ca3af;
+  }
+  .ed--listing-detail .ml-side-price-num {
+    font-size: 32px;
+    font-weight: 800;
+    color: #111827;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .ed--listing-detail .ml-side-price-num--nego {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .ed--listing-detail .ml-side-price-currency {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .ed--listing-detail .ml-side-price-unit {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #9ca3af;
+  }
+  .ed--listing-detail .ml-side-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ed--listing-detail .ml-side-btn-edit {
+    width: 100%;
+    min-height: 50px;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #ef6339 0%, #e85a32 55%, #d1522d 100%);
+    color: #fff;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(209, 82, 45, 0.32);
+    transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
+  .ed--listing-detail .ml-side-btn-edit:hover {
+    background: linear-gradient(180deg, #f46b42 0%, #ec6036 55%, #d85a30 100%);
+    box-shadow: 0 10px 26px rgba(209, 82, 45, 0.38);
+    transform: translateY(-1px);
+  }
+  .ed--listing-detail .ml-side-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .ed--listing-detail .ml-side-btn-link,
+  .ed--listing-detail .ml-side-btn-archive {
+    min-height: 46px;
+    padding: 11px 12px;
+    border-radius: 14px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #fff;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .ed--listing-detail .ml-side-btn-link {
+    border: 1px solid #e5e7eb;
+    color: #374151;
+  }
+  .ed--listing-detail .ml-side-btn-link:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+  .ed--listing-detail .ml-side-btn-link.copied {
+    color: #16a34a;
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+  }
+  .ed--listing-detail .ml-side-btn-archive {
+    border: 1px solid #fecaca;
+    color: #b45309;
+  }
+  .ed--listing-detail .ml-side-btn-archive:hover {
+    background: #fffbeb;
+    border-color: #fcd34d;
+    color: #92400e;
+  }
+  .ed--listing-detail .ml-side-catalog-link {
+    display: block;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ea580c;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .ed--listing-detail .ml-side-catalog-link:hover {
+    color: #c2410c;
+  }
+
   @media (max-width: 560px) {
     .mo-offers-sheet-overlay {
       padding: 0;

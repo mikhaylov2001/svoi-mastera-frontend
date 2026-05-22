@@ -1586,6 +1586,15 @@ export default function MyListingsPage() {
     const reviewsCount = Number(workerStats?.reviewsCount) || 0;
     const completedCount = Number(workerStats?.completedWorksCount)
       || workerDeals.filter((d) => d.status === 'COMPLETED').length;
+    const listingDealsCount = workerDeals.filter(
+      (d) => String(d.listingId || '') === String(detail.id),
+    ).length;
+    const ordersStat = listingDealsCount > 0 ? listingDealsCount : completedCount;
+    const ratingDisplay = ratingVal > 0 ? ratingVal.toFixed(1) : '—';
+    const priceUnitRaw = String(detail.priceUnit || 'за работу').trim();
+    const priceUnitShort = priceUnitRaw.toLowerCase().startsWith('от')
+      ? 'от'
+      : priceUnitRaw;
 
     return (
       <div className="ed ed--listing-detail">
@@ -1838,89 +1847,86 @@ export default function MyListingsPage() {
               </section>
             </div>
 
-            <aside className="ed-side">
-              <div className="ed-card">
-                <div className="ed-eyebrow">Стоимость</div>
-                {!priceNegotiable && pubPrice != null ? (
-                  <div className="ed-price-num">
-                    {Number(pubPrice).toLocaleString('ru-RU')}
-                    <small> ₽</small>
+            <aside className="ed-side ed-side--listing-cabinet">
+              <div className="ml-side-panel">
+                <div className="ml-side-stats">
+                  <div className="ml-side-stat">
+                    <span className="ml-side-stat-value">{ordersStat}</span>
+                    <span className="ml-side-stat-label">заказов</span>
                   </div>
-                ) : (
-                  <div className="ed-price-num" style={{ fontSize: 22, fontWeight: 700 }}>
-                    Договорная
+                  <div className="ml-side-stat">
+                    <span className="ml-side-stat-value">{reviewsCount}</span>
+                    <span className="ml-side-stat-label">отзывов</span>
                   </div>
-                )}
-                <p className="ed-price-sub">{detail.priceUnit || 'за работу'}</p>
-              </div>
+                  <div className="ml-side-stat">
+                    <span className="ml-side-stat-value ml-side-stat-value--rating">{ratingDisplay}</span>
+                    <span className="ml-side-stat-label">рейтинг</span>
+                  </div>
+                </div>
 
-              {(showWorkerReviewForListing(detail.id) || !lockedDeal) && (
-                <div className="ed-card ed-card--manage">
-                  <div className="ed-eyebrow ed-eyebrow--block">Управление</div>
-                  {!lockedDeal && (
-                    <div className="mo-offers-actions">
-                      {detailInCatalog && (
-                        <Link
-                          to={`/listings/${detail.id}`}
-                          className="mo-btn-offers-main"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Открыть в каталоге
-                        </Link>
-                      )}
-                      <div className="mo-offers-actions-row">
-                        <button type="button" className="mo-btn-edit-outline" onClick={() => openEdit(detail)}>
-                          Редактировать
-                        </button>
-                        <button
-                          type="button"
-                          className="mo-btn-archive-outline"
-                          onClick={(e) => handleToggle(detail, e)}
-                        >
-                          {detail.active ? 'В архив' : 'Восстановить'}
-                        </button>
+                <div className="ml-side-price ed-card">
+                  <div className="ml-side-price-eyebrow">Стоимость</div>
+                  {!priceNegotiable && pubPrice != null ? (
+                    <>
+                      <div className="ml-side-price-num">
+                        {Number(pubPrice).toLocaleString('ru-RU')}
+                        <span className="ml-side-price-currency"> ₽</span>
                       </div>
+                      <span className="ml-side-price-unit">{priceUnitShort}</span>
+                    </>
+                  ) : (
+                    <div className="ml-side-price-num ml-side-price-num--nego">Договорная</div>
+                  )}
+                </div>
+
+                {!lockedDeal && (
+                  <div className="ml-side-actions">
+                    <button type="button" className="ml-side-btn-edit" onClick={() => openEdit(detail)}>
+                      Редактировать
+                    </button>
+                    <div className="ml-side-actions-row">
                       <button
                         type="button"
-                        className={`mo-card-tool mo-card-tool--block${copyFlashId === detail.id ? ' copied' : ''}`}
+                        className={`ml-side-btn-link${copyFlashId === detail.id ? ' copied' : ''}`}
                         onClick={(e) => copyListingPublicLink(detail.id, e)}
                       >
-                        {copyFlashId === detail.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
+                        {copyFlashId === detail.id ? 'Скопировано' : 'Ссылка'}
+                      </button>
+                      <button
+                        type="button"
+                        className="ml-side-btn-archive"
+                        onClick={(e) => handleToggle(detail, e)}
+                      >
+                        {detail.active ? 'В архив' : 'Восстановить'}
                       </button>
                     </div>
-                  )}
-                  {showWorkerReviewForListing(detail.id) && (
-                    <button
-                      type="button"
-                      className="ml-btn-review-customer"
-                      style={{ marginTop: !lockedDeal ? 10 : 0, width: '100%' }}
-                      onClick={() => {
-                        const d = completedDealForListing(detail.id);
-                        if (d) setWorkerReviewDealId(d.id);
-                      }}
-                    >
-                      Отзыв о заказчике
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {!lockedDeal && (
-                <div className="ed-card ed-card--offers">
-                  <div className="ed-eyebrow ed-eyebrow--block">Статистика</div>
-                  <p className="mo-card-stats" style={{ margin: 0 }}>
-                    <span className="mo-card-stats-rating">
-                      {ratingVal > 0 ? ratingVal.toFixed(1) : '—'}
-                    </span>
-                    <span className="mo-card-stats-muted">отзывов: {reviewsCount}</span>
-                    <span className="mo-card-stats-muted">{completedCount} выполнено</span>
-                    {viewsCount > 0 && (
-                      <span className="mo-card-stats-muted">{viewsCount} просмотров</span>
+                    {detailInCatalog && (
+                      <Link
+                        to={`/listings/${detail.id}`}
+                        className="ml-side-catalog-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Открыть в каталоге
+                      </Link>
                     )}
-                  </p>
-                </div>
-              )}
+                  </div>
+                )}
+
+                {showWorkerReviewForListing(detail.id) && (
+                  <button
+                    type="button"
+                    className="ml-btn-review-customer"
+                    style={{ width: '100%' }}
+                    onClick={() => {
+                      const d = completedDealForListing(detail.id);
+                      if (d) setWorkerReviewDealId(d.id);
+                    }}
+                  >
+                    Отзыв о заказчике
+                  </button>
+                )}
+              </div>
 
               <div className="ed-card">
                 <div className="ed-eyebrow ed-eyebrow--block">Ваш профиль</div>
