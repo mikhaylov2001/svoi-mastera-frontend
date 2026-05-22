@@ -405,29 +405,40 @@ export const listingDetailSurfaceExtraCss = `
     overflow: hidden;
   }
 
+  .ed.ed--listing-detail .ed-gallery .ed-main,
+  .ed.ed--listing-detail .ed-main,
+  .ed--listing-detail .ed-gallery .ed-main,
   .ed--listing-detail .ed-main,
-  .ed-main,
   .jd-main,
   .jd-main-photo,
   .wd-detail-main {
+    position: relative;
     aspect-ratio: 16 / 9;
     max-height: 420px;
-    display: block;
+    display: block !important;
+    overflow: hidden;
+    align-items: stretch;
+    justify-content: stretch;
   }
 
-  .ed--listing-detail .ed-main img,
-  .ed-main img,
-  .jd-main img,
-  .jd-main-photo img,
-  .wd-detail-main img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    min-width: 100%;
-    min-height: 100%;
-    object-fit: cover;
-    object-position: center;
+  .ed.ed--listing-detail .ed-gallery .ed-main > img,
+  .ed.ed--listing-detail .ed-main > img,
+  .ed--listing-detail .ed-gallery .ed-main > img,
+  .ed--listing-detail .ed-main > img,
+  .jd-main > img,
+  .jd-main-photo > img,
+  .wd-detail-main > img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    object-fit: cover !important;
+    object-position: center center;
     display: block;
   }
 
