@@ -1581,7 +1581,6 @@ export default function MyListingsPage() {
     const showDescCard = !!(bodyText && String(bodyText).trim());
     const photoCount = jdPhotos.length;
     const hasMultiplePhotos = photoCount > 1;
-    const detailInCatalog = !!(detail.active && !lockedDeal);
     const ratingVal = Number(workerStats?.averageRating) || 0;
     const reviewsCount = Number(workerStats?.reviewsCount) || 0;
     const completedCount = Number(workerStats?.completedWorksCount)
@@ -1900,16 +1899,6 @@ export default function MyListingsPage() {
                         {detail.active ? 'В архив' : 'Восстановить'}
                       </button>
                     </div>
-                    {detailInCatalog && (
-                      <Link
-                        to={`/listings/${detail.id}`}
-                        className="ml-side-catalog-link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Открыть в каталоге
-                      </Link>
-                    )}
                   </div>
                 )}
 

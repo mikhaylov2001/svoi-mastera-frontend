@@ -985,19 +985,6 @@ export const moOrdersListShellCss = `
     border-color: #fcd34d;
     color: #92400e;
   }
-  .ed--listing-detail .ml-side-catalog-link {
-    display: block;
-    text-align: center;
-    font-size: 13px;
-    font-weight: 600;
-    color: #ea580c;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .ed--listing-detail .ml-side-catalog-link:hover {
-    color: #c2410c;
-  }
-
   @media (max-width: 560px) {
     .mo-offers-sheet-overlay {
       padding: 0;
