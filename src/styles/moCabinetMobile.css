@@ -204,6 +204,26 @@
     gap: 10px;
   }
 
+  /* Карточки категорий: граница и тень сразу, не только при нажатии */
+  .nl-page .mlf-cat-card {
+    border: 1.5px solid #d1d5db !important;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .nl-page .mlf-cat-footer {
+    border-top-color: #e5e7eb !important;
+  }
+
+  .nl-page .mlf-cat-card:hover {
+    transform: none !important;
+  }
+
+  .nl-page .mlf-cat-card:active {
+    border-color: #fdba74 !important;
+    box-shadow: 0 4px 14px rgba(232, 65, 10, 0.12) !important;
+    transform: none !important;
+  }
+
   /* —— Деталка: категория и адрес в один ряд —— */
   .ed.ed--listing-detail .ed-listing-meta {
     display: flex !important;

@@ -469,7 +469,7 @@ const css = `
     border: 1.5px solid #e8e8e8;
     overflow: hidden;
     cursor: pointer;
-    border: none; padding: 0;
+    padding: 0;
     display: flex; flex-direction: column;
     font-family: Inter, Arial, sans-serif;
     transition: box-shadow .2s, transform .2s, border-color .2s;

@@ -389,7 +389,7 @@ const css = `
   .mlf-cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   .mlf-cat-card {
     background: #fff; border-radius: 14px; border: 1.5px solid #e8e8e8;
-    overflow: hidden; cursor: pointer; border: none; padding: 0;
+    overflow: hidden; cursor: pointer; padding: 0;
     display: flex; flex-direction: column; font-family: Inter, Arial, sans-serif;
     transition: box-shadow .2s, transform .2s, border-color .2s;
   }
