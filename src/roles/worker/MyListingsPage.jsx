@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
@@ -64,6 +64,13 @@ function formatListingRelativeRu(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
+  const diffMs = Date.now() - d.getTime();
+  if (diffMs < 0) return 'сегодня';
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  if (diffMins < 1) return 'только что';
+  if (diffMins < 60) return `${diffMins} мин. назад`;
+  if (diffHours < 24) return `${diffHours} ч. назад`;
   const startToday = new Date();
   startToday.setHours(0, 0, 0, 0);
   const startThat = new Date(d);
@@ -1574,6 +1581,11 @@ export default function MyListingsPage() {
     const showDescCard = !!(bodyText && String(bodyText).trim());
     const photoCount = jdPhotos.length;
     const hasMultiplePhotos = photoCount > 1;
+    const detailInCatalog = !!(detail.active && !lockedDeal);
+    const ratingVal = Number(workerStats?.averageRating) || 0;
+    const reviewsCount = Number(workerStats?.reviewsCount) || 0;
+    const completedCount = Number(workerStats?.completedWorksCount)
+      || workerDeals.filter((d) => d.status === 'COMPLETED').length;
 
     return (
       <div className="ed ed--listing-detail">
@@ -1843,22 +1855,38 @@ export default function MyListingsPage() {
               </div>
 
               {(showWorkerReviewForListing(detail.id) || !lockedDeal) && (
-                <div className="ed-card">
+                <div className="ed-card ed-card--manage">
                   <div className="ed-eyebrow ed-eyebrow--block">Управление</div>
                   {!lockedDeal && (
-                    <div className="ed-actions">
-                      <button type="button" className="ed-btn ed-btn-confirm" onClick={() => openEdit(detail)}>
-                        Редактировать
-                      </button>
+                    <div className="mo-offers-actions">
+                      {detailInCatalog && (
+                        <Link
+                          to={`/listings/${detail.id}`}
+                          className="mo-btn-offers-main"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Открыть в каталоге
+                        </Link>
+                      )}
+                      <div className="mo-offers-actions-row">
+                        <button type="button" className="mo-btn-edit-outline" onClick={() => openEdit(detail)}>
+                          Редактировать
+                        </button>
+                        <button
+                          type="button"
+                          className="mo-btn-archive-outline"
+                          onClick={(e) => handleToggle(detail, e)}
+                        >
+                          {detail.active ? 'В архив' : 'Восстановить'}
+                        </button>
+                      </div>
                       <button
                         type="button"
-                        className={`ml-btn-copy${copyFlashId === detail.id ? ' copied' : ''}`}
+                        className={`mo-card-tool mo-card-tool--block${copyFlashId === detail.id ? ' copied' : ''}`}
                         onClick={(e) => copyListingPublicLink(detail.id, e)}
                       >
                         {copyFlashId === detail.id ? 'Ссылка скопирована' : 'Копировать ссылку'}
-                      </button>
-                      <button type="button" className="ed-btn ed-btn-ghost" onClick={(e) => handleToggle(detail, e)}>
-                        {detail.active ? 'Снять с публикации' : 'Восстановить'}
                       </button>
                     </div>
                   )}
@@ -1875,6 +1903,22 @@ export default function MyListingsPage() {
                       Отзыв о заказчике
                     </button>
                   )}
+                </div>
+              )}
+
+              {!lockedDeal && (
+                <div className="ed-card ed-card--offers">
+                  <div className="ed-eyebrow ed-eyebrow--block">Статистика</div>
+                  <p className="mo-card-stats" style={{ margin: 0 }}>
+                    <span className="mo-card-stats-rating">
+                      {ratingVal > 0 ? ratingVal.toFixed(1) : '—'}
+                    </span>
+                    <span className="mo-card-stats-muted">отзывов: {reviewsCount}</span>
+                    <span className="mo-card-stats-muted">{completedCount} выполнено</span>
+                    {viewsCount > 0 && (
+                      <span className="mo-card-stats-muted">{viewsCount} просмотров</span>
+                    )}
+                  </p>
                 </div>
               )}
 
@@ -2058,6 +2102,11 @@ export default function MyListingsPage() {
                       <span className="mo-card-stats-muted">отзывов: {reviewsCount}</span>
                       <span className="mo-card-stats-muted">{completedCount} выполнено</span>
                     </p>
+                    {statusOpen && (
+                      <p className="mo-card-hint">
+                        <span className="mo-card-hint-sub">Объявление в каталоге — ждём заказчиков</span>
+                      </p>
+                    )}
                   </div>
 
                   <div className="mo-actions" onClick={(e) => e.stopPropagation()}>
@@ -2067,7 +2116,7 @@ export default function MyListingsPage() {
                     {showArchiveBtn ? (
                       <button
                         type="button"
-                        className="mo-btn mo-btn-secondary"
+                        className="mo-btn mo-btn-secondary mo-btn-archive"
                         onClick={(e) => handleToggle(l, e)}
                       >
                         {l.active ? 'В архив' : 'Восстановить'}

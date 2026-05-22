@@ -392,6 +392,9 @@ export const moOrdersListShellCss = `
     border: 1px solid #eef0f3;
     box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
   }
+  .ed--listing-detail .ed-card.ed-card--offers .mo-card-stats {
+    margin: 0;
+  }
 
   .mo-offers-actions,
   .ed--listing-detail .mo-offers-actions {
@@ -400,9 +403,14 @@ export const moOrdersListShellCss = `
     gap: 12px;
     width: 100%;
   }
+  a.mo-btn-offers-main,
   .mo-btn-offers-main,
+  .ed--listing-detail a.mo-btn-offers-main,
   .ed--listing-detail .mo-btn-offers-main {
     width: 100%;
+    text-decoration: none;
+    color: #fff;
+    box-sizing: border-box;
     min-height: 52px;
     padding: 14px 20px;
     border: none;
@@ -420,7 +428,9 @@ export const moOrdersListShellCss = `
       0 3px 8px rgba(209, 82, 45, 0.18);
     transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
   }
+  a.mo-btn-offers-main:hover,
   .mo-btn-offers-main:hover,
+  .ed--listing-detail a.mo-btn-offers-main:hover,
   .ed--listing-detail .mo-btn-offers-main:hover {
     background: linear-gradient(180deg, #ef6339 0%, #d85a30 55%, #c45227 100%);
     box-shadow:
@@ -502,6 +512,45 @@ export const moOrdersListShellCss = `
   .ed--listing-detail .mo-btn-delete-outline:disabled {
     opacity: 0.55;
     cursor: wait;
+  }
+  .mo-btn-archive-outline,
+  .ed--listing-detail .mo-btn-archive-outline {
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    background: #f5f5f7;
+    border: 1px solid #e8eaed;
+    color: #374151;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .mo-btn-archive-outline:hover,
+  .ed--listing-detail .mo-btn-archive-outline:hover {
+    background: #ececef;
+    border-color: #d1d5db;
+    color: #111827;
+  }
+  .mo-orders-root .mo-btn-secondary.mo-btn-archive {
+    background: #f5f5f7;
+    color: #374151;
+    font-weight: 700;
+  }
+  .mo-orders-root .mo-btn-secondary.mo-btn-archive:hover {
+    background: #ececef;
+    color: #111827;
+  }
+  .mo-card-tool--block,
+  .ed--listing-detail .mo-card-tool--block {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 4px;
   }
 
   /* —— Модалка «Отклики» (sheet) —— */
