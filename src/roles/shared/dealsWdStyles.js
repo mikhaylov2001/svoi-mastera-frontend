@@ -1206,6 +1206,37 @@ export const listingDetailLightboxCss = `
   display: block;
   z-index: 11;
 }
+
+/* Десктоп: главное фото галереи на всю рамку (объявление, заявка, сделка) */
+@media (min-width: 769px) {
+  .ed-gallery .ed-main,
+  .ed-main,
+  .wd-detail-main,
+  .jd-main-photo {
+    position: relative;
+    display: block !important;
+    overflow: hidden;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+  .ed-gallery .ed-main > img,
+  .ed-main > img,
+  .wd-detail-main > img,
+  .jd-main-photo > img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    object-fit: cover !important;
+    object-position: center center;
+    display: block;
+  }
+}
 `;
 
 /** Карточка объявления / заявки: ed + лайтбокк (как FindWorkPage, ListingDetailPage). */
