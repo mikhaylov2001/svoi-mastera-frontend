@@ -2093,7 +2093,10 @@ export default function MyListingsPage() {
                     )}
                     {!!desc && <p className="mo-card-desc">{desc}</p>}
                     <p className="mo-card-stats">
-                      <span className="mo-card-stats-rating">{ratingDisplay}</span>
+                      <span className="mo-card-stats-rating-wrap">
+                        <span className="mo-card-stats-star" aria-hidden>★</span>
+                        <span className="mo-card-stats-rating">{ratingDisplay}</span>
+                      </span>
                       <span className="mo-card-stats-muted">отзывов: {reviewsCount}</span>
                       <span className="mo-card-stats-muted">{completedCount} выполнено</span>
                     </p>

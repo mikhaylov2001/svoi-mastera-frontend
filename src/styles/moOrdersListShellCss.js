@@ -263,23 +263,38 @@ export const moOrdersListShellCss = `
   }
 
   .mo-orders-root .mo-card-stats {
-    margin: 0 0 2px;
-    font-size: 12px;
-    line-height: 1.45;
+    margin: 0 0 4px;
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 8px;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #9ca3af;
+    overflow: hidden;
+  }
+  .mo-orders-root .mo-card-stats-rating-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .mo-orders-root .mo-card-stats-star {
+    font-size: 13px;
+    line-height: 1;
     color: #9ca3af;
   }
   .mo-orders-root .mo-card-stats-rating {
     font-weight: 800;
     color: #111827;
-    font-size: 13px;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
   }
   .mo-orders-root .mo-card-stats-muted {
     font-weight: 500;
     color: #9ca3af;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .mo-orders-root .mo-actions {
