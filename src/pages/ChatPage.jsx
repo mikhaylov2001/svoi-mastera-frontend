@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   getConversations, getConversation, sendMessage,
   updateMessage, deleteMessage, deleteConversation,
+  getUserProfile,
 } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
@@ -71,16 +72,27 @@ export default function ChatPage() {
   const [loadingConvos, setLoadingConvos] = useState(true);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [partnerInfo, setPartnerInfo] = useState(null); // for new conversations
 
   const [replyTo, setReplyTo] = useState(null);
   const [reactionsMap, setReactionsMap] = useState({});
   const [forwardMsg, setForwardMsg] = useState(null);
 
-  // Active conversation (from list)
-  const activeConversation = useMemo(
-    () => convos.find(c => String(c.partnerId) === pid) || null,
-    [convos, pid],
-  );
+  // Active conversation — found in list OR a placeholder for new chats
+  const activeConversation = useMemo(() => {
+    if (!pid) return null;
+    const found = convos.find(c => String(c.partnerId) === pid);
+    if (found) return found;
+    // Placeholder: use partner profile info if loaded
+    return {
+      partnerId: pid,
+      partnerName: partnerInfo?.displayName || partnerInfo?.name || partnerInfo?.fullName || partnerInfo?.firstName || 'Чат',
+      partnerAvatarUrl: partnerInfo?.avatarUrl || partnerInfo?.avatar || null,
+      lastMessage: '',
+      lastMessageAt: null,
+      unreadCount: 0,
+    };
+  }, [convos, pid, partnerInfo]);
 
   // Load conversations
   const loadConvos = useCallback(async () => {
@@ -113,11 +125,20 @@ export default function ChatPage() {
 
   // Load messages when pid changes
   useEffect(() => {
-    if (!pid) { setMsgs([]); return; }
+    if (!pid) { setMsgs([]); setPartnerInfo(null); return; }
     setLoadingMsgs(true);
     setReplyTo(null);
     loadMsgs().finally(() => setLoadingMsgs(false));
   }, [pid, loadMsgs]);
+
+  // Load partner profile when pid set and not in conversations
+  useEffect(() => {
+    if (!pid || !userId) return;
+    // If conversation already exists in list, no need to fetch profile separately
+    const exists = convos.find(c => String(c.partnerId) === pid);
+    if (exists) { setPartnerInfo(null); return; }
+    getUserProfile(pid).then(info => setPartnerInfo(info)).catch(() => {});
+  }, [pid, userId, convos]);
 
   // Load reactions when pid changes
   useEffect(() => {
