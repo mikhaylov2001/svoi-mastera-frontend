@@ -14,6 +14,32 @@ function fullUrl(u) {
   return BACKEND + u;
 }
 
+// ─── Small message avatar ─────────────────────────────────────
+const COLORS = ['#7c3aed','#2563eb','#059669','#d97706','#e8410a','#0891b2','#db2777'];
+function avatarBg(name) {
+  const c = (name || '?').trim()[0]?.toUpperCase() || '?';
+  return COLORS[(c.charCodeAt(0) || 0) % COLORS.length];
+}
+function MsgAvatar({ name, url }) {
+  const [err, setErr] = React.useState(false);
+  const src = fullUrl(url);
+  const ini = (name || '?').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
+  if (src && !err) {
+    return (
+      <img
+        src={src} alt={ini}
+        className="mb-ava"
+        onError={() => setErr(true)}
+      />
+    );
+  }
+  return (
+    <div className="mb-ava" style={{ background: avatarBg(name) }}>
+      {ini}
+    </div>
+  );
+}
+
 // ─── Parse reply prefix from text ────────────────────────────
 // Format: "> Name: quoted text\n actual message"
 function parseReplyPrefix(text) {
@@ -213,6 +239,10 @@ function ReplyQuote({ name, text, isMe }) {
 export default function MessageBubble({
   message: m,
   isMe,
+  partnerAvatarUrl,
+  partnerName,
+  myAvatarUrl,
+  myName,
   onDelete,
   onEdit,
   onReact,
@@ -271,6 +301,11 @@ export default function MessageBubble({
 
   return (
     <div className={`mb-row${isMe ? ' mb-row--me' : ''}`}>
+      {/* Partner avatar (left side, received messages) */}
+      {!isMe && (
+        <MsgAvatar name={partnerName} url={partnerAvatarUrl} />
+      )}
+
       <div className={`mb-col${isMe ? ' mb-col--me' : ''}`}>
 
         {/* Bubble */}
@@ -358,6 +393,11 @@ export default function MessageBubble({
           </div>
         )}
       </div>
+
+      {/* My avatar (right side, sent messages) */}
+      {isMe && (
+        <MsgAvatar name={myName} url={myAvatarUrl} />
+      )}
     </div>
   );
 }

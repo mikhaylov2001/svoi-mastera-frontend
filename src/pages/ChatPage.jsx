@@ -74,6 +74,7 @@ export default function ChatPage() {
   const [busy, setBusy] = useState(false);
   const [partnerInfo, setPartnerInfo] = useState(null); // for new conversations
 
+  const [myProfile, setMyProfile] = useState(null);
   const [replyTo, setReplyTo] = useState(null);
   const [reactionsMap, setReactionsMap] = useState({});
   const [forwardMsg, setForwardMsg] = useState(null);
@@ -119,6 +120,12 @@ export default function ChatPage() {
   }, [loadConvos, loadMsgs]);
 
   useSameRouteRefetch('/chat', refetchAll);
+
+  // Load own profile for avatar in messages
+  useEffect(() => {
+    if (!userId) return;
+    getUserProfile(userId).then(p => setMyProfile(p)).catch(() => {});
+  }, [userId]);
 
   // Initial load
   useEffect(() => { loadConvos(); }, [loadConvos]);
@@ -263,6 +270,8 @@ export default function ChatPage() {
           messages={msgs}
           isLoading={loadingMsgs}
           userId={userId}
+          myAvatarUrl={myProfile?.avatarUrl || myProfile?.avatar || null}
+          myName={myProfile?.displayName || myProfile?.name || myProfile?.fullName || myProfile?.firstName || null}
           onSend={handleSend}
           onBack={handleBack}
           onDelete={handleDeleteConversation}

@@ -52,6 +52,8 @@ export default function ChatArea({
   messages,
   isLoading,
   userId,
+  myAvatarUrl,
+  myName,
   onSend,
   onBack,
   onDelete,
@@ -95,6 +97,17 @@ export default function ChatArea({
     setSearchQuery('');
   };
 
+  // Last message timestamp from the PARTNER (not current user) — used as "last seen"
+  const lastPartnerActivityAt = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (String(m.senderId) !== String(userId)) {
+        return m.createdAt || null;
+      }
+    }
+    return conversation?.lastMessageAt || null;
+  }, [messages, userId, conversation]);
+
   if (!conversation) {
     return (
       <div className="ca-empty">
@@ -112,6 +125,7 @@ export default function ChatArea({
         onBack={onBack}
         onDelete={onDelete}
         onToggleSearch={handleToggleSearch}
+        lastPartnerActivityAt={lastPartnerActivityAt}
       />
 
       {showSearch && (
@@ -163,6 +177,10 @@ export default function ChatArea({
                   <MessageBubble
                     message={m}
                     isMe={isMe}
+                    partnerAvatarUrl={conversation?.partnerAvatarUrl}
+                    partnerName={conversation?.partnerName}
+                    myAvatarUrl={myAvatarUrl}
+                    myName={myName}
                     onDelete={onDeleteMessage}
                     onEdit={onEditMessage}
                     onReact={onReactMessage}

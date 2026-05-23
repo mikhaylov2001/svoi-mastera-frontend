@@ -457,6 +457,8 @@
 ═══════════════════════════════════════════════════ */
 .mb-row {
   display: flex;
+  align-items: flex-end;
+  gap: 8px;
   margin-bottom: 2px;
 }
 .mb-row--me { justify-content: flex-end; }
@@ -567,6 +569,24 @@
   max-width: 260px;
 }
 .mb-bub--them .mb-quote-text { color: #6b7280; }
+
+/* ─── Message avatar ─────────────────────────────────── */
+.mb-ava {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  align-self: flex-end;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
 
 /* Reactions */
 .mb-rx { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
