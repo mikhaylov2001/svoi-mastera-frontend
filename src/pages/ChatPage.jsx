@@ -1,1559 +1,270 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   getConversations, getConversation, sendMessage,
   updateMessage, deleteMessage, deleteConversation,
-  uploadFile,
 } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
-import AttachButton from '../components/AttachButton';
+import ConversationList from '../components/messages/ConversationList';
+import ChatArea from '../components/messages/ChatArea';
 import './ChatPage.css';
 
-// ─── Фоны ───────────────────────────────────────────────────
-const BG_LIST = [
-  { id: 'tg',      label: 'Телеграм', style: { backgroundColor:'#c9d8e8', backgroundImage:"url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2399b3c8' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E\")" } },
-  { id: 'white',   label: 'Белый',    style: { background:'#f7f8fa' } },
-  { id: 'warm',    label: 'Тёплый',   style: { background:'linear-gradient(160deg,#fef9f5 0%,#fdebd0 100%)' } },
-  { id: 'mint',    label: 'Мята',     style: { background:'linear-gradient(160deg,#e8f8f5 0%,#d5f5e3 100%)' } },
-  { id: 'lavender',label: 'Лаванда',  style: { background:'linear-gradient(160deg,#f0e6ff 0%,#e8eaf6 100%)' } },
-  { id: 'peach',   label: 'Персик',   style: { background:'linear-gradient(160deg,#fff3e0 0%,#fce4ec 100%)' } },
-  { id: 'dark',    label: 'Тёмный',   style: { background:'#1e2435' }, dark:true },
-  { id: 'ocean',   label: 'Океан',    style: { background:'linear-gradient(160deg,#0f3460 0%,#16213e 100%)' }, dark:true },
-  { id: 'forest',  label: 'Лес',      style: { background:'linear-gradient(160deg,#1a3a1a 0%,#2e7d32 100%)' }, dark:true },
-  { id: 'night',   label: 'Ночь',     style: { background:'linear-gradient(160deg,#0a0a0f 0%,#1a1a2e 100%)' }, dark:true },
-  { id: 'sunrise', label: 'Рассвет',  style: { background:'linear-gradient(160deg,#ff8c42 0%,#ffd166 50%,#f7ede2 100%)' } },
-  { id: 'dots',    label: 'Точки',    style: { backgroundColor:'#eef0f5', backgroundImage:"url(\"data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='12' cy='12' r='2' fill='%23c5cae9'/%3E%3C/svg%3E\")", backgroundSize:'24px 24px' } },
-];
+// ─── Local storage helpers ────────────────────────────────────
+const STORAGE_KEY_REACTIONS = uid => `chat_reactions_${uid}`;
 
-const EMOJIS = [
-  '😀', '😃', '😄', '😁', '😅', '😂', '🤣', '🥲', '😊', '😇', '🙂', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '😎', '🤓', '🧐',
-  '😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱', '🤤', '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️', '💩', '🤡', '👹', '👺', '👻', '👽', '👾', '🤖',
-  '👍', '👎', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁', '🦷', '🦴', '👀', '👁️', '👅', '👄',
-  '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❤️‍🔥', '❤️‍🩹', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🪬', '🕎', '☯️', '☦️', '🛐', '⛎',
-  '🔥', '✨', '⭐', '🌟', '💫', '💥', '💢', '💯', '✅', '☑️', '✔️', '❌', '❎', '➕', '➖', '➗', '♾️', '💤', '💨', '🎉', '🎊', '🎁', '🏆', '🥇', '🥈', '🥉',
-  '💬', '👤', '👥', '🗨️', '🗯️', '💭', '🏠', '🏡', '🏘️', '🏚️', '🏗️', '🏭', '🏢', '🏬', '🏣', '🏤', '🏥', '🏦', '🏨', '🏪', '🏫', '🏩', '💒', '⛪', '🕌', '🛕', '🕍', '⛩️', '🛤️', '🛣️', '🗺️', '🗿', '🗽', '🗼', '🏰',
-  '🔨', '🪓', '⛏️', '⚒️', '🛠️', '🗡️', '⚔️', '🔧', '🔩', '⚙️', '🪚', '🔫', '💣', '🧨', '🪛', '🔦', '🏮', '🪜', '🧹', '🧺', '🧻', '🚽', '🚿', '🛁', '🛀', '🧼', '🪥', '🪒', '🧴', '🧷', '🧹', '🪣', '🧽', '🪤', '🧯', '🛒',
-  '📱', '💻', '🖥️', '🖨️', '⌨️', '🖱️', '🖲️', '💽', '💾', '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️', '🧭', '⏱️', '⏲️', '⏰', '🕰️', '⌛', '⏳', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🪔', '🧯', '🛢️', '💸', '💵', '💴', '💶', '💷', '🪙', '💰', '💳', '🧾', '✉️', '📧', '📨', '📩', '📤', '📥', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️',
-  '✏️', '✒️', '🖋️', '🖊️', '🖌️', '🖍️', '📝', '📁', '📂', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️',
-  '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🛻', '🚚', '🚛', '🚜', '🏍️', '🛵', '🚲', '🛴', '🛹', '🛼', '🚁', '✈️', '🛫', '🛬', '🪂', '💺', '🚀', '🛸', '🚉', '🚊', '🚝', '🚞', '🚋', '🚃', '🚋', '🚆', '🚇', '🚄', '🚅', '🚈', '🚂', '🚆', '🚇', '🚊', '🚉', '⛵', '🛶', '🚤', '🛥️', '🛳️', '⛴️', '🚢', '⚓', '🪝', '⛽', '🚧', '🚦', '🚥', '🗺️', '🗿', '🗽', '🗼', '🏛️', '🏜️', '🏝️', '🏖️', '🏔️', '⛰️', '🌋', '🗻', '🏕️', '🏞️', '🏟️', '🏛️', '🏗️', '🧱', '🪨', '🪵', '🛖', '🏘️', '🏚️', '🏠', '🏡', '🏢', '🏣', '🏤', '🏥', '🏦', '🏨', '🏩', '🏪', '🏫', '🏬', '🏭', '🏯', '🏰', '💒', '🗼', '🗽', '⛪', '🕌', '🛕', '🕍', '⛩️', '🕋', '⛲', '⛺', '🌁', '🌃', '🏙️', '🌄', '🌅', '🌆', '🌇', '🌉', '♨️', '🎠', '🎡', '🎢', '💈', '🎪', '🚂', '🚃', '🚄', '🚅', '🚆', '🚇', '🚈', '🚉', '🚊', '🚝', '🚞', '🚋', '🚌', '🚍', '🚎', '🚐', '🚑', '🚒', '🚓', '🚔', '🚕', '🚖', '🚗', '🚘', '🚙', '🚚', '🚛', '🚜', '🏎️', '🏍️', '🛵', '🚲', '🛴', '🛹', '🛼', '🚁', '🛸', '✈️', '🛫', '🛬', '🪂', '💺', '🚀',
-  '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🪱', '🐛', '🦋', '🐌', '🐞', '🐜', '🪰', '🪲', '🪳', '🦟', '🦗', '🕷️', '🕸️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🦬', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🐐', '🦌', '🐕', '🐩', '🦮', '🐕‍🦺', '🐈', '🐈‍⬛', '🪶', '🐓', '🦃', '🦤', '🦚', '🦜', '🦢', '🦩', '🕊️', '🐇', '🦝', '🦨', '🦡', '🦫', '🦦', '🦥', '🐁', '🐀', '🐿️', '🦔',
-  '🍎', '🍏', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🫓', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🥫', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '🫖', '☕', '🍵', '🧃', '🥤', '🧋', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾', '🧊',
-  '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '🤺', '⛹️', '🤾', '🏌️', '🏇', '🧘', '🏄', '🏊', '🤽', '🚣', '🧗', '🚴', '🚵', '🤹', '🛀', '🛌', '👶', '🧒', '👦', '👧', '🧑', '👱', '👨', '🧔', '👩', '🧓', '👴', '👵', '🙍', '🙎', '🙅', '🙆', '💁', '🙋', '🧏', '🙇', '🤦', '🤷', '👮', '🕵️', '💂', '🥷', '👷', '🤴', '👸', '👳', '👲', '🧕', '🤵', '👰', '🤰', '🤱', '👼', '🎅', '🤶', '🦸', '🦹', '🧙', '🧚', '🧛', '🧜', '🧝', '🧞', '🧟', '💆', '💇', '🚶', '🧍', '🧎', '🏃', '💃', '🕺', '🕴️', '👯', '🧖', '🧗', '🤺', '🏇', '⛷️', '🏂', '🏌️', '🏄', '🚣', '🏊', '⛹️', '🏋️', '🚴', '🚵', '🤸', '🤼', '🤽', '🤾', '🤹', '🧘', '🛀', '🛌',
-  '🎮', '🕹️', '🎰', '🎲', '🧩', '🎯', '🎳', '🎮', '🎧', '🎤', '🎼', '🎹', '🥁', '🪘', '🎷', '🎺', '🪗', '🎸', '🪕', '🎻', '🎬', '🎭', '🩰', '🎨', '🖼️', '🎪', '🎠', '🎡', '🎢', '🎫', '🎟️', '🎗️', '🎀', '🎁', '🎂', '🎃', '🎄', '🎆', '🎇', '🧨', '✨', '🎊', '🎉', '🎈', '🎁', '🏮', '🎐', '🎑', '🧧', '🎎', '🎏', '🎐', '🎀', '🎁', '🎗️', '🎟️', '🎫', '🎖️', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🏵️', '🎗️',
-];
-
-const REACTION_QUICK = ['👍', '❤️', '🔥', '😂', '🙏', '👏', '🎉', '💯'];
-
-// ─── SVG Icons ───────────────────────────────────────────────
-const IcSmile  = () => <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/></svg>;
-const IcMic    = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10a7 7 0 0 1-14 0M12 19v3M8 22h8"/></svg>;
-const IcSend   = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>;
-const IcBack   = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>;
-const IcTrash  = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.85" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>;
-const IcPlay   = () => <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>;
-const IcPause  = () => <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>;
-const IcSearch = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>;
-const IcPen = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>;
-const IcMore = () => <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>;
-const IcPhone = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>;
-const IcVideo = () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>;
-const IcReply = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.85" viewBox="0 0 24 24"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>;
-const IcHeart = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.85" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>;
-const IcForward = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.85" viewBox="0 0 24 24"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>;
-const IcClose = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>;
-const IcArrowDown = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>;
-
-// ─── Avatar ──────────────────────────────────────────────────
-const BACKEND = 'https://svoi-mastera-backend.onrender.com';
-
-function fullUrl(url) {
-  if (!url) return '';
-  if (url.startsWith('http')) return url;
-  if (url.startsWith('data:')) return url;
-  return BACKEND + url;
+function loadReactions(userId, partnerId) {
+  try {
+    const all = JSON.parse(localStorage.getItem(STORAGE_KEY_REACTIONS(userId)) || '{}');
+    return all[String(partnerId)] || {};
+  } catch { return {}; }
 }
 
-function Ava({ name, url, size = 40, online = false }) {
-  const [imgError, setImgError] = React.useState(false);
-  const src = fullUrl(url);
-  const ini = (name || '?').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
-  const pallete = ['#7c3aed', '#2563eb', '#059669', '#d97706', '#dc2626', '#0891b2', '#db2777'];
-  const bg = pallete[(ini.charCodeAt(0) || 0) % pallete.length];
-  const ring = online ? ' cav-online' : '';
-
-  if (src && !imgError) {
-    return (
-      <div className={`cav-wrap${online ? ' cav-wrap-online' : ''}`} style={{ width: size, height: size }}>
-        <img
-          src={src}
-          alt=""
-          className="cav"
-          style={{ width: size, height: size }}
-          onError={() => setImgError(true)}
-        />
-      </div>
-    );
-  }
-  return <div className={`cav${ring}`} style={{ width: size, height: size, background: bg, fontSize: size * 0.36 }}>{ini}</div>;
+function saveReactions(userId, partnerId, map) {
+  try {
+    const key = STORAGE_KEY_REACTIONS(userId);
+    const all = JSON.parse(localStorage.getItem(key) || '{}');
+    all[String(partnerId)] = map;
+    localStorage.setItem(key, JSON.stringify(all));
+  } catch { /* ignore */ }
 }
 
-// ─── Ticks ───────────────────────────────────────────────────
-function Ticks({ isRead }) {
-  const col = isRead ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.45)';
+// ─── Forward dialog ──────────────────────────────────────────
+function ForwardDialog({ convos, currentPid, onForward, onClose, busy }) {
   return (
-    <svg width="15" height="10" viewBox="0 0 15 10" fill="none" style={{flexShrink:0}}>
-      <path d="M1 5L3.5 8L8 2"   stroke={col} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M5 5L7.5 8L12 2"  stroke={isRead ? col : 'rgba(255,255,255,.2)'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  );
-}
-
-// ─── Voice Player ─────────────────────────────────────────────
-function VoicePlayer({ url, dur }) {
-  const [playing, setPlaying] = useState(false);
-  const [cur,     setCur]     = useState(0);
-  const [len,     setLen]     = useState(dur > 0 ? dur : 0);
-  const [ready,   setReady]   = useState(false);
-  const aRef = useRef(null);
-
-  useEffect(() => {
-    if (!url) return;
-    const a = new Audio();
-    a.preload = 'metadata';
-    aRef.current = a;
-
-    a.onloadedmetadata = () => {
-      const d = a.duration;
-      if (d && isFinite(d)) setLen(Math.round(d));
-      setReady(true);
-    };
-    a.ontimeupdate = () => { if (isFinite(a.currentTime)) setCur(a.currentTime); };
-    a.onended = () => { setPlaying(false); setCur(0); };
-    a.onerror = () => { setReady(true); }; // показываем плеер даже при ошибке
-    a.src = url;
-    a.load();
-
-    return () => { a.pause(); a.src = ''; aRef.current = null; };
-  }, [url]);
-
-  const toggle = () => {
-    const a = aRef.current; if (!a) return;
-    if (playing) { a.pause(); setPlaying(false); }
-    else { a.play().then(() => setPlaying(true)).catch(() => {}); }
-  };
-
-  const seek = (e) => {
-    const a = aRef.current; if (!a || !len) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pct = (e.clientX - rect.left) / rect.width;
-    a.currentTime = pct * len;
-    setCur(pct * len);
-  };
-
-  const fmt = s => {
-    const n = isFinite(s) ? Math.round(s) : 0;
-    return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
-  };
-
-  const pct = len > 0 && isFinite(cur) ? Math.min((cur / len) * 100, 100) : 0;
-  const BARS = 32;
-
-  return (
-    <div className="cvp">
-      <button className="cvp-btn" onClick={toggle} disabled={!ready}>
-        {playing ? <IcPause/> : <IcPlay/>}
-      </button>
-      <div className="cvp-body">
-        <div className="cvp-track" onClick={seek}>
-          {Array.from({length: BARS}).map((_, i) => {
-            const h = 3 + Math.round(Math.abs(Math.sin(i * 0.85 + 0.5) * 13));
-            const filled = (i / BARS) * 100 < pct;
-            return <div key={i} className={`cvp-bar${filled ? ' on' : ''}`} style={{height: h}}/>;
-          })}
+    <div className="fwd-backdrop" onClick={onClose} role="presentation">
+      <div className="fwd-panel" onClick={e => e.stopPropagation()}>
+        <div className="fwd-title">Переслать в чат</div>
+        <div className="fwd-list">
+          {convos.filter(c => String(c.partnerId) !== String(currentPid)).length === 0 ? (
+            <p className="fwd-empty">Нет других диалогов.</p>
+          ) : (
+            convos
+              .filter(c => String(c.partnerId) !== String(currentPid))
+              .map(c => {
+                const ini = (c.partnerName || '?').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
+                return (
+                  <button key={c.partnerId} className="fwd-row" disabled={busy} onClick={() => onForward(c.partnerId)}>
+                    <div className="fwd-ava">{ini}</div>
+                    <span>{c.partnerName || 'Чат'}</span>
+                  </button>
+                );
+              })
+          )}
         </div>
-        <div className="cvp-time">{fmt(playing ? cur : len)}</div>
+        <button className="fwd-cancel" onClick={onClose}>Отмена</button>
       </div>
     </div>
   );
 }
 
-// ─── Image Bubble ─────────────────────────────────────────────
-function ImageBubble({ url, caption }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <div className="cimg-wrap" onClick={() => setOpen(true)}>
-        <img src={url} alt="photo" className="cimg"/>
-        {caption && <div className="cimg-caption">{caption}</div>}
-        <div className="cimg-overlay"><span>🔍</span></div>
-      </div>
-      {open && (
-        <div className="cimg-modal" onClick={() => setOpen(false)}>
-          <img src={url} alt="full" className="cimg-full"/>
-        </div>
-      )}
-    </>
-  );
-}
-
-// ─── Location Bubble ─────────────────────────────────────────
-function LocBubble({ coords }) {
-  const parts = coords.split(',');
-  const lat = parseFloat(parts[0]);
-  const lon = parseFloat(parts[1]);
-  if (!isFinite(lat) || !isFinite(lon)) return <div className="cbub-text">📍 {coords}</div>;
-
-  const mapSrc = `https://static-maps.yandex.ru/1.x/?ll=${lon},${lat}&z=14&size=390,160&l=map&pt=${lon},${lat},pm2rdl`;
-  const osmUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=15`;
-  return (
-    <a href={osmUrl} target="_blank" rel="noreferrer" className="cloc">
-      <div className="cloc-map">
-        <img src={mapSrc} alt="map" className="cloc-img"
-          onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}/>
-        <div className="cloc-fallback">
-          <div style={{fontSize:32}}>🗺️</div>
-          <div>{lat.toFixed(4)}, {lon.toFixed(4)}</div>
-        </div>
-        <div className="cloc-pin">📍</div>
-      </div>
-      <div className="cloc-footer">
-        <span>📍 Местоположение</span>
-        <span className="cloc-open">Открыть →</span>
-      </div>
-    </a>
-  );
-}
-
-// ─── File type config ─────────────────────────────────────────
-const FILE_TYPES = {
-  PDF:  { bg: 'linear-gradient(135deg,#f44336,#e53935)', label: 'PDF', icon: (
-    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h1.5a1.5 1.5 0 0 1 0 3H9v-3zm0 0V11m6 5h-1.5M15 13v3"/></svg>
-  )},
-  DOC:  { bg: 'linear-gradient(135deg,#1565c0,#1e88e5)', label: 'DOC', icon: (
-    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
-  )},
-  DOCX: { bg: 'linear-gradient(135deg,#1565c0,#1e88e5)', label: 'DOCX', icon: (
-    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
-  )},
-  XLS:  { bg: 'linear-gradient(135deg,#2e7d32,#43a047)', label: 'XLS', icon: (
-    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 12l2.5 3-2.5 3m4-6l2.5 3-2.5 3"/></svg>
-  )},
-  XLSX: { bg: 'linear-gradient(135deg,#2e7d32,#43a047)', label: 'XLSX', icon: (
-    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 12l2.5 3-2.5 3m4-6l2.5 3-2.5 3"/></svg>
-  )},
-  PPT:  { bg: 'linear-gradient(135deg,#e65100,#f4511e)', label: 'PPT', icon: (
-    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h1.5a1.5 1.5 0 0 1 0 3H9v-3z"/></svg>
-  )},
-  PPTX: { bg: 'linear-gradient(135deg,#e65100,#f4511e)', label: 'PPTX', icon: (
-    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h1.5a1.5 1.5 0 0 1 0 3H9v-3z"/></svg>
-  )},
-  ZIP:  { bg: 'linear-gradient(135deg,#6a1b9a,#9c27b0)', label: 'ZIP', icon: (
-    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M12 8v8m0-8l3 3m-3-3L9 11"/></svg>
-  )},
-  RAR:  { bg: 'linear-gradient(135deg,#6a1b9a,#9c27b0)', label: 'RAR', icon: (
-    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-  )},
-  MP3:  { bg: 'linear-gradient(135deg,#00838f,#00acc1)', label: 'MP3', icon: (
-    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 15V9l5 3-5 3z" fill="#fff" stroke="none"/></svg>
-  )},
-  MP4:  { bg: 'linear-gradient(135deg,#00695c,#00897b)', label: 'MP4', icon: (
-    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0 1 21 8.82v6.36a1 1 0 0 1-1.447.889L15 14"/><rect x="3" y="7" width="12" height="10" rx="2"/></svg>
-  )},
-  TXT:  { bg: 'linear-gradient(135deg,#546e7a,#78909c)', label: 'TXT', icon: (
-    <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8"/></svg>
-  )},
-};
-const FILE_DEFAULT = { bg: 'linear-gradient(135deg,#455a64,#607d8b)', label: '', icon: (
-  <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-)};
-
-// ─── File Bubble ──────────────────────────────────────────────
-function FileBubble({ name, mine, fileUrl }) {
-  const ext = (name?.split('.').pop() || 'FILE').toUpperCase();
-  const cfg = FILE_TYPES[ext] || FILE_DEFAULT;
-  const shortName = name?.length > 28 ? name.slice(0, 25) + '…' + name.slice(-6) : name || 'Файл';
-
-  const download = () => {
-    if (!fileUrl) { alert('Файл недоступен для скачивания'); return; }
-    const a = document.createElement('a');
-    a.href = fileUrl;
-    a.download = name || 'file';
-    a.click();
-  };
-
-  return (
-    <div className="cfile" onClick={download} style={{ cursor: fileUrl ? 'pointer' : 'default' }}>
-      <div className="cfile-ic" style={{ background: cfg.bg }}>
-        {cfg.icon}
-        <span className="cfile-ic-ext">{cfg.label || ext.slice(0,4)}</span>
-      </div>
-      <div className="cfile-body">
-        <div className="cfile-name">{shortName}</div>
-        <div className="cfile-meta">{ext} · Файл</div>
-      </div>
-      <div className={`cfile-dl ${fileUrl ? 'cfile-dl-active' : 'cfile-dl-disabled'}`}>
-        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-// ─── Parse message ────────────────────────────────────────────
-function parseMsgContent(text) {
-  if (!text) return { type: 'text', text: '' };
-  // Location: "📍 lat, lon"
-  const loc = text.match(/^📍 (-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
-  if (loc) return { type: 'location', coords: `${loc[1]},${loc[2]}` };
-  // Voice
-  if (text.startsWith('🎤 Голосовое') || text.startsWith('🎤')) return { type: 'voice' };
-  // Image with possible caption
-  const img = text.match(/^📷 (.+?)(?:\n(.*))?$/s);
-  if (img) return { type: 'image_text', filename: img[1], caption: img[2] || '' };
-  // Video
-  const vid = text.match(/^🎥 (.+?)(?:\n(.*))?$/s);
-  if (vid) return { type: 'video_text', filename: vid[1], caption: vid[2] || '' };
-  // File
-  const file = text.match(/^📎 (.+?)(?:\n(.*))?$/s);
-  if (file) return { type: 'file_text', filename: file[1] };
-  return { type: 'text', text };
-}
-
-// ─── Preview text helpers ──────────────────────────────────────
-const fmtPreview = text => {
-  if (!text) return '';
-  if (text.startsWith('📷 ')) return '📷 Фотография';
-  if (text.startsWith('🎥 ')) return '🎥 Видео';
-  if (text.startsWith('🎤 ')) return '🎤 Голосовое';
-  if (text.startsWith('📎 ')) return '📎 Файл';
-  if (text.startsWith('📍 ')) return '📍 Местоположение';
-  return text;
-};
-
-// ─── Time helpers ─────────────────────────────────────────────
-const fmtShort = d => {
-  if (!d) return '';
-  const dt = new Date(d), now = new Date();
-  if (dt.toDateString() === now.toDateString())
-    return dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-  const y = new Date(now); y.setDate(y.getDate()-1);
-  if (dt.toDateString() === y.toDateString()) return 'вчера';
-  return dt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-};
-const fmtTime = d => !d ? '' : new Date(d).toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
-const fmtDate = d => !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day:'numeric', month:'long' });
-const fmtDateChip = d => {
-  if (!d) return '';
-  const dt = new Date(d);
-  const now = new Date();
-  if (dt.toDateString() === now.toDateString()) return 'Сегодня';
-  const y = new Date(now);
-  y.setDate(y.getDate() - 1);
-  if (dt.toDateString() === y.toDateString()) return 'Вчера';
-  return fmtDate(d);
-};
-
-function replyPreviewSnippet(m, parsed, hasImg) {
-  if (parsed.type === 'image_text' && hasImg) return '📷 Фото';
-  if (parsed.type === 'video_text' && hasImg) return '🎥 Видео';
-  if (parsed.type === 'file_text') return `📎 ${parsed.filename || 'Файл'}`;
-  if (parsed.type === 'voice') return '🎤 Голосовое';
-  if (parsed.type === 'location') return '📍 Местоположение';
-  return (m.text || '').slice(0, 220);
-}
-
-function buildReplyPrefix(rt) {
-  if (!rt) return '';
-  const q = String(rt.text || '').replace(/\s+/g, ' ').trim().slice(0, 240);
-  return `↪️ Ответ ${rt.name}:\n«${q}»\n\n`;
-}
-
-function chatReactionsKey(uid, pid) {
-  return `chatReactions_${uid}_${pid}`;
-}
-
-function chatArchiveKey(uid) {
-  return `chatArchivedPartners_${uid}`;
-}
-
-function loadReactionsMap(uid, pid) {
-  if (!uid || !pid) return {};
-  try {
-    const s = localStorage.getItem(chatReactionsKey(uid, pid));
-    if (!s) return {};
-    const o = JSON.parse(s);
-    return typeof o === 'object' && o && !Array.isArray(o) ? o : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveReactionsMap(uid, pid, map) {
-  if (!uid || !pid) return;
-  try { localStorage.setItem(chatReactionsKey(uid, pid), JSON.stringify(map)); } catch {}
-}
-
-function loadArchivedPartnerIds(uid) {
-  if (!uid) return new Set();
-  try {
-    const s = localStorage.getItem(chatArchiveKey(uid));
-    const a = s ? JSON.parse(s) : [];
-    return new Set(Array.isArray(a) ? a.map(String) : []);
-  } catch {
-    return new Set();
-  }
-}
-
-function saveArchivedPartnerIds(uid, set) {
-  if (!uid) return;
-  try { localStorage.setItem(chatArchiveKey(uid), JSON.stringify([...set])); } catch {}
-}
-
-function forwardBodyFromMessage(m, parsed, imgUrl) {
-  let body = '';
-  if (parsed.type === 'location') body = m.text || '';
-  else if (parsed.type === 'voice') body = m.text || '🎤 Голосовое';
-  else if (parsed.type === 'image_text' && imgUrl) {
-    const cap = parsed.caption ? `\n${parsed.caption}` : '';
-    body = `📷 ${parsed.filename || 'Фото'}${cap}`;
-  } else if (parsed.type === 'video_text' && imgUrl) {
-    const cap = parsed.caption ? `\n${parsed.caption}` : '';
-    body = `🎥 ${parsed.filename || 'Видео'}${cap}`;
-  } else if (parsed.type === 'file_text') body = `📎 ${parsed.filename || 'Файл'}`;
-  else body = (m.text || '').trim();
-  const snip = body.length > 900 ? `${body.slice(0, 897)}…` : body;
-  return `↪️ Переслано:\n${snip}`;
-}
-
-async function shareOrCopyChatHint(title, text) {
-  const payload = { title: title || 'Чат', text: text || window.location.href, url: window.location.href };
-  try {
-    if (navigator.share && typeof navigator.share === 'function') {
-      await navigator.share(payload);
-      return;
-    }
-  } catch {}
-  try {
-    await navigator.clipboard.writeText(text || window.location.href);
-    alert('Ссылка скопирована в буфер обмена');
-  } catch {
-    alert(text || 'Не удалось поделиться ссылкой');
-  }
-}
-
-// ─── Voice Recorder Hook ──────────────────────────────────────
-function useVoiceRec(onDone) {
-  const [rec, setRec]   = useState(false);
-  const [sec, setSec]   = useState(0);
-  const mr  = useRef(null);
-  const cks = useRef([]);
-  const tmr = useRef(null);
-  const cnt = useRef(0);
-
-  const start = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mime = ['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg']
-        .find(t => MediaRecorder.isTypeSupported(t)) || '';
-      const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
-      cks.current = [];
-      rec.ondataavailable = e => { if (e.data?.size > 0) cks.current.push(e.data); };
-      rec.onstop = () => {
-        const blob = new Blob(cks.current, { type: mime || 'audio/webm' });
-        onDone({ blob, url: URL.createObjectURL(blob), duration: cnt.current });
-        stream.getTracks().forEach(t => t.stop());
-      };
-      rec.start(200);
-      mr.current = rec;
-      cnt.current = 0;
-      setRec(true); setSec(0);
-      tmr.current = setInterval(() => { cnt.current++; setSec(cnt.current); }, 1000);
-    } catch { alert('Нет доступа к микрофону'); }
-  };
-
-  const stop = () => {
-    if (mr.current?.state === 'recording') mr.current.stop();
-    clearInterval(tmr.current);
-    setRec(false);
-  };
-
-  const cancel = () => {
-    if (mr.current?.state === 'recording') {
-      mr.current.onstop = null; // не вызываем callback
-      mr.current.stop();
-    }
-    clearInterval(tmr.current);
-    cks.current = []; cnt.current = 0;
-    setRec(false); setSec(0);
-  };
-
-  return { rec, sec, start, stop, cancel };
-}
-
-// ─── MAIN COMPONENT ───────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────
 export default function ChatPage() {
   const { partnerId } = useParams();
-  const { userId, userName, userAvatar, isWorker } = useAuth();
-  const navigate      = useNavigate();
-  const loc           = useLocation();
+  const navigate = useNavigate();
+  const { userId, isWorker } = useAuth();
 
-  const pid = useMemo(() => partnerId == null ? null : String(partnerId), [partnerId]);
-  const jrId = useMemo(() => {
-    const v = new URLSearchParams(loc.search || '').get('jobRequestId');
-    return v ? String(v) : null;
-  }, [loc.search]);
+  const pid = partnerId ? String(partnerId) : null;
 
-  const [convos,  setConvos]  = useState([]);
-  const [msgs,    setMsgs]    = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [txt,     setTxt]     = useState('');
-  const [busy,    setBusy]    = useState(false);
-  const [err,     setErr]     = useState('');
+  const [convos, setConvos] = useState([]);
+  const [msgs, setMsgs] = useState([]);
+  const [loadingConvos, setLoadingConvos] = useState(true);
+  const [loadingMsgs, setLoadingMsgs] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  const [editId,  setEditId]  = useState(null);
-  const [editTxt, setEditTxt] = useState('');
-  const [menuId,  setMenuId]  = useState(null);
-
-  const [showEmoji,  setShowEmoji]  = useState(false);
-  const [showBg,     setShowBg]     = useState(false);
-  const [bgId,       setBgId]       = useState(() => localStorage.getItem('chatBg') || 'tg');
-  const [listFilter, setListFilter] = useState('all');
-  const [listSearch, setListSearch] = useState('');
-  const [showChMenu, setShowChMenu] = useState(false);
-  const [replyTo,    setReplyTo]    = useState(null);
-
-  const [showSidebarMenu, setShowSidebarMenu] = useState(false);
-  const [archivedPartnerIds, setArchivedPartnerIds] = useState(() => new Set());
-
-  const [showChatSearch, setShowChatSearch] = useState(false);
-  const [chatSearchQuery, setChatSearchQuery] = useState('');
-  const [chatSearchHit, setChatSearchHit] = useState(0);
-
-  const [forwardText, setForwardText] = useState(null);
-  const [reactionPickerMid, setReactionPickerMid] = useState(null);
+  const [replyTo, setReplyTo] = useState(null);
   const [reactionsMap, setReactionsMap] = useState({});
-  const [showScrollDown, setShowScrollDown] = useState(false);
+  const [forwardMsg, setForwardMsg] = useState(null);
 
-  // локальное хранилище голосовых: messageId -> {url, duration}
-  const [voiceStore, setVoiceStore] = useState({});
-  // локальное хранилище изображений: messageId -> objectURL
-  const [imgStore,   setImgStore]   = useState({});
-  // локальное хранилище файлов: messageId -> {url, name}
-  const [fileStore,  setFileStore]  = useState({});
-  // превью перед отправкой
-  const [preview, setPreview] = useState(null);
+  // Active conversation (from list)
+  const activeConversation = useMemo(
+    () => convos.find(c => String(c.partnerId) === pid) || null,
+    [convos, pid],
+  );
 
-  const endRef    = useRef(null);
-  const cmsgRef   = useRef(null);
-  const inputRef  = useRef(null);
-  const camRef    = useRef(null);
-  const attachRef = useRef(null);
-  const closeAttach = () => attachRef.current?.close?.();
-
-  const curBg = BG_LIST.find(b => b.id === bgId) || BG_LIST[0];
-
-  const voice = useVoiceRec(({ blob, url, duration }) => {
-    setPreview({ type: 'voice', blob, url, duration });
-  });
-
-  // loaders
+  // Load conversations
   const loadConvos = useCallback(async () => {
     if (!userId) return;
-    try { setConvos(await getConversations(userId)); } catch {}
+    try {
+      const list = await getConversations(userId);
+      setConvos(list);
+    } catch { /* ignore */ }
+    setLoadingConvos(false);
   }, [userId]);
 
+  // Load messages
   const loadMsgs = useCallback(async () => {
     if (!userId || !pid) return;
-    try { setMsgs(await getConversation(userId, pid)); } catch {}
+    try {
+      const list = await getConversation(userId, pid);
+      setMsgs(list);
+    } catch { /* ignore */ }
   }, [userId, pid]);
 
-  useEffect(() => { loadConvos(); }, [loadConvos]);
-
-  const refetchChatShell = useCallback(() => {
+  const refetchAll = useCallback(() => {
     loadConvos();
     loadMsgs();
   }, [loadConvos, loadMsgs]);
 
-  useSameRouteRefetch('/chat', refetchChatShell);
+  useSameRouteRefetch('/chat', refetchAll);
 
+  // Initial load
+  useEffect(() => { loadConvos(); }, [loadConvos]);
+
+  // Load messages when pid changes
   useEffect(() => {
-    if (!pid) return;
-    setLoading(true);
-    setMenuId(null); setEditId(null); setShowEmoji(false); closeAttach();
+    if (!pid) { setMsgs([]); return; }
+    setLoadingMsgs(true);
     setReplyTo(null);
-    setShowChMenu(false);
-    setShowChatSearch(false);
-    setChatSearchQuery('');
-    setChatSearchHit(0);
-    setForwardText(null);
-    setReactionPickerMid(null);
-    loadMsgs().then(() => setLoading(false));
-    setTimeout(() => inputRef.current?.focus(), 100);
+    loadMsgs().finally(() => setLoadingMsgs(false));
   }, [pid, loadMsgs]);
 
+  // Load reactions when pid changes
   useEffect(() => {
-    if (!userId) {
-      setArchivedPartnerIds(new Set());
-      return;
-    }
-    setArchivedPartnerIds(loadArchivedPartnerIds(userId));
-  }, [userId]);
-
-  useEffect(() => {
-    if (!userId || !pid) {
-      setReactionsMap({});
-      return;
-    }
-    setReactionsMap(loadReactionsMap(userId, pid));
+    if (!userId || !pid) { setReactionsMap({}); return; }
+    setReactionsMap(loadReactions(userId, pid));
   }, [userId, pid]);
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
-
-  useEffect(() => {
-    const el = cmsgRef.current;
-    if (!el) return;
-    const nearBottom = () => {
-      const th = 100;
-      return el.scrollHeight - el.scrollTop - el.clientHeight < th;
-    };
-    const onScroll = () => setShowScrollDown(!nearBottom());
-    onScroll();
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
-  }, [pid, msgs, loading]);
-
+  // Poll for updates
   useEffect(() => {
     if (!pid) return;
     const iv = setInterval(() => { loadMsgs(); loadConvos(); }, 5000);
     return () => clearInterval(iv);
   }, [pid, loadMsgs, loadConvos]);
 
-  // Send
-  const send = async () => {
-    const t = txt.trim();
-    if ((!t && !preview) || !pid || !userId) return;
-    setBusy(true); setErr('');
-    const replyPrefix = buildReplyPrefix(replyTo);
+  // ─── Handlers ────────────────────────────────────────────────
+
+  const handleSelectConversation = useCallback(conv => {
+    navigate(`/chat/${conv.partnerId}`);
+  }, [navigate]);
+
+  const handleBack = useCallback(() => {
+    navigate('/chat');
+  }, [navigate]);
+
+  const handleNewChat = useCallback(() => {
+    navigate(isWorker ? '/find-work' : '/find-master');
+  }, [navigate, isWorker]);
+
+  const handleSend = useCallback(async ({ text, attachmentUrl, attachmentType, replyTo: rt }) => {
+    if (!userId || !pid) return;
+    setBusy(true);
     try {
-      let finalTxt = t;
-      let attachmentUrl  = null;
-      let attachmentType = null;
-
-      if (preview) {
-        // ── Сохраняем локальный URL сразу — для показа в текущей сессии ──
-        const localUrl = preview.url;
-
-        // ── Загружаем файл на сервер ──────────────────────────
-        if (preview.file && ['image','video','file'].includes(preview.type)) {
-          try {
-            const uploaded = await uploadFile(userId, preview.file);
-            attachmentUrl  = uploaded.url;
-            attachmentType = preview.type;
-
-            if (preview.type === 'image')      finalTxt = `📷 ${uploaded.filename || preview.name}${t ? '\n'+t : ''}`;
-            else if (preview.type === 'video') finalTxt = `🎥 ${uploaded.filename || preview.name}${t ? '\n'+t : ''}`;
-            else if (preview.type === 'file')  finalTxt = `📎 ${uploaded.filename || preview.name}${t ? '\n'+t : ''}`;
-          } catch (uploadErr) {
-            // Сервер не поддерживает загрузку — отправляем текст, показываем локально
-            console.warn('Upload failed, using local URL:', uploadErr);
-            attachmentType = preview.type;
-            // attachmentUrl = null — не сохранится в БД, но покажется локально
-            if (preview.type === 'image')      finalTxt = `📷 ${preview.name}${t ? '\n'+t : ''}`;
-            else if (preview.type === 'video') finalTxt = `🎥 ${preview.name}${t ? '\n'+t : ''}`;
-            else if (preview.type === 'file')  finalTxt = `📎 ${preview.name}${t ? '\n'+t : ''}`;
-          }
-        }
-
-        // ── Голосовое ────────────────────────────────────────
-        else if (preview.type === 'voice' && preview.blob) {
-          finalTxt = `🎤 Голосовое (${preview.duration}с)`;
-          try {
-            // Пробуем загрузить на сервер
-            const voiceFile = new File([preview.blob], `voice_${Date.now()}.webm`, { type: preview.blob.type || 'audio/webm' });
-            const uploaded  = await uploadFile(userId, voiceFile);
-            attachmentUrl   = uploaded.url;
-            attachmentType  = 'voice';
-          } catch {
-            // Сервер не поддерживает — сохраняем как base64 прямо в БД
-            try {
-              const base64 = await new Promise((res, rej) => {
-                const reader = new FileReader();
-                reader.onload  = () => res(reader.result); // data:audio/webm;base64,...
-                reader.onerror = rej;
-                reader.readAsDataURL(preview.blob);
-              });
-              attachmentUrl  = base64; // сохранится в поле attachment_url в БД
-              attachmentType = 'voice';
-            } catch {
-              // совсем не получилось — хотя бы покажем в текущей сессии
-              attachmentType = 'voice';
-            }
-          }
-        }
-
-        // ── Геолокация ────────────────────────────────────────
-        else if (preview.type === 'location') {
-          finalTxt       = `📍 ${preview.name}`;
-          attachmentType = 'location';
-          attachmentUrl  = preview.name;
-        }
-
-        setPreview(null);
-
-        // Отправляем сообщение
-        if (!finalTxt) { setBusy(false); return; }
-        const sendTxt = replyPrefix ? replyPrefix + finalTxt : finalTxt;
-        const sent = await sendMessage(userId, pid, sendTxt, jrId, attachmentUrl, attachmentType);
-        const sentId = sent?.id;
-
-        // Сохраняем в локальный store для показа сразу
-        if (sentId) {
-          if (attachmentType === 'voice')
-            setVoiceStore(p => ({ ...p, [sentId]: { url: attachmentUrl || localUrl, duration: preview?.duration || 0 } }));
-          if (attachmentType === 'image' || attachmentType === 'video')
-            setImgStore(p => ({ ...p, [sentId]: attachmentUrl || localUrl }));
-          if (attachmentType === 'file')
-            setFileStore(p => ({ ...p, [sentId]: { url: attachmentUrl || localUrl, name: preview?.name } }));
-        }
-
-        setTxt(''); setShowEmoji(false); closeAttach(); setReplyTo(null);
-        await loadMsgs(); await loadConvos();
-        setBusy(false);
-        return; // выходим — уже сохранили
-      }
-
-      // Простое текстовое сообщение (без вложений)
-      if (finalTxt) {
-        const sendTxt = replyPrefix ? replyPrefix + finalTxt : finalTxt;
-        await sendMessage(userId, pid, sendTxt, jrId, null, null);
-        setTxt(''); setShowEmoji(false); closeAttach(); setReplyTo(null);
-        await loadMsgs(); await loadConvos();
-      }
-
-    } catch (e) { setErr(e?.message || 'Не удалось отправить.'); }
+      const replyPrefix = rt ? `> ${rt.name}: ${rt.text}\n` : '';
+      const finalText = replyPrefix + (text || '');
+      await sendMessage(userId, pid, finalText, null, attachmentUrl || null, attachmentType || null);
+      await loadMsgs();
+      await loadConvos();
+    } catch { /* ignore */ }
     setBusy(false);
-  };
+  }, [userId, pid, loadMsgs, loadConvos]);
 
-  const onKey = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
-
-  const startEdit  = m => { setEditId(m.id); setEditTxt(m.text||''); setMenuId(null); };
-  const cancelEdit = () => { setEditId(null); setEditTxt(''); };
-  const saveEdit   = async () => {
-    if (!editId || !editTxt.trim()) return;
+  const handleDeleteMessage = useCallback(async msgId => {
+    if (!window.confirm('Удалить сообщение?')) return;
     setBusy(true);
-    try { await updateMessage(userId, editId, editTxt.trim()); cancelEdit(); await loadMsgs(); } catch {}
+    try {
+      await deleteMessage(userId, msgId);
+      await loadMsgs();
+      await loadConvos();
+    } catch { /* ignore */ }
     setBusy(false);
-  };
+  }, [userId, loadMsgs, loadConvos]);
 
-  const delMsg = async mid => {
-    setMenuId(null); setBusy(true);
-    try { await deleteMessage(userId, mid); await loadMsgs(); await loadConvos(); } catch {}
-    setBusy(false);
-  };
-
-  const requestDeleteMessage = async mid => {
-    if (!window.confirm('Удалить это сообщение?')) return;
-    await delMsg(mid);
-  };
-
-  const delChat = async () => {
-    if (!window.confirm('Удалить весь чат?')) return;
+  const handleEditMessage = useCallback(async (msgId, text) => {
     setBusy(true);
-    try { await deleteConversation(userId, pid); setMsgs([]); await loadConvos(); navigate('/chat'); } catch {}
+    try {
+      await updateMessage(userId, msgId, text);
+      await loadMsgs();
+    } catch { /* ignore */ }
     setBusy(false);
-  };
+  }, [userId, loadMsgs]);
 
-  const toggleMessageReaction = (mid, emoji) => {
-    setReactionPickerMid(null);
-    const key = String(mid);
+  const handleReactMessage = useCallback((msgId, emoji) => {
+    const key = String(msgId);
     setReactionsMap(prev => {
       const cur = Array.isArray(prev[key]) ? [...prev[key]] : [];
       const i = cur.indexOf(emoji);
       if (i >= 0) cur.splice(i, 1);
-      else {
-        cur.push(emoji);
-        while (cur.length > 6) cur.shift();
-      }
+      else { cur.push(emoji); if (cur.length > 6) cur.shift(); }
       const next = { ...prev };
       if (cur.length) next[key] = cur;
       else delete next[key];
-      if (userId && pid) saveReactionsMap(userId, pid, next);
+      if (userId && pid) saveReactions(userId, pid, next);
       return next;
     });
-  };
+  }, [userId, pid]);
 
-  const openForwardFor = (m, parsed, imgUrl) => {
-    setReactionPickerMid(null);
-    setForwardText(forwardBodyFromMessage(m, parsed, imgUrl));
-  };
+  const handleForwardMessage = useCallback(msg => {
+    setForwardMsg(msg);
+  }, []);
 
-  const forwardToPartner = async targetPid => {
-    if (!forwardText || !userId || !targetPid) return;
+  const doForward = useCallback(async targetPid => {
+    if (!forwardMsg || !userId) return;
     setBusy(true);
     try {
-      await sendMessage(userId, String(targetPid), forwardText, null, null, null);
-      setForwardText(null);
+      await sendMessage(userId, String(targetPid), forwardMsg.text || '', null, forwardMsg.attachmentUrl || null, forwardMsg.attachmentType || null);
+      setForwardMsg(null);
       await loadConvos();
-    } catch (e) { setErr(e?.message || 'Не удалось переслать.'); }
+    } catch { /* ignore */ }
     setBusy(false);
-  };
+  }, [forwardMsg, userId, loadConvos]);
 
-  const toggleArchiveCurrent = () => {
-    if (!userId || !pid) return;
-    const id = String(pid);
-    const next = new Set(archivedPartnerIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setArchivedPartnerIds(next);
-    saveArchivedPartnerIds(userId, next);
-    setShowChMenu(false);
-  };
+  const handleDeleteConversation = useCallback(async () => {
+    if (!window.confirm('Удалить весь чат?')) return;
+    setBusy(true);
+    try {
+      await deleteConversation(userId, pid);
+      setMsgs([]);
+      await loadConvos();
+      navigate('/chat');
+    } catch { /* ignore */ }
+    setBusy(false);
+  }, [userId, pid, loadConvos, navigate]);
 
-  const pickFile = (e, type) => {
-    const f = e.target.files?.[0]; if (!f) return;
-    const url = URL.createObjectURL(f);
-    // Определяем тип точнее по mime
-    let realType = type;
-    if (f.type.startsWith('image/')) realType = 'image';
-    else if (f.type.startsWith('video/')) realType = 'video';
-    setPreview({ type: realType, url, name: f.name, file: f });
-    e.target.value = '';
-  };
-
-  const shareGeo = () => {
-    if (!navigator.geolocation) { alert('Геолокация недоступна'); return; }
-    navigator.geolocation.getCurrentPosition(
-      p => setPreview({ type: 'location', name: `${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}` }),
-      () => alert('Не удалось получить геолокацию')
-    );
-  };
-
-  const partner = convos.find(c => String(c.partnerId) === pid);
-
-  const tryPhoneCall = () => {
-    setShowChMenu(false);
-    const raw = partner?.partnerPhone || partner?.phone || partner?.tel || partner?.mobile;
-    const digits = raw != null ? String(raw).replace(/[^\d+]/g, '') : '';
-    if (digits.length >= 10) {
-      window.location.href = `tel:${digits}`;
-      return;
-    }
-    shareOrCopyChatHint('Чат', `Номер телефона в карточке собеседника пока не указан.\nСсылка: ${window.location.href}`);
-  };
-
-  const tryVideoHint = () => {
-    setShowChMenu(false);
-    shareOrCopyChatHint('Видеозвонок', `Видеозвонки скоро появятся в приложении.\nСсылка на чат: ${window.location.href}`);
-  };
-
-  const handleAttachPick = (type, files) => {
-    setShowEmoji(false);
-    if (type === 'photo' && files?.length) {
-      pickFile(
-        { target: { files, value: '' } },
-        files[0].type?.startsWith('video') ? 'video' : 'image'
-      );
-    } else if (type === 'doc' && files?.length) {
-      pickFile({ target: { files, value: '' } }, 'file');
-    } else if (type === 'camera') {
-      setTimeout(() => camRef.current?.click(), 0);
-    } else if (type === 'geo') {
-      shareGeo();
-    } else if (type === 'contact') {
-      alert('Отправка контакта скоро появится в приложении.');
-    }
-  };
-
-  const closeAll = () => {
-    setMenuId(null); setShowEmoji(false); closeAttach(); setShowChMenu(false);
-    setShowSidebarMenu(false); setReactionPickerMid(null); setForwardText(null);
-    setShowChatSearch(false);
-  };
-
-  const totalUnread = useMemo(
-    () => convos.reduce((s, c) => s + (Number(c.unreadCount) || 0), 0),
-    [convos]
-  );
-
-  const displayConvos = useMemo(() => {
-    const arch = archivedPartnerIds;
-    let arr;
-    if (listFilter === 'archive') {
-      arr = convos.filter(c => arch.has(String(c.partnerId)));
-    } else {
-      arr = convos.filter(c => !arch.has(String(c.partnerId)));
-      if (listFilter === 'unread') {
-        arr = arr.filter(c => (Number(c.unreadCount) || 0) > 0);
-      }
-    }
-    const q = listSearch.trim().toLowerCase();
-    if (q) {
-      arr = arr.filter(c =>
-        String(c.partnerName || '').toLowerCase().includes(q) ||
-        String(c.lastMessage || '').toLowerCase().includes(q)
-      );
-    }
-    return arr;
-  }, [convos, listSearch, listFilter, archivedPartnerIds]);
-
-  const chatSearchMatches = useMemo(() => {
-    const q = chatSearchQuery.trim().toLowerCase();
-    if (!q || !msgs.length) return [];
-    return msgs.filter(m => String(m.text || '').toLowerCase().includes(q)).map(m => m.id);
-  }, [msgs, chatSearchQuery]);
-
-  const chatSearchMatchesRef = useRef([]);
-  chatSearchMatchesRef.current = chatSearchMatches;
-
-  useEffect(() => { setChatSearchHit(0); }, [chatSearchQuery, pid]);
-
-  useEffect(() => {
-    if (!chatSearchQuery.trim()) return;
-    const q = chatSearchQuery.trim().toLowerCase();
-    const ids = msgs.filter(m => String(m.text || '').toLowerCase().includes(q)).map(m => m.id);
-    if (!ids.length) return;
-    const mid = ids[0];
-    requestAnimationFrame(() => document.getElementById(`chat-msg-${mid}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
-  }, [chatSearchQuery]);
-
-  const gotoNextSearchHit = () => {
-    const ids = chatSearchMatchesRef.current;
-    if (!ids.length) return;
-    setChatSearchHit(h => {
-      const next = (h + 1) % ids.length;
-      const mid = ids[next];
-      requestAnimationFrame(() => document.getElementById(`chat-msg-${mid}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
-      return next;
-    });
-  };
-
-  const fmt2 = s => {
-    const n = isFinite(s) ? s : 0;
-    return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
-  };
-
-  // ─── RENDER ────────────────────────────────────────────────
+  // ─── Render ───────────────────────────────────────────────────
   return (
-    <div className="cr" onClick={closeAll}>
-
-      {/* ═══ SIDEBAR ═══ */}
-      <aside className={`cs ${pid ? 'cs-hide' : ''}`}>
-        <div className="cs-top">
-          <div className="cs-top-row">
-            <div className="cs-top-title">Чаты</div>
-            <div className="cs-top-actions">
-              <button
-                type="button"
-                className="cs-iconbtn"
-                title="Новый чат"
-                aria-label="Новый чат"
-                onClick={e => { e.stopPropagation(); navigate(isWorker ? '/find-work' : '/find-master'); }}
-              >
-                <IcPen />
-              </button>
-              <button
-                type="button"
-                className="cs-iconbtn"
-                title="Меню"
-                aria-label="Меню"
-                onClick={e => { e.stopPropagation(); setShowSidebarMenu(v => !v); setShowEmoji(false); closeAttach(); }}
-              >
-                <IcMore />
-              </button>
-              {showSidebarMenu && (
-                <div className="cs-pop" onClick={e => e.stopPropagation()}>
-                  <button type="button" className="cs-pop-item" onClick={() => { setListSearch(''); setShowSidebarMenu(false); }}>
-                    Очистить поиск в списке
-                  </button>
-                  <button type="button" className="cs-pop-item" onClick={() => { setListFilter('all'); setShowSidebarMenu(false); }}>
-                    Показать все чаты
-                  </button>
-                  <button type="button" className="cs-pop-item" onClick={() => { navigate(isWorker ? '/find-work' : '/find-master'); setShowSidebarMenu(false); }}>
-                    {isWorker ? 'Найти работу' : 'Найти мастера'}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="cs-search">
-            <IcSearch />
-            <input
-              type="search"
-              placeholder="Поиск по чатам и сообщениям…"
-              value={listSearch}
-              onChange={e => setListSearch(e.target.value)}
-              aria-label="Поиск"
-            />
-          </div>
-        </div>
-        <div className="cs-filters">
-          <button type="button" className={`cs-filter${listFilter === 'all' ? ' active' : ''}`} onClick={() => setListFilter('all')}>Все</button>
-          <button type="button" className={`cs-filter${listFilter === 'unread' ? ' active' : ''}`} onClick={() => setListFilter('unread')}>
-            Непрочитанные
-            {totalUnread > 0 && <span className="cs-filter-count">{totalUnread}</span>}
-          </button>
-          <button type="button" className={`cs-filter${listFilter === 'archive' ? ' active' : ''}`} onClick={() => setListFilter('archive')}>Архив</button>
-        </div>
-        {convos.length === 0 ? (
-          <div className="cs-empty">
-            <div style={{ fontSize: 52 }}>💬</div>
-            <b>Нет диалогов</b>
-            <span>Напишите мастеру со страницы заявки</span>
-          </div>
-        ) : displayConvos.length === 0 ? (
-          <div className="cs-empty">
-            <div style={{ fontSize: 44 }}>🔍</div>
-            <b>Ничего не найдено</b>
-            <span>Попробуйте другой запрос или вкладку</span>
-          </div>
-        ) : (
-          <div className="cs-list">
-            {displayConvos.map(c => (
-              <div
-                key={c.partnerId}
-                className={`cs-item ${String(c.partnerId) === pid ? 'active' : ''}`}
-                onClick={e => { e.stopPropagation(); navigate(`/chat/${c.partnerId}`); }}
-                role="presentation"
-              >
-                <Ava name={c.partnerName} url={c.partnerAvatarUrl} size={48} online />
-                <div className="cs-item-body">
-                  <div className="cs-item-row">
-                    <span className="cs-item-name">
-                      {c.partnerName}
-                    </span>
-                    <span className="cs-item-time">{fmtShort(c.lastMessageAt)}</span>
-                  </div>
-                  <div className="cs-item-row">
-                    <div className="cs-item-msg-wrap">
-                      <span className="cs-item-msg">{fmtPreview(c.lastMessage) || 'Нет сообщений'}</span>
-                    </div>
-                    {(Number(c.unreadCount) || 0) > 0 && <span className="cs-badge">{c.unreadCount}</span>}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </aside>
-
-      {/* ═══ CHAT AREA ═══ */}
-      <div className={`cm ${!pid ? 'cm-empty' : ''}`}>
-        {!pid && (
-          <div className="cm-placeholder">
-            <div style={{fontSize:64}}>💬</div>
-            <h3>Выберите диалог</h3>
-            <p>или начните новый со страницы заявки</p>
-          </div>
-        )}
-
-        {pid && (<>
-          {/* HEADER */}
-          <header className="ch" onClick={e => e.stopPropagation()}>
-            <button type="button" className="ch-back" onClick={() => navigate('/chat')} aria-label="Назад"><IcBack /></button>
-            <Ava name={partner?.partnerName} url={partner?.partnerAvatarUrl} size={44} online />
-            <div className="ch-info">
-              <div className="ch-name">{partner?.partnerName || 'Чат'}</div>
-              <div className="ch-status">
-                <span className="ch-dot" />
-                онлайн
-              </div>
-            </div>
-            <div className="ch-actions">
-              <button
-                type="button"
-                className="ch-btn"
-                title="Поиск в чате"
-                aria-label="Поиск в чате"
-                onClick={e => { e.stopPropagation(); setShowChatSearch(v => !v); setShowChMenu(false); setShowEmoji(false); closeAttach(); }}
-              >
-                <IcSearch />
-              </button>
-              <button
-                type="button"
-                className="ch-btn"
-                title="Позвонить"
-                aria-label="Позвонить"
-                onClick={e => { e.stopPropagation(); tryPhoneCall(); }}
-              >
-                <IcPhone />
-              </button>
-              <button
-                type="button"
-                className="ch-btn"
-                title="Видео"
-                aria-label="Видео"
-                onClick={e => { e.stopPropagation(); tryVideoHint(); }}
-              >
-                <IcVideo />
-              </button>
-              <button
-                type="button"
-                className="ch-btn"
-                title="Ещё"
-                aria-label="Меню чата"
-                onClick={e => { e.stopPropagation(); setShowChMenu(v => !v); setShowEmoji(false); closeAttach(); }}
-              >
-                <IcMore />
-              </button>
-            </div>
-          </header>
-
-          {showChatSearch && (
-            <div className="ch-searchbar" onClick={e => e.stopPropagation()}>
-              <IcSearch />
-              <input
-                type="search"
-                placeholder="Поиск по сообщениям…"
-                value={chatSearchQuery}
-                onChange={e => setChatSearchQuery(e.target.value)}
-                aria-label="Поиск по сообщениям"
-              />
-              <span className="ch-searchbar-meta">
-                {chatSearchQuery.trim()
-                  ? `${chatSearchMatches.length ? chatSearchHit + 1 : 0}/${chatSearchMatches.length}`
-                  : ''}
-              </span>
-              <button
-                type="button"
-                className="ch-searchbar-next"
-                disabled={!chatSearchMatches.length}
-                onClick={gotoNextSearchHit}
-              >
-                Далее
-              </button>
-            </div>
-          )}
-
-          {showChMenu && (
-            <div className="ch-menu" onClick={e => e.stopPropagation()}>
-              <button
-                type="button"
-                className="ch-menu-item"
-                onClick={() => { setShowBg(true); setShowChMenu(false); }}
-              >
-                Тема чата
-              </button>
-              <button type="button" className="ch-menu-item" onClick={toggleArchiveCurrent}>
-                {archivedPartnerIds.has(String(pid)) ? 'Вернуть из архива' : 'В архив'}
-              </button>
-              <button
-                type="button"
-                className="ch-menu-item ch-menu-item--danger"
-                onClick={() => { setShowChMenu(false); delChat(); }}
-              >
-                Удалить чат
-              </button>
-            </div>
-          )}
-
-          {/* BG PICKER */}
-          {showBg && (
-            <div className="cbg-picker" onClick={e => e.stopPropagation()}>
-              <div className="cbg-title">Тема чата</div>
-              <div className="cbg-grid">
-                {BG_LIST.map(b => (
-                  <button key={b.id} className={`cbg-item ${bgId === b.id ? 'sel' : ''}`}
-                    style={b.style} onClick={() => { setBgId(b.id); localStorage.setItem('chatBg', b.id); setShowBg(false); }}>
-                    {bgId === b.id && <span className="cbg-check">✓</span>}
-                    <span className="cbg-lbl" style={{color: b.dark ? '#fff' : '#374151'}}>{b.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {err && <div className="cerr">{err}</div>}
-
-          {/* MESSAGES */}
-          <div className="cmsg" ref={cmsgRef} style={curBg.style}>
-            {loading ? (
-              <div className="cmsg-load">Загрузка...</div>
-            ) : msgs.length === 0 ? (
-              <div className="cmsg-empty">
-                <div style={{fontSize:44}}>👋</div>
-                <p>Напишите первое сообщение</p>
-              </div>
-            ) : msgs.map((m, i) => {
-              const mine     = m.senderId === userId;
-              const showDate = i === 0 || new Date(msgs[i-1].createdAt).toDateString() !== new Date(m.createdAt).toDateString();
-              const isLast   = i === msgs.length-1 || msgs[i+1].senderId !== m.senderId;
-              const parsed   = parseMsgContent(m.text);
-              const vd       = voiceStore[m.id] || (m.attachmentType === 'voice'  && m.attachmentUrl ? { url: m.attachmentUrl, duration: parseInt(m.text?.match(/\((\d+)с\)/)?.[1]) || 0 } : null);
-              const imgUrl   = imgStore[m.id]   || (m.attachmentType === 'image'  && m.attachmentUrl ? m.attachmentUrl : null)
-                                                || (m.attachmentType === 'video'  && m.attachmentUrl ? m.attachmentUrl : null);
-              const fileData = fileStore[m.id]  || (m.attachmentType === 'file'   && m.attachmentUrl ? { url: m.attachmentUrl, name: parsed.filename } : null);
-              const rxList   = reactionsMap[m.id] || reactionsMap[String(m.id)] || [];
-              const curHitId = chatSearchMatches.length ? chatSearchMatches[chatSearchHit % chatSearchMatches.length] : null;
-              const isSearchLit = chatSearchQuery.trim() && curHitId != null && String(curHitId) === String(m.id);
-
-              return (
-                <React.Fragment key={m.id}>
-                  {showDate && (
-                    <div className="cdate"><span>{fmtDateChip(m.createdAt)}</span></div>
-                  )}
-
-                  <div
-                    id={`chat-msg-${m.id}`}
-                    className={[`cmrow`, mine ? 'mine' : 'their', isSearchLit ? 'cmrow-search-hit' : ''].filter(Boolean).join(' ')}
-                    style={{marginBottom: isLast ? 10 : 2}}
-                  >
-                    {!mine && (
-                      <div className="cmrow-ava">{isLast && <Ava name={m.senderName} url={m.senderAvatarUrl} size={30}/>}</div>
-                    )}
-
-                    <div className={[
-                      'cbub',
-                      parsed.type === 'location' ? 'cbub-loc' : '',
-                      (parsed.type === 'image_text' && imgUrl) || (parsed.type === 'video_text' && imgUrl) ? 'cbub-img' : '',
-                    ].filter(Boolean).join(' ')}>
-
-                      {editId !== m.id && (
-                        <div
-                          className="cbub-actions"
-                          role="toolbar"
-                          aria-label="Действия с сообщением"
-                          onClick={e => e.stopPropagation()}
-                        >
-                          <button
-                            type="button"
-                            className="cba-btn"
-                            title="Ответить"
-                            aria-label="Ответить"
-                            onClick={() => setReplyTo({
-                              name: mine ? 'Вы' : (m.senderName || partner?.partnerName || 'Собеседник'),
-                              text: replyPreviewSnippet(m, parsed, !!imgUrl),
-                            })}
-                          >
-                            <IcReply />
-                          </button>
-                          <span className="cba-sep" aria-hidden />
-                          <button
-                            type="button"
-                            className="cba-btn"
-                            title="Реакция"
-                            aria-label="Реакция"
-                            onClick={() => setReactionPickerMid(reactionPickerMid === m.id ? null : m.id)}
-                          >
-                            <IcHeart />
-                          </button>
-                          <span className="cba-sep" aria-hidden />
-                          <button
-                            type="button"
-                            className="cba-btn"
-                            title="Переслать"
-                            aria-label="Переслать"
-                            onClick={() => openForwardFor(m, parsed, imgUrl)}
-                          >
-                            <IcForward />
-                          </button>
-                          {mine && (
-                            <>
-                              <span className="cba-sep" aria-hidden />
-                              <button
-                                type="button"
-                                className="cba-btn cba-btn-del"
-                                title="Удалить"
-                                aria-label="Удалить сообщение"
-                                onClick={() => requestDeleteMessage(m.id)}
-                              >
-                                <IcTrash />
-                              </button>
-                            </>
-                          )}
-                          {reactionPickerMid === m.id && (
-                            <div className="creact-pop">
-                              {REACTION_QUICK.map(em => (
-                                <button
-                                  key={em}
-                                  type="button"
-                                  className="creact-pop-btn"
-                                  onClick={() => toggleMessageReaction(m.id, em)}
-                                >
-                                  {em}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {!mine && isLast && <div className="cbub-name">{m.senderName}</div>}
-
-                      {/* EDIT MODE */}
-                      {mine && editId === m.id ? (
-                        <div className="cedit">
-                          <textarea className="cedit-ta" value={editTxt}
-                            onChange={e => setEditTxt(e.target.value)} autoFocus/>
-                          <div className="cedit-row">
-                            <button className="btn btn-outline btn-sm" onClick={cancelEdit}>Отмена</button>
-                            <button className="btn btn-primary btn-sm" onClick={saveEdit}>Сохранить</button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          {/* CONTENT */}
-                          {parsed.type === 'location' ? (
-                            <LocBubble coords={parsed.coords}/>
-
-                          ) : parsed.type === 'voice' && vd ? (
-                            <VoicePlayer url={vd.url} dur={vd.duration} />
-
-                          ) : parsed.type === 'voice' ? (
-                            // голосовое без локального url
-                            <div className="cvp-stub">
-                              <div className="cvp-stub-btn">
-                                <IcPlay/>
-                              </div>
-                              <div className="cvp-stub-body">
-                                <div className="cvp-stub-wave">
-                                  {Array.from({length:28}).map((_,i) => (
-                                    <div key={i} className="cvp-stub-bar"
-                                      style={{height: 3 + Math.round(Math.abs(Math.sin(i*0.85+0.5)*11))}}/>
-                                  ))}
-                                </div>
-                                <div className="cvp-stub-time">
-                                  {m.text?.match(/\((\d+)с\)/)?.[1] ? `0:${String(m.text.match(/\((\d+)с\)/)[1]).padStart(2,'0')}` : 'Голосовое'}
-                                </div>
-                              </div>
-                            </div>
-
-                          ) : parsed.type === 'image_text' && imgUrl ? (
-                            <ImageBubble url={imgUrl} caption={parsed.caption}/>
-
-                          ) : parsed.type === 'image_text' && !imgUrl ? (
-                            <div className="cphoto-stub">
-                              <div className="cphoto-stub-icon">
-                                <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                  <rect x="3" y="3" width="18" height="18" rx="3"/>
-                                  <circle cx="8.5" cy="8.5" r="1.5"/>
-                                  <path d="M21 15l-5-5L5 21"/>
-                                </svg>
-                              </div>
-                              <div className="cphoto-stub-label">Фотография</div>
-                              {parsed.caption && <div className="cphoto-stub-text">{parsed.caption}</div>}
-                            </div>
-
-                          ) : parsed.type === 'video_text' && imgUrl ? (
-                            <ImageBubble url={imgUrl} caption={parsed.caption || parsed.filename}/>
-
-                          ) : parsed.type === 'video_text' ? (
-                            <div className="cphoto-stub">
-                              <div className="cphoto-stub-icon">
-                                <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                  <path d="M15 10l4.553-2.069A1 1 0 0 1 21 8.82v6.36a1 1 0 0 1-1.447.889L15 14"/>
-                                  <rect x="3" y="7" width="12" height="10" rx="2"/>
-                                </svg>
-                              </div>
-                              <div className="cphoto-stub-label">Видео</div>
-                              {parsed.caption && <div className="cphoto-stub-text">{parsed.caption}</div>}
-                            </div>
-
-                          ) : parsed.type === 'file_text' ? (
-                            <FileBubble
-                              name={parsed.filename}
-                              mine={mine}
-                              fileUrl={fileData?.url}
-                            />
-
-                          ) : (
-                            <div className="cbub-txt"
-                              onClick={e => { e.stopPropagation(); mine && setMenuId(menuId === m.id ? null : m.id); }}>
-                              {m.text}
-                            </div>
-                          )}
-
-                          {/* META */}
-                          <div className="cbub-meta">
-                            <span className="cbub-time">{fmtTime(m.createdAt)}</span>
-                            {mine && <Ticks isRead={m.isRead}/>}
-                          </div>
-
-                          {rxList.length > 0 && (
-                            <div className="cbub-rx" aria-label="Реакции">
-                              {rxList.map((em, j) => (
-                                <span key={`${m.id}-${j}-${em}`} className="cbub-rx-item">{em}</span>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* CONTEXT MENU */}
-                          {mine && menuId === m.id && editId !== m.id && (
-                            <div className="cmenu" onClick={e => e.stopPropagation()}>
-                              <button className="cmenu-btn" onClick={() => startEdit(m)}>✏️ Изменить</button>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-
-                    {mine && (
-                      <div className="cmrow-ava cmrow-ava-mine">
-                        {isLast && <Ava name={userName} url={userAvatar} size={30}/>}
-                      </div>
-                    )}
-                  </div>
-                </React.Fragment>
-              );
-            })}
-            <div ref={endRef}/>
-          </div>
-
-          {showScrollDown && (
-            <button
-              type="button"
-              className="c-scroll-down"
-              title="Вниз"
-              aria-label="Прокрутить к последним сообщениям"
-              onClick={e => {
-                e.stopPropagation();
-                endRef.current?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              <IcArrowDown />
-            </button>
-          )}
-
-          {forwardText && (
-            <div
-              className="cforward-backdrop"
-              onClick={() => !busy && setForwardText(null)}
-              role="presentation"
-            >
-              <div className="cforward-panel" onClick={e => e.stopPropagation()}>
-                <div className="cforward-hdr">Переслать сообщение</div>
-                <div className="cforward-preview">{forwardText.length > 320 ? `${forwardText.slice(0, 317)}…` : forwardText}</div>
-                <div className="cforward-list">
-                  {convos.filter(c => String(c.partnerId) !== String(pid)).length === 0 ? (
-                    <div className="cforward-empty">Нет других диалогов — откройте чат из заявки или каталога.</div>
-                  ) : (
-                    convos
-                      .filter(c => String(c.partnerId) !== String(pid))
-                      .map(c => (
-                        <button
-                          key={c.partnerId}
-                          type="button"
-                          className="cforward-row"
-                          disabled={busy}
-                          onClick={() => forwardToPartner(c.partnerId)}
-                        >
-                          <Ava name={c.partnerName} url={c.partnerAvatarUrl} size={40} />
-                          <span className="cforward-name">{c.partnerName || 'Чат'}</span>
-                        </button>
-                      ))
-                  )}
-                </div>
-                <button type="button" className="cforward-cancel" disabled={busy} onClick={() => setForwardText(null)}>
-                  Отмена
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* PREVIEW */}
-          {preview && (
-            <div className="cprev" onClick={e => e.stopPropagation()}>
-              <div className="cprev-inner">
-                {(preview.type === 'image') && (
-                  <div className="cprev-img-wrap">
-                    <img src={preview.url} alt="" className="cprev-img"/>
-                    <span className="cprev-img-label">📷 {preview.name}</span>
-                  </div>
-                )}
-                {preview.type === 'video' && (
-                  <div className="cprev-img-wrap">
-                    <video src={preview.url} className="cprev-img" muted/>
-                    <span className="cprev-img-label">🎥 {preview.name}</span>
-                  </div>
-                )}
-                {preview.type === 'voice' && (
-                  <div className="cprev-voice">
-                    <span style={{fontSize:22}}>🎤</span>
-                    <span>Голосовое · {preview.duration}с</span>
-                    <audio src={preview.url} controls style={{height:30}}/>
-                  </div>
-                )}
-                {preview.type === 'file' && (
-                  <div className="cprev-file">
-                    <div className="cprev-file-ic" style={{background: (FILE_TYPES[(preview.name?.split('.').pop()||'').toUpperCase()] || FILE_DEFAULT).bg}}>
-                      {(FILE_TYPES[(preview.name?.split('.').pop()||'').toUpperCase()] || FILE_DEFAULT).icon}
-                    </div>
-                    <span>{preview.name}</span>
-                  </div>
-                )}
-                {preview.type === 'location' && (
-                  <div className="cprev-file"><span>📍</span><span>{preview.name}</span></div>
-                )}
-              </div>
-              <button className="cprev-close" onClick={() => setPreview(null)}>✕</button>
-            </div>
-          )}
-
-          {/* EMOJI PANEL */}
-          {showEmoji && (
-            <div className="cemoji" onClick={e => e.stopPropagation()}>
-              {EMOJIS.map((em, ei) => (
-                <button key={`${ei}-${em}`} className="cemoji-btn"
-                  onClick={() => { setTxt(t => t+em); inputRef.current?.focus(); }}>
-                  {em}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {replyTo && (
-            <div className="crepl" onClick={e => e.stopPropagation()}>
-              <div className="crepl-bar" />
-              <div className="crepl-body">
-                <div className="crepl-title">Ответ {replyTo.name}</div>
-                <div className="crepl-text">{replyTo.text}</div>
-              </div>
-              <button type="button" className="crepl-close" onClick={() => setReplyTo(null)} aria-label="Закрыть ответ">
-                <IcClose />
-              </button>
-            </div>
-          )}
-
-          {/* INPUT */}
-          <div className="cinput" onClick={e => e.stopPropagation()}>
-            <AttachButton ref={attachRef} disabled={busy || voice.rec} onPick={handleAttachPick} />
-
-            {voice.rec ? (
-              <div className="ci-vrec">
-                <button className="ci-vrec-cancel" onClick={voice.cancel}>✕</button>
-                <div className="ci-vrec-dot"/>
-                <div className="ci-vrec-waves">
-                  {Array.from({length:14}).map((_,i) => (
-                    <div key={i} className="ci-vrec-bar" style={{animationDelay:`${i*0.07}s`}}/>
-                  ))}
-                </div>
-                <span className="ci-vrec-time">{fmt2(voice.sec)}</span>
-                <button className="ci-vrec-stop" onClick={voice.stop}>
-                  <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-                </button>
-              </div>
-            ) : (<>
-              <textarea ref={inputRef} className="ci-field"
-                placeholder="Написать сообщение…" value={txt}
-                onChange={e => setTxt(e.target.value)} onKeyDown={onKey} rows={1}/>
-              <button className={`ci-btn${showEmoji ? ' active' : ''}`}
-                onClick={() => { setShowEmoji(v=>!v); closeAttach(); }}>
-                <IcSmile/>
-              </button>
-              {txt.trim() || preview ? (
-                <button className="ci-send" disabled={busy} onClick={send}><IcSend/></button>
-              ) : (
-                <button className="ci-send ci-mic" onMouseDown={voice.start}><IcMic/></button>
-              )}
-            </>)}
-          </div>
-
-          <input ref={camRef}   type="file" accept="image/*" capture="environment" style={{display:'none'}} onChange={e => pickFile(e, 'image')}/>
-        </>)}
+    <div className="cr2">
+      {/* Sidebar: conversation list */}
+      <div className={`cr2-sidebar${pid ? ' cr2-sidebar--hidden' : ''}`}>
+        <ConversationList
+          conversations={convos}
+          isLoading={loadingConvos}
+          activeId={pid}
+          onSelect={handleSelectConversation}
+          onNewChat={handleNewChat}
+        />
       </div>
+
+      {/* Chat area */}
+      <div className={`cr2-main${!pid ? ' cr2-main--empty' : ''}`}>
+        <ChatArea
+          conversation={activeConversation}
+          messages={msgs}
+          isLoading={loadingMsgs}
+          userId={userId}
+          onSend={handleSend}
+          onBack={handleBack}
+          onDelete={handleDeleteConversation}
+          onDeleteMessage={handleDeleteMessage}
+          onEditMessage={handleEditMessage}
+          onReactMessage={handleReactMessage}
+          onForwardMessage={handleForwardMessage}
+          reactionsMap={reactionsMap}
+          replyTo={replyTo}
+          setReplyTo={setReplyTo}
+        />
+      </div>
+
+      {/* Forward dialog */}
+      {forwardMsg && (
+        <ForwardDialog
+          convos={convos}
+          currentPid={pid}
+          onForward={doForward}
+          onClose={() => setForwardMsg(null)}
+          busy={busy}
+        />
+      )}
     </div>
   );
 }
