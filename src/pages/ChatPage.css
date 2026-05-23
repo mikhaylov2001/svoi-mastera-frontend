@@ -323,6 +323,7 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .ch2-status { font-size: 12px; color: #22c55e; display: flex; align-items: center; gap: 5px; }
+.ch2-status--offline { color: #9ca3af; font-size: 11.5px; }
 .ch2-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
 .ch2-online-dot {
   position: absolute; bottom: 1px; right: 1px;
@@ -531,6 +532,42 @@
 .mb-ticks { opacity: .5; }
 .mb-ticks--read { opacity: .9; }
 
+/* ─── Reply quote inside bubble ──────────────────────── */
+.mb-quote {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border-left: 3px solid rgba(255,255,255,0.5);
+  background: rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+/* For "them" bubbles */
+.mb-bub--them .mb-quote {
+  border-left-color: #e8410a;
+  background: rgba(232,65,10,0.08);
+}
+.mb-quote-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mb-bub--them .mb-quote-name { color: #e8410a; }
+.mb-quote-text {
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+.mb-bub--them .mb-quote-text { color: #6b7280; }
+
 /* Reactions */
 .mb-rx { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
 .mb-rx-btn {
@@ -548,14 +585,14 @@
 /* Context menu */
 .mb-ctx {
   position: absolute;
-  bottom: calc(100% + 6px);
+  bottom: calc(100% + 8px);
   left: 0;
   background: #fff;
   border-radius: 18px;
-  box-shadow: 0 12px 40px rgba(0,0,0,.18);
+  box-shadow: 0 16px 48px rgba(0,0,0,.22), 0 4px 12px rgba(0,0,0,.1);
   border: 1px solid rgba(0,0,0,.08);
-  z-index: 200;
-  min-width: 180px;
+  z-index: 500;
+  min-width: 200px;
   overflow: hidden;
   animation: popUp .14s ease;
 }

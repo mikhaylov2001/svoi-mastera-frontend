@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Search, MoreVertical, Trash2 } from 'lucide-react';
+import {
+  format, isToday, isYesterday,
+  differenceInMinutes, differenceInHours,
+} from 'date-fns';
 
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 function fullUrl(u) {
@@ -14,7 +18,7 @@ function avatarBg(name) {
   return COLORS[(ini.charCodeAt(0) || 0) % COLORS.length];
 }
 
-function Avatar({ name, url, size = 42 }) {
+function Avatar({ name, url, size = 42, isOnline }) {
   const [err, setErr] = React.useState(false);
   const src = fullUrl(url);
   const ini = (name || '?').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
@@ -32,13 +36,44 @@ function Avatar({ name, url, size = 42 }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>{ini}</div>
       )}
-      <span className="ch2-online-dot" />
+      {isOnline && <span className="ch2-online-dot" />}
     </div>
   );
 }
 
-export default function ChatHeader({ conversation, onBack, onDelete, onToggleSearch }) {
+/**
+ * Formats "last seen" text from a timestamp.
+ * - Within 5 min  → null (show "в сети")
+ * - Within 1 hour → "был(а) в сети N минут назад"
+ * - Today         → "был(а) в сети сегодня в HH:mm"
+ * - Yesterday     → "был(а) в сети вчера в HH:mm"
+ * - Older         → "был(а) в сети DD.MM в HH:mm"
+ */
+function formatLastSeen(ts) {
+  if (!ts) return null;
+  try {
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return null;
+    const now = new Date();
+    const mins = differenceInMinutes(now, d);
+    if (mins < 1) return null; // effectively online
+    if (mins < 60) return `был в сети ${mins} мин. назад`;
+    const hrs = differenceInHours(now, d);
+    if (hrs < 3) return `был в сети ${hrs} ч. назад`;
+    const timeStr = format(d, 'HH:mm');
+    if (isToday(d)) return `был в сети сегодня в ${timeStr}`;
+    if (isYesterday(d)) return `был в сети вчера в ${timeStr}`;
+    return `был в сети ${format(d, 'dd.MM')} в ${timeStr}`;
+  } catch { return null; }
+}
+
+export default function ChatHeader({ conversation, onBack, onDelete, onToggleSearch, lastPartnerActivityAt }) {
   const [showMenu, setShowMenu] = useState(false);
+
+  const lastSeenText = formatLastSeen(lastPartnerActivityAt);
+  // Only show "online" if we have a real timestamp and it's within 5 minutes
+  const isOnline = !!lastPartnerActivityAt
+    && differenceInMinutes(new Date(), new Date(lastPartnerActivityAt)) < 5;
 
   return (
     <header className="ch2">
@@ -46,14 +81,25 @@ export default function ChatHeader({ conversation, onBack, onDelete, onToggleSea
         <ArrowLeft size={22} />
       </button>
 
-      <Avatar name={conversation?.partnerName} url={conversation?.partnerAvatarUrl} size={42} />
+      <Avatar
+        name={conversation?.partnerName}
+        url={conversation?.partnerAvatarUrl}
+        size={42}
+        isOnline={isOnline}
+      />
 
       <div className="ch2-info">
         <div className="ch2-name">{conversation?.partnerName || 'Чат'}</div>
-        <div className="ch2-status">
-          <span className="ch2-dot" />
-          в сети
-        </div>
+        {isOnline ? (
+          <div className="ch2-status">
+            <span className="ch2-dot" />
+            в сети
+          </div>
+        ) : (
+          <div className="ch2-status ch2-status--offline">
+            {lastSeenText || 'был(а) недавно'}
+          </div>
+        )}
       </div>
 
       <div className="ch2-actions">
