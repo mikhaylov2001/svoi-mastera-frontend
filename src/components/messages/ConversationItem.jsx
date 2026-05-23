@@ -47,13 +47,15 @@ function fmtTime(ts) {
 
 function fmtPreview(txt) {
   if (!txt) return '';
-  if (txt.startsWith('📷') || txt.startsWith('🎥') || txt.startsWith('📎 ')) {
-    const parts = txt.split('\n');
-    return parts[0];
+  // Strip reply prefix: "> Name: quoted text\n actual message"
+  const replyMatch = txt.match(/^> [^\n]+\n([\s\S]*)$/);
+  const clean = replyMatch ? replyMatch[1].trim() : txt;
+  if (clean.startsWith('📷') || clean.startsWith('🎥') || clean.startsWith('📎 ')) {
+    return clean.split('\n')[0];
   }
-  if (txt.startsWith('🎤')) return '🎤 Голосовое';
-  if (txt.startsWith('📍')) return '📍 Местоположение';
-  return txt;
+  if (clean.startsWith('🎤')) return '🎤 Голосовое';
+  if (clean.startsWith('📍')) return '📍 Местоположение';
+  return clean;
 }
 
 export default function ConversationItem({ conversation: c, isActive, onClick }) {

@@ -317,6 +317,23 @@
 }
 .ch2-back:hover { background: #f3f4f6; color: #111827; }
 
+.ch2-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 10px;
+  transition: background .15s;
+  text-align: left;
+}
+.ch2-profile-btn:hover { background: rgba(0,0,0,.04); }
+.ch2-profile-btn:disabled { cursor: default; }
+.ch2-profile-btn:disabled:hover { background: none; }
 .ch2-info { flex: 1; min-width: 0; }
 .ch2-name {
   font-size: 15px; font-weight: 700; color: #111827;
@@ -737,6 +754,7 @@
   flex-shrink: 0;
   position: relative;
   transition: background .15s;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
 }
 .mi-wrap--drag { background: rgba(232,65,10,.04); }
 

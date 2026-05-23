@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, MoreVertical, Trash2 } from 'lucide-react';
 import {
   format, isToday, isYesterday,
@@ -67,8 +68,14 @@ function formatLastSeen(ts) {
   } catch { return null; }
 }
 
-export default function ChatHeader({ conversation, onBack, onDelete, onToggleSearch, lastPartnerActivityAt }) {
+export default function ChatHeader({ conversation, onBack, onDelete, onToggleSearch, lastPartnerActivityAt, isWorker }) {
   const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
+
+  // If current user is a worker → partner is a customer, and vice versa
+  const profileUrl = conversation?.partnerId
+    ? (isWorker ? `/customers/${conversation.partnerId}` : `/workers/${conversation.partnerId}`)
+    : null;
 
   const lastSeenText = formatLastSeen(lastPartnerActivityAt);
   // Only show "online" if we have a real timestamp and it's within 5 minutes
@@ -81,26 +88,32 @@ export default function ChatHeader({ conversation, onBack, onDelete, onToggleSea
         <ArrowLeft size={22} />
       </button>
 
-      <Avatar
-        name={conversation?.partnerName}
-        url={conversation?.partnerAvatarUrl}
-        size={42}
-        isOnline={isOnline}
-      />
-
-      <div className="ch2-info">
-        <div className="ch2-name">{conversation?.partnerName || 'Чат'}</div>
-        {isOnline ? (
-          <div className="ch2-status">
-            <span className="ch2-dot" />
-            в сети
-          </div>
-        ) : (
-          <div className="ch2-status ch2-status--offline">
-            {lastSeenText || 'был(а) недавно'}
-          </div>
-        )}
-      </div>
+      <button
+        className="ch2-profile-btn"
+        onClick={() => profileUrl && navigate(profileUrl)}
+        aria-label="Профиль собеседника"
+        disabled={!profileUrl}
+      >
+        <Avatar
+          name={conversation?.partnerName}
+          url={conversation?.partnerAvatarUrl}
+          size={42}
+          isOnline={isOnline}
+        />
+        <div className="ch2-info">
+          <div className="ch2-name">{conversation?.partnerName || 'Чат'}</div>
+          {isOnline ? (
+            <div className="ch2-status">
+              <span className="ch2-dot" />
+              в сети
+            </div>
+          ) : (
+            <div className="ch2-status ch2-status--offline">
+              {lastSeenText || 'был(а) недавно'}
+            </div>
+          )}
+        </div>
+      </button>
 
       <div className="ch2-actions">
         <button className="ch2-btn" onClick={onToggleSearch} aria-label="Поиск">

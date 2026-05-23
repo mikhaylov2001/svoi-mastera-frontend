@@ -52,6 +52,7 @@ export default function ChatArea({
   messages,
   isLoading,
   userId,
+  isWorker,
   myAvatarUrl,
   myName,
   onSend,
@@ -126,6 +127,7 @@ export default function ChatArea({
         onDelete={onDelete}
         onToggleSearch={handleToggleSearch}
         lastPartnerActivityAt={lastPartnerActivityAt}
+        isWorker={isWorker}
       />
 
       {showSearch && (

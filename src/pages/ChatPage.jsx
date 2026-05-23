@@ -270,6 +270,7 @@ export default function ChatPage() {
           messages={msgs}
           isLoading={loadingMsgs}
           userId={userId}
+          isWorker={isWorker}
           myAvatarUrl={myProfile?.avatarUrl || myProfile?.avatar || null}
           myName={myProfile?.displayName || myProfile?.name || myProfile?.fullName || myProfile?.firstName || null}
           onSend={handleSend}
