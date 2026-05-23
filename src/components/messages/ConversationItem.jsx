@@ -46,20 +46,21 @@ function fmtTime(ts) {
 }
 
 function fmtPreview(txt) {
-  if (!txt) return '';
+  if (!txt) return { text: '', isReply: false };
   // Strip reply prefix: "> Name: quoted text\n actual message"
   const replyMatch = txt.match(/^> [^\n]+\n([\s\S]*)$/);
+  const isReply = !!replyMatch;
   const clean = replyMatch ? replyMatch[1].trim() : txt;
   if (clean.startsWith('📷') || clean.startsWith('🎥') || clean.startsWith('📎 ')) {
-    return clean.split('\n')[0];
+    return { text: clean.split('\n')[0], isReply };
   }
-  if (clean.startsWith('🎤')) return '🎤 Голосовое';
-  if (clean.startsWith('📍')) return '📍 Местоположение';
-  return clean;
+  if (clean.startsWith('🎤')) return { text: '🎤 Голосовое', isReply };
+  if (clean.startsWith('📍')) return { text: '📍 Местоположение', isReply };
+  return { text: clean, isReply };
 }
 
 export default function ConversationItem({ conversation: c, isActive, onClick }) {
-  const preview = fmtPreview(c.lastMessage);
+  const { text: previewText, isReply } = fmtPreview(c.lastMessage);
   return (
     <div
       className={`ci-item${isActive ? ' ci-active' : ''}`}
@@ -75,7 +76,10 @@ export default function ConversationItem({ conversation: c, isActive, onClick })
           <span className="ci-time">{fmtTime(c.lastMessageAt)}</span>
         </div>
         <div className="ci-row ci-row2">
-          <span className="ci-preview">{preview || 'Нет сообщений'}</span>
+          <span className="ci-preview">
+            {isReply && <span className="ci-reply-icon">↩ </span>}
+            {previewText || 'Нет сообщений'}
+          </span>
           {(Number(c.unreadCount) || 0) > 0 && (
             <span className="ci-badge">{c.unreadCount}</span>
           )}

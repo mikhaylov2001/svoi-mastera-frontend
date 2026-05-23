@@ -55,11 +55,16 @@ function parseReplyPrefix(text) {
   return { replyName: null, replyText: null, mainText: text };
 }
 
-// ─── Audio player ───────────────────────────────────────────
-function AudioPlayer({ url, isMe }) {
+// ─── Waveform bar heights (pseudo-random but stable) ─────────
+const WAVE_HEIGHTS = [4,7,12,18,22,28,24,20,16,26,30,22,14,8,18,24,28,20,12,6,
+                      16,22,30,26,18,10,8,20,24,28,14,6,18,26,22,16,10,20,28,12];
+
+// ─── Audio player ─────────────────────────────────────────────
+function AudioPlayer({ url }) {
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [current, setCurrent] = useState(0);
   const audioRef = useRef(null);
 
   const toggle = () => {
@@ -69,6 +74,8 @@ function AudioPlayer({ url, isMe }) {
     else { a.play().then(() => setPlaying(true)).catch(() => {}); }
   };
 
+  const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
   return (
     <div className="mb-audio">
       <audio
@@ -76,24 +83,38 @@ function AudioPlayer({ url, isMe }) {
         src={url}
         onTimeUpdate={() => {
           const a = audioRef.current;
-          if (a && a.duration && isFinite(a.duration)) setProgress(a.currentTime / a.duration);
+          if (a && a.duration && isFinite(a.duration)) {
+            setProgress(a.currentTime / a.duration);
+            setCurrent(a.currentTime);
+          }
         }}
         onLoadedMetadata={() => {
           const d = audioRef.current?.duration;
           if (d && isFinite(d)) setDuration(d);
         }}
-        onEnded={() => { setPlaying(false); setProgress(0); }}
+        onEnded={() => { setPlaying(false); setProgress(0); setCurrent(0); }}
       />
-      <button onClick={toggle} className={`mb-audio-btn${isMe ? ' mb-audio-btn--me' : ''}`}>
-        {playing ? <Pause size={12} /> : <Play size={12} />}
+      <button onClick={toggle} className="mb-audio-btn">
+        {playing ? <Pause size={14} /> : <Play size={14} />}
       </button>
       <div className="mb-audio-body">
-        <div className="mb-audio-track">
-          <div className={`mb-audio-fill${isMe ? ' mb-audio-fill--me' : ''}`} style={{ width: `${progress * 100}%` }} />
+        {/* Waveform bars */}
+        <div className="mb-audio-wave">
+          {WAVE_HEIGHTS.map((h, i) => {
+            const played = i / WAVE_HEIGHTS.length < progress;
+            return (
+              <div
+                key={i}
+                className={`mb-audio-bar ${played ? 'mb-audio-bar--played' : 'mb-audio-bar--unplayed'}`}
+                style={{ height: `${h}px` }}
+              />
+            );
+          })}
         </div>
-        <span className={`mb-audio-time${isMe ? ' mb-audio-time--me' : ''}`}>
-          {duration ? `${Math.floor(duration / 60)}:${String(Math.floor(duration % 60)).padStart(2, '0')}` : '0:00'}
-        </span>
+        <div className="mb-audio-foot">
+          <span className="mb-audio-time">{fmtTime(playing || progress > 0 ? current : duration)}</span>
+          <span className="mb-audio-label">голосовое</span>
+        </div>
       </div>
     </div>
   );
