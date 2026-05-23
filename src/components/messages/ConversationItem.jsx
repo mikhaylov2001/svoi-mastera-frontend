@@ -1,5 +1,5 @@
 import React from 'react';
-import { format, isToday, isYesterday } from 'date-fns';
+import { format, isToday, isYesterday, differenceInMinutes } from 'date-fns';
 
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 function fullUrl(u) {
@@ -59,8 +59,18 @@ function fmtPreview(txt) {
   return { text: clean, isReply };
 }
 
+// Partner is online if they sent a message within the last 5 minutes
+function isPartnerOnline(c) {
+  const ts = c.partnerLastMessageAt;
+  if (!ts) return false;
+  try {
+    return differenceInMinutes(new Date(), new Date(ts)) < 5;
+  } catch { return false; }
+}
+
 export default function ConversationItem({ conversation: c, isActive, onClick }) {
   const { text: previewText, isReply } = fmtPreview(c.lastMessage);
+  const online = isPartnerOnline(c);
   return (
     <div
       className={`ci-item${isActive ? ' ci-active' : ''}`}
@@ -69,7 +79,7 @@ export default function ConversationItem({ conversation: c, isActive, onClick })
       tabIndex={0}
       onKeyDown={e => e.key === 'Enter' && onClick?.()}
     >
-      <Avatar name={c.partnerName} url={c.partnerAvatarUrl} size={52} online />
+      <Avatar name={c.partnerName} url={c.partnerAvatarUrl} size={52} online={online} />
       <div className="ci-body">
         <div className="ci-row">
           <span className={`ci-name${isActive ? ' ci-name-active' : ''}`}>{c.partnerName || 'Чат'}</span>
