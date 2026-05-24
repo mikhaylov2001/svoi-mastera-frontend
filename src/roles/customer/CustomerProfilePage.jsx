@@ -10,6 +10,7 @@ import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 import ProfileHero from '../../components/myprofile/ProfileHero';
 import ProfileSidebar from '../../components/myprofile/ProfileSidebar';
 import ProfileWorkspace from '../../components/myprofile/ProfileWorkspace';
+import ProfileShowcaseGrid from '../../components/myprofile/ProfileShowcaseGrid';
 import ProfileSettingsDetail from '../../components/myprofile/ProfileSettingsDetail';
 import '../../styles/myProfile.css';
 
@@ -226,7 +227,9 @@ export default function CustomerProfilePage() {
       <ProfileHero
         profile={heroProfile}
         mode="customer"
-        onModeChange={() => navigate('/worker-profile')}
+        onModeChange={(role) => {
+          if (role === 'master') navigate('/worker-profile');
+        }}
         onViewPublic={() => navigate(`/customers/${userId}`)}
         onEdit={() => setSettingsKey('personal')}
       />
@@ -269,23 +272,28 @@ export default function CustomerProfilePage() {
               onSaved={(upd) => setProfile(p => ({ ...p, ...upd }))}
             />
           ) : (
-            <ProfileWorkspace
-              deals={requests.length > 0 ? requests : deals}
-              reviews={reviews}
-              about={profile?.bio || profile?.description || ''}
-              tags={tags}
-              dealsTitle="Ваши заявки"
-              quickActions={quickActions}
-              featureCards={featureCards}
-              showcaseTitle="Активные задачи"
-              portfolio={portfolio}
-              onSettingsSelect={setSettingsKey}
-              onDealClick={d => {
-                const isRequest = ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED'].includes(d.status);
-                navigate(isRequest ? `/my-requests` : `/deals/${d.id}`);
-              }}
-              isWorker={false}
-            />
+            <>
+              <ProfileWorkspace
+                deals={requests.length > 0 ? requests : deals}
+                reviews={reviews}
+                about={profile?.bio || profile?.description || ''}
+                tags={tags}
+                dealsTitle="Ваши заявки и сделки"
+                dealsListPath="/my-requests"
+                onSettingsSelect={setSettingsKey}
+                onDealClick={(d) => {
+                  const isRequest = ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED'].includes(d.status);
+                  navigate(isRequest ? '/my-requests' : `/deals/${d.id}`);
+                }}
+              />
+              <ProfileShowcaseGrid
+                quickActions={quickActions}
+                featureCards={featureCards}
+                showcaseTitle="Активные задачи"
+                portfolio={portfolio}
+                isWorker={false}
+              />
+            </>
           )}
         </div>
       </section>

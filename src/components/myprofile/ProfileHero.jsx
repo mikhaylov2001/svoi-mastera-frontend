@@ -30,14 +30,14 @@ export default function ProfileHero({
             <button
               type="button"
               className={mode === 'customer' ? 'active mp-mode-active' : ''}
-              onClick={() => onModeChange('customer')}
+              onClick={() => onModeChange?.('customer')}
             >
               Заказчик
             </button>
             <button
               type="button"
               className={mode === 'master' ? 'active mp-mode-active' : ''}
-              onClick={() => onModeChange('master')}
+              onClick={() => onModeChange?.('master')}
             >
               Мастер
             </button>

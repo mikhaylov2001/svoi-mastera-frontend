@@ -7,6 +7,7 @@ import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPric
 import ProfileHero from '../../components/myprofile/ProfileHero';
 import ProfileSidebar from '../../components/myprofile/ProfileSidebar';
 import ProfileWorkspace from '../../components/myprofile/ProfileWorkspace';
+import ProfileShowcaseGrid from '../../components/myprofile/ProfileShowcaseGrid';
 import ProfileSettingsDetail from '../../components/myprofile/ProfileSettingsDetail';
 import '../../styles/myProfile.css';
 
@@ -214,7 +215,9 @@ export default function WorkerProfilePage() {
       <ProfileHero
         profile={heroProfile}
         mode="master"
-        onModeChange={() => navigate('/my-profile')}
+        onModeChange={(role) => {
+          if (role === 'customer') navigate('/profile');
+        }}
         onViewPublic={() => navigate(`/workers/${userId}`)}
         onEdit={() => setSettingsKey('personal')}
       />
@@ -257,20 +260,25 @@ export default function WorkerProfilePage() {
               onSaved={(upd) => setProfile(p => ({ ...p, ...upd }))}
             />
           ) : (
-            <ProfileWorkspace
-              deals={deals}
-              reviews={reviews}
-              about={profile?.bio || profile?.description || ''}
-              tags={tags}
-              dealsTitle="Заказы и отклики"
-              quickActions={quickActions}
-              featureCards={featureCards}
-              showcaseTitle="Лучшие работы"
-              portfolio={portfolio}
-              onSettingsSelect={setSettingsKey}
-              onDealClick={d => navigate(`/deals/${d.id}`)}
-              isWorker={true}
-            />
+            <>
+              <ProfileWorkspace
+                deals={deals}
+                reviews={reviews}
+                about={profile?.bio || profile?.description || ''}
+                tags={tags}
+                dealsTitle="Заказы и отклики"
+                dealsListPath="/deals"
+                onSettingsSelect={setSettingsKey}
+                onDealClick={(d) => navigate(`/deals/${d.id}`)}
+              />
+              <ProfileShowcaseGrid
+                quickActions={quickActions}
+                featureCards={featureCards}
+                showcaseTitle="Лучшие работы"
+                portfolio={portfolio}
+                isWorker
+              />
+            </>
           )}
         </div>
       </section>
