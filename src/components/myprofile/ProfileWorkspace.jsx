@@ -11,19 +11,30 @@ function resolveImg(u, item) {
 const FILTERS = ['Все', 'Ждут', 'В работе', 'Завершены', 'Отменены'];
 
 const DEAL_STATUS_LABEL = {
-  NEW: 'Ждут',
-  OPEN: 'Ждут',
-  IN_PROGRESS: 'В работе',
-  COMPLETED: 'Завершены',
-  CANCELLED: 'Отменены',
+  NEW:            'Ждут',
+  OPEN:           'Открыта',
+  IN_NEGOTIATION: 'Ждут',
+  ASSIGNED:       'В работе',
+  IN_PROGRESS:    'В работе',
+  COMPLETED:      'Завершены',
+  CANCELLED:      'Отменены',
+};
+
+const DEAL_STATUS_FILTER = {
+  'Ждут':     ['NEW', 'OPEN', 'IN_NEGOTIATION'],
+  'В работе': ['ASSIGNED', 'IN_PROGRESS'],
+  'Завершены':['COMPLETED'],
+  'Отменены': ['CANCELLED'],
 };
 
 const DEAL_STATUS_CLS = {
-  NEW: 'new',
-  OPEN: 'new',
-  IN_PROGRESS: 'in-progress',
-  COMPLETED: 'completed',
-  CANCELLED: 'cancelled',
+  NEW:            'new',
+  OPEN:           'new',
+  IN_NEGOTIATION: 'new',
+  ASSIGNED:       'in-progress',
+  IN_PROGRESS:    'in-progress',
+  COMPLETED:      'completed',
+  CANCELLED:      'cancelled',
 };
 
 function fmtCard(d) {
@@ -50,7 +61,7 @@ export default function ProfileWorkspace({
 
   const visibleDeals = filter === 'Все'
     ? deals
-    : deals.filter(d => DEAL_STATUS_LABEL[d.status] === filter);
+    : deals.filter(d => (DEAL_STATUS_FILTER[filter] || []).includes(d.status));
 
   return (
     <>
@@ -159,13 +170,11 @@ export default function ProfileWorkspace({
                           item.categoryName || item.category,
                         ].filter(Boolean).join(' · ')}
                       </p>
-                      <strong>
-                        {item.agreedPrice
-                          ? `${Number(item.agreedPrice).toLocaleString('ru-RU')} ₽`
-                          : item.price
-                            ? `${Number(item.price).toLocaleString('ru-RU')} ₽`
-                            : 'Договорная'}
-                      </strong>
+                    <strong>
+                      {(item.agreedPrice || item.budget || item.price)
+                        ? `${Number(item.agreedPrice || item.budget || item.price).toLocaleString('ru-RU')} ₽`
+                        : 'Договорная'}
+                    </strong>
                     </div>
                     <span className={`mp-deal-status ${DEAL_STATUS_CLS[item.status] || 'new'}`}>
                       {DEAL_STATUS_LABEL[item.status] || item.status}

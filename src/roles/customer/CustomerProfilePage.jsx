@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   getUserProfile, getMyDeals, uploadAvatar, getReviewsByCustomer, getCustomerStats,
-  getCustomerProfile,
+  getCustomerProfile, getMyJobRequests,
 } from '../../api';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
@@ -42,14 +42,15 @@ export default function CustomerProfilePage() {
   const { userId, userName, userLastName, userRole, userAvatar, updateAvatar, updateLastName } = useAuth();
   const navigate = useNavigate();
 
-  const [profile, setProfile]           = useState(null);
-  const [customerStats, setCustomerStats] = useState(null);
+  const [profile, setProfile]              = useState(null);
+  const [customerStats, setCustomerStats]  = useState(null);
   const [customerRecord, setCustomerRecord] = useState(null);
-  const [deals, setDeals]               = useState([]);
-  const [reviews, setReviews]           = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [cover, setCover]               = useState(null);
-  const [settingsKey, setSettingsKey]   = useState(null);
+  const [deals, setDeals]                  = useState([]);
+  const [requests, setRequests]            = useState([]);
+  const [reviews, setReviews]              = useState([]);
+  const [loading, setLoading]              = useState(true);
+  const [cover, setCover]                  = useState(null);
+  const [settingsKey, setSettingsKey]      = useState(null);
 
   const avatarUrl = resolveUrl(userAvatar);
 
@@ -70,7 +71,8 @@ export default function CustomerProfilePage() {
       getReviewsByCustomer(userId),
       getCustomerStats(userId),
       getCustomerProfile(userId),
-    ]).then(([p, d, r, s, cp]) => {
+      getMyJobRequests(userId),
+    ]).then(([p, d, r, s, cp, req]) => {
       if (p.status === 'fulfilled') {
         const pr = p.value;
         setProfile(pr);
@@ -80,6 +82,7 @@ export default function CustomerProfilePage() {
       if (r.status === 'fulfilled') setReviews(Array.isArray(r.value) ? r.value : []);
       if (s.status === 'fulfilled') setCustomerStats(s.value || null);
       if (cp.status === 'fulfilled') setCustomerRecord(cp.value || null);
+      if (req.status === 'fulfilled') setRequests(Array.isArray(req.value) ? req.value : []);
     }).finally(() => setLoading(false));
   }, [userId, userRole, updateLastName]);
 
@@ -126,33 +129,42 @@ export default function CustomerProfilePage() {
     customerStats?.city, customerStats?.locationCity,
   ), [profile, customerRecord, customerStats]);
 
-  const active    = useMemo(() => deals.filter(d => ['IN_PROGRESS', 'NEW', 'OPEN'].includes(d.status)).length, [deals]);
-  const completed = useMemo(() => deals.filter(d => d.status === 'COMPLETED').length, [deals]);
+  /* Job requests statuses: OPEN = active, others = in-progress */
+  const ACTIVE_REQ = ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'];
+  const activeRequests = useMemo(() =>
+    requests.filter(r => ACTIVE_REQ.includes(r.status)),
+    [requests]);
+  const active    = activeRequests.length;
+  const completed = useMemo(() =>
+    requests.filter(r => r.status === 'COMPLETED').length + deals.filter(d => d.status === 'COMPLETED').length,
+    [requests, deals]);
   const avgRating = reviews.length ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length : 0;
 
   const tags = useMemo(() =>
-    [...new Set(deals.map(d => d.categoryName || d.category).filter(Boolean))].slice(0, 6),
-    [deals]);
+    [...new Set([
+      ...requests.map(r => r.categoryName || r.category),
+      ...deals.map(d => d.categoryName || d.category),
+    ].filter(Boolean))].slice(0, 6),
+    [requests, deals]);
 
   const progress = useMemo(() =>
     calcProgress(profile, avatarUrl, cityLabel),
     [profile, avatarUrl, cityLabel]);
 
-  /* Portfolio: open deals */
+  /* Portfolio: active job requests */
   const portfolio = useMemo(() =>
-    deals
-      .filter(d => ['IN_PROGRESS', 'NEW', 'OPEN'].includes(d.status))
+    activeRequests
       .slice(0, 2)
-      .map(d => ({
-        title: d.title || 'Задача',
+      .map(r => ({
+        title: r.title || 'Задача',
         text: [
-          d.agreedPrice ? `${Number(d.agreedPrice).toLocaleString('ru-RU')} ₽` : null,
-          cityLabel,
+          r.budget ? `${Number(r.budget).toLocaleString('ru-RU')} ₽` : null,
+          r.city || cityLabel,
         ].filter(Boolean).join(' · '),
-        image: d.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ categoryName: d.categoryName, categoryId: d.categoryId }),
-        onClick: () => navigate(`/deals/${d.id}`),
+        image: r.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ categoryName: r.categoryName, categoryId: r.categoryId }),
+        onClick: () => navigate(`/orders/${r.id}`),
       })),
-    [deals, cityLabel, navigate]);
+    [activeRequests, cityLabel, navigate]);
 
   /* Hero profile data */
   const heroProfile = useMemo(() => ({
@@ -163,11 +175,11 @@ export default function CustomerProfilePage() {
       : 'Публикует понятные задачи, быстро отвечает мастерам и собирает лучшие предложения.',
     cover: cover || COVER_DEFAULT,
     meta: [
-      `${deals.length} заявок`,
+      `${requests.length} заявок`,
       `${active} активные`,
       'Ответ в течение дня',
     ],
-  }), [fullName, tags, cover, deals, active]);
+  }), [fullName, tags, cover, requests, active]);
 
   /* Quick actions */
   const quickActions = [
@@ -180,11 +192,13 @@ export default function CustomerProfilePage() {
   /* Feature cards */
   const featureCards = [
     {
-      badge: `${active} в работе`,
+      badge: `${active} активных`,
       title: 'Текущие задачи',
-      text: deals[0]?.title
-        ? `«${deals[0].title}» — ваша активная заявка`
-        : 'Создайте первую задачу, чтобы начать работу с мастерами.',
+      text: activeRequests[0]?.title
+        ? `«${activeRequests[0].title}» — ваша активная заявка`
+        : requests[0]?.title
+          ? `«${requests[0].title}» — последняя заявка`
+          : 'Создайте первую задачу, чтобы начать работу с мастерами.',
     },
     {
       badge: 'быстрый ответ',
@@ -232,8 +246,8 @@ export default function CustomerProfilePage() {
           {/* Stats strip */}
           <div className="mp-stats-v2">
             {[
-              { value: String(deals.length), label: 'всего заявок' },
-              { value: String(active),       label: 'активные сейчас' },
+              { value: String(requests.length), label: 'всего заявок' },
+              { value: String(active),          label: 'активные сейчас' },
               { value: avgRating > 0 ? avgRating.toFixed(1) : '—', label: 'оценка мастеров' },
             ].map((s, i) => (
               <article key={i}>
@@ -254,17 +268,20 @@ export default function CustomerProfilePage() {
             />
           ) : (
             <ProfileWorkspace
-              deals={deals}
+              deals={requests.length > 0 ? requests : deals}
               reviews={reviews}
               about={profile?.bio || profile?.description || ''}
               tags={tags}
-              dealsTitle="Ваши заявки и сделки"
+              dealsTitle="Ваши заявки"
               quickActions={quickActions}
               featureCards={featureCards}
               showcaseTitle="Активные задачи"
               portfolio={portfolio}
               onSettingsSelect={setSettingsKey}
-              onDealClick={d => navigate(`/deals/${d.id}`)}
+              onDealClick={d => {
+                const isRequest = ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED'].includes(d.status);
+                navigate(isRequest ? `/my-requests` : `/deals/${d.id}`);
+              }}
               isWorker={false}
             />
           )}

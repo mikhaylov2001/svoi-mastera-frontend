@@ -5,7 +5,7 @@
 
 .mp-page-v2 {
   min-height: calc(100vh - 56px);
-  padding: 24px 18px 110px;
+  padding: 0 0 110px;
   background:
     radial-gradient(circle at 8% 2%, rgba(232,65,10,.18), transparent 28%),
     radial-gradient(circle at 88% 10%, rgba(17,24,39,.13), transparent 30%),
@@ -14,24 +14,24 @@
   font-family: 'Manrope', Inter, system-ui, sans-serif;
 }
 
-/* ── Wrappers ── */
-.mp-hero-v2,
+/* ── Shell wrapper (centered) ── */
 .mp-shell-v2 {
-  width: min(1180px, 100%);
+  width: min(1180px, calc(100% - 36px));
   margin: 0 auto;
 }
 
-/* ── Hero ── */
+/* ── Hero: full-width, bottom rounded ── */
 .mp-hero-v2 {
   position: relative;
   min-height: 430px;
   overflow: hidden;
-  border-radius: 42px;
+  border-radius: 0 0 42px 42px;
   display: grid;
   grid-template-columns: minmax(0,1fr) 320px;
   gap: 26px;
   align-items: end;
-  padding: 38px;
+  /* Centers content at 1180px max, 22px minimum side padding */
+  padding: 38px max(22px, calc(50% - 568px));
   box-shadow: 0 32px 90px rgba(17,24,39,.22);
 }
 
@@ -180,7 +180,7 @@
   display: grid;
   grid-template-columns: 330px minmax(0,1fr);
   gap: 18px;
-  margin-top: 18px;
+  margin-top: 24px;
   align-items: start;
 }
 
@@ -939,8 +939,11 @@
 
 /* ── Tablet ≤ 960px ── */
 @media (max-width: 960px) {
-  .mp-hero-v2 { grid-template-columns: 1fr; }
-  .mp-hero-panel { max-width: 400px; }
+  .mp-hero-v2 {
+    grid-template-columns: 1fr;
+    padding: 28px max(20px, calc(50% - 380px));
+  }
+  .mp-hero-panel { max-width: 380px; }
 
   .mp-shell-v2 { grid-template-columns: 1fr; }
   .mp-sidebar-v2 { position: static; }
@@ -965,17 +968,22 @@
 /* ── Mobile ≤ 640px ── */
 @media (max-width: 640px) {
   .mp-page-v2 {
-    padding: 10px 10px 92px;
+    padding: 0 0 92px;
     background: #f5f5f4;
   }
 
-  /* Hero: single column, no huge height */
+  .mp-shell-v2 {
+    width: calc(100% - 24px);
+    margin-top: 16px;
+  }
+
+  /* Hero: single column, full-width, bottom rounded */
   .mp-hero-v2 {
     grid-template-columns: 1fr;
     gap: 18px;
     min-height: auto;
-    border-radius: 28px;
-    padding: 22px;
+    border-radius: 0 0 28px 28px;
+    padding: 22px 16px;
     box-shadow: 0 18px 46px rgba(17,24,39,.18);
   }
 
@@ -1140,9 +1148,9 @@
 
 /* ── Small phones ≤ 420px ── */
 @media (max-width: 420px) {
-  .mp-page-v2 { padding-left: 8px; padding-right: 8px; }
+  .mp-shell-v2 { width: calc(100% - 16px); }
 
-  .mp-hero-v2 { padding: 18px; border-radius: 24px; }
+  .mp-hero-v2 { padding: 18px 14px; border-radius: 0 0 22px 22px; }
   .mp-hero-content h1 { font-size: 34px; }
 
   .mp-stats-v2,
