@@ -6,7 +6,7 @@
 /* ── Page wrapper ── */
 .mp-page-v2 {
   min-height: calc(100vh - 56px);
-  padding: 24px 18px 110px;
+  padding: 0 0 110px;
   background:
     radial-gradient(circle at 8% 2%, rgba(255, 75, 31, .18), transparent 28%),
     radial-gradient(circle at 88% 10%, rgba(17, 24, 39, .13), transparent 30%),
@@ -30,10 +30,17 @@
 }
 .mp-loading-icon { font-size: 40px; }
 
-.mp-hero-v2,
+.mp-hero-v2 {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
 .mp-shell-v2 {
   width: min(1180px, 100%);
-  margin: 0 auto;
+  margin: 24px auto 0;
+  padding: 0 18px;
+  box-sizing: border-box;
 }
 
 /* ── Hero (grid: фон + тень на всю область, контент и панель поверх) ── */
@@ -153,15 +160,28 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
-.mp-hero-panel,
 .mp-sidebar-v2,
-.mp-stats-v2 article,
-.mp-glass-card {
+.mp-stats-v2 article {
   border: 1px solid rgba(255,255,255,.72);
-  background: rgba(255,255,255,.78);
+  background: rgba(255,255,255,.86);
   box-shadow: 0 20px 55px rgba(17,24,39,.1);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
+}
+
+.mp-hero-panel {
+  border: 1px solid rgba(255,255,255,.72);
+  box-shadow: 0 20px 55px rgba(17,24,39,.1);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.mp-glass-card {
+  border: 1px solid rgba(232, 221, 212, .55);
+  background: rgba(251, 247, 243, .92);
+  box-shadow: 0 4px 18px rgba(17,24,39,.07);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .mp-hero-panel {
@@ -846,7 +866,8 @@
 /* About tab */
 .mp-about-panel { display: grid; gap: 14px; }
 
-.mp-about-panel p {
+.mp-about-panel p,
+.mp-about-text {
   margin: 0;
   color: #5e5751;
   font-size: 15px;
@@ -854,20 +875,54 @@
   font-weight: 650;
 }
 
-.mp-tags-list {
+.mp-tags-list,
+.mp-about-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
 }
 
-.mp-tags-list span {
+.mp-tags-list span,
+.mp-about-tags span {
   border-radius: 999px;
-  padding: 9px 13px;
+  padding: 7px 13px;
   background: #111827;
   color: #fff;
   font-size: 12px;
   font-weight: 900;
+}
+
+/* Inline reviews (вкладка Отзывы в workspace) */
+.mp-inline-reviews { display: grid; gap: 12px; margin-top: 0; }
+
+.mp-inline-reviews article {
+  border-radius: 18px;
+  background: #f8f3ee;
+  padding: 16px 18px;
+}
+
+.mp-inline-reviews b {
+  display: block;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 950;
+}
+
+.mp-inline-reviews p {
+  margin: 8px 0 0;
+  color: #3d3530;
+  font-size: 14px;
+  line-height: 1.55;
+  font-weight: 650;
+}
+
+.mp-inline-reviews span {
+  display: block;
+  margin-top: 8px;
+  color: #79716b;
+  font-size: 12px;
+  font-weight: 850;
 }
 
 /* ── Settings panel ── */
@@ -1014,7 +1069,8 @@
 /* Settings detail */
 .mp-settings-detail { display: grid; gap: 14px; }
 
-.mp-settings-detail-back {
+.mp-settings-detail-back,
+.mp-back-button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1029,7 +1085,8 @@
   cursor: pointer;
   transition: background .15s;
 }
-.mp-settings-detail-back:hover { background: #e8ddd4; }
+.mp-settings-detail-back:hover,
+.mp-back-button:hover { background: #e8ddd4; }
 
 .mp-settings-detail h3 {
   margin: 0;
@@ -1037,6 +1094,154 @@
   font-size: 26px;
   letter-spacing: -.05em;
   font-weight: 950;
+}
+
+/* Settings detail wrap */
+.mp-settings-detail-wrap { display: grid; gap: 16px; }
+
+/* Settings form (Личные данные) */
+.mp-settings-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.mp-settings-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #79716b;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.mp-settings-form label.wide {
+  grid-column: 1 / -1;
+}
+
+.mp-settings-form input,
+.mp-settings-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid #e8ddd4;
+  border-radius: 14px;
+  padding: 13px 14px;
+  background: #fff;
+  color: #111827;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 750;
+  outline: none;
+  transition: border-color .15s;
+}
+
+.mp-settings-form input:focus,
+.mp-settings-form textarea:focus { border-color: #ff4b1f; }
+
+.mp-settings-form textarea { min-height: 90px; resize: vertical; }
+
+.mp-settings-save-btn {
+  grid-column: 1 / -1;
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 28px;
+  background: #ff4b1f;
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 850;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.mp-settings-save-btn:hover { opacity: .88; }
+.mp-settings-save-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.mp-save-note {
+  grid-column: 1 / -1;
+  color: #22c55e;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+/* Toggle list (Уведомления) */
+.mp-toggle-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.mp-toggle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 0;
+  border-radius: 18px;
+  padding: 16px 18px;
+  background: #f8f3ee;
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s;
+  font-family: inherit;
+}
+.mp-toggle-item:hover { background: #f0e9e2; }
+
+.mp-toggle-item b {
+  display: block;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.mp-toggle-item small {
+  display: block;
+  margin-top: 3px;
+  color: #79716b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mp-toggle-pill {
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: #e0d8d2;
+  color: #79716b;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.mp-toggle-pill.on {
+  background: #ff4b1f;
+  color: #fff;
+}
+
+/* Status banner (Верификация / Гарантия) */
+.mp-status-banner {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+  border-radius: 18px;
+  padding: 20px 20px;
+  background: linear-gradient(135deg, rgba(255,75,31,.08), rgba(255,255,255,.9));
+  border: 1.5px solid rgba(255,75,31,.15);
+}
+.mp-status-banner b {
+  display: block;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 850;
+}
+.mp-status-banner span {
+  color: #79716b;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 /* Form */
@@ -1145,8 +1350,12 @@
 
 @media (max-width: 640px) {
   .mp-page-v2 {
-    padding: 10px 10px 92px;
+    padding: 0 0 92px;
     background: #f5f5f4;
+  }
+
+  .mp-shell-v2 {
+    padding: 0 10px;
   }
 
   .mp-hero-v2 {
@@ -1380,7 +1589,8 @@
 }
 
 @media (max-width: 420px) {
-  .mp-page-v2 { padding: 8px 8px 88px; }
+  .mp-page-v2 { padding: 0 0 88px; }
+  .mp-shell-v2 { padding: 0 8px; }
   .mp-hero-v2 { border-radius: 20px; }
   .mp-hero-content h1 { font-size: 28px; }
   .mp-stats-v2 { grid-template-columns: 1fr; }
@@ -1401,19 +1611,19 @@
 }
 
 .mp-apple-settings-title {
-  margin: 0 0 32px;
+  margin: 0 0 24px;
   color: #111827;
-  font-size: clamp(40px, 7vw, 56px);
+  font-size: 36px;
   line-height: 0.95;
   letter-spacing: -0.055em;
   font-weight: 950;
 }
 
 .mp-apple-settings-card {
-  border-radius: 24px;
-  padding: 40px 28px 28px;
+  border-radius: 20px;
+  padding: 24px 20px 20px;
   background: #f1f2f5;
-  box-shadow: 0 18px 34px rgba(17, 24, 39, 0.16);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.10);
 }
 
 .mp-apple-settings .mp-section-title.compact {
@@ -1427,19 +1637,19 @@
 .mp-apple-settings .mp-section-title.compact h2 {
   margin: 0;
   color: #111827;
-  font-size: 28px;
+  font-size: 22px;
   line-height: 1.05;
   letter-spacing: -0.04em;
   font-weight: 900;
 }
 
 .mp-apple-settings .mp-section-title.compact p {
-  margin: 14px 0 0;
+  margin: 10px 0 0;
   max-width: 520px;
-  color: #111827;
-  font-size: 18px;
+  color: #79716b;
+  font-size: 13px;
   line-height: 1.35;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   font-weight: 500;
 }
 
@@ -1454,10 +1664,10 @@
   position: relative;
   display: block;
   width: 100%;
-  min-height: 96px;
+  min-height: 72px;
   border: 0;
   border-radius: 0;
-  padding: 20px 22px;
+  padding: 14px 16px;
   background: #ffffff;
   box-shadow: none;
   text-align: left;
@@ -1497,17 +1707,17 @@
 .mp-apple-settings .mp-settings-list b {
   display: block;
   color: #05070b;
-  font-size: 20px;
-  line-height: 1.12;
-  letter-spacing: -0.04em;
-  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-weight: 700;
 }
 
 .mp-apple-settings .mp-settings-list small {
   display: block;
-  margin-top: 6px;
+  margin-top: 4px;
   color: #6c7077;
-  font-size: 15px;
+  font-size: 12px;
   line-height: 1.25;
   font-weight: 400;
 }

@@ -44,18 +44,18 @@ function ForwardDialog({ convos, currentPid, onForward, onClose, busy }) {
               .filter(c => String(c.partnerId) !== String(currentPid))
               .map(c => {
                 const ini = (c.partnerName || '?').trim().split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
-                return (
+  return (
                   <button key={c.partnerId} className="fwd-row" disabled={busy} onClick={() => onForward(c.partnerId)}>
                     <div className="fwd-ava">{ini}</div>
                     <span>{c.partnerName || 'Чат'}</span>
-                  </button>
+      </button>
                 );
               })
           )}
         </div>
         <button className="fwd-cancel" onClick={onClose}>Отмена</button>
       </div>
-    </div>
+      </div>
   );
 }
 
@@ -184,7 +184,7 @@ export default function ChatPage() {
       await loadMsgs();
       await loadConvos();
     } catch { /* ignore */ }
-    setBusy(false);
+        setBusy(false);
   }, [userId, pid, loadMsgs, loadConvos]);
 
   const handleDeleteMessage = useCallback(async msgId => {
@@ -260,8 +260,8 @@ export default function ChatPage() {
           activeId={pid}
           onSelect={handleSelectConversation}
           onNewChat={handleNewChat}
-        />
-      </div>
+            />
+          </div>
 
       {/* Chat area */}
       <div className={`cr2-main${!pid ? ' cr2-main--empty' : ''}`}>
@@ -284,7 +284,7 @@ export default function ChatPage() {
           replyTo={replyTo}
           setReplyTo={setReplyTo}
         />
-      </div>
+            </div>
 
       {/* Forward dialog */}
       {forwardMsg && (

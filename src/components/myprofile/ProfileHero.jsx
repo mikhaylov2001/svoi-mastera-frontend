@@ -25,24 +25,6 @@ export default function ProfileHero({
       </div>
 
       <div className="mp-hero-panel">
-        {onModeChange && (
-          <div className="mp-mode-switch">
-            <button
-              type="button"
-              className={mode === 'customer' ? 'active mp-mode-active' : ''}
-              onClick={() => onModeChange?.('customer')}
-            >
-              Заказчик
-            </button>
-            <button
-              type="button"
-              className={mode === 'master' ? 'active mp-mode-active' : ''}
-              onClick={() => onModeChange?.('master')}
-            >
-              Мастер
-            </button>
-          </div>
-        )}
         <button
           type="button"
           className="mp-primary-action"
