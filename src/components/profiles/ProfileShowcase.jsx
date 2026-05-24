@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../styles/profilePages.css';
+import '../../styles/publicProfilePage.css';
 
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 function resolveUrl(u) {

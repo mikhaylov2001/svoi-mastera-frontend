@@ -420,7 +420,8 @@
 }
 
 /* Featured review */
-.pro-review {
+.pro-review,
+.pro-review-card {
   background: #e8410a;
   color: #fff;
 }
@@ -428,19 +429,29 @@
 .pro-review .pro-section-head span,
 .pro-review .pro-section-head h2,
 .pro-review p,
-.pro-review strong {
+.pro-review strong,
+.pro-review-card .pro-section-head span,
+.pro-review-card .pro-section-head h2,
+.pro-review-card p,
+.pro-review-card strong,
+.pro-review-text,
+.pro-review-author {
   color: #fff;
 }
 
-.pro-review p {
+.pro-review p,
+.pro-review-text {
   font-size: 18px;
   line-height: 1.55;
+  margin: 18px 0 0;
 }
 
-.pro-review strong {
+.pro-review strong,
+.pro-review-author {
   display: block;
   margin-top: 18px;
   font-size: 14px;
+  font-weight: 950;
 }
 
 /* Reviews grid */
@@ -457,23 +468,27 @@
   padding: 18px;
 }
 
-.pro-review-item > div {
+.pro-review-item > div,
+.pro-review-item-rating {
   display: flex;
   align-items: center;
   gap: 6px;
   color: #e8410a;
 }
 
-.pro-review-item > div b {
+.pro-review-item > div b,
+.pro-review-item-rating b {
   font-size: 26px;
   line-height: 1;
   font-weight: 950;
   letter-spacing: -.04em;
 }
 
-.pro-review-item > div span { font-size: 16px; }
+.pro-review-item > div span,
+.pro-review-item-rating span { font-size: 16px; color: #e8410a; }
 
-.pro-review-item p {
+.pro-review-item p,
+.pro-review-item-text {
   margin: 14px 0 0;
   color: #5e5751;
   font-size: 14px;
@@ -481,7 +496,8 @@
   font-weight: 700;
 }
 
-.pro-review-item strong {
+.pro-review-item strong,
+.pro-review-item-author {
   display: block;
   margin-top: 14px;
   color: #111827;
@@ -528,7 +544,23 @@
   background: #ece7e0;
 }
 
-.pro-listing-card div { padding: 16px; }
+.pro-listing-card div,
+.pro-listing-card-body { padding: 16px; }
+
+.pro-listing-card-price {
+  display: block;
+  margin-bottom: 8px;
+  color: #e8410a;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.pro-listing-card-meta {
+  margin: 0;
+  color: #79716b;
+  font-size: 13px;
+  font-weight: 800;
+}
 
 .pro-listing-badge {
   display: inline-flex;
