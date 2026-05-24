@@ -253,26 +253,27 @@ const SETTINGS = [
 
 function SettingsPanel({ onSelect }) {
   return (
-    <aside className="mp-settings-panel">
-      <div className="mp-settings-panel-header">
-        <h2 className="mp-settings-title">Профиль</h2>
-        <p className="mp-settings-desc">
-          Управляйте данными, уведомлениями, проверкой и безопасностью аккаунта.
-        </p>
-      </div>
-      <div className="mp-settings-list">
-        {SETTINGS.map(item => (
-          <button
-            key={item.key}
-            type="button"
-            className="mp-settings-item"
-            onClick={() => onSelect(item.key)}
-          >
-            <b>{item.title}</b>
-            <small>{item.sub}</small>
-            {item.note && <em>{item.note}</em>}
-          </button>
-        ))}
+    <aside className="mp-settings-panel mp-settings-panel-v2">
+      <div className="mp-settings-panel-inner">
+        <div className="mp-section-title compact">
+          <h2>Профиль</h2>
+          <p>Управляйте данными, уведомлениями, проверкой и безопасностью аккаунта.</p>
+        </div>
+        <div className="mp-settings-list">
+          {SETTINGS.map(item => (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => onSelect(item.key)}
+            >
+              <span>
+                <b>{item.title}</b>
+                <small>{item.sub}</small>
+                {item.note && <em>{item.note}</em>}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
     </aside>
   );
