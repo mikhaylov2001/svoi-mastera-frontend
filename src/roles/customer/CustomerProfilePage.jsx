@@ -1,69 +1,61 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import {
-  FaCamera, FaSignOutAlt, FaImage, FaMapMarkerAlt, FaShieldAlt, FaClock,
-  FaExclamationCircle, FaStar, FaCheckCircle, FaInbox, FaUser, FaBell,
-  FaIdCard, FaCreditCard, FaChevronRight, FaCalendarAlt, FaBriefcase, FaCommentDots, FaFileAlt,
-} from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  getUserProfile, getMyDeals, createReview, uploadAvatar, getReviewsByCustomer, getCustomerStats,
+  getUserProfile, getMyDeals, uploadAvatar, getReviewsByCustomer, getCustomerStats,
   getCustomerProfile,
 } from '../../api';
-import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
-import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
-import '../../styles/modernProfile.css';
+import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
+import ProfileHero from '../../components/myprofile/ProfileHero';
+import ProfileSidebar from '../../components/myprofile/ProfileSidebar';
+import ProfileWorkspace from '../../components/myprofile/ProfileWorkspace';
+import ProfileSettingsDetail from '../../components/myprofile/ProfileSettingsDetail';
+import '../../styles/myProfile.css';
 
+const COVER_DEFAULT = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1600&q=85';
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 
 const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND + u);
-const fmtCard = (d) => !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-const fmtSince = (d) => !d ? '' : new Date(d).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
-/** Город с бэка может прийти строкой, числом или объектом вида { name } */
+
 const pick = (...values) => {
   for (const v of values) {
     if (v == null || v === '') continue;
     if (typeof v === 'string' && v.trim()) return v.trim();
     if (typeof v === 'number' && Number.isFinite(v)) return String(v);
-    if (typeof v === 'object' && typeof v.name === 'string' && v.name.trim()) return v.name.trim();
+    if (typeof v === 'object' && typeof v.name === 'string') return v.name.trim();
   }
   return '';
 };
 
-const STATUS = {
-  NEW:         { label: 'Ждёт мастера', cls: 'bg-amber-100 text-amber-700', dot: '#f59e0b' },
-  IN_PROGRESS: { label: 'В работе', cls: 'bg-blue-100 text-blue-700', dot: '#3b82f6' },
-  COMPLETED:   { label: 'Завершена', cls: 'bg-emerald-100 text-emerald-700', dot: '#10b981' },
-  CANCELLED:   { label: 'Отменена', cls: 'bg-rose-100 text-rose-700', dot: '#f43f5e' },
-};
+function calcProgress(profile, avatarUrl, city) {
+  let n = 0;
+  if (profile?.displayName || profile?.firstName) n += 25;
+  if (avatarUrl) n += 25;
+  if (city) n += 20;
+  if (profile?.bio || profile?.description) n += 20;
+  if (profile?.phone || profile?.phoneNumber) n += 10;
+  return Math.min(100, n);
+}
 
 export default function CustomerProfilePage() {
-  const { userId, userName, userLastName, userRole, userAvatar, updateAvatar, updateLastName, logout } = useAuth();
+  const { userId, userName, userLastName, userRole, userAvatar, updateAvatar, updateLastName } = useAuth();
   const navigate = useNavigate();
-  const fileRef = useRef(null);
-  const coverRef = useRef(null);
-  const reviewsAnchor = useRef(null);
 
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile]           = useState(null);
   const [customerStats, setCustomerStats] = useState(null);
-  /** Доп. поля заказчика (город и т.д.) с /customers/:id/profile */
   const [customerRecord, setCustomerRecord] = useState(null);
-  const [deals, setDeals] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [avatarLoading, setAvatarLoading] = useState(false);
-  const [cover, setCover] = useState(null);
-  const [tab, setTab] = useState('deals');
-  const [dealTab, setDealTab] = useState('ALL');
-
-  const [reviewDeal, setReviewDeal] = useState(null);
-  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
-  const [reviewStatus, setReviewStatus] = useState('idle');
+  const [deals, setDeals]               = useState([]);
+  const [reviews, setReviews]           = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [cover, setCover]               = useState(null);
+  const [settingsKey, setSettingsKey]   = useState(null);
 
   const avatarUrl = resolveUrl(userAvatar);
 
-  useEffect(() => { if (userRole === 'WORKER') navigate('/worker-profile', { replace: true }); }, [userRole, navigate]);
+  useEffect(() => {
+    if (userRole === 'WORKER') navigate('/worker-profile', { replace: true });
+  }, [userRole, navigate]);
 
   useEffect(() => {
     try { const c = localStorage.getItem('customer:cover'); if (c) setCover(c); } catch {}
@@ -78,20 +70,18 @@ export default function CustomerProfilePage() {
       getReviewsByCustomer(userId),
       getCustomerStats(userId),
       getCustomerProfile(userId),
-    ])
-      .then(([p, d, r, s, cp]) => {
-        if (p.status === 'fulfilled') {
-          const pr = p.value;
-          setProfile(pr);
-          if (pr?.lastName != null) updateLastName(String(pr.lastName));
-        }
-        if (d.status === 'fulfilled') setDeals(d.value || []);
-        if (r.status === 'fulfilled') setReviews(Array.isArray(r.value) ? r.value : []);
-        if (s.status === 'fulfilled') setCustomerStats(s.value || null);
-        if (cp.status === 'fulfilled') setCustomerRecord(cp.value || null);
-      })
-      .finally(() => setLoading(false));
-  }, [userId, userRole, navigate, updateLastName]);
+    ]).then(([p, d, r, s, cp]) => {
+      if (p.status === 'fulfilled') {
+        const pr = p.value;
+        setProfile(pr);
+        if (pr?.lastName != null) updateLastName(String(pr.lastName));
+      }
+      if (d.status === 'fulfilled') setDeals(d.value || []);
+      if (r.status === 'fulfilled') setReviews(Array.isArray(r.value) ? r.value : []);
+      if (s.status === 'fulfilled') setCustomerStats(s.value || null);
+      if (cp.status === 'fulfilled') setCustomerRecord(cp.value || null);
+    }).finally(() => setLoading(false));
+  }, [userId, userRole, updateLastName]);
 
   const compress = (file) => new Promise((res) => {
     const r = new FileReader();
@@ -110,353 +100,176 @@ export default function CustomerProfilePage() {
     r.readAsDataURL(file);
   });
 
-  const onAvatar = async (e) => {
-    const file = e.target.files?.[0];
+  const onAvatar = async (file) => {
     if (!file) return;
-    setAvatarLoading(true);
     try {
       const b64 = await compress(file);
       try { const r = await uploadAvatar(userId, b64); updateAvatar(r?.avatarUrl || b64); }
       catch { updateAvatar(b64); }
-    } finally { setAvatarLoading(false); }
-    e.target.value = '';
+    } catch {}
   };
 
-  const lastNameLive = profile?.lastName != null ? String(profile.lastName).trim() : (userLastName || '').trim();
+  /* ─ Derived ─ */
   const firstNameLive = (profile?.displayName || userName || '').trim();
-  const fullName = useMemo(
-    () => [firstNameLive, lastNameLive].filter(Boolean).join(' ') || 'Заказчик',
-    [firstNameLive, lastNameLive],
-  );
+  const lastNameLive  = profile?.lastName != null ? String(profile.lastName).trim() : (userLastName || '').trim();
+  const fullName = [firstNameLive, lastNameLive].filter(Boolean).join(' ') || 'Заказчик';
   const initials = useMemo(() => {
-    const f = firstNameLive.split(/\s+/)[0]?.[0] || (userName || 'Г').trim()[0] || 'Г';
+    const f = firstNameLive.split(/\s+/)[0]?.[0] || 'З';
     const l = lastNameLive[0] || '';
     return (f + l).toUpperCase().slice(0, 2);
-  }, [firstNameLive, lastNameLive, userName]);
-  const since = fmtSince(profile?.registeredAt || profile?.createdAt);
-  // Приоритет как в PersonalSettingsPage: город из GET /users/:id/profile (поле city и др.)
+  }, [firstNameLive, lastNameLive]);
+
   const cityLabel = useMemo(() => pick(
-    profile?.city,
-    profile?.cityName,
-    profile?.homeCity,
-    profile?.locationCity,
-    profile?.addressCity,
-    profile?.location?.city,
-    profile?.profile?.city,
-    customerRecord?.city,
-    customerRecord?.cityName,
-    customerRecord?.locationCity,
-    customerStats?.city,
-    customerStats?.locationCity,
-    customerStats?.addressCity,
-    customerStats?.location?.city,
+    profile?.city, profile?.cityName, profile?.homeCity, profile?.locationCity,
+    profile?.addressCity, profile?.location?.city,
+    customerRecord?.city, customerRecord?.cityName,
+    customerStats?.city, customerStats?.locationCity,
   ), [profile, customerRecord, customerStats]);
 
-  const active = useMemo(() => deals.filter((d) => ['IN_PROGRESS', 'NEW'].includes(d.status)).length, [deals]);
-  const completed = useMemo(() => deals.filter((d) => d.status === 'COMPLETED').length, [deals]);
-  const avgRating = reviews.length ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length) : 0;
-  const roundedAvg = Math.round(avgRating);
-  const starCounts = useMemo(() => [5, 4, 3, 2, 1].map((s) => reviews.filter((r) => (r.rating || 0) === s).length), [reviews]);
-  const maxStarCount = Math.max(...starCounts, 1);
+  const active    = useMemo(() => deals.filter(d => ['IN_PROGRESS', 'NEW', 'OPEN'].includes(d.status)).length, [deals]);
+  const completed = useMemo(() => deals.filter(d => d.status === 'COMPLETED').length, [deals]);
+  const avgRating = reviews.length ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length : 0;
 
-  const tabCounts = useMemo(() => {
-    const c = { ALL: deals.length, NEW: 0, IN_PROGRESS: 0, COMPLETED: 0, CANCELLED: 0 };
-    deals.forEach(d => { if (c[d.status] !== undefined) c[d.status]++; });
-    return c;
-  }, [deals]);
-  const visibleDeals = dealTab === 'ALL' ? deals : deals.filter(d => d.status === dealTab);
+  const tags = useMemo(() =>
+    [...new Set(deals.map(d => d.categoryName || d.category).filter(Boolean))].slice(0, 6),
+    [deals]);
 
-  const submitReview = async () => {
-    if (!reviewDeal) return;
-    setReviewStatus('sending');
-    try {
-      await createReview(userId, reviewDeal.id, reviewForm);
-      setReviewStatus('done');
-    } catch {
-      setReviewStatus('error');
-    }
-  };
+  const progress = useMemo(() =>
+    calcProgress(profile, avatarUrl, cityLabel),
+    [profile, avatarUrl, cityLabel]);
 
-  const onCover = (e) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const r = new FileReader();
-    r.onload = (ev) => {
-      const url = ev.target.result;
-      setCover(url);
-      try { localStorage.setItem('customer:cover', url); } catch {}
-    };
-    r.readAsDataURL(file);
-    e.target.value = '';
-  };
+  /* Portfolio: open deals */
+  const portfolio = useMemo(() =>
+    deals
+      .filter(d => ['IN_PROGRESS', 'NEW', 'OPEN'].includes(d.status))
+      .slice(0, 2)
+      .map(d => ({
+        title: d.title || 'Задача',
+        text: [
+          d.agreedPrice ? `${Number(d.agreedPrice).toLocaleString('ru-RU')} ₽` : null,
+          cityLabel,
+        ].filter(Boolean).join(' · '),
+        image: d.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ categoryName: d.categoryName, categoryId: d.categoryId }),
+        onClick: () => navigate(`/deals/${d.id}`),
+      })),
+    [deals, cityLabel, navigate]);
 
-  const DEAL_TABS = [
-    { key: 'ALL', label: 'Все' },
-    { key: 'NEW', label: 'Ждут' },
-    { key: 'IN_PROGRESS', label: 'В работе' },
-    { key: 'COMPLETED', label: 'Завершены' },
-    { key: 'CANCELLED', label: 'Отменены' },
+  /* Hero profile data */
+  const heroProfile = useMemo(() => ({
+    role: 'Личный профиль заказчика',
+    name: fullName,
+    subtitle: tags.length > 0
+      ? `Публикует задачи по: ${tags.slice(0, 3).join(', ')}. Быстро отвечает мастерам.`
+      : 'Публикует понятные задачи, быстро отвечает мастерам и собирает лучшие предложения.',
+    cover: cover || COVER_DEFAULT,
+    meta: [
+      `${deals.length} заявок`,
+      `${active} активные`,
+      'Ответ в течение дня',
+    ],
+  }), [fullName, tags, cover, deals, active]);
+
+  /* Quick actions */
+  const quickActions = [
+    { label: 'Создать заявку',     action: () => navigate('/orders/new') },
+    { label: 'Посмотреть отклики', action: () => navigate('/orders') },
+    { label: 'Открыть историю',    action: () => navigate('/deals') },
+    { label: 'Настроить профиль',  action: () => setSettingsKey('personal') },
   ];
 
-  if (userRole === 'WORKER') return null;
+  /* Feature cards */
+  const featureCards = [
+    {
+      badge: `${active} в работе`,
+      title: 'Текущие задачи',
+      text: deals[0]?.title
+        ? `«${deals[0].title}» — ваша активная заявка`
+        : 'Создайте первую задачу, чтобы начать работу с мастерами.',
+    },
+    {
+      badge: 'быстрый ответ',
+      title: 'Коммуникация',
+      text: 'Мастера видят сроки, бюджет и детали до начала диалога.',
+    },
+    {
+      badge: `${completed} закрыто`,
+      title: 'История работ',
+      text: 'Завершённые задачи сохраняются вместе с отзывами и исполнителями.',
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="mp-loading">
+        <div className="mp-loading-icon">⏳</div>
+        <p>Загружаем профиль…</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="mp">
-      <div className="mp-cover">
-        <div className="mp-cover-img" style={{ backgroundImage: `url(${cover || PAGE_HERO_DEFAULT_PHOTO})` }} />
-        <input ref={coverRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onCover} />
-        <button type="button" className="mp-cover-btn" onClick={() => coverRef.current?.click()}>
-          <FaImage /> {cover ? 'Сменить обложку' : 'Обложка'}
-        </button>
-      </div>
+    <main className="mp-page-v2">
+      <ProfileHero
+        profile={heroProfile}
+        onViewPublic={() => navigate(`/customers/${userId}`)}
+        onEdit={() => setSettingsKey('personal')}
+      />
 
-      <div className="mp-shell">
-        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onAvatar} />
+      <section className="mp-shell-v2">
+        <ProfileSidebar
+          name={fullName}
+          about={profile?.bio || profile?.description || profile?.about || ''}
+          city={cityLabel}
+          status={profile?.verified ? 'Проверенный заказчик' : 'Заказчик'}
+          progress={progress}
+          avatarUrl={avatarUrl}
+          initials={initials}
+          verified={profile?.verified}
+          onAvatarChange={onAvatar}
+        />
 
-        <div className="mp-head">
-          <div className="mp-avatar" onClick={() => fileRef.current?.click()}>
-            {avatarUrl ? <img src={avatarUrl} alt={fullName} /> : initials}
-            <div className="mp-avatar-ov"><FaCamera /></div>
-            {avatarLoading && <div className="mp-avatar-loading"><FaClock /></div>}
+        <div className="mp-main-v2">
+          {/* Stats strip */}
+          <div className="mp-stats-v2">
+            {[
+              { value: String(deals.length), label: 'всего заявок' },
+              { value: String(active),       label: 'активные сейчас' },
+              { value: avgRating > 0 ? avgRating.toFixed(1) : '—', label: 'оценка мастеров' },
+            ].map((s, i) => (
+              <article key={i}>
+                <b>{s.value}</b>
+                <span>{s.label}</span>
+              </article>
+            ))}
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="mp-name">{fullName}</div>
-            <div className="mp-role">Заказчик{cityLabel ? ` · ${cityLabel}` : ''}</div>
-            <div className="mp-badges">
-              {profile?.verified && (<span className="mp-badge mp-badge-ok"><FaShieldAlt /> Проверен</span>)}
-              {profile && !profile.verified && profile.verificationStatus === 'PENDING' && (<span className="mp-badge mp-badge-pending"><FaClock /> На проверке</span>)}
-              {profile && !profile.verified && profile.verificationStatus === 'REJECTED' && (<span className="mp-badge mp-badge-bad"><FaExclamationCircle /> Отклонена</span>)}
-              <span className="mp-badge mp-badge-outline"><FaMapMarkerAlt /> {cityLabel || 'Не указан'}</span>
-            </div>
-          </div>
-          <div className="mp-head-btns">
-            <button className="mp-btn mp-btn-primary" onClick={() => fileRef.current?.click()}>
-              <FaCamera /> {avatarUrl ? 'Сменить' : 'Фото'}
-            </button>
-            <button className="mp-btn mp-btn-ghost" onClick={() => { logout(); navigate('/login'); }}>
-              <FaSignOutAlt /> Выйти
-            </button>
-          </div>
+
+          {settingsKey ? (
+            <ProfileSettingsDetail
+              activeKey={settingsKey}
+              onBack={() => setSettingsKey(null)}
+              userId={userId}
+              profile={profile}
+              verified={profile?.verified}
+              onSaved={(upd) => setProfile(p => ({ ...p, ...upd }))}
+            />
+          ) : (
+            <ProfileWorkspace
+              deals={deals}
+              reviews={reviews}
+              about={profile?.bio || profile?.description || ''}
+              tags={tags}
+              dealsTitle="Ваши заявки и сделки"
+              quickActions={quickActions}
+              featureCards={featureCards}
+              showcaseTitle="Активные задачи"
+              portfolio={portfolio}
+              onSettingsSelect={setSettingsKey}
+              onDealClick={d => navigate(`/deals/${d.id}`)}
+              isWorker={false}
+            />
+          )}
         </div>
-
-        <div className="mp-body">
-          <div className="mp-main">
-            <div className="mp-stats">
-              <Link to="/deals" className="mp-stat mp-stat-blue"><div className="mp-stat-ico blue"><FaBriefcase /></div><div className="mp-stat-num">{active}</div><div className="mp-stat-lbl">В работе</div></Link>
-              <Link to="/deals" className="mp-stat mp-stat-green"><div className="mp-stat-ico green"><FaCheckCircle /></div><div className="mp-stat-num">{completed}</div><div className="mp-stat-lbl">Завершено</div></Link>
-              <a href="#reviews" className="mp-stat mp-stat-violet" onClick={(e) => { e.preventDefault(); setTab('reviews'); reviewsAnchor.current?.scrollIntoView({ behavior:'smooth' }); }}><div className="mp-stat-ico violet"><FaCommentDots /></div><div className="mp-stat-num">{reviews.length}</div><div className="mp-stat-lbl">Отзывы</div></a>
-              <a href="#reviews" className="mp-stat mp-stat-amber" onClick={(e) => { e.preventDefault(); setTab('reviews'); reviewsAnchor.current?.scrollIntoView({ behavior:'smooth' }); }}><div className="mp-stat-ico amber"><FaStar /></div><div className="mp-stat-num">{avgRating > 0 ? avgRating.toFixed(1) : '0.0'}</div><div className="mp-stat-lbl">Рейтинг</div></a>
-            </div>
-
-            <div className="mp-tabs-wrap">
-              <div className="mp-tabs-list">
-                <button className={`mp-tab ${tab==='deals'?'on':''}`} onClick={() => setTab('deals')}>Сделки</button>
-                <button className={`mp-tab ${tab==='reviews'?'on':''}`} onClick={() => setTab('reviews')}>Отзывы</button>
-                <button className={`mp-tab ${tab==='about'?'on':''}`} onClick={() => setTab('about')}>О профиле</button>
-              </div>
-
-              <div style={{ marginTop: 18 }}>
-                {tab === 'deals' && (
-                  <div className="mp-card">
-                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 16 }}>
-                      <h2 className="mp-card-title" style={{ marginBottom: 0 }}>Лента сделок</h2>
-                      <Link to="/deals" style={{ fontSize: 14, color: '#e8410a', textDecoration: 'none' }}>Все →</Link>
-                    </div>
-                    <div className="mp-chips">
-                      {DEAL_TABS.map((t) => (
-                        <button key={t.key} className={`mp-chip ${dealTab===t.key?'on':''}`} onClick={() => setDealTab(t.key)}>
-                          {t.label}
-                          {tabCounts[t.key] > 0 && <span className="mp-chip-n">{tabCounts[t.key]}</span>}
-                        </button>
-                      ))}
-                    </div>
-                    {loading ? (
-                      <div style={{ padding: 48, textAlign:'center', color:'#64748b' }}>Загружаем сделки…</div>
-                    ) : visibleDeals.length === 0 ? (
-                      <div className="mp-empty">
-                        <div className="mp-empty-ico"><FaInbox /></div>
-                        <div className="mp-empty-title">{deals.length === 0 ? 'Здесь появятся ваши сделки' : 'В этой категории пусто'}</div>
-                        <div className="mp-empty-sub">{deals.length === 0 ? 'Найдите подходящего мастера — и первая сделка появится прямо здесь.' : 'Попробуйте другой фильтр выше.'}</div>
-                        {deals.length === 0 && (<Link to="/categories" className="mp-btn mp-btn-primary" style={{ marginTop: 20, height: 44, padding: '0 24px' }}>Найти мастера</Link>)}
-                      </div>
-                    ) : visibleDeals.map((deal) => {
-                      const s = STATUS[deal.status] || STATUS.IN_PROGRESS;
-                      const canReview = dealEligibleForReviews(deal) && deal.workerName && !deal.hasReview;
-                      return (
-                        <div key={deal.id}>
-                          <Link to={`/deals?dealId=${deal.id}`} className="mp-deal">
-                            <div className="mp-deal-img">
-                              {deal.photos?.[0] ? (
-                                <img src={resolveUrl(deal.photos[0])} alt="" />
-                              ) : (
-                                <img
-                                  src={getCategoryPlaceholderPhotoUrlOrDefault({ category: deal.category })}
-                                  alt=""
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                              )}
-                            </div>
-                            <div className="mp-deal-body">
-                              <div style={{ display:'flex', justifyContent:'space-between', gap: 8 }}>
-                                <div className="mp-deal-title">{deal.title || 'Сделка'}</div>
-                                <span className={`mp-deal-status ${s.cls}`}><span className="mp-deal-dot" style={{ background: s.dot }} /> {s.label}</span>
-                              </div>
-                              <div className="mp-deal-meta">
-                                {deal.workerName && <span><FaUser /> {[deal.workerName, deal.workerLastName].filter(Boolean).join(' ')}</span>}
-                                {deal.createdAt && <span><FaCalendarAlt /> {fmtCard(deal.createdAt)}</span>}
-                                {deal.category && <span style={{ padding:'2px 10px', background:'#f1f5f9', borderRadius: 9999 }}>{deal.category}</span>}
-                              </div>
-                              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop: 8 }}>
-                                {deal.agreedPrice ? <div className="mp-deal-price">{Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽</div> : <span />}
-                                <FaChevronRight style={{ color:'#94a3b8' }} />
-                              </div>
-                            </div>
-                          </Link>
-                          {canReview && (
-                            <button className="mp-btn mp-btn-primary" style={{ marginBottom: 8 }} onClick={() => { setReviewDeal(deal); setReviewForm({ rating:5, comment:'' }); setReviewStatus('idle'); }}>
-                              Оставить отзыв
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {tab === 'reviews' && (
-                  <div className="mp-card" ref={reviewsAnchor} id="reviews">
-                    <h3 className="mp-card-title">Отзывы о вас от мастеров</h3>
-                    <div className="mp-rev-summary">
-                      <div>
-                        <div className="mp-rev-summary-num">{avgRating > 0 ? avgRating.toFixed(1) : '0.0'}</div>
-                        <div className="mp-stars">{[1,2,3,4,5].map((i) => <FaStar key={i} className={i <= roundedAvg ? '' : 'off'} />)}</div>
-                        <div className="mp-rev-summary-sub">{reviews.length === 0 ? 'Отзывов пока нет' : `на основе ${reviews.length} отзывов`}</div>
-                      </div>
-                      <div className="mp-rev-bars">
-                        {[5,4,3,2,1].map((s, idx) => (
-                          <div key={s} className="mp-rev-bar-row">
-                            <div className="mp-rev-bar-label">{s}★</div>
-                            <div className="mp-rev-bar-track">
-                              <div className="mp-rev-bar-fill" style={{ width: `${(starCounts[idx] / maxStarCount) * 100}%` }} />
-                            </div>
-                            <div className="mp-rev-bar-count">{starCounts[idx]}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    {reviews.length === 0 ? (
-                      <div className="mp-empty"><div className="mp-empty-ico"><FaCommentDots /></div><div className="mp-empty-title">Отзывов пока нет</div><div className="mp-empty-sub">После завершённых сделок мастера смогут оставить о вас отзыв.</div></div>
-                    ) : reviews.map((r) => (
-                      (() => {
-                        const firstName = pick(r.authorName, r.workerName, r.reviewerName, r.displayName);
-                        const lastName = pick(r.authorLastName, r.workerLastName, r.reviewerLastName);
-                        const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'Пользователь';
-                        const avatar = pick(r.authorAvatarUrl, r.workerAvatar, r.reviewerAvatarUrl, r.avatarUrl);
-                        return (
-                          <div key={r.id} className="mp-rev-row">
-                            <div className="mp-rev-ava">
-                              {avatar ? <img src={resolveUrl(avatar)} alt={fullName} /> : (firstName[0] || 'U').toUpperCase()}
-                            </div>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ display:'flex', justifyContent:'space-between' }}><div className="mp-rev-name">{fullName}</div><div className="mp-rev-date">{r.createdAt && new Date(r.createdAt).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}</div></div>
-                              <div style={{ marginTop: 4 }} className="mp-stars">{[1,2,3,4,5].map((i) => <FaStar key={i} className={i <= (r.rating || 0) ? '' : 'off'} />)}</div>
-                              {(r.text || r.comment) && <div className="mp-rev-text">{r.text || r.comment}</div>}
-                            </div>
-                          </div>
-                        );
-                      })()
-                    ))}
-                  </div>
-                )}
-
-                {tab === 'about' && (
-                  <div className="mp-card">
-                    <h3 className="mp-card-title">О профиле</h3>
-                    <dl className="mp-about-list">
-                      <div className="mp-about-row"><FaMapMarkerAlt className="mp-about-ico" /><div><dt className="mp-about-label">Город</dt><dd className="mp-about-value">{cityLabel || 'Не указан'}</dd></div></div>
-                      {since && <div className="mp-about-row"><FaCalendarAlt className="mp-about-ico" /><div><dt className="mp-about-label">На платформе</dt><dd className="mp-about-value">с {since}</dd></div></div>}
-                      <div className="mp-about-row"><FaShieldAlt className="mp-about-ico" /><div><dt className="mp-about-label">Статус</dt><dd className="mp-about-value">{profile?.verified ? 'Проверенный профиль' : 'Не верифицирован'}</dd></div></div>
-                    </dl>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <aside className="mp-side">
-            <div className="mp-card" style={{ padding: 0, overflow: 'hidden' }}>
-              <div className="mp-sets-title">Настройки</div>
-              <Link to="/settings/personal" className="mp-sets-row"><div className="mp-sets-ico user"><FaUser /></div><div style={{ flex:1, minWidth: 0 }}><div className="mp-sets-name">Личные данные</div><div className="mp-sets-desc">Имя и контакты</div></div><FaChevronRight style={{ color:'#94a3b8' }} /></Link>
-              <Link to="/settings/notifications" className="mp-sets-row"><div className="mp-sets-ico bell"><FaBell /></div><div style={{ flex:1, minWidth: 0 }}><div className="mp-sets-name">Уведомления</div><div className="mp-sets-desc">Push и email</div></div><FaChevronRight style={{ color:'#94a3b8' }} /></Link>
-              {profile?.verified ? (
-                <div className="mp-sets-row"><div className="mp-sets-ico shield"><FaShieldAlt /></div><div style={{ flex:1, minWidth: 0 }}><div className="mp-sets-name">Верификация</div><div className="mp-sets-desc">Профиль проверен</div></div><span className="mp-sets-pill ok">✓ Готово</span></div>
-              ) : (
-                <Link to="/verification" className="mp-sets-row"><div className="mp-sets-ico shield"><FaIdCard /></div><div style={{ flex:1, minWidth: 0 }}><div className="mp-sets-name">Верификация</div><div className="mp-sets-desc">Тест и правила платформы</div></div><FaChevronRight style={{ color:'#94a3b8' }} /></Link>
-              )}
-              {profile?.verified ? (
-                profile?.guaranteeTermsAccepted ? (
-                  <div className="mp-sets-row">
-                    <div className="mp-sets-ico file"><FaFileAlt /></div>
-                    <div style={{ flex:1, minWidth: 0 }}>
-                      <div className="mp-sets-name">Гарантия и ответственность</div>
-                      <div className="mp-sets-desc">Заявление подтверждено</div>
-                    </div>
-                    <span className="mp-sets-pill ok">✓ Готово</span>
-                  </div>
-                ) : (
-                  <Link to="/guarantee" className="mp-sets-row">
-                    <div className="mp-sets-ico file"><FaFileAlt /></div>
-                    <div style={{ flex:1, minWidth: 0 }}>
-                      <div className="mp-sets-name">Гарантия и ответственность</div>
-                      <div className="mp-sets-desc">Прочитайте и подтвердите</div>
-                    </div>
-                    <FaChevronRight style={{ color:'#94a3b8' }} />
-                  </Link>
-                )
-              ) : (
-                <div className="mp-sets-row disabled">
-                  <div className="mp-sets-ico file"><FaFileAlt /></div>
-                  <div style={{ flex:1, minWidth: 0 }}>
-                    <div className="mp-sets-name">Гарантия и ответственность</div>
-                    <div className="mp-sets-desc">Доступно после верификации</div>
-                  </div>
-                  <span className="mp-sets-pill soon">Позже</span>
-                </div>
-              )}
-              <div className="mp-sets-row disabled"><div className="mp-sets-ico card"><FaCreditCard /></div><div style={{ flex:1, minWidth: 0 }}><div className="mp-sets-name">Платёжные данные</div><div className="mp-sets-desc">Скоро появится</div></div><span className="mp-sets-pill soon">Скоро</span></div>
-            </div>
-          </aside>
-        </div>
-      </div>
-
-      {reviewDeal && (
-        <div className="mp-modal-ov" onClick={() => setReviewDeal(null)}>
-          <div className="mp-modal" onClick={(e) => e.stopPropagation()}>
-            {reviewStatus === 'done' ? (
-              <div style={{ textAlign:'center' }}>
-                <div style={{ fontSize: 48 }}>🎉</div>
-                <h3>Отзыв отправлен!</h3>
-                <button className="mp-btn mp-btn-primary" onClick={() => setReviewDeal(null)}>Закрыть</button>
-              </div>
-            ) : (
-              <>
-                <h3>Оставить отзыв</h3>
-                <p>Мастер: {reviewDeal.workerName}</p>
-                <div className="mp-rate">
-                  {[1,2,3,4,5].map((s) => (
-                    <span key={s} className={`mp-rate-star ${reviewForm.rating >= s ? 'on' : ''}`} onClick={() => setReviewForm({ ...reviewForm, rating: s })}>★</span>
-                  ))}
-                </div>
-                <textarea className="mp-textarea" placeholder="Расскажите о работе мастера…" value={reviewForm.comment} onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })} />
-                {reviewStatus === 'error' && <div style={{ color:'#dc2626', fontSize: 13, marginTop: 8 }}>Не удалось отправить отзыв</div>}
-                <div style={{ display:'flex', gap: 8, marginTop: 16 }}>
-                  <button className="mp-btn mp-btn-primary" onClick={submitReview} disabled={reviewStatus === 'sending'}>{reviewStatus === 'sending' ? 'Отправляем…' : 'Отправить'}</button>
-                  <button className="mp-btn mp-btn-ghost" onClick={() => setReviewDeal(null)}>Отмена</button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+      </section>
+    </main>
   );
 }
