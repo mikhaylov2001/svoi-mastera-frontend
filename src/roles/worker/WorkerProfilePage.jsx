@@ -213,8 +213,8 @@ export default function WorkerProfilePage() {
     <main className="mp-page-v2">
       <ProfileHero
         profile={heroProfile}
-        activeRole="worker"
-        onRoleSwitch={() => navigate('/my-profile')}
+        mode="master"
+        onModeChange={() => navigate('/my-profile')}
         onViewPublic={() => navigate(`/workers/${userId}`)}
         onEdit={() => setSettingsKey('personal')}
       />

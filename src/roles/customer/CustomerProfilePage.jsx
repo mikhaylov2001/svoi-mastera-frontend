@@ -225,8 +225,8 @@ export default function CustomerProfilePage() {
     <main className="mp-page-v2">
       <ProfileHero
         profile={heroProfile}
-        activeRole="customer"
-        onRoleSwitch={() => navigate('/worker-profile')}
+        mode="customer"
+        onModeChange={() => navigate('/worker-profile')}
         onViewPublic={() => navigate(`/customers/${userId}`)}
         onEdit={() => setSettingsKey('personal')}
       />

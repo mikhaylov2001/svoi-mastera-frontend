@@ -209,10 +209,33 @@
 
 /* ── Sidebar ── */
 .mp-sidebar-v2 {
-  display: grid;
-  gap: 14px;
   position: sticky;
   top: 74px;
+  border: 1px solid rgba(255,255,255,.82);
+  border-radius: 28px;
+  background: rgba(255,255,255,.9);
+  padding: 26px 24px;
+  box-shadow: 0 18px 46px rgba(17,24,39,.09);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  text-align: center;
+}
+
+.mp-sidebar-v2 h2 {
+  margin: 0 0 8px;
+  color: #111827;
+  font-size: 22px;
+  line-height: 1.1;
+  letter-spacing: -.045em;
+  font-weight: 950;
+}
+
+.mp-sidebar-v2 > p {
+  margin: 0 0 18px;
+  color: #6b625b;
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 720;
 }
 
 /* Glass card base */
@@ -228,32 +251,40 @@
 }
 
 /* Avatar block inside sidebar card */
-.mp-avatar-wrap {
+.mp-avatar-wrap,
+.mp-avatar-frame {
   position: relative;
-  width: 86px;
-  margin: 0 auto 16px;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 20px;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .mp-avatar-img,
-.mp-avatar-fb {
-  width: 86px;
-  height: 86px;
+.mp-avatar-fb,
+.mp-avatar-frame img {
+  width: 96px;
+  height: 96px;
   border-radius: 28px;
   object-fit: cover;
   display: block;
+  border: 3px solid #fff;
+  box-shadow: 0 16px 36px rgba(17,24,39,.14);
 }
 
 .mp-avatar-fb {
   background: linear-gradient(135deg, #ff4b1f, #ff7c00);
   color: #fff;
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 950;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.mp-verified-badge {
+.mp-verified-badge,
+.mp-check {
   position: absolute;
   right: -6px;
   bottom: 6px;
@@ -267,9 +298,11 @@
   font-weight: 950;
   font-size: 12px;
   border: 3px solid #fff;
+  line-height: 1;
 }
 
-.mp-avatar-edit-btn {
+.mp-avatar-edit-btn,
+.mp-avatar-overlay {
   position: absolute;
   inset: 0;
   border-radius: 28px;
@@ -285,7 +318,8 @@
   justify-content: center;
 }
 
-.mp-avatar-wrap:hover .mp-avatar-edit-btn { opacity: 1; }
+.mp-avatar-wrap:hover .mp-avatar-edit-btn,
+.mp-avatar-frame:hover .mp-avatar-overlay { opacity: 1; }
 
 .mp-sidebar-name {
   text-align: center;
