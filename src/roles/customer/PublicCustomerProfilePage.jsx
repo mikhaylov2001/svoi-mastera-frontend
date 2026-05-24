@@ -170,7 +170,7 @@ export default function PublicCustomerProfilePage() {
       actionTitle: 'Готов обсудить задачу',
       actionText: 'Напишите заказчику, чтобы уточнить детали заявки и предложить решение.',
       primaryAction: 'Написать',
-      secondaryAction: null,
+      secondaryAction: 'Предложить услугу',
 
       rating: avgRating > 0 ? avgRating.toFixed(1) : null,
       ratingText: reviews.length > 0
@@ -230,7 +230,7 @@ export default function PublicCustomerProfilePage() {
         profile={profile}
         onBack={() => navigate(-1)}
         onPrimaryAction={() => userId ? navigate(`/chat/${customerId}`) : navigate('/login')}
-        onSecondaryAction={null}
+        onSecondaryAction={() => userId ? navigate(`/chat/${customerId}?msg=Здравствуйте%2C+хочу+предложить+свою+услугу`) : navigate('/login')}
         onListingClick={item => {
           if (item.photos?.length > 0) setLightbox({ photos: item.photos, index: 0 });
         }}

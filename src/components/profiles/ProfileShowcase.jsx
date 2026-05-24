@@ -12,17 +12,17 @@ function resolveUrl(u) {
  * Shared public profile component — Base44 design.
  *
  * Props:
- *   profile         — profile data object (see shape below)
- *   onBack          — () => void
- *   onPrimaryAction — () => void  (e.g. navigate to chat)
- *   onSecondaryAction — () => void
- *   onListingClick  — (listing) => void
+ *   profile          — profile data object
+ *   onBack           — () => void
+ *   onPrimaryAction  — () => void
+ *   onSecondaryAction — () => void | null
+ *   onListingClick   — (listing) => void
  *
  * Profile shape:
- *   role, name, headline, cover, avatar, verified
+ *   role, name, headline, cover, avatar (url), verified (bool)
  *   meta: string[]
  *   actionTitle, actionText, primaryAction, secondaryAction
- *   rating, ratingText
+ *   rating (string|null), ratingText
  *   facts: { label, value }[]
  *   stats: { value, label }[]
  *   aboutKicker, aboutTitle, about
@@ -30,7 +30,7 @@ function resolveUrl(u) {
  *   timelineKicker, timelineTitle, timeline: { title, text }[]
  *   reviewTitle, review, reviewAuthor
  *   reviews: { author, rating, text }[]
- *   listings: { id, status('active'|'completed'), title, price, city, time, image, photos? }[]
+ *   listings: { id, status, title, price, city, time, image, photos?, isActiveListing? }[]
  */
 export default function ProfileShowcase({
   profile,
@@ -50,11 +50,12 @@ export default function ProfileShowcase({
   const heroStyle = {
     backgroundImage: profile.cover
       ? `linear-gradient(120deg, rgba(12,13,18,.82), rgba(12,13,18,.42)), url(${profile.cover})`
-      : 'linear-gradient(120deg, rgba(12,13,18,.92), rgba(12,13,18,.72))',
+      : 'linear-gradient(135deg, #1a1a2e, #0d0d1a)',
   };
 
   return (
     <main className="pro-page">
+
       {/* ── Hero ── */}
       <section className="pro-hero" style={heroStyle}>
         {onBack && (
@@ -116,12 +117,12 @@ export default function ProfileShowcase({
 
         {/* Sidebar */}
         <aside className="pro-sidebar">
-          {/* Rating card */}
+          {/* Rating */}
           {profile.rating && (
             <div className="pro-card pro-score-card">
-              <span>Рейтинг</span>
-              <b>{profile.rating}</b>
-              <small>{profile.ratingText}</small>
+              <span className="pro-score-label">Рейтинг</span>
+              <span className="pro-score-value">{profile.rating}</span>
+              <span className="pro-score-sub">{profile.ratingText}</span>
             </div>
           )}
 
@@ -131,9 +132,9 @@ export default function ProfileShowcase({
               <h3>Быстрые факты</h3>
               <div className="pro-facts">
                 {profile.facts.map((item, i) => (
-                  <div key={i}>
-                    <span>{item.label}</span>
-                    <b>{item.value}</b>
+                  <div className="pro-fact-tile" key={i}>
+                    <span className="pro-fact-label">{item.label}</span>
+                    <span className="pro-fact-value">{item.value}</span>
                   </div>
                 ))}
               </div>
@@ -148,9 +149,9 @@ export default function ProfileShowcase({
           {profile.stats && profile.stats.length > 0 && (
             <div className="pro-stats">
               {profile.stats.map((item, i) => (
-                <div key={i}>
-                  <b>{item.value}</b>
-                  <span>{item.label}</span>
+                <div className="pro-stat-tile" key={i}>
+                  <span className="pro-stat-value">{item.value}</span>
+                  <span className="pro-stat-label">{item.label}</span>
                 </div>
               ))}
             </div>
@@ -158,24 +159,26 @@ export default function ProfileShowcase({
 
           {/* About */}
           {profile.about && (
-            <article className="pro-card pro-about">
+            <article className="pro-card">
               <div className="pro-section-head">
-                {profile.aboutKicker && <span>{profile.aboutKicker}</span>}
+                {profile.aboutKicker && <span className="pro-kicker">{profile.aboutKicker}</span>}
                 {profile.aboutTitle  && <h2>{profile.aboutTitle}</h2>}
               </div>
-              <p>{profile.about}</p>
+              <p className="pro-about-text">{profile.about}</p>
             </article>
           )}
 
-          {/* Tags / directions */}
+          {/* Tags */}
           {profile.tags && profile.tags.length > 0 && (
             <article className="pro-card">
               <div className="pro-section-head">
-                <span>Направления</span>
+                <span className="pro-kicker">Направления</span>
                 {profile.tagsTitle && <h2>{profile.tagsTitle}</h2>}
               </div>
               <div className="pro-tags">
-                {profile.tags.map((tag, i) => <span key={i}>{tag}</span>)}
+                {profile.tags.map((tag, i) => (
+                  <span className="pro-tag" key={i}>{tag}</span>
+                ))}
               </div>
             </article>
           )}
@@ -186,14 +189,14 @@ export default function ProfileShowcase({
               {profile.timeline && profile.timeline.length > 0 && (
                 <article className="pro-card">
                   <div className="pro-section-head">
-                    {profile.timelineKicker && <span>{profile.timelineKicker}</span>}
+                    {profile.timelineKicker && <span className="pro-kicker">{profile.timelineKicker}</span>}
                     {profile.timelineTitle  && <h2>{profile.timelineTitle}</h2>}
                   </div>
                   <div className="pro-timeline">
                     {profile.timeline.map((item, i) => (
-                      <div key={i}>
-                        <b>{item.title}</b>
-                        <span>{item.text}</span>
+                      <div className="pro-timeline-item" key={i}>
+                        <span className="pro-timeline-title">{item.title}</span>
+                        {item.text && <span className="pro-timeline-text">{item.text}</span>}
                       </div>
                     ))}
                   </div>
@@ -201,13 +204,15 @@ export default function ProfileShowcase({
               )}
 
               {profile.review && (
-                <article className="pro-card pro-review">
+                <article className="pro-card pro-review-card">
                   <div className="pro-section-head">
-                    <span>Отзыв</span>
+                    <span className="pro-kicker">Отзыв</span>
                     {profile.reviewTitle && <h2>{profile.reviewTitle}</h2>}
                   </div>
-                  <p>«{profile.review}»</p>
-                  {profile.reviewAuthor && <strong>{profile.reviewAuthor}</strong>}
+                  <p className="pro-review-text">«{profile.review}»</p>
+                  {profile.reviewAuthor && (
+                    <span className="pro-review-author">{profile.reviewAuthor}</span>
+                  )}
                 </article>
               )}
             </div>
@@ -215,9 +220,9 @@ export default function ProfileShowcase({
 
           {/* Reviews grid */}
           {profile.reviews && profile.reviews.length > 0 && (
-            <section className="pro-card pro-reviews-section">
+            <section className="pro-card">
               <div className="pro-section-head">
-                <span>Отзывы</span>
+                <span className="pro-kicker">Отзывы</span>
                 <h2>Что говорят клиенты</h2>
               </div>
               <div className="pro-reviews-grid">
@@ -227,8 +232,8 @@ export default function ProfileShowcase({
                       <b>{item.rating}</b>
                       <span>★</span>
                     </div>
-                    <p>«{item.text}»</p>
-                    <strong>{item.author}</strong>
+                    <p className="pro-review-item-text">«{item.text}»</p>
+                    <span className="pro-review-item-author">{item.author}</span>
                   </article>
                 ))}
               </div>
@@ -239,10 +244,10 @@ export default function ProfileShowcase({
           {(activeListings.length > 0 || completedListings.length > 0) && (
             <div className="pro-listings-wrap">
               {activeListings.length > 0 && (
-                <section className="pro-card pro-listings-section">
-                  <div className="pro-section-head pro-listings-head">
+                <section className="pro-card">
+                  <div className="pro-section-head pro-listings-section-head">
                     <div>
-                      <span>Заявки</span>
+                      <span className="pro-kicker">Заявки</span>
                       <h2>Активные</h2>
                     </div>
                   </div>
@@ -262,7 +267,9 @@ export default function ProfileShowcase({
                           <span className="pro-listing-badge">Открыта</span>
                           <h3>{item.title}</h3>
                           <span className="pro-listing-card-price">{item.price}</span>
-                          <p>📍 {item.city}{item.time ? ` · ${item.time}` : ''}</p>
+                          <p className="pro-listing-card-meta">
+                            📍 {item.city}{item.time ? ` · ${item.time}` : ''}
+                          </p>
                         </div>
                       </article>
                     ))}
@@ -271,10 +278,10 @@ export default function ProfileShowcase({
               )}
 
               {completedListings.length > 0 && (
-                <section className="pro-card pro-listings-section">
-                  <div className="pro-section-head pro-listings-head">
+                <section className="pro-card">
+                  <div className="pro-section-head pro-listings-section-head">
                     <div>
-                      <span>История</span>
+                      <span className="pro-kicker">История</span>
                       <h2>Завершённые</h2>
                     </div>
                   </div>
@@ -294,7 +301,9 @@ export default function ProfileShowcase({
                           <span className="pro-listing-badge done">Завершена</span>
                           <h3>{item.title}</h3>
                           <span className="pro-listing-card-price">{item.price}</span>
-                          <p>📍 {item.city}{item.time ? ` · ${item.time}` : ''}</p>
+                          <p className="pro-listing-card-meta">
+                            📍 {item.city}{item.time ? ` · ${item.time}` : ''}
+                          </p>
                         </div>
                       </article>
                     ))}

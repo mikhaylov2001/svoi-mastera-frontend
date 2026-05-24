@@ -96,6 +96,14 @@ export default function PublicWorkerProfilePage() {
     return [...new Set(cats)].slice(0, 8);
   }, [services]);
 
+  // Years on platform from registeredAt
+  const yearsOnPlatform = useMemo(() => {
+    if (!worker?.registeredAt) return 0;
+    return Math.max(0, Math.floor(
+      (Date.now() - new Date(worker.registeredAt)) / (365.25 * 24 * 60 * 60 * 1000)
+    ));
+  }, [worker]);
+
   const profile = useMemo(() => {
     if (!worker) return null;
 
@@ -172,7 +180,7 @@ export default function PublicWorkerProfilePage() {
       actionTitle: 'Готов взять заказ',
       actionText: 'Свяжитесь с мастером и обсудите детали задачи сегодня.',
       primaryAction: 'Написать мастеру',
-      secondaryAction: null,
+      secondaryAction: 'Запросить смету',
 
       rating: avgRating > 0 ? avgRating.toFixed(1) : null,
       ratingText: reviewsCountDisplay > 0
@@ -180,12 +188,14 @@ export default function PublicWorkerProfilePage() {
         : 'Отзывов пока нет',
 
       facts: [
-        { label: 'Выполнено работ', value: String(closedCount) },
-        { label: 'Активных услуг', value: String(services.length) },
+        yearsOnPlatform > 0
+          ? { label: 'Опыт на платформе', value: `${yearsOnPlatform} ${ruPlural(yearsOnPlatform, 'год', 'года', 'лет')}` }
+          : { label: 'Выполнено работ', value: String(closedCount) },
+        { label: 'Статус', value: worker.verified ? 'Проверен' : 'Активен' },
         { label: 'Город', value: worker.city || 'Не указан' },
       ],
       stats: [
-        { value: String(closedCount), label: 'выполненных работ' },
+        { value: String(closedCount || 0), label: 'выполненных работ' },
         { value: String(services.length), label: 'активных услуг' },
         { value: reviewsCountDisplay > 0 ? avgRating.toFixed(1) : '—', label: 'средняя оценка' },
       ],
@@ -231,7 +241,7 @@ export default function PublicWorkerProfilePage() {
         profile={profile}
         onBack={() => navigate(-1)}
         onPrimaryAction={() => userId ? navigate(`/chat/${workerId}`) : navigate('/login')}
-        onSecondaryAction={null}
+        onSecondaryAction={() => userId ? navigate(`/chat/${workerId}?msg=Здравствуйте%2C+хотел+бы+запросить+смету`) : navigate('/login')}
         onListingClick={item => {
           if (item.isActiveListing && item.id) {
             navigate(`/listings/${item.id}`);
