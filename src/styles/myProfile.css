@@ -7,9 +7,7 @@
 .mp-page-v2 {
   min-height: calc(100vh - 56px);
   padding: 24px 18px 110px;
-  background:
-    radial-gradient(circle at 8% 0%, rgba(255,75,31,.14), transparent 34%),
-    linear-gradient(180deg, #f7f3ef 0%, #f5f5f5 48%, #efefef 100%);
+  background: #f5f5f7;
   color: #111827;
   font-family: 'Manrope', Inter, system-ui, sans-serif;
 }
@@ -211,11 +209,11 @@
 .mp-sidebar-v2 {
   position: sticky;
   top: 74px;
-  border: 1px solid rgba(255,255,255,.82);
+  border: 1px solid rgba(17, 24, 39, .06);
   border-radius: 28px;
-  background: rgba(255,255,255,.9);
+  background: #fff;
   padding: 26px 24px;
-  box-shadow: 0 18px 46px rgba(17,24,39,.09);
+  box-shadow: 0 4px 24px rgba(17, 24, 39, .06);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   text-align: center;
@@ -241,11 +239,11 @@
 /* Glass card base */
 .mp-card,
 .mp-glass-card {
-  border: 1px solid rgba(255,255,255,.82);
+  border: 1px solid rgba(17, 24, 39, .06);
   border-radius: 28px;
-  background: rgba(255,255,255,.9);
+  background: #fff;
   padding: 24px;
-  box-shadow: 0 18px 46px rgba(17,24,39,.09);
+  box-shadow: 0 4px 24px rgba(17, 24, 39, .06);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -341,6 +339,14 @@
 }
 
 /* Completion bar */
+.mp-completion {
+  margin-top: 4px;
+  padding: 16px 14px;
+  border-radius: 20px;
+  background: #f4f4f6;
+  text-align: left;
+}
+
 .mp-completion-row {
   margin-bottom: 6px;
   display: flex;
@@ -352,11 +358,11 @@
 .mp-completion-row b { color: #111827; font-size: 14px; font-weight: 950; }
 
 .mp-progress-track {
-  height: 10px;
+  height: 6px;
   overflow: hidden;
   border-radius: 999px;
-  background: #e8ddd4;
-  margin-bottom: 20px;
+  background: #e5e7eb;
+  margin-bottom: 0;
 }
 
 .mp-progress-fill {
@@ -368,7 +374,15 @@
 }
 
 /* Contact card */
-.mp-contact-card { display: grid; gap: 8px; }
+.mp-contact-card {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 16px 14px;
+  border-radius: 20px;
+  background: #f4f4f6;
+  text-align: left;
+}
 
 .mp-cc-label {
   color: #82786f;
@@ -401,11 +415,12 @@
 }
 
 .mp-stats-v2 article {
-  border: 1px solid rgba(255,255,255,.82);
+  border: 1px solid rgba(17, 24, 39, .06);
   border-radius: 24px;
-  background: rgba(255,255,255,.9);
-  padding: 22px 18px;
-  box-shadow: 0 14px 36px rgba(17,24,39,.08);
+  background: #fff;
+  padding: 22px 20px;
+  box-shadow: 0 4px 20px rgba(17, 24, 39, .05);
+  text-align: left;
 }
 
 .mp-stats-v2 b {
@@ -419,10 +434,12 @@
 
 .mp-stats-v2 span {
   display: block;
-  margin-top: 8px;
-  color: #756c64;
-  font-size: 12px;
-  font-weight: 850;
+  margin-top: 10px;
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1.25;
 }
 
 /* Content grid */
@@ -458,10 +475,16 @@
 
 /* Quick actions */
 .mp-actions-v2 {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 20px;
+}
+
+@media (min-width: 900px) {
+  .mp-actions-v2 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .mp-actions-v2 button {
@@ -484,13 +507,13 @@
 .mp-feat-badge,
 .mp-feature-badge {
   display: inline-flex;
-  padding: 6px 10px;
+  padding: 5px 10px;
   border-radius: 999px;
-  background: #f1ece7;
-  color: #756c64;
-  font-size: 11px;
+  background: rgba(255, 75, 31, .1);
+  color: #ff4b1f;
+  font-size: 10px;
   font-weight: 950;
-  letter-spacing: .06em;
+  letter-spacing: .1em;
   text-transform: uppercase;
 }
 
@@ -575,7 +598,14 @@
   align-items: start;
 }
 
-.mp-work-main { display: grid; gap: 14px; }
+.mp-work-main { display: grid; gap: 18px; }
+
+/* Сделки / отзывы — блок ниже витрины (как Base44) */
+.mp-activity-block {
+  display: grid;
+  gap: 14px;
+  padding-top: 4px;
+}
 
 /* Tab bar */
 .mp-tabs-v2 {
@@ -823,19 +853,19 @@
 .mp-settings-panel {
   position: sticky;
   top: 78px;
-  border: 1px solid rgba(255,255,255,.82);
+  border: 1px solid rgba(17, 24, 39, .06);
   border-radius: 28px;
-  background: rgba(255,255,255,.9);
+  background: #fff;
   padding: 24px;
-  box-shadow: 0 18px 46px rgba(17,24,39,.09);
+  box-shadow: 0 4px 24px rgba(17, 24, 39, .06);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
 
 .mp-settings-panel-v2 {
-  border-color: rgba(255,255,255,.78);
-  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.82));
-  box-shadow: 0 30px 90px rgba(17,24,39,.12);
+  border-color: rgba(17, 24, 39, .06);
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(17, 24, 39, .06);
 }
 
 .mp-settings-panel-inner {

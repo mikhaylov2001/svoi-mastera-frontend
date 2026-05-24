@@ -67,126 +67,7 @@ export default function ProfileWorkspace({
     /* Workspace: left = content, right = settings panel (sticky) */
     <section className="mp-workspace">
       <div className="mp-work-main">
-
-        {/* ── Tab bar ── */}
-        <div className="mp-tabs-v2">
-          {['deals', 'reviews', 'about'].map((t, i) => (
-            <button
-              key={t}
-              className={tab === t ? 'active' : ''}
-              onClick={() => setTab(t)}
-            >
-              {['Сделки', 'Отзывы', 'О профиле'][i]}
-            </button>
-          ))}
-        </div>
-
-        {/* ── Deals ── */}
-        {tab === 'deals' && (
-          <div className="mp-glass-card mp-deals-card">
-            <div className="mp-card-headline">
-              <div>
-                <span>Лента сделок</span>
-                <h2>{dealsTitle}</h2>
-              </div>
-            </div>
-            <div className="mp-filter-row">
-              {FILTERS.map(f => (
-                <button
-                  key={f}
-                  className={filter === f ? 'active' : ''}
-                  onClick={() => setFilter(f)}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-            <div className="mp-deal-list">
-              {visibleDeals.length > 0 ? visibleDeals.map((item, i) => (
-                <article
-                  key={item.id || i}
-                  className="mp-deal-item"
-                  onClick={() => onDealClick?.(item)}
-                >
-                  <img
-                    src={resolveImg(item.photos?.[0], item)}
-                    alt={item.title || ''}
-                    onError={e => { e.currentTarget.style.display = 'none'; }}
-                  />
-                  <div>
-                    <b>{item.title || 'Сделка'}</b>
-                    <p>
-                      {[
-                        fmtCard(item.createdAt),
-                        item.categoryName || item.category,
-                      ].filter(Boolean).join(' · ')}
-                    </p>
-                    <strong>
-                      {(item.agreedPrice || item.budget || item.price)
-                        ? `${Number(item.agreedPrice || item.budget || item.price).toLocaleString('ru-RU')} ₽`
-                        : 'Договорная'}
-                    </strong>
-                  </div>
-                  <span className={`mp-deal-status ${DEAL_STATUS_CLS[item.status] || 'new'}`}>
-                    {DEAL_STATUS_LABEL[item.status] || item.status}
-                  </span>
-                </article>
-              )) : (
-                <p style={{ color: '#999', fontSize: 14, textAlign: 'center', padding: '16px 0' }}>
-                  Сделок нет
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ── Reviews ── */}
-        {tab === 'reviews' && (
-          <div className="mp-glass-card mp-deals-card">
-            <div className="mp-card-headline">
-              <div>
-                <span>Отзывы</span>
-                <h2>Что о вас пишут</h2>
-              </div>
-            </div>
-            <div className="mp-inline-reviews">
-              {reviews.length > 0 ? reviews.map((r, i) => (
-                <article key={i}>
-                  <b>{(r.rating || 0).toFixed(1)} ★</b>
-                  <p>«{r.text || r.comment || ''}»</p>
-                  <span>
-                    {[r.authorName || r.customerName || r.workerName, r.authorLastName || r.customerLastName || r.workerLastName]
-                      .filter(Boolean).join(' ') || 'Пользователь'}
-                  </span>
-                </article>
-              )) : (
-                <p style={{ color: '#999', fontSize: 14, textAlign: 'center', padding: '16px 0' }}>
-                  Отзывов пока нет
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ── About ── */}
-        {tab === 'about' && (
-          <div className="mp-glass-card mp-deals-card">
-            <div className="mp-card-headline">
-              <div>
-                <span>О профиле</span>
-                <h2>Публичная информация</h2>
-              </div>
-            </div>
-            <p className="mp-about-text">{about || 'Информация о профиле пока не заполнена.'}</p>
-            {tags.length > 0 && (
-              <div className="mp-about-tags">
-                {tags.map((tag, i) => <span key={i}>{tag}</span>)}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Quick actions + feature cards + portfolio ── */}
+        {/* Base44 order: быстрые действия → карточки → витрина; сделки/отзывы ниже */}
         <div className="mp-content-grid">
           <section className="mp-glass-card mp-wide-card">
             <div className="mp-section-title">
@@ -233,6 +114,122 @@ export default function ProfileWorkspace({
               )}
             </div>
           </section>
+        </div>
+
+        <div className="mp-activity-block">
+          <div className="mp-tabs-v2">
+            {['deals', 'reviews', 'about'].map((t, i) => (
+              <button
+                key={t}
+                className={tab === t ? 'active' : ''}
+                onClick={() => setTab(t)}
+              >
+                {['Сделки', 'Отзывы', 'О профиле'][i]}
+              </button>
+            ))}
+          </div>
+
+          {tab === 'deals' && (
+            <div className="mp-glass-card mp-deals-card">
+              <div className="mp-card-headline">
+                <div>
+                  <span>Лента сделок</span>
+                  <h2>{dealsTitle}</h2>
+                </div>
+              </div>
+              <div className="mp-filter-row">
+                {FILTERS.map(f => (
+                  <button
+                    key={f}
+                    className={filter === f ? 'active' : ''}
+                    onClick={() => setFilter(f)}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+              <div className="mp-deal-list">
+                {visibleDeals.length > 0 ? visibleDeals.map((item, i) => (
+                  <article
+                    key={item.id || i}
+                    className="mp-deal-item"
+                    onClick={() => onDealClick?.(item)}
+                  >
+                    <img
+                      src={resolveImg(item.photos?.[0], item)}
+                      alt={item.title || ''}
+                      onError={e => { e.currentTarget.style.display = 'none'; }}
+                    />
+                    <div>
+                      <b>{item.title || 'Сделка'}</b>
+                      <p>
+                        {[
+                          fmtCard(item.createdAt),
+                          item.categoryName || item.category,
+                        ].filter(Boolean).join(' · ')}
+                      </p>
+                      <strong>
+                        {(item.agreedPrice || item.budget || item.price)
+                          ? `${Number(item.agreedPrice || item.budget || item.price).toLocaleString('ru-RU')} ₽`
+                          : 'Договорная'}
+                      </strong>
+                    </div>
+                    <span className={`mp-deal-status ${DEAL_STATUS_CLS[item.status] || 'new'}`}>
+                      {DEAL_STATUS_LABEL[item.status] || item.status}
+                    </span>
+                  </article>
+                )) : (
+                  <p style={{ color: '#999', fontSize: 14, textAlign: 'center', padding: '16px 0' }}>
+                    Сделок нет
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {tab === 'reviews' && (
+            <div className="mp-glass-card mp-deals-card">
+              <div className="mp-card-headline">
+                <div>
+                  <span>Отзывы</span>
+                  <h2>Что о вас пишут</h2>
+                </div>
+              </div>
+              <div className="mp-inline-reviews">
+                {reviews.length > 0 ? reviews.map((r, i) => (
+                  <article key={i}>
+                    <b>{(r.rating || 0).toFixed(1)} ★</b>
+                    <p>«{r.text || r.comment || ''}»</p>
+                    <span>
+                      {[r.authorName || r.customerName || r.workerName, r.authorLastName || r.customerLastName || r.workerLastName]
+                        .filter(Boolean).join(' ') || 'Пользователь'}
+                    </span>
+                  </article>
+                )) : (
+                  <p style={{ color: '#999', fontSize: 14, textAlign: 'center', padding: '16px 0' }}>
+                    Отзывов пока нет
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {tab === 'about' && (
+            <div className="mp-glass-card mp-deals-card">
+              <div className="mp-card-headline">
+                <div>
+                  <span>О профиле</span>
+                  <h2>Публичная информация</h2>
+                </div>
+              </div>
+              <p className="mp-about-text">{about || 'Информация о профиле пока не заполнена.'}</p>
+              {tags.length > 0 && (
+                <div className="mp-about-tags">
+                  {tags.map((tag, i) => <span key={i}>{tag}</span>)}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
       </div>
