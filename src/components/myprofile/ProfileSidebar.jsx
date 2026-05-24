@@ -16,14 +16,13 @@ export default function ProfileSidebar({
   avatarUrl,
   initials,
   verified,
-  onAvatarChange,  // (file) => void
+  onAvatarChange,
 }) {
   const fileRef = useRef(null);
   const resolved = resolveUrl(avatarUrl);
 
   return (
     <aside className="mp-sidebar-v2">
-      {/* Avatar */}
       <div
         className="mp-avatar-frame"
         onClick={() => fileRef.current?.click()}
@@ -34,7 +33,7 @@ export default function ProfileSidebar({
         ) : (
           <div className="mp-avatar-fb">{initials}</div>
         )}
-        {verified && <span className="mp-check">✓</span>}
+        {verified && <span>✓</span>}
         <div className="mp-avatar-overlay">📷</div>
         <input
           ref={fileRef}
@@ -48,27 +47,25 @@ export default function ProfileSidebar({
       <h2>{name}</h2>
       {about && <p>{about}</p>}
 
-      {/* Progress */}
       <div className="mp-completion">
-        <div className="mp-completion-row">
+        <div>
           <span>Заполнение профиля</span>
           <b>{progress}%</b>
         </div>
         <div className="mp-progress-track">
-          <i className="mp-progress-fill" style={{ width: `${progress}%` }} />
+          <i style={{ width: `${progress}%` }} />
         </div>
       </div>
 
-      {/* City / status */}
       <div className="mp-contact-card">
         {city && (
           <>
-            <span className="mp-cc-label">Город</span>
-            <span className="mp-cc-value">{city}</span>
+            <span>Город</span>
+            <b>{city}</b>
           </>
         )}
-        <span className="mp-cc-label">Статус</span>
-        <span className="mp-cc-value">{status}</span>
+        <span>Статус</span>
+        <b>{status}</b>
       </div>
     </aside>
   );
