@@ -163,7 +163,6 @@ export default function PublicCustomerProfilePage() {
       verified: customer?.verified === true,
       meta: [
         customer?.city,
-        'Ответ в течение дня',
         since ? `На сервисе с ${since}` : null,
       ].filter(Boolean),
 

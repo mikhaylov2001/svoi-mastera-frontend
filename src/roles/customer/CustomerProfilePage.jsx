@@ -178,7 +178,6 @@ export default function CustomerProfilePage() {
     meta: [
       `${requests.length} заявок`,
       `${active} активные`,
-      'Ответ в течение дня',
     ],
   }), [fullName, tags, cover, requests, active]);
 
