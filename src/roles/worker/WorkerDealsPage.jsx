@@ -9,12 +9,18 @@ import {
   dealsWdCss,
   dealsMdListCss,
   edListingDetailMergedCss,
+  dealsMoConfirmDarkCss,
   dealCategoryEmoji,
   dealInitialsFromFullName,
   dealToUiStatus,
 } from '../shared/dealsWdStyles';
-import DealDetailEdProgress, { DealDetailEdCheck, DealDetailEdHourglass } from '../shared/DealDetailEdProgress';
-import { getDealEdProgress } from '../../utils/dealDetailEdProgress';
+import {
+  DealDarkProgress,
+  DealConfirmCard,
+  DealNewStatusCard,
+} from '../shared/DealDetailBlocks';
+import PhotoLightbox from '../../components/PhotoLightbox';
+import '../../styles/moCabinetStyle.css';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
@@ -33,6 +39,22 @@ const ST = {
 };
 
 const WORKER_UI_STATUS_LABEL = { new: 'Новый заказ', work: 'В работе', done: 'Завершена', cancel: 'Отменена' };
+
+const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=70';
+
+function resolvePhoto(u) {
+  if (!u) return null;
+  if (String(u).startsWith('http') || String(u).startsWith('data:')) return u;
+  return BACKEND + u;
+}
+
+function dealPhotoList(deal) {
+  const photos = (deal.photos || []).map(resolvePhoto).filter(Boolean);
+  if (photos.length) return photos;
+  const placeholder = getCategoryPlaceholderPhotoUrlOrDefault(deal.category, null);
+  return [placeholder || FALLBACK_PHOTO];
+}
+
 
 const MD_STEPS = [
   { key: 'create', label: 'Создана' },
@@ -146,6 +168,7 @@ export default function WorkerDealsPage() {
   const [filter,   setFilter]   = useState('ALL');
   const [detail,   setDetail]   = useState(null);
   const [photoIdx, setPhotoIdx] = useState(0);
+  const [lightbox, setLightbox] = useState(null);
   const [actionId, setActionId] = useState(null);
   const [declId,   setDeclId]   = useState(null);
 
@@ -189,7 +212,7 @@ export default function WorkerDealsPage() {
     const id = new URLSearchParams(location.search).get('dealId');
     if (id && deals.length > 0) {
       const found = deals.find(d => d.id === id);
-      if (found) { setDetail(found); setPhotoIdx(0); }
+      if (found) { setDetail(found); setPhotoIdx(0); setLightbox(null); }
     }
   }, [location.search, deals]);
 
@@ -299,24 +322,37 @@ export default function WorkerDealsPage() {
   /* ══ DETAIL ══ */
   if (detail) {
     const st = ST[detail.status] || ST.NEW;
-    const photoList = detail.photos || [];
+    const photoList = dealPhotoList(detail);
     const hasPhoto = photoList.length > 0;
-    const myOk = detail.workerConfirmed;
-    const custOk = detail.customerConfirmed;
+    const workerOk = detail.workerConfirmed;
+    const customerOk = detail.customerConfirmed;
     const taskDescShown = formatListingOriginDescription('WORKER', detail.description);
-    const prog = getDealEdProgress(detail, 'worker', timeAgo);
     const custLabel = customerFullName(detail);
     const customerAva = dealCustomerAvatarUrl(detail);
     const pulseShadow = `0 0 0 3px ${st.dot}26`;
 
+    const handleDetailBack = () => {
+      setLightbox(null);
+      setDetail(null);
+      setPhotoIdx(0);
+    };
+
     return (
       <div className="ed ed--listing-detail">
-        <style>{`${dealsWdCss}\n${edListingDetailMergedCss}`}</style>
+        <style>{`${dealsWdCss}\n${edListingDetailMergedCss}\n${dealsMoConfirmDarkCss}`}</style>
+
+        <PhotoLightbox
+          lightbox={lightbox}
+          setLightbox={setLightbox}
+          onIndexChange={setPhotoIdx}
+          alt={detail.title || ''}
+        />
+
         <div className="ed-wrap">
           <button
             type="button"
             className="ed-back"
-            onClick={() => { setDetail(null); setPhotoIdx(0); }}
+            onClick={handleDetailBack}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -337,11 +373,18 @@ export default function WorkerDealsPage() {
           <div className="ed-grid">
             <div className="ed-col">
               <div className="ed-gallery">
-                <div className="ed-main">
+                <div
+                  className="ed-main"
+                  role="presentation"
+                  onClick={() => hasPhoto && setLightbox({ photos: photoList, index: photoIdx })}
+                  style={hasPhoto ? { cursor: 'zoom-in' } : undefined}
+                >
                   {hasPhoto ? (
-                    <img src={photoList[photoIdx]} alt="" />
+                    <img src={photoList[photoIdx]} alt={detail.title || ''} />
                   ) : (
-                    <div className="ed-main-placeholder" aria-hidden>🔨</div>
+                    <div className="ed-main-placeholder" aria-hidden>
+                      {dealCategoryEmoji(detail.category)}
+                    </div>
                   )}
                   <div className="ed-floats">
                     <div className="ed-chip">
@@ -406,7 +449,7 @@ export default function WorkerDealsPage() {
                 ) : null}
               </div>
 
-              <DealDetailEdProgress {...prog} />
+              <DealDarkProgress deal={detail} />
 
               {taskDescShown ? (
                 <section className="ed-card">
@@ -458,90 +501,27 @@ export default function WorkerDealsPage() {
               </div>
 
               {detail.status === 'NEW' ? (
-                <div className="ed-card">
-                  <div className="ed-eyebrow">Статус</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 8 }}>Новый заказ</div>
-                  <div className="ed-callout ed-callout-warn">
-                    Заказчик выбрал вас и ждёт подтверждения. Примите заказ — он перейдёт в работу.
-                  </div>
-                  <div className="ed-actions">
-                    <button
-                      type="button"
-                      className="ed-btn ed-btn-confirm"
-                      disabled={actionId === detail.id}
-                      onClick={(e) => handleStart(detail.id, e)}
-                    >
-                      {actionId === detail.id ? '⏳ Принимаем…' : '✅ Принять заказ'}
-                    </button>
-                    <button
-                      type="button"
-                      className="ed-btn ed-btn-ghost"
-                      onClick={() => navigate(`/chat/${detail.customerId}`)}
-                    >
-                      Уточнить детали
-                    </button>
-                    <button
-                      type="button"
-                      className="ed-btn ed-btn-cancel"
-                      onClick={() => { setCancelNewErr(''); setCancelNewNote(''); setCancelNewOpen(true); }}
-                    >
-                      Отказаться от заказа
-                    </button>
-                    <p className="ed-callout-muted">Можно отказаться до принятия — заказчик выберет другого мастера</p>
-                  </div>
-                </div>
+                <DealNewStatusCard
+                  viewAs="worker"
+                  dealId={detail.id}
+                  actionId={actionId}
+                  chatUserId={detail.customerId}
+                  onAccept={(id) => handleStart(id, null)}
+                  onCancel={() => { setCancelNewErr(''); setCancelNewNote(''); setCancelNewOpen(true); }}
+                  onChat={() => navigate(`/chat/${detail.customerId}`)}
+                />
               ) : null}
 
               {detail.status === 'IN_PROGRESS' ? (
-                <div className="ed-card">
-                  <div className="ed-eyebrow">Подтверждение</div>
-                  <div className="ed-conf-rows">
-                    <div className={`ed-conf-row ${custOk ? 'ok' : 'wait'}`}>
-                      <div className="ed-conf-icon">{custOk ? <DealDetailEdCheck /> : <DealDetailEdHourglass />}</div>
-                      <div>
-                        <div className="ed-conf-name">Заказчик</div>
-                        <div className="ed-conf-status">
-                          {custOk ? 'Подтвердил выполнение' : 'Ожидание подтверждения'}
-                        </div>
-                      </div>
-                    </div>
-                    <div className={`ed-conf-row ${myOk ? 'ok' : 'wait'}`}>
-                      <div className="ed-conf-icon">{myOk ? <DealDetailEdCheck /> : <DealDetailEdHourglass />}</div>
-                      <div>
-                        <div className="ed-conf-name">Вы (мастер)</div>
-                        <div className="ed-conf-status">
-                          {myOk ? 'Подтвердили выполнение' : 'Ожидание вашего подтверждения'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="ed-actions">
-                    {!myOk ? (
-                      <button
-                        type="button"
-                        className="ed-btn ed-btn-confirm"
-                        disabled={actionId === detail.id}
-                        onClick={(e) => handleComplete(detail.id, e)}
-                      >
-                        {actionId === detail.id ? 'Подтверждаем…' : 'Подтвердить выполнение'}
-                      </button>
-                    ) : (
-                      <div className="ed-inline-wait">
-                        ✓ Вы подтвердили{!custOk ? ' — ожидаем заказчика…' : ''}
-                      </div>
-                    )}
-                    <div className="ed-actions-split">
-                      <button
-                        type="button"
-                        className="ed-btn ed-btn-cancel"
-                        onClick={() => { setCancelActErr(''); setCancelActOpen(true); }}
-                      >
-                        Отказаться от сделки
-                      </button>
-                      <p className="ed-callout-muted">После завершения сделки отмена невозможна</p>
-                    </div>
-                  </div>
-                </div>
+                <DealConfirmCard
+                  viewAs="worker"
+                  customerOk={customerOk}
+                  workerOk={workerOk}
+                  actionId={actionId}
+                  dealId={detail.id}
+                  onComplete={(id) => handleComplete(id, null)}
+                  onCancelActive={() => { setCancelActErr(''); setCancelActOpen(true); }}
+                />
               ) : null}
 
               {detail.status === 'COMPLETED' ? (
