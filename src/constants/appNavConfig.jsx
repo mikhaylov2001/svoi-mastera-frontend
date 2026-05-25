@@ -121,7 +121,7 @@ export const CUSTOMER_TAB_ITEMS = [
   { to: '/find-master', label: 'Мастера', icon: <IconSearch /> },
   { to: '/deals', label: 'Сделки', icon: <IconDeals />, alsoMatch: ['/my-requests'] },
   { to: '/chat', label: 'Чат', icon: <IconChat />, badgeKey: 'chat' },
-  { to: '/profile', label: 'Профиль', icon: <IconProfile />, alsoMatch: ['/settings', '/favorites'] },
+  { to: '/profile', label: 'Профиль', icon: <IconProfile />, alsoMatch: ['/settings'] },
 ];
 
 /** Нижний таб-бар — мастер */
@@ -130,7 +130,7 @@ export const WORKER_TAB_ITEMS = [
   { to: '/find-work', label: 'Заявки', icon: <IconBriefcase /> },
   { to: '/my-listings', label: 'Объявления', icon: <IconListings />, alsoMatch: ['/listings'] },
   { to: '/chat', label: 'Чат', icon: <IconChat />, badgeKey: 'chat' },
-  { to: '/worker-profile', label: 'Профиль', icon: <IconProfile />, alsoMatch: ['/settings', '/deals', '/favorites'] },
+  { to: '/worker-profile', label: 'Профиль', icon: <IconProfile />, alsoMatch: ['/settings', '/deals'] },
 ];
 
 /** Десктоп — заказчик */

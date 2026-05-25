@@ -39,6 +39,114 @@ function FavoritesNavIcon() {
   );
 }
 
+function BellIcon() {
+  return (
+    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden>
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  );
+}
+
+const NOTIF_ICONS = {
+  NEW_OFFER: '📩',
+  OFFER_ACCEPTED: '🎉',
+  DEAL_CONFIRMED: '✅',
+  DEAL_COMPLETED: '🏆',
+  NEW_MESSAGE: '💬',
+  DEAL_NEW: '🔔',
+  DEAL_STARTED: '🚀',
+  DEAL_CANCELLED: '❌',
+};
+
+function timeAgoShort(d) {
+  if (!d) return '';
+  const m = Math.floor((Date.now() - new Date(d)) / 60000);
+  if (m < 1) return 'только что';
+  if (m < 60) return `${m} мин`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} ч`;
+  return `${Math.floor(h / 24)} дн`;
+}
+
+function HeaderNotificationsBell({
+  notifCount,
+  notifOpen,
+  onToggle,
+  onClose,
+  notifs,
+  onMarkAllRead,
+  onMarkOneRead,
+  className = '',
+  buttonClassName = '',
+}) {
+  return (
+    <div
+      className={`header-notif-wrap${className ? ` ${className}` : ''}`}
+      tabIndex={-1}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) onClose();
+      }}
+    >
+      <button
+        type="button"
+        className={`header-notif-btn${buttonClassName ? ` ${buttonClassName}` : ''}`}
+        onClick={onToggle}
+        aria-label="Уведомления"
+        aria-expanded={notifOpen}
+      >
+        <BellIcon />
+        {notifCount > 0 && (
+          <span className="header-notif-badge">
+            {notifCount > 99 ? '99+' : notifCount}
+          </span>
+        )}
+      </button>
+
+      {notifOpen && (
+        <div className="header-notif-dropdown" onClick={(e) => e.stopPropagation()}>
+          <div className="header-notif-dropdown-head">
+            <span>Уведомления</span>
+            {notifCount > 0 && (
+              <button type="button" className="header-notif-mark-all" onClick={onMarkAllRead}>
+                Прочитать все
+              </button>
+            )}
+          </div>
+
+          <div className="header-notif-dropdown-list">
+            {notifs.length === 0 ? (
+              <div className="header-notif-empty">
+                <div className="header-notif-empty-icon" aria-hidden>🔔</div>
+                <p>Уведомлений пока нет</p>
+              </div>
+            ) : (
+              notifs.slice(0, 6).map((n) => (
+                <button
+                  key={n.id}
+                  type="button"
+                  className={`header-notif-item${(n.isRead ?? n.read) ? '' : ' is-unread'}`}
+                  onClick={() => onMarkOneRead(n)}
+                >
+                  <span className="header-notif-item-icon" aria-hidden>
+                    {NOTIF_ICONS[n.type] || '🔔'}
+                  </span>
+                  <span className="header-notif-item-body">
+                    <span className="header-notif-item-title">{n.title}</span>
+                    <span className="header-notif-item-text">{n.body}</span>
+                    <span className="header-notif-item-time">{timeAgoShort(n.createdAt)}</span>
+                  </span>
+                  {!(n.isRead ?? n.read) && <span className="header-notif-item-dot" aria-hidden />}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Header() {
   const { userId, userRole, userName, userLastName, userAvatar, logout } = useAuth();
   const BACKEND = 'https://svoi-mastera-backend.onrender.com';
@@ -158,27 +266,6 @@ function Header() {
     }
   };
 
-  const NOTIF_ICONS = {
-    NEW_OFFER:       '📩',
-    OFFER_ACCEPTED:  '🎉',
-    DEAL_CONFIRMED:  '✅',
-    DEAL_COMPLETED:  '🏆',
-    NEW_MESSAGE:     '💬',
-    DEAL_NEW:        '🔔',
-    DEAL_STARTED:    '🚀',
-    DEAL_CANCELLED:  '❌',
-  };
-
-  function timeAgoShort(d) {
-    if (!d) return '';
-    const m = Math.floor((Date.now() - new Date(d)) / 60000);
-    if (m < 1) return 'только что';
-    if (m < 60) return `${m} мин`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h} ч`;
-    return `${Math.floor(h / 24)} дн`;
-  }
-
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(searchTerm.trim()), 220);
     return () => clearTimeout(t);
@@ -280,20 +367,30 @@ function Header() {
             }}
           />
 
-          {/* ── MOBILE: чат с бейджем (авторизованные) ── */}
+          {/* ── MOBILE: избранное + уведомления ── */}
           {userId && (
-            <Link to="/chat" className="header-mobile-chat" aria-label="Сообщения">
-              <span className="header-mobile-chat-btn">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-              </span>
-              {unread > 0 && (
-                <span className="header-mobile-chat-badge">
-                  {unread > 99 ? '99+' : unread}
-                </span>
-              )}
-            </Link>
+            <div className="header-mobile-actions">
+              <Link
+                to="/favorites"
+                className={`header-mobile-action-btn header-mobile-favorites-btn${location.pathname.startsWith('/favorites') ? ' is-active' : ''}`}
+                aria-label="Избранное"
+                aria-current={location.pathname.startsWith('/favorites') ? 'page' : undefined}
+                onClick={onRepeatNavClick('/favorites')}
+              >
+                <FavoritesNavIcon />
+              </Link>
+
+              <HeaderNotificationsBell
+                notifCount={notifCount}
+                notifOpen={notifOpen}
+                onToggle={openNotifs}
+                onClose={() => setNotifOpen(false)}
+                notifs={notifs}
+                onMarkAllRead={markAllRead}
+                onMarkOneRead={markOneRead}
+                buttonClassName="header-mobile-action-btn"
+              />
+            </div>
           )}
 
           {/* ── BURGER (гости) ── */}
@@ -439,87 +536,16 @@ function Header() {
               </Link>
             )}
 
-            {/* 🔔 Колокольчик уведомлений */}
             {userId && (
-              <div style={{ position:'relative' }} tabIndex={-1}
-                onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setNotifOpen(false); }}
-              >
-                <button
-                  onClick={openNotifs}
-                  style={{ background:'none', border:'none', cursor:'pointer', padding:'6px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', color:'var(--gray-600)', transition:'color .15s' }}
-                  title="Уведомления"
-                >
-                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                  </svg>
-                  {notifCount > 0 && (
-                    <span style={{ position:'absolute', top:2, right:2, minWidth:16, height:16, borderRadius:999, background:'#e8410a', color:'#fff', fontSize:10, fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 3px', lineHeight:1 }}>
-                      {notifCount > 99 ? '99+' : notifCount}
-                    </span>
-                  )}
-                </button>
-
-                {/* Дропдаун уведомлений */}
-                {notifOpen && (
-                  <div
-                    style={{ position:'absolute', right:0, top:'calc(100% + 8px)', width:360, maxHeight:480, background:'#fff', borderRadius:16, boxShadow:'0 8px 40px rgba(0,0,0,0.18)', border:'1px solid #e5e7eb', zIndex:1000, overflow:'hidden', display:'flex', flexDirection:'column' }}
-                    onClick={e => e.stopPropagation()}
-                  >
-                    {/* Шапка */}
-                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px 10px', borderBottom:'1px solid #f3f4f6' }}>
-                      <span style={{ fontSize:15, fontWeight:800, color:'#111827' }}>Уведомления</span>
-                      {notifCount > 0 && (
-                        <button onClick={markAllRead}
-                          style={{ background:'none', border:'none', cursor:'pointer', fontSize:12, color:'#e8410a', fontWeight:600 }}>
-                          Прочитать все
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Список */}
-                    <div style={{ overflowY:'auto', flex:1 }}>
-                      {notifs.length === 0 ? (
-                        <div style={{ textAlign:'center', padding:'32px 16px', color:'#9ca3af' }}>
-                          <div style={{ fontSize:32, marginBottom:8 }}>🔔</div>
-                          <p style={{ fontSize:13, margin:0 }}>Уведомлений пока нет</p>
-                        </div>
-                      ) : notifs.slice(0, 6).map(n => (
-                        <div key={n.id}
-                          onClick={() => markOneRead(n)}
-                          style={{
-                            display:'flex', gap:12, padding:'12px 16px', cursor:'pointer',
-                            background: (n.isRead ?? n.read) ? '#fff' : 'rgba(232,65,10,0.04)',
-                            borderBottom:'1px solid #f9fafb', transition:'background .15s',
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.background='#f9fafb'}
-                          onMouseLeave={e => e.currentTarget.style.background='#fff'}
-                        >
-                          <div style={{ fontSize:20, flexShrink:0, lineHeight:1.3 }}>
-                            {NOTIF_ICONS[n.type] || '🔔'}
-                          </div>
-                          <div style={{ flex:1, minWidth:0 }}>
-                            <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8, marginBottom:3 }}>
-                              <span style={{ fontSize:13, fontWeight: (n.isRead ?? n.read) ? 600 : 800, color:'#111827', lineHeight:1.3 }}>
-                                {n.title}
-                              </span>
-                              {!(n.isRead ?? n.read) && (
-                                <div style={{ width:8, height:8, borderRadius:'50%', background:'#e8410a', flexShrink:0, marginTop:4 }} />
-                              )}
-                            </div>
-                            <p style={{ fontSize:12, color:'#6b7280', margin:0, lineHeight:1.5, display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden' }}>
-                              {n.body}
-                            </p>
-                            <span style={{ fontSize:11, color:'#9ca3af', marginTop:3, display:'block' }}>
-                              {timeAgoShort(n.createdAt)}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <HeaderNotificationsBell
+                notifCount={notifCount}
+                notifOpen={notifOpen}
+                onToggle={openNotifs}
+                onClose={() => setNotifOpen(false)}
+                notifs={notifs}
+                onMarkAllRead={markAllRead}
+                onMarkOneRead={markOneRead}
+              />
             )}
 
             {userId ? (
