@@ -444,9 +444,9 @@ export function CustomerHomePage({ userId }) {
           <div>
             <div className="chpv-eyebrow">
               <span className="chpv-dot" />
-              {userId ? `${city} · Личный кабинет заказчика` : `${city} · Найдите мастера рядом`}
+              {userId ? `${city} · Личный кабинет заказчика` : `${city} · Найти мастера рядом`}
           </div>
-            <HomeHeroTitle line1="Найдите мастера" city={city} />
+            <HomeHeroTitle line1="Найти мастера" city={city} />
             <p className="chpv-sub">
               Ремонт, сантехника, красота и другие услуги — разместите заявку или выберите мастера по объявлениям и
               отзывам.
@@ -492,7 +492,7 @@ export function CustomerHomePage({ userId }) {
             getCount={countInCategory}
             bentoMeta={{
               kind: 'listing',
-              lines: (n) => [n ? `${n} объявлений` : 'мастера', 'в каталоге'],
+              lines: (n) => [n ? `${n} объявлений` : 'Найти мастера', 'в каталоге'],
             }}
           />
           <HomeCategoryGrid
@@ -505,7 +505,7 @@ export function CustomerHomePage({ userId }) {
               one: 'объявление',
               few: 'объявления',
               many: 'объявлений',
-              empty: 'Открыть каталог',
+              empty: 'Найти мастера',
             }}
           />
 
@@ -864,7 +864,7 @@ export function WorkerHomePage({ userId, userName }) {
               <span className="chpv-dot" />
               {city} · Личный кабинет мастера
           </div>
-            <HomeHeroTitle line1="Заказы и клиенты" city={city} />
+            <HomeHeroTitle line1="Найти работу" city={city} />
             <p className="chpv-sub">
               Привет, {firstName}! Заявки заказчиков с открытыми задачами — ищите в каталоге и выбирайте подходящие
               карточки ниже.
@@ -910,7 +910,7 @@ export function WorkerHomePage({ userId, userName }) {
             getCount={countRequestsInCategory}
             bentoMeta={{
               kind: 'job',
-              lines: (n) => [n ? `${n} заявок` : 'заявки', 'рядом'],
+              lines: (n) => [n ? `${n} заявок` : 'Найти работу', 'рядом'],
             }}
           />
           <HomeCategoryGrid
@@ -923,7 +923,7 @@ export function WorkerHomePage({ userId, userName }) {
               one: 'заявка',
               few: 'заявки',
               many: 'заявок',
-              empty: 'Смотреть заявки',
+              empty: 'Найти работу',
             }}
           />
 

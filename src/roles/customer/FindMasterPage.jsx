@@ -304,7 +304,7 @@ export default function FindMasterPage() {
           />
           <div className="fmp-hero-overlay"/>
           <div className="fmp-hero-body">
-            <h1>Мастера<br/>в Йошкар-Оле</h1>
+            <h1>Найти мастера<br/>в Йошкар-Оле</h1>
             <p className="fmp-hero-sub">Ремонт, красота, обучение и всё остальное — мастера рядом</p>
             {!loading && (
               <div className="fmp-hero-stats">

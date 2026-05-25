@@ -94,12 +94,12 @@
 .mobile-tab-label {
   position: relative;
   z-index: 1;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   font-family: 'Manrope', system-ui, sans-serif;
   line-height: 1;
   letter-spacing: -0.01em;
-  min-height: 11px;
+  min-height: 10px;
   white-space: nowrap;
 }
 

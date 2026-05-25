@@ -55,7 +55,7 @@ export function isNavTabActive(pathname, item, allItems) {
 /** Нижний таб-бар — заказчик (Lovable v13, как на десктопе) */
 export const CUSTOMER_TAB_ITEMS = [
   { to: '/', label: 'Главная', Icon: Home, end: true },
-  { to: '/find-master', label: 'Мастера', Icon: Hammer },
+  { to: '/find-master', label: 'Найти мастера', Icon: Hammer },
   { to: '/my-requests', label: 'Заявки', Icon: ClipboardList },
   { to: '/chat', label: 'Чат', Icon: MessageCircle, badgeKey: 'chat' },
   { to: '/deals', label: 'Сделки', Icon: Handshake },
@@ -64,7 +64,7 @@ export const CUSTOMER_TAB_ITEMS = [
 /** Нижний tab-bar — мастер (Lovable v13, как на десктопе) */
 export const WORKER_TAB_ITEMS = [
   { to: '/worker-home', label: 'Главная', Icon: Home, alsoMatch: ['/jobs'] },
-  { to: '/find-work', label: 'Заявки', Icon: ClipboardList },
+  { to: '/find-work', label: 'Найти работу', Icon: ClipboardList },
   { to: '/my-listings', label: 'Объявления', Icon: LayoutList, alsoMatch: ['/listings'] },
   { to: '/chat', label: 'Чат', Icon: MessageCircle, badgeKey: 'chat' },
   { to: '/deals', label: 'Сделки', Icon: Handshake },
