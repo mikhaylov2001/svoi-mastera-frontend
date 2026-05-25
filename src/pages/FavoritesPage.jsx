@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   getCategories,
   getListingById,
@@ -14,11 +14,9 @@ import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
 import {
   getJobRequestPublishedBudgetNumber,
   hasJobRequestPublishedPrice,
-  JOB_REQUEST_PRICE_MISSING_LABEL,
 } from '../utils/jobRequestBudget';
 import CardFavoriteSlot from '../components/CardFavoriteSlot';
 import SortDropdown from '../components/SortDropdown';
-import { moOrdersListShellCss } from '../styles/moOrdersListShellCss.js';
 import '../styles/moCabinetStyle.css';
 import './favorites.css';
 
@@ -52,7 +50,6 @@ function categoryEmoji(name) {
 }
 
 export default function FavoritesPage() {
-  const navigate = useNavigate();
   const { userId, isWorker } = useAuth();
   const { listingIds, jobRequestIds, toggleListing, toggleJobRequest } = useFavorites();
 
@@ -255,44 +252,25 @@ export default function FavoritesPage() {
 
   const catalogLink = isWorker ? '/find-work' : '/find-master';
 
-  const openItem = (i) => {
-    const to =
-      i.kind === 'master'
-        ? `/listings/${i.rawId}?from=favorites`
-        : `/find-work?request=${encodeURIComponent(i.rawId)}&from=favorites`;
-    navigate(to);
-  };
-
   const renderCard = (i) => {
     if (i.missing) {
       return (
-        <article key={i.key} className="mo-card fav-card-miss">
-          <div className="mo-card-media">
+        <article key={i.key} className="chpv-card fav-card-miss">
+          <div className="chpv-card-img">
             <div className="fav-card-ph-empty">{i.kind === 'master' ? '🔨' : '📋'}</div>
             <CardFavoriteSlot
               kind={i.kind === 'master' ? 'listing' : 'jobRequest'}
               id={i.rawId}
-              className="mo-card-fav-slot card-fav-slot"
+              className="chpv-card-fav-slot card-fav-slot"
               forcedActive
               onToggle={() => bumpRemove(i.key, () => removeItem(i))}
             />
           </div>
-          <div className="mo-card-content">
-            <div className="mo-card-headline">
-              <h3 className="mo-card-title">
-                {i.kind === 'master' ? 'Объявление недоступно' : 'Заявка закрыта'}
-              </h3>
+          <div className="chpv-card-body">
+            <div className="chpv-card-title">
+              {i.kind === 'master' ? 'Объявление недоступно' : 'Заявка закрыта'}
             </div>
-            <p className="mo-card-hint">
-              <span className="mo-card-hint-sub">Элемент больше не доступен в каталоге</span>
-            </p>
-          </div>
-          <div className="mo-actions" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              className="mo-btn mo-btn-secondary"
-              onClick={() => bumpRemove(i.key, () => removeItem(i))}
-            >
+            <button type="button" className="fav-miss-btn" onClick={() => bumpRemove(i.key, () => removeItem(i))}>
               Убрать из избранного
             </button>
           </div>
@@ -300,101 +278,65 @@ export default function FavoritesPage() {
       );
     }
 
-    const primaryLabel = 'Открыть';
-    const priceOnImg =
+    const primaryTo =
       i.kind === 'master'
-        ? (i.price ? `${fmt(i.price)} ₽ ${i.priceLabel || 'за работу'}` : 'Договорная')
-        : (i.price ? `${fmt(i.price)} ₽ в заявке` : JOB_REQUEST_PRICE_MISSING_LABEL);
-    const ratingVal = i.rating != null ? i.rating.toFixed(1) : '0';
-    const reviewsLabel = i.reviews != null ? `${i.reviews} отзывов` : 'нет отзывов';
+        ? `/listings/${i.rawId}?from=favorites`
+        : `/find-work?request=${encodeURIComponent(i.rawId)}&from=favorites`;
+    const writeLabel = i.kind === 'master' ? 'Написать' : 'Открыть';
+    const priceStr = i.price ? `${fmt(i.price)} ₽` : '— ₽';
+    const unitLabel = i.kind === 'master' ? (i.priceLabel || 'за работу') : (i.price ? 'бюджет' : 'договорная');
+    const ratingVal = i.rating != null ? i.rating.toFixed(1) : '0.0';
+    const statusLabel = i.kind === 'master' ? '✓ На сервисе' : '● Открыта';
 
     return (
-      <article
-        key={i.key}
-        className="mo-card"
-        role="button"
-        tabIndex={0}
-        onClick={() => openItem(i)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            openItem(i);
-          }
-        }}
-      >
-        <div className="mo-card-media">
-          {i.photo ? (
-            <img src={i.photo} alt="" loading="lazy" />
-          ) : (
-            <div className="fav-card-ph-empty">{i.emoji}</div>
-          )}
-          <span className="mo-card-status-on-img open">
-            {i.kind === 'master' ? 'На сервисе' : 'Открыта'}
-          </span>
-          <div className="mo-card-price-on-img">{priceOnImg}</div>
+      <article key={i.key} className="chpv-card">
+        <div className="chpv-card-img">
+          <Link to={primaryTo} tabIndex={-1}>
+            {i.photo ? (
+              <img src={i.photo} alt="" loading="lazy" />
+            ) : (
+              <div className="fav-card-ph-empty">{i.emoji}</div>
+            )}
+          </Link>
+          {i.category ? <div className="chpv-card-tag">{i.category}</div> : null}
           <CardFavoriteSlot
             kind={i.kind === 'master' ? 'listing' : 'jobRequest'}
             id={i.rawId}
-            className="mo-card-fav-slot card-fav-slot"
+            className="chpv-card-fav-slot card-fav-slot"
           />
-        </div>
-
-        <div className="mo-card-content">
-          <div className="mo-card-headline">
-            <h3 className="mo-card-title">{i.title || i.name}</h3>
+          <div className="chpv-card-quick">
+            <Link to={primaryTo} className="chpv-quick-btn primary">
+              {writeLabel}
+            </Link>
+            <Link to={primaryTo} className="chpv-quick-btn">
+              Подробнее
+            </Link>
           </div>
-          {(i.category || i.city) && (
-            <div className="mo-card-tags">
-              {i.category ? <span className="mo-tag mo-tag-cat">{i.category}</span> : null}
-              {i.city ? <span className="mo-tag mo-tag-addr">{i.city}</span> : null}
+        </div>
+        <Link to={primaryTo} className="fav-card-body-link">
+          <div className="chpv-card-body">
+            <div>
+              <span className="chpv-card-price">{priceStr}</span>
+              <span className="chpv-card-unit">{unitLabel}</span>
             </div>
-          )}
-          {i.desc ? <p className="mo-card-desc">{i.desc}</p> : null}
-          {i.kind === 'master' ? (
-            <p className="mo-card-stats">
-              <span className="mo-card-stats-rating-wrap">
-                <span className="mo-card-stats-star" aria-hidden>★</span>
-                <span className="mo-card-stats-rating">{ratingVal}</span>
-              </span>
-              <span className="mo-card-stats-muted">{reviewsLabel}</span>
-              <span className="mo-card-stats-muted">{i.name}</span>
-            </p>
-          ) : (
-            <p className="mo-card-hint">
-              <span className="mo-card-hint-sub">{i.name}</span>
-            </p>
-          )}
-        </div>
-
-        <div className="mo-actions" onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            className="mo-btn mo-btn-primary"
-            onClick={(e) => {
-              e.stopPropagation();
-              openItem(i);
-            }}
-          >
-            {primaryLabel}
-          </button>
-          <button
-            type="button"
-            className="mo-btn mo-btn-secondary"
-            onClick={(e) => {
-              e.stopPropagation();
-              openItem(i);
-            }}
-          >
-            Подробнее
-          </button>
-        </div>
+            <div className="chpv-card-title">{i.title || i.name}</div>
+            <div className="chpv-card-meta">
+              {i.kind === 'master' ? (
+                <span className="chpv-card-rate">★ {ratingVal}</span>
+              ) : (
+                <span className="fav-card-author">{i.name}</span>
+              )}
+              <span className="chpv-card-verified">{statusLabel}</span>
+              <span className="chpv-card-city">📍 {i.city}</span>
+            </div>
+          </div>
+        </Link>
       </article>
     );
   };
 
   return (
     <div className="mo-page mo-orders-root fav-page">
-      <style>{moOrdersListShellCss}</style>
       <header className="mo-hero">
         <img src={HERO_IMG} alt="" />
         <div className="mo-hero-inner">
@@ -488,7 +430,7 @@ export default function FavoritesPage() {
                 </div>
               </div>
             ) : (
-              <div className="mo-grid listing-grid fav-grid">
+              <div className="chpv-grid fav-grid">
                 {filtered.map(renderCard)}
               </div>
             )}
