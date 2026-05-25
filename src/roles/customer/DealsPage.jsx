@@ -202,7 +202,13 @@ function DealConfirmCard({
   myOk, workerOk, actionId, dealId, onComplete, onCancelActive,
 }) {
   return (
-    <div className="mo-confirm-card mo-confirm-card--dark">
+    <div
+      className="mo-confirm-card mo-confirm-card--dark"
+      style={{
+        background: 'linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)',
+        border: '1px solid rgba(255,255,255,.07)',
+      }}
+    >
       <div className="mo-confirm-accent" style={{ background: myOk ? '#22c55e' : 'linear-gradient(90deg,#e8410a,#ff7043)' }} />
       <div className="mo-confirm-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
