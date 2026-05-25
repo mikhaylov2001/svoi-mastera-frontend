@@ -201,7 +201,7 @@ function DealConfirmCard({
   myOk, workerOk, actionId, dealId, onComplete, onCancelActive,
 }) {
   return (
-    <div className="mo-confirm-card" style={{ border: myOk ? '1px solid #bbf7d0' : '1px solid rgba(232,65,10,.15)' }}>
+    <div className="mo-confirm-card mo-confirm-card--dark">
       <div className="mo-confirm-accent" style={{ background: myOk ? '#22c55e' : 'linear-gradient(90deg,#e8410a,#ff7043)' }} />
       <div className="mo-confirm-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
@@ -219,15 +219,15 @@ function DealConfirmCard({
             )}
           </div>
           <div>
-            <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: 1.2, textTransform: 'uppercase', color: myOk ? '#16a34a' : '#e8410a', marginBottom: 1 }}>
+            <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: 1.2, textTransform: 'uppercase', color: myOk ? '#4ade80' : '#ff7043', marginBottom: 1 }}>
               Подтверждение
             </div>
-            <div style={{ fontSize: 15, fontWeight: 950, color: '#111827' }}>
+            <div style={{ fontSize: 15, fontWeight: 950, color: '#fff' }}>
               {myOk ? 'Ваш голос учтён!' : 'Работа выполнена?'}
             </div>
           </div>
         </div>
-        <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 700, lineHeight: 1.5 }}>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', fontWeight: 700, lineHeight: 1.5 }}>
           {myOk ? 'Ожидаем подтверждения от мастера' : 'Подтвердите, что мастер выполнил задачу'}
         </div>
       </div>
@@ -240,14 +240,14 @@ function DealConfirmCard({
             key={i}
             className="mo-confirm-party"
             style={{
-              background: p.confirmed ? 'rgba(34,197,94,.08)' : '#f9fafb',
-              border: `1px solid ${p.confirmed ? 'rgba(34,197,94,.25)' : '#f3f4f6'}`,
+              background: p.confirmed ? 'rgba(34,197,94,.12)' : 'rgba(255,255,255,.05)',
+              border: `1px solid ${p.confirmed ? 'rgba(34,197,94,.28)' : 'rgba(255,255,255,.08)'}`,
             }}
           >
             <div
               className="mo-confirm-party-icon"
               style={{
-                background: p.confirmed ? 'linear-gradient(135deg,#22c55e,#16a34a)' : '#e5e7eb',
+                background: p.confirmed ? 'linear-gradient(135deg,#22c55e,#16a34a)' : 'rgba(255,255,255,.1)',
                 boxShadow: p.confirmed ? '0 4px 12px rgba(34,197,94,.25)' : 'none',
               }}
             >
@@ -258,13 +258,13 @@ function DealConfirmCard({
               )}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 900, color: '#111827' }}>{p.name}</div>
-              <div style={{ fontSize: 11, fontWeight: 700, marginTop: 2, color: p.confirmed ? '#16a34a' : '#9ca3af' }}>{p.sub}</div>
+              <div style={{ fontSize: 13, fontWeight: 900, color: '#fff' }}>{p.name}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, marginTop: 2, color: p.confirmed ? '#4ade80' : 'rgba(255,255,255,.4)' }}>{p.sub}</div>
             </div>
             <div
               style={{
                 width: 18, height: 18, borderRadius: '50%',
-                background: p.confirmed ? '#22c55e' : '#e5e7eb',
+                background: p.confirmed ? '#22c55e' : 'rgba(255,255,255,.15)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}
             >
@@ -294,7 +294,7 @@ function DealConfirmCard({
             <div><div style={{ fontSize: 14, fontWeight: 950, color: '#fff' }}>Обе стороны подтвердили!</div></div>
           </div>
         )}
-        <button type="button" className="mo-cancel-btn" onClick={onCancelActive}>Отменить сделку в работе</button>
+        <button type="button" className="mo-cancel-btn mo-cancel-btn--dark" onClick={onCancelActive}>Отменить сделку в работе</button>
       </div>
     </div>
   );
@@ -467,7 +467,7 @@ function DealDetail({
             </div>
 
             {deal.status === 'NEW' ? (
-              <div className="mo-confirm-card" style={{ border: '1px solid rgba(245,158,11,.2)' }}>
+              <div className="mo-confirm-card mo-confirm-card--dark">
                 <div className="mo-confirm-accent" style={{ background: 'linear-gradient(90deg,#f59e0b,#fbbf24)' }} />
                 <div className="mo-confirm-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
@@ -475,21 +475,21 @@ function DealDetail({
                       ⏳
                     </div>
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: 1.2, textTransform: 'uppercase', color: '#d97706', marginBottom: 1 }}>Статус</div>
-                      <div style={{ fontSize: 15, fontWeight: 950, color: '#111827' }}>Ждём мастера</div>
+                      <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: 1.2, textTransform: 'uppercase', color: '#fbbf24', marginBottom: 1 }}>Статус</div>
+                      <div style={{ fontSize: 15, fontWeight: 950, color: '#fff' }}>Ждём мастера</div>
                     </div>
                   </div>
-                  <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 700, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', fontWeight: 700, lineHeight: 1.5 }}>
                     Вы выбрали мастера. После подтверждения заказ перейдёт в работу.
                   </div>
                 </div>
                 <div className="mo-confirm-cta">
                   {deal.workerId ? (
-                    <button type="button" className="mo-master-btn" style={{ marginTop: 0, minHeight: 46 }} onClick={() => navigate(`/chat/${deal.workerId}`)}>
+                    <button type="button" className="mo-master-btn mo-master-btn--dark" style={{ marginTop: 0, minHeight: 46 }} onClick={() => navigate(`/chat/${deal.workerId}`)}>
                       💬 Написать мастеру
                     </button>
                   ) : null}
-                  <button type="button" className="mo-cancel-btn" onClick={onCancelNew}>Отменить заявку</button>
+                  <button type="button" className="mo-cancel-btn mo-cancel-btn--dark" onClick={onCancelNew}>Отменить заявку</button>
                 </div>
               </div>
             ) : null}

@@ -869,6 +869,27 @@
 }
 .mo-cancel-btn:hover { background: #fef2f2; }
 
+/* Dark confirmation (deals detail) */
+.mo-confirm-card--dark {
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+  box-shadow: 0 2px 8px rgba(17,24,39,.08), 0 12px 32px rgba(17,24,39,.14);
+  border: 1px solid rgba(255,255,255,.07) !important;
+}
+
+.mo-cancel-btn--dark {
+  border: 1.5px solid rgba(239,68,68,.35);
+  background: rgba(239,68,68,.08);
+  color: #f87171;
+}
+.mo-cancel-btn--dark:hover { background: rgba(239,68,68,.15); }
+
+.mo-master-btn--dark {
+  border: 2px solid rgba(232,65,10,.55);
+  background: rgba(232,65,10,.1);
+  color: #ff7043;
+}
+.mo-master-btn--dark:hover { background: rgba(232,65,10,.18); }
+
 /* Master card */
 .mo-master-avatar {
   width: 52px;
