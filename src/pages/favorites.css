@@ -1,6 +1,7 @@
 /* ════════════════════════════════════════════
-   FAVORITES — карточки + доп. элементы
-   Shell/hero/toolbar: moCabinetStyle.css
+   FAVORITES — доп. элементы
+   Габариты карточек: mo-card + moOrdersListShellCss (как «Мои объявления»)
+   Shell/hero/toolbar: moCabinetStyle.css + moToolbar.css
    ════════════════════════════════════════════ */
 
 .fav-page a.mo-cta {
@@ -10,29 +11,8 @@
   justify-content: center;
 }
 
-/* ── Toolbar layout: moToolbar.css ── */
 .fav-page .mo-toolbar .mo-search {
   height: 36px;
-}
-
-/* ── Grid карточек ── */
-.fav-page .chpv-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
-  width: 100%;
-}
-
-@media (min-width: 900px) {
-  .fav-page .chpv-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 641px) and (max-width: 899px) {
-  .fav-page .chpv-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 /* Bulk bar */
@@ -85,53 +65,8 @@
   font-weight: 700;
 }
 
-/* ── Grid & cards (как на главной — chpv-card) ── */
-.fav-page .chpv-card {
-  background: #fff;
-  border: 1px solid #ebebeb;
-  border-radius: 16px;
-  overflow: hidden;
-  transition: transform 0.18s, box-shadow 0.18s;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  color: inherit;
-}
-
-.fav-page .chpv-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.1);
-}
-
-.fav-page .chpv-card-img {
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  position: relative;
-  background: #f0f0f0;
-}
-
-.fav-page .chpv-card-img > a:first-of-type {
-  display: block;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-
-.fav-page .chpv-card-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.35s;
-}
-
-.fav-page .chpv-card:hover .chpv-card-img img {
-  transform: scale(1.05);
-}
-
-.fav-card-ph-empty {
+/* —— Карточки: mo-card габариты + каталожный контент —— */
+.fav-page .mo-card-media .fav-card-ph-empty {
   position: absolute;
   inset: 0;
   display: flex;
@@ -141,7 +76,7 @@
   background: linear-gradient(135deg, #fff5ef, #ffe4d4);
 }
 
-.fav-page .chpv-card-tag {
+.fav-page .fav-cat-tag {
   position: absolute;
   top: 10px;
   left: 10px;
@@ -160,84 +95,34 @@
   white-space: nowrap;
 }
 
-/* сердечко на карточках — src/styles/favoriteHeart.css */
+.fav-page .fav-card-catalog-body {
+  padding: 14px 18px 0;
+  gap: 8px;
+}
 
-.fav-page .chpv-card-quick {
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 10px;
+.fav-page .fav-price-row {
   display: flex;
-  gap: 6px;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.2s, transform 0.2s;
-  z-index: 4;
-}
-
-.fav-page .chpv-card:hover .chpv-card-quick {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.fav-page .chpv-quick-btn {
-  flex: 1;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  border: none;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  text-align: center;
-  text-decoration: none;
-  color: #1a1a1a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.fav-page .chpv-quick-btn.primary {
-  background: #e8410a;
-  color: #fff;
-}
-
-.fav-page .chpv-quick-btn.primary:hover {
-  background: #d03a09;
-  color: #fff;
-}
-
-.fav-card-body-link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-}
-
-.fav-page .chpv-card-body {
-  padding: 12px 14px 14px;
-  display: flex;
-  flex-direction: column;
+  align-items: baseline;
+  flex-wrap: wrap;
   gap: 4px;
 }
 
-.fav-page .chpv-card-price {
+.fav-page .fav-price {
   font-size: 18px;
   font-weight: 900;
   color: #1a1a1a;
   letter-spacing: -0.3px;
 }
 
-.fav-page .chpv-card-unit {
+.fav-page .fav-price-unit {
   font-size: 11px;
   color: #999;
   font-weight: 600;
-  margin-left: 4px;
 }
 
-.fav-page .chpv-card-title {
-  font-size: 13px;
+.fav-page .fav-card-title {
+  font-size: 14px;
+  font-weight: 700;
   color: #444;
   line-height: 1.4;
   display: -webkit-box;
@@ -246,17 +131,18 @@
   overflow: hidden;
 }
 
-.fav-page .chpv-card-meta {
+.fav-page .fav-card-meta {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
   font-size: 11px;
   color: #888;
-  margin-top: 4px;
+  margin-top: 2px;
+  padding-bottom: 4px;
 }
 
-.fav-page .chpv-card-rate {
+.fav-page .fav-card-rate {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -264,13 +150,13 @@
   font-weight: 700;
 }
 
-.fav-card-author {
+.fav-page .fav-card-author {
   color: #64748b;
   font-weight: 600;
   font-size: 11px;
 }
 
-.fav-page .chpv-card-verified {
+.fav-page .fav-card-status {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -278,31 +164,13 @@
   font-weight: 700;
 }
 
-.fav-page .chpv-card-city {
+.fav-page .fav-card-city {
   margin-left: auto;
   font-weight: 600;
 }
 
-.fav-card-miss { opacity: 0.88; }
-
-.fav-miss-btn {
-  margin-top: 8px;
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  background: #f9fafb;
-  color: #374151;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.fav-miss-btn:hover {
-  background: #fee2e2;
-  color: #dc2626;
-  border-color: #fecaca;
+.fav-page .fav-card-miss {
+  opacity: 0.92;
 }
 
 /* ── Mobile (≤768px) ── */
@@ -327,11 +195,6 @@
   .fav-page .mo-status-tab {
     padding: 8px 12px;
     font-size: 12px;
-  }
-
-  .fav-page .mo-status-tab-count {
-    font-size: 10px;
-    padding: 1px 5px;
   }
 
   .fav-bulk {
@@ -361,29 +224,7 @@
     border-radius: 12px;
   }
 
-  .fav-page .chpv-grid,
-  .fav-page .fav-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .fav-page .chpv-card {
-    border-radius: 18px;
-    border-color: #eceff3;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .fav-page .chpv-card:hover {
-    transform: none;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
-  }
-
-  .fav-page .chpv-card-img {
-    aspect-ratio: 16 / 10;
-  }
-
-  .fav-page .chpv-card-tag {
+  .fav-page .fav-cat-tag {
     top: 12px;
     left: 12px;
     font-size: 11px;
@@ -392,43 +233,31 @@
     max-width: calc(100% - 64px);
   }
 
-  /* На мобилке карточка целиком кликабельна — оверлей-кнопки не нужны */
-  .fav-page .chpv-card-quick {
-    display: none;
-  }
-
-  .fav-page .chpv-card-body {
-    padding: 14px 16px 16px;
+  .fav-page .fav-card-catalog-body {
+    padding: 14px 16px 0;
     gap: 6px;
   }
 
-  .fav-page .chpv-card-price {
+  .fav-page .fav-price {
     font-size: 20px;
   }
 
-  .fav-page .chpv-card-unit {
+  .fav-page .fav-price-unit {
     font-size: 12px;
   }
 
-  .fav-page .chpv-card-title {
+  .fav-page .fav-card-title {
     font-size: 14px;
-    -webkit-line-clamp: 2;
   }
 
-  .fav-page .chpv-card-meta {
-    flex-wrap: wrap;
+  .fav-page .fav-card-meta {
     gap: 6px 10px;
-    margin-top: 2px;
     font-size: 12px;
   }
 
-  .fav-page .chpv-card-city {
+  .fav-page .fav-card-city {
     margin-left: 0;
     flex: 1 1 100%;
-  }
-
-  .fav-page .chpv-card-verified {
-    font-size: 11px;
   }
 
   .fav-page .mo-empty {
@@ -461,11 +290,11 @@
     font-size: 11px;
   }
 
-  .fav-page .chpv-card-price {
+  .fav-page .fav-price {
     font-size: 18px;
   }
 
-  .fav-page .chpv-card-body {
-    padding: 12px 14px 14px;
+  .fav-page .fav-card-catalog-body {
+    padding: 12px 14px 0;
   }
 }
