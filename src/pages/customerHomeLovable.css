@@ -269,9 +269,30 @@
 .chpv-section-hdr a { font-size: 13px; color: #e8410a; font-weight: 700; text-decoration: none; }
 .chpv-section-hdr a:hover { text-decoration: underline; }
 
+.chpv-bento { display: grid; grid-template-columns: 1.4fr 1fr 1fr; grid-template-rows: 160px 160px; gap: 10px; margin-bottom: 14px; }
+.chpv-bento-tile {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.chpv-bento-tile:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18); }
+.chpv-bento-tile.big { grid-column: 1 / 2; grid-row: 1 / span 2; }
+.chpv-bento-bg { position: absolute; inset: 0; background-size: cover; background-position: center; transition: transform 0.4s; }
+.chpv-bento-tile:hover .chpv-bento-bg { transform: scale(1.06); }
+.chpv-bento-ph { position: absolute; inset: 0; background: linear-gradient(135deg, #2a1a00, #e8410a); display: flex; align-items: center; justify-content: center; font-size: 42px; }
+.chpv-bento-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.1) 60%, transparent); }
+.chpv-bento-body { position: absolute; left: 14px; right: 14px; bottom: 12px; }
+.chpv-bento-name { font-size: 16px; font-weight: 800; letter-spacing: -0.2px; }
+.chpv-bento-meta { display: flex; gap: 10px; margin-top: 4px; font-size: 11px; color: rgba(255, 255, 255, 0.7); font-weight: 600; }
+.chpv-bento-tile.big .chpv-bento-name { font-size: 22px; }
+
 .chpv-cat-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -699,7 +720,8 @@
   .chpv-sub { font-size: 15px; }
   .chpv-body { grid-template-columns: 1fr; padding: 24px 20px 48px; gap: 20px; }
   .chpv-side { position: static; }
-  .chpv-cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chpv-bento { grid-template-columns: 1fr 1fr; grid-template-rows: 150px 150px 150px; }
+  .chpv-bento-tile.big { grid-column: 1 / -1; grid-row: 1; }
   .chpv-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -769,7 +791,10 @@
   }
   .chpv-section-hdr h2 { font-size: 20px; letter-spacing: -0.35px; }
 
+  .chpv-bento { display: none; }
+
   .chpv-cat-grid {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     margin-bottom: 16px;

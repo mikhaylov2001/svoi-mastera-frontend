@@ -51,9 +51,46 @@ function pluralRu(n, one, few, many) {
   return many;
 }
 
+function HomeCategoryBento({ items, categories, getLink, getCount, bentoMeta }) {
+  return (
+    <div className="chpv-bento chpv-categories-bento">
+      {items.map((cat, i) => {
+        const n = getCount(cat.name);
+        const img =
+          CAT_PHOTOS[cat.slug] ||
+          getCategoryPlaceholderPhotoUrlOrDefault(
+            bentoMeta.kind === 'listing'
+              ? { category: cat.name, categorySlug: cat.slug }
+              : { categoryName: cat.name, categorySlug: cat.slug },
+            categories,
+          );
+        const [meta1, meta2] = bentoMeta.lines(n);
+
+        return (
+          <Link key={cat.slug} className={`chpv-bento-tile ${i === 0 ? 'big' : ''}`} to={getLink(cat)}>
+            {img ? (
+              <div className="chpv-bento-bg" style={{ backgroundImage: `url(${img})` }} />
+            ) : (
+              <div className="chpv-bento-bg chpv-bento-ph">{cat.emoji || '🛠️'}</div>
+            )}
+            <div className="chpv-bento-overlay" />
+            <div className="chpv-bento-body">
+              <div className="chpv-bento-name">{cat.name}</div>
+              <div className="chpv-bento-meta">
+                <span>{meta1}</span>
+                <span>{meta2}</span>
+              </div>
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
 function HomeCategoryGrid({ items, categories, getLink, getCount, countLabels }) {
   return (
-    <div className="chpv-cat-grid">
+    <div className="chpv-cat-grid chpv-categories-mobile">
       {items.map((cat) => {
         const n = getCount(cat.name);
         const img =
@@ -548,6 +585,16 @@ export function CustomerHomePage({ userId }) {
             <h2>Популярные категории</h2>
             <Link to="/find-master">Все категории →</Link>
           </div>
+          <HomeCategoryBento
+            items={bentoCats}
+            categories={categoriesApi}
+            getLink={(cat) => `/find-master/${cat.slug}`}
+            getCount={countInCategory}
+            bentoMeta={{
+              kind: 'listing',
+              lines: (n) => [n ? `${n} объявлений` : 'мастера', 'в каталоге'],
+            }}
+          />
           <HomeCategoryGrid
             items={bentoCats}
             categories={categoriesApi}
@@ -986,6 +1033,16 @@ export function WorkerHomePage({ userId, userName }) {
             <h2>Популярные направления</h2>
             <Link to="/find-work">Все заявки →</Link>
           </div>
+          <HomeCategoryBento
+            items={bentoCats}
+            categories={categories}
+            getLink={(cat) => `/find-work?q=${encodeURIComponent(cat.name)}`}
+            getCount={countRequestsInCategory}
+            bentoMeta={{
+              kind: 'job',
+              lines: (n) => [n ? `${n} заявок` : 'заявки', 'рядом'],
+            }}
+          />
           <HomeCategoryGrid
             items={bentoCats}
             categories={categories}

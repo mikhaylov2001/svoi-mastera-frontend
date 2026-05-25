@@ -12,6 +12,7 @@ import { setFavorites } from '../utils/favoritesStorage';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
 import {
+  formatJobRequestBudgetLabel,
   getJobRequestPublishedBudgetNumber,
   hasJobRequestPublishedPrice,
 } from '../utils/jobRequestBudget';
@@ -183,6 +184,8 @@ export default function FavoritesPage() {
         );
       const hasPrice = hasJobRequestPublishedPrice(item);
       const priceNum = getJobRequestPublishedBudgetNumber(item);
+      const custName =
+        [item.customerName, item.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
       const locLine = (item.cityName || item.address || item.addressText || '').trim();
       const cityShort =
         item.cityName || (locLine ? locLine.split(',')[0].trim() : '') || defaultCity;
@@ -191,14 +194,16 @@ export default function FavoritesPage() {
         kind: 'job',
         key: `j-${item.id}`,
         rawId: String(item.id),
-        name: item.title || 'Заявка',
-        title: catLabel,
+        name: custName,
+        title: item.title || 'Заявка',
         desc: (item.description || item.details || '').trim(),
         photo: photoSrc,
         emoji: categoryEmoji(catLabel),
         category: catLabel,
+        hasPrice,
+        budgetLabel: formatJobRequestBudgetLabel(item),
         price: priceNum && priceNum > 0 ? priceNum : null,
-        priceLabel: hasPrice ? 'бюджет' : 'договорная',
+        priceLabel: hasPrice ? 'в заявке' : 'бюджет',
         city: cityShort,
         savedAt: 'недавно',
         rating: null,
@@ -283,8 +288,12 @@ export default function FavoritesPage() {
         ? `/listings/${i.rawId}?from=favorites`
         : `/find-work?request=${encodeURIComponent(i.rawId)}&from=favorites`;
     const writeLabel = i.kind === 'master' ? 'Написать' : 'Открыть';
-    const priceStr = i.price ? `${fmt(i.price)} ₽` : '— ₽';
-    const unitLabel = i.kind === 'master' ? (i.priceLabel || 'за работу') : (i.price ? 'бюджет' : 'договорная');
+    const priceStr =
+      i.kind === 'master'
+        ? (i.price ? `${fmt(i.price)} ₽` : '— ₽')
+        : (i.hasPrice ? i.budgetLabel : '— ₽');
+    const unitLabel =
+      i.kind === 'master' ? (i.priceLabel || 'за работу') : (i.hasPrice ? 'в заявке' : 'бюджет');
     const ratingVal = i.rating != null ? i.rating.toFixed(1) : '0.0';
     const statusLabel = i.kind === 'master' ? '✓ На сервисе' : '● Открыта';
 
