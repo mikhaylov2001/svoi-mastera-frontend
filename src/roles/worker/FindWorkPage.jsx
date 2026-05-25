@@ -26,6 +26,7 @@ import {
 } from '../../utils/categoryPlaceholderPhoto';
 import { jobRequestMatchesCatalogCategory, mergeApiCategoriesWithCatalog } from '../../utils/mergeApiCategoriesWithCatalog';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
 
