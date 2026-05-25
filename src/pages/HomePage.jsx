@@ -310,7 +310,6 @@ export function CustomerHomePage({ userId }) {
   const [masterListCat, setMasterListCat] = useState('ALL');
   const [sortBy, setSortBy] = useState('new');
   const [q, setQ] = useState('');
-  const [feedIdx, setFeedIdx] = useState(0);
   const [workerStats, setWorkerStats] = useState({});
 
   const reloadCustomerHome = useCallback(async () => {
@@ -420,16 +419,9 @@ export function CustomerHomePage({ userId }) {
 
   const platformFeedCycle = useMemo(() => resolvePlatformFeedCycle(openRequests), [openRequests]);
 
-  const feedCycleMod = Math.max(1, platformFeedCycle.length);
-
-  useEffect(() => {
-    const t = setInterval(() => setFeedIdx((i) => (i + 1) % feedCycleMod), 3500);
-    return () => clearInterval(t);
-  }, [feedCycleMod]);
-
   const visibleFeed = useMemo(
-    () => visiblePlatformFeedRows(platformFeedCycle, feedIdx),
-    [platformFeedCycle, feedIdx],
+    () => visiblePlatformFeedRows(platformFeedCycle, 0),
+    [platformFeedCycle],
   );
 
   const masterCount = useMemo(() => uniqueWorkerCountFromListings(listings), [listings]);
@@ -729,7 +721,6 @@ export function WorkerHomePage({ userId, userName }) {
   const [loading, setLoading] = useState(true);
   const [homeListCat, setHomeListCat] = useState('ALL');
   const [q, setQ] = useState('');
-  const [feedIdx, setFeedIdx] = useState(0);
   const [shown, setShown] = useState(8);
   const [sortBy, setSortBy] = useState('new');
   const [customerStats, setCustomerStats] = useState({});
@@ -766,13 +757,6 @@ export function WorkerHomePage({ userId, userName }) {
   }, [homeListCat, q, sortBy]);
 
   const platformFeedCycle = useMemo(() => resolvePlatformFeedCycle(openRequests), [openRequests]);
-
-  const feedCycleMod = Math.max(1, platformFeedCycle.length);
-
-  useEffect(() => {
-    const t = setInterval(() => setFeedIdx((i) => (i + 1) % feedCycleMod), 3500);
-    return () => clearInterval(t);
-  }, [feedCycleMod]);
 
   const sortedOpenRequests = useMemo(
     () => [...openRequests].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
@@ -829,8 +813,8 @@ export function WorkerHomePage({ userId, userName }) {
   );
 
   const visibleFeed = useMemo(
-    () => visiblePlatformFeedRows(platformFeedCycle, feedIdx),
-    [platformFeedCycle, feedIdx],
+    () => visiblePlatformFeedRows(platformFeedCycle, 0),
+    [platformFeedCycle],
   );
 
   const sidebarCustomerSpotlights = useMemo(() => {

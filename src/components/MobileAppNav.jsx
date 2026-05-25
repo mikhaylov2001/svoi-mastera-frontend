@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUnreadCount } from '../api';
@@ -39,7 +40,7 @@ export default function MobileAppNav() {
 
   const items = userRole === 'WORKER' ? WORKER_TAB_ITEMS : CUSTOMER_TAB_ITEMS;
 
-  return (
+  const bar = (
     <nav className="mobile-tab-bar" aria-label="Основная навигация">
       <div className="mobile-tab-bar-inner">
         {items.map((item) => {
@@ -57,7 +58,7 @@ export default function MobileAppNav() {
               <span className="mobile-tab-icon-wrap">
                 <Icon
                   className="mobile-tab-icon"
-                  strokeWidth={active ? 2.4 : 1.8}
+                  strokeWidth={2}
                   aria-hidden
                 />
                 {badge > 0 && (
@@ -74,4 +75,6 @@ export default function MobileAppNav() {
       </div>
     </nav>
   );
+
+  return createPortal(bar, document.body);
 }

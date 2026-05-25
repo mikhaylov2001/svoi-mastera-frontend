@@ -179,24 +179,6 @@
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
-  animation: chpv-slidein 0.4s ease both;
-}
-@keyframes chpv-slidein {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .chpv-feed-row {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
 }
 .chpv-feed-ava {
   width: 30px;
