@@ -1,70 +1,79 @@
 import React from 'react';
 
+const ICON_PROPS = {
+  width: 24,
+  height: 24,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.75,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  'aria-hidden': true,
+};
+
 export function IconHome() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-      <polyline points="9 22 9 12 15 12 15 22" />
+    <svg {...ICON_PROPS}>
+      <path d="M4.5 10.5 12 4l7.5 6.5V19a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 19v-8.5Z" />
+      <path d="M9.5 20.5V13h5v7.5" />
     </svg>
   );
 }
 
 export function IconSearch() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.35-4.35" />
+    <svg {...ICON_PROPS}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m20 20-4.2-4.2" />
     </svg>
   );
 }
 
 export function IconDeals() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-      <polyline points="10 9 9 9 8 9" />
+    <svg {...ICON_PROPS}>
+      <path d="M8 7h8l1.5 3H6.5L8 7Z" />
+      <path d="M6.5 10h11l-1 9h-9l-1-9Z" />
+      <path d="M10 14h4" />
     </svg>
   );
 }
 
 export function IconChat() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    <svg {...ICON_PROPS}>
+      <path d="M5.5 5.5h13A1.5 1.5 0 0 1 20 7v7.5a1.5 1.5 0 0 1-1.5 1.5H9l-3.5 3v-3.5H5.5A1.5 1.5 0 0 1 4 14.5V7a1.5 1.5 0 0 1 1.5-1.5Z" />
+      <path d="M8.5 10.5h7M8.5 13h4.5" />
     </svg>
   );
 }
 
 export function IconProfile() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
+    <svg {...ICON_PROPS}>
+      <circle cx="12" cy="8" r="3.25" />
+      <path d="M6.5 19.5c.8-2.8 3-4.5 5.5-4.5s4.7 1.7 5.5 4.5" />
     </svg>
   );
 }
 
 export function IconBriefcase() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+    <svg {...ICON_PROPS}>
+      <rect x="3.5" y="8.5" width="17" height="11" rx="2" />
+      <path d="M8.5 8.5V7a3 3 0 0 1 3-3h1a3 3 0 0 1 3 3v1.5" />
+      <path d="M3.5 13h17" />
     </svg>
   );
 }
 
 export function IconListings() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <line x1="8" y1="6" x2="21" y2="6" />
-      <line x1="8" y1="12" x2="21" y2="12" />
-      <line x1="8" y1="18" x2="21" y2="18" />
-      <line x1="3" y1="6" x2="3.01" y2="6" />
-      <line x1="3" y1="12" x2="3.01" y2="12" />
-      <line x1="3" y1="18" x2="3.01" y2="18" />
+    <svg {...ICON_PROPS}>
+      <rect x="4" y="5" width="16" height="14" rx="2" />
+      <path d="M8 9.5h8M8 13h8M8 16.5h5" />
+      <circle cx="17.5" cy="7.5" r="2.5" fill="currentColor" stroke="none" />
     </svg>
   );
 }
