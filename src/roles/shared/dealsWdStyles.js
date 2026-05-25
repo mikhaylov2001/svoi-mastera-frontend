@@ -224,8 +224,8 @@ export const dealsWdCss = `
     display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: flex-start;
   }
   .wd-detail-gallery { background: #fff; overflow: hidden; margin-bottom: 14px; }
-  .wd-detail-main { position: relative; aspect-ratio: 16/9; overflow: hidden; background: #f5f5f5; display: flex; align-items: center; justify-content: center; }
-  .wd-detail-main img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .wd-detail-main { position: relative; aspect-ratio: 16/9; overflow: hidden; background: #f5f5f5; display: block; width: 100%; }
+  .wd-detail-main img { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 100%; min-height: 100%; object-fit: cover; display: block; margin: 0; }
   .wd-detail-thumbs { display: flex; gap: 6px; padding: 10px 12px; background: #fafafa; overflow-x: auto; }
   .wd-detail-thumb { width: 72px; height: 54px; flex-shrink: 0; border-radius: 6px; overflow: hidden; cursor: pointer; border: 2px solid transparent; }
   .wd-detail-thumb.on { border-color: #e8410a; }
@@ -630,9 +630,9 @@ export const dealsDetailEdCss = `
   overflow: hidden;
   box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
 }
-.ed-main { position: relative; aspect-ratio: 16 / 9; border-radius: 0; overflow: hidden; background: #f4f4f5; display: flex; align-items: center; justify-content: center; }
-.ed-main img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
-.ed-main-placeholder { display: flex; align-items: center; justify-content: center; font-size: 64px; color: #d4d4d8; }
+.ed-main { position: relative; aspect-ratio: 16 / 9; border-radius: 0; overflow: hidden; background: #f4f4f5; display: block; width: 100%; }
+.ed-main > img { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 100%; min-height: 100%; object-fit: cover; object-position: center; transition: transform .8s cubic-bezier(.2,.8,.2,1); display: block; margin: 0; }
+.ed-main-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 64px; color: #d4d4d8; }
 .ed-floats { position: absolute; top: 14px; left: 14px; display: flex; flex-wrap: wrap; gap: 6px; z-index: 3; }
 .ed-chip { backdrop-filter: blur(20px); background: rgba(255,255,255,.85); border: 1px solid rgba(0,0,0,.04); padding: 6px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #18181b; line-height: 1.25; }
 .ed-chip-text { font-size: 11px; }
@@ -897,9 +897,9 @@ export const listingsDetailJdCss = `
 .jd-h2-card { font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 2px; letter-spacing: -.02em; line-height: 1.25; }
 
 .jd-gallery { background: #fff; border-radius: 16px; border: 1px solid #e8e8ec; padding: 0; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.04), 0 12px 40px rgba(0,0,0,.05); }
-.jd-main { position: relative; aspect-ratio: 16 / 9; border-radius: 0; overflow: hidden; background: #f4f4f5; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.jd-main img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
-.jd-main-ph { display: flex; align-items: center; justify-content: center; font-size: 64px; color: #d4d4d8; width: 100%; height: 100%; }
+.jd-main { position: relative; aspect-ratio: 16 / 9; border-radius: 0; overflow: hidden; background: #f4f4f5; cursor: pointer; display: block; width: 100%; }
+.jd-main > img { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 100%; min-height: 100%; object-fit: cover; object-position: center; transition: transform .8s cubic-bezier(.2,.8,.2,1); display: block; margin: 0; }
+.jd-main-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 64px; color: #d4d4d8; }
 .jd-img-tools { position: absolute; bottom: 14px; left: 14px; z-index: 4; display: flex; align-items: center; gap: 8px; }
 .jd-img-tool { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e5e7eb; background: rgba(255,255,255,.96); color: #4b5563; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; box-shadow: 0 2px 10px rgba(0,0,0,.12); transition: background .15s, transform .15s; flex-shrink: 0; }
 .jd-img-tool:hover { background: #fff; transform: scale(1.04); }
@@ -1207,42 +1207,6 @@ export const listingDetailLightboxCss = `
   z-index: 11;
 }
 
-/* Десктоп: главное фото галереи на всю рамку (объявление, заявка, сделка, каталог) */
-@media (min-width: 769px) {
-  .ed-gallery .ed-main,
-  .ed-main,
-  .wd-detail-main,
-  .jd-main-photo,
-  .jd-gallery-main,
-  .mlf-preview-ph,
-  .nl-preview-img {
-    position: relative;
-    display: block !important;
-    overflow: hidden;
-    align-items: stretch;
-    justify-content: stretch;
-  }
-  .ed-gallery .ed-main > img,
-  .ed-main > img,
-  .wd-detail-main > img,
-  .jd-main-photo > img,
-  .jd-gallery-main > img,
-  .mlf-preview-ph > img,
-  .nl-preview-img > img {
-    position: absolute !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    min-width: 100% !important;
-    min-height: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-    margin: 0 !important;
-    object-fit: cover !important;
-    object-position: center center;
-    display: block;
-  }
-}
 `;
 
 /** Тёмные блоки деталки сделки — тёплая палитра бренда (#e8410a). */

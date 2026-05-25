@@ -417,7 +417,6 @@ export const listingDetailSurfaceExtraCss = `
   .nl-preview-img {
     position: relative;
     aspect-ratio: 16 / 9;
-    max-height: 420px;
     display: block !important;
     overflow: hidden;
     align-items: stretch;

@@ -164,11 +164,16 @@ export const moOrdersListShellCss = `
     overflow: hidden;
   }
   .mo-orders-root .mo-card-media img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
+    min-width: 100%;
+    min-height: 100%;
     object-fit: cover;
     object-position: center center;
     display: block;
+    margin: 0;
     filter: contrast(1.06) saturate(1.08);
     transition: transform .35s ease;
   }
