@@ -10,14 +10,14 @@
   z-index: 250;
   background: #fff;
   border-top: 1px solid #e4e4e7;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: max(4px, env(safe-area-inset-bottom, 0px));
 }
 
 .mobile-tab-bar-inner {
   display: flex;
-  align-items: stretch;
+  align-items: flex-end;
   height: 72px;
-  padding: 0 8px;
+  padding: 0 8px 4px;
 }
 
 .mobile-tab-item {
@@ -25,9 +25,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding-top: 8px;
+  justify-content: flex-end;
+  gap: 3px;
+  padding-top: 0;
+  padding-bottom: 2px;
   text-decoration: none;
   position: relative;
   color: #8a8f99;
@@ -113,10 +114,10 @@
   }
 
   body.has-mobile-tab-bar .app-main {
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
   }
 
   body.has-mobile-tab-bar .mo-page.fav-page {
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
   }
 }
