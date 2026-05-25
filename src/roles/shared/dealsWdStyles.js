@@ -1245,6 +1245,59 @@ export const listingDetailLightboxCss = `
 }
 `;
 
+/** Тёмный блок подтверждения в деталке сделки (Мои сделки). */
+export const dealsMoConfirmDarkCss = `
+.ed--listing-detail .mo-confirm-card,
+.mo-confirm-card.mo-confirm-card--dark {
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%) !important;
+  border: 1px solid rgba(255,255,255,.07) !important;
+  box-shadow: 0 2px 8px rgba(17,24,39,.08), 0 12px 32px rgba(17,24,39,.14) !important;
+}
+.mo-confirm-card--dark .mo-confirm-kicker { font-size: 10px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 1px; }
+.mo-confirm-card--dark .mo-confirm-kicker--ok { color: #4ade80; }
+.mo-confirm-card--dark .mo-confirm-kicker--wait { color: #ff7043; }
+.mo-confirm-card--dark .mo-confirm-kicker--warn { color: #fbbf24; }
+.mo-confirm-card--dark .mo-confirm-title { font-size: 15px; font-weight: 950; color: #fff; letter-spacing: -.3px; }
+.mo-confirm-card--dark .mo-confirm-lead { font-size: 12px; color: rgba(255,255,255,.45); font-weight: 700; line-height: 1.5; }
+.mo-confirm-card--dark .mo-confirm-party--ok {
+  background: rgba(34,197,94,.12) !important;
+  border: 1px solid rgba(34,197,94,.28) !important;
+}
+.mo-confirm-card--dark .mo-confirm-party--wait {
+  background: rgba(255,255,255,.05) !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+}
+.mo-confirm-card--dark .mo-confirm-party-name { font-size: 13px; font-weight: 900; color: #fff; }
+.mo-confirm-card--dark .mo-confirm-party-sub--ok { font-size: 11px; font-weight: 700; margin-top: 2px; color: #4ade80; }
+.mo-confirm-card--dark .mo-confirm-party-sub--wait { font-size: 11px; font-weight: 700; margin-top: 2px; color: rgba(255,255,255,.4); }
+.mo-confirm-card--dark .mo-confirm-party-icon--ok {
+  background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+  box-shadow: 0 4px 12px rgba(34,197,94,.25);
+}
+.mo-confirm-card--dark .mo-confirm-party-icon--wait {
+  background: rgba(255,255,255,.1) !important;
+  box-shadow: none;
+}
+.mo-confirm-card--dark .mo-confirm-dot--ok { background: #22c55e; }
+.mo-confirm-card--dark .mo-confirm-dot--wait { background: rgba(255,255,255,.15); }
+.mo-confirm-card--dark .mo-cancel-btn,
+.ed--listing-detail .mo-confirm-card .mo-cancel-btn--dark {
+  border: 1.5px solid rgba(239,68,68,.35) !important;
+  background: rgba(239,68,68,.08) !important;
+  color: #f87171 !important;
+}
+.mo-confirm-card--dark .mo-cancel-btn:hover,
+.ed--listing-detail .mo-confirm-card .mo-cancel-btn--dark:hover {
+  background: rgba(239,68,68,.15) !important;
+}
+.mo-confirm-card--dark .mo-master-btn--dark {
+  border: 2px solid rgba(232,65,10,.55) !important;
+  background: rgba(232,65,10,.1) !important;
+  color: #ff7043 !important;
+}
+.mo-confirm-card--dark .mo-master-btn--dark:hover { background: rgba(232,65,10,.18) !important; }
+`;
+
 /** Карточка объявления / заявки: ed + лайтбокк (как FindWorkPage, ListingDetailPage). */
 export const edListingDetailMergedCss = `${dealsDetailEdCss}\n${listingDetailLightboxCss}\n${listingDetailSurfaceExtraCss}\n${listingDetailMobileCss}`;
 

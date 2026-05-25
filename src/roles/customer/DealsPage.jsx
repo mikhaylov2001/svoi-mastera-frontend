@@ -13,6 +13,7 @@ import { formatListingOriginDescription } from '../../utils/listingOriginDescrip
 import {
   dealsWdCss,
   edListingDetailMergedCss,
+  dealsMoConfirmDarkCss,
   dealCategoryEmoji,
 } from '../shared/dealsWdStyles';
 import OrderCard from '../../components/myorders/OrderCard';
@@ -219,15 +220,15 @@ function DealConfirmCard({
             )}
           </div>
           <div>
-            <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: 1.2, textTransform: 'uppercase', color: myOk ? '#4ade80' : '#ff7043', marginBottom: 1 }}>
+            <div className={`mo-confirm-kicker ${myOk ? 'mo-confirm-kicker--ok' : 'mo-confirm-kicker--wait'}`}>
               Подтверждение
             </div>
-            <div style={{ fontSize: 15, fontWeight: 950, color: '#fff' }}>
+            <div className="mo-confirm-title">
               {myOk ? 'Ваш голос учтён!' : 'Работа выполнена?'}
             </div>
           </div>
         </div>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', fontWeight: 700, lineHeight: 1.5 }}>
+        <div className="mo-confirm-lead">
           {myOk ? 'Ожидаем подтверждения от мастера' : 'Подтвердите, что мастер выполнил задачу'}
         </div>
       </div>
@@ -238,18 +239,10 @@ function DealConfirmCard({
         ].map((p, i) => (
           <div
             key={i}
-            className="mo-confirm-party"
-            style={{
-              background: p.confirmed ? 'rgba(34,197,94,.12)' : 'rgba(255,255,255,.05)',
-              border: `1px solid ${p.confirmed ? 'rgba(34,197,94,.28)' : 'rgba(255,255,255,.08)'}`,
-            }}
+            className={`mo-confirm-party ${p.confirmed ? 'mo-confirm-party--ok' : 'mo-confirm-party--wait'}`}
           >
             <div
-              className="mo-confirm-party-icon"
-              style={{
-                background: p.confirmed ? 'linear-gradient(135deg,#22c55e,#16a34a)' : 'rgba(255,255,255,.1)',
-                boxShadow: p.confirmed ? '0 4px 12px rgba(34,197,94,.25)' : 'none',
-              }}
+              className={`mo-confirm-party-icon ${p.confirmed ? 'mo-confirm-party-icon--ok' : 'mo-confirm-party-icon--wait'}`}
             >
               {p.confirmed ? (
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
@@ -258,13 +251,13 @@ function DealConfirmCard({
               )}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 900, color: '#fff' }}>{p.name}</div>
-              <div style={{ fontSize: 11, fontWeight: 700, marginTop: 2, color: p.confirmed ? '#4ade80' : 'rgba(255,255,255,.4)' }}>{p.sub}</div>
+              <div className="mo-confirm-party-name">{p.name}</div>
+              <div className={p.confirmed ? 'mo-confirm-party-sub--ok' : 'mo-confirm-party-sub--wait'}>{p.sub}</div>
             </div>
             <div
+              className={p.confirmed ? 'mo-confirm-dot--ok' : 'mo-confirm-dot--wait'}
               style={{
                 width: 18, height: 18, borderRadius: '50%',
-                background: p.confirmed ? '#22c55e' : 'rgba(255,255,255,.15)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}
             >
@@ -322,7 +315,7 @@ function DealDetail({
 
   return (
     <div className="ed ed--listing-detail">
-      <style>{`${dealsWdCss}\n${edListingDetailMergedCss}`}</style>
+      <style>{`${dealsWdCss}\n${edListingDetailMergedCss}\n${dealsMoConfirmDarkCss}`}</style>
       <div className="ed-wrap">
         <button type="button" className="ed-back" onClick={onBack}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
@@ -467,7 +460,13 @@ function DealDetail({
             </div>
 
             {deal.status === 'NEW' ? (
-              <div className="mo-confirm-card mo-confirm-card--dark">
+              <div
+                className="mo-confirm-card mo-confirm-card--dark"
+                style={{
+                  background: 'linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)',
+                  border: '1px solid rgba(255,255,255,.07)',
+                }}
+              >
                 <div className="mo-confirm-accent" style={{ background: 'linear-gradient(90deg,#f59e0b,#fbbf24)' }} />
                 <div className="mo-confirm-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
@@ -475,11 +474,11 @@ function DealDetail({
                       ⏳
                     </div>
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: 1.2, textTransform: 'uppercase', color: '#fbbf24', marginBottom: 1 }}>Статус</div>
-                      <div style={{ fontSize: 15, fontWeight: 950, color: '#fff' }}>Ждём мастера</div>
+                      <div className="mo-confirm-kicker mo-confirm-kicker--warn">Статус</div>
+                      <div className="mo-confirm-title">Ждём мастера</div>
                     </div>
                   </div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', fontWeight: 700, lineHeight: 1.5 }}>
+                  <div className="mo-confirm-lead">
                     Вы выбрали мастера. После подтверждения заказ перейдёт в работу.
                   </div>
                 </div>

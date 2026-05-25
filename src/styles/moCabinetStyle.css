@@ -870,8 +870,8 @@
 .mo-cancel-btn:hover { background: #fef2f2; }
 
 /* Dark confirmation (deals detail) */
-.mo-confirm-card--dark {
-  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+.mo-confirm-card.mo-confirm-card--dark {
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%) !important;
   box-shadow: 0 2px 8px rgba(17,24,39,.08), 0 12px 32px rgba(17,24,39,.14);
   border: 1px solid rgba(255,255,255,.07) !important;
 }
