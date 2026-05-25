@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   getCategories,
   getListingById,
@@ -9,9 +9,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { setFavorites } from '../utils/favoritesStorage';
-import {
-  getCategoryPlaceholderPhotoUrlOrDefault,
-} from '../utils/categoryPlaceholderPhoto';
+import { getCategoryPlaceholderPhotoUrlOrDefault } from '../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
 import {
   getJobRequestPublishedBudgetNumber,
@@ -28,12 +26,6 @@ function mediaUrl(u) {
   return BACKEND_ORIGIN + u;
 }
 
-const TABS = [
-  { key: 'all', label: 'Всё' },
-  { key: 'master', label: 'Мастера' },
-  { key: 'job', label: 'Заявки' },
-];
-
 const SORT_OPTIONS = [
   { value: 'recent', label: 'Сначала новые' },
   { value: 'price-asc', label: 'Цена ↑' },
@@ -45,18 +37,37 @@ const fmt = (n) => Number(n).toLocaleString('ru-RU');
 function categoryEmoji(name) {
   const n = String(name || '').toLowerCase();
   if (n.includes('электр')) return '⚡';
-  if (n.includes('ремонт') || n.includes('стро')) return '🏗';
+  if (n.includes('ремонт') || n.includes('стро')) return '🔨';
   if (n.includes('убор')) return '🧽';
-  if (n.includes('сантех')) return '🚿';
+  if (n.includes('сантех')) return '🔧';
   if (n.includes('мебел')) return '🪑';
   if (n.includes('парик') || n.includes('волос')) return '✂️';
   if (n.includes('маник')) return '💅';
   return '📌';
 }
 
+function HeartIcon({ filled }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill={filled ? '#fff' : 'none'} stroke={filled ? '#fff' : 'currentColor'} strokeWidth="2" aria-hidden>
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.35-4.35" />
+    </svg>
+  );
+}
+
 export default function FavoritesPage() {
   const { userId, isWorker } = useAuth();
+  const navigate = useNavigate();
   const { listingIds, jobRequestIds, toggleListing, toggleJobRequest } = useFavorites();
+
   const [listings, setListings] = useState([]);
   const [requests, setRequests] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -67,26 +78,6 @@ export default function FavoritesPage() {
   const [q, setQ] = useState('');
   const [sort, setSort] = useState('recent');
   const [popping, setPopping] = useState(null);
-  const [sortOpen, setSortOpen] = useState(false);
-  const sortWrapRef = useRef(null);
-
-  useEffect(() => {
-    if (!sortOpen) return;
-    const onDown = (e) => {
-      if (sortWrapRef.current && !sortWrapRef.current.contains(e.target)) {
-        setSortOpen(false);
-      }
-    };
-    const onKey = (e) => {
-      if (e.key === 'Escape') setSortOpen(false);
-    };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [sortOpen]);
 
   const listingKey = listingIds.join(',');
   const jobRequestKey = jobRequestIds.join(',');
@@ -133,9 +124,7 @@ export default function FavoritesPage() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [userId, listingKey, jobRequestKey]);
 
   const catName = useCallback(
@@ -163,16 +152,10 @@ export default function FavoritesPage() {
       const sid = String(id);
       const l = listingById.get(sid);
       if (!l) {
-        out.push({
-          kind: 'master',
-          key: `m-${sid}`,
-          missing: true,
-          rawId: sid,
-        });
+        out.push({ kind: 'master', key: `m-${sid}`, missing: true, rawId: sid });
         continue;
       }
-      const wname =
-        [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
+      const wname = [l.workerName, l.workerLastName].filter(Boolean).join(' ') || 'Мастер';
       const img0 = l.photos?.[0];
       const photo =
         mediaUrl(img0) ||
@@ -185,13 +168,14 @@ export default function FavoritesPage() {
         kind: 'master',
         key: `m-${l.id}`,
         rawId: String(l.id),
-        title: `${wname} — ${l.title || 'Услуга'}`,
+        name: wname,
+        title: l.title || 'Услуга',
         desc: (l.description || l.details || '').trim(),
         photo,
         emoji: categoryEmoji(l.category),
         category: l.category || 'Услуга',
         price,
-        priceLabel: l.priceUnit || 'от · час',
+        priceLabel: l.priceUnit || 'за работу',
         city: (l.city || l.cityName || l.address || defaultCity).toString().split(',')[0].trim() || defaultCity,
         savedAt: 'недавно',
         rating: rating && rating > 0 ? rating : null,
@@ -203,12 +187,7 @@ export default function FavoritesPage() {
       const sid = String(id);
       const item = requestById.get(sid);
       if (!item) {
-        out.push({
-          kind: 'job',
-          key: `j-${sid}`,
-          missing: true,
-          rawId: sid,
-        });
+        out.push({ kind: 'job', key: `j-${sid}`, missing: true, rawId: sid });
         continue;
       }
       const catLabel = item.categoryName || catName(item.categoryId);
@@ -228,7 +207,8 @@ export default function FavoritesPage() {
         kind: 'job',
         key: `j-${item.id}`,
         rawId: String(item.id),
-        title: item.title || 'Заявка',
+        name: item.title || 'Заявка',
+        title: catLabel,
         desc: (item.description || item.details || '').trim(),
         photo: photoSrc,
         emoji: categoryEmoji(catLabel),
@@ -245,37 +225,34 @@ export default function FavoritesPage() {
     return out;
   }, [listingIds, jobRequestIds, listingById, requestById, categories, catName]);
 
-  const visible = items;
-
   const filtered = useMemo(() => {
-    let r = visible;
+    let r = items;
     if (tab !== 'all') r = r.filter((i) => i.kind === tab);
     const s = q.trim().toLowerCase();
     if (s) {
       r = r.filter(
         (i) =>
+          (i.name && i.name.toLowerCase().includes(s)) ||
           (i.title && i.title.toLowerCase().includes(s)) ||
-          (i.desc && i.desc.toLowerCase().includes(s)) ||
           (i.category && i.category.toLowerCase().includes(s)),
       );
     }
-    if (sort === 'price-asc') {
-      r = [...r].sort((a, b) => (a.price ?? 1e12) - (b.price ?? 1e12));
-    }
-    if (sort === 'price-desc') {
-      r = [...r].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
-    }
+    if (sort === 'price-asc') r = [...r].sort((a, b) => (a.price ?? 1e12) - (b.price ?? 1e12));
+    if (sort === 'price-desc') r = [...r].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
     return r;
-  }, [visible, tab, q, sort]);
+  }, [items, tab, q, sort]);
 
-  const counts = useMemo(
-    () => ({
-      all: visible.length,
-      master: visible.filter((i) => i.kind === 'master').length,
-      job: visible.filter((i) => i.kind === 'job').length,
-    }),
-    [visible],
-  );
+  const counts = useMemo(() => ({
+    all: items.length,
+    master: items.filter((i) => i.kind === 'master').length,
+    job: items.filter((i) => i.kind === 'job').length,
+  }), [items]);
+
+  const TABS = [
+    { key: 'all', label: 'Все', count: counts.all },
+    { key: 'master', label: 'Мастера', count: counts.master },
+    { key: 'job', label: 'Заявки', count: counts.job },
+  ];
 
   const bumpRemove = (key, fn) => {
     setPopping(key);
@@ -284,11 +261,6 @@ export default function FavoritesPage() {
   };
 
   const removeItem = (i) => {
-    if (i.missing) {
-      if (i.kind === 'master') toggleListing(i.rawId);
-      else toggleJobRequest(i.rawId);
-      return;
-    }
     if (i.kind === 'master') toggleListing(i.rawId);
     else toggleJobRequest(i.rawId);
   };
@@ -305,56 +277,60 @@ export default function FavoritesPage() {
     if (navigator.share) {
       navigator.share({ title: 'Свои мастера', url }).catch(() => {});
     } else {
-      navigator.clipboard?.writeText(url).then(() => alert('Ссылка скопирована')).catch(() => {});
+      navigator.clipboard?.writeText(url).then(() => {}).catch(() => {});
     }
   };
 
   return (
     <div className="fav-page">
-      <header className="fav-hero">
+      {/* ── Hero ── */}
+      <div className="fav-hero">
         <img src={HERO_IMG} alt="" />
         <div className="fav-hero-inner">
-          <div>
-            <h1 className="fav-hero-title">
-              <span className="heart" aria-hidden>
-                ❤
-              </span>
-              <span className="fav-hero-title-text">Избранное</span>
-            </h1>
-            <p>Мастера и заявки, которые вы сохранили</p>
+          <div className="fav-hero-content">
+            <div className="fav-hero-badge">
+              <span>❤️</span>
+              <span>Избранное</span>
+            </div>
+            <div className="fav-hero-row">
+              <div>
+                <h1 className="fav-hero-title">Избранное</h1>
+                <p className="fav-hero-sub">Мастера и заявки, которые вы сохранили</p>
+              </div>
+              <Link to={catalogLink} className="fav-cta">
+                Найти ещё →
+              </Link>
+            </div>
           </div>
-          <Link to={catalogLink} className="fav-cta">
-            Найти ещё →
-          </Link>
         </div>
-      </header>
+      </div>
 
+      {/* ── Main ── */}
       <main className="fav-main">
         {loading ? (
-          <div className="fav-loading">Загрузка…</div>
+          <div className="fav-loading">⏳ Загружаем избранное…</div>
         ) : err ? (
           <div className="fav-err">{err}</div>
         ) : (
           <>
+            {/* Toolbar */}
             <div className="fav-toolbar">
               <div className="fav-tabs">
                 {TABS.map((t) => (
                   <button
                     key={t.key}
                     type="button"
+                    className={`fav-tab${tab === t.key ? ' active' : ''}`}
                     onClick={() => setTab(t.key)}
-                    className={`fav-tab ${tab === t.key ? 'active' : ''}`}
                   >
                     {t.label}
-                    <span className="fav-tab-count">{counts[t.key]}</span>
+                    <span className="fav-tab-count">{t.count}</span>
                   </button>
                 ))}
               </div>
+
               <div className="fav-search">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m20 20-3-3" />
-                </svg>
+                <SearchIcon />
                 <input
                   placeholder="Поиск в избранном…"
                   value={q}
@@ -362,60 +338,24 @@ export default function FavoritesPage() {
                   aria-label="Поиск в избранном"
                 />
               </div>
-              <div className="fav-sort-wrap" ref={sortWrapRef}>
-                <button
-                  type="button"
-                  id="fav-sort-trigger"
-                  className={`fav-sort-trigger${sortOpen ? ' is-open' : ''}`}
-                  aria-label="Сортировка избранного"
-                  aria-haspopup="listbox"
-                  aria-expanded={sortOpen}
-                  aria-controls="fav-sort-listbox"
-                  onClick={() => setSortOpen((o) => !o)}
-                >
-                  <span className="fav-sort-trigger-label">
-                    {SORT_OPTIONS.find((o) => o.value === sort)?.label ?? 'Сортировка'}
-                  </span>
-                  <span className="fav-sort-trigger-chevron" aria-hidden>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
-                  </span>
-                </button>
-                {sortOpen && (
-                  <div
-                    id="fav-sort-listbox"
-                    className="fav-sort-menu"
-                    role="listbox"
-                    aria-labelledby="fav-sort-trigger"
-                  >
-                    {SORT_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        role="option"
-                        aria-selected={sort === opt.value}
-                        className={`fav-sort-option${sort === opt.value ? ' is-active' : ''}`}
-                        onClick={() => {
-                          setSort(opt.value);
-                          setSortOpen(false);
-                        }}
-                      >
-                        <span className="fav-sort-option-check" aria-hidden>
-                          {sort === opt.value ? '✓' : ''}
-                        </span>
-                        <span className="fav-sort-option-label">{opt.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+
+              <select
+                className="fav-sort"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                aria-label="Сортировка"
+              >
+                {SORT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
             </div>
 
-            {visible.length > 0 && (
+            {/* Info bar */}
+            {items.length > 0 && (
               <div className="fav-bulk">
                 <span className="fav-bulk-text">
-                  Сохранено: {visible.length} · можно очистить весь список
+                  Сохранено: {items.length} · можно очистить весь список
                 </span>
                 <button type="button" className="fav-bulk-btn" onClick={clearAll}>
                   Очистить всё
@@ -423,14 +363,15 @@ export default function FavoritesPage() {
               </div>
             )}
 
+            {/* Grid / empty */}
             {filtered.length === 0 ? (
               <div className="fav-empty">
                 <div className="fav-empty-emoji">💔</div>
                 <div className="fav-empty-title">
-                  {visible.length === 0 ? 'В избранном пока пусто' : 'Ничего не нашли'}
+                  {items.length === 0 ? 'В избранном пока пусто' : 'Ничего не нашли'}
                 </div>
                 <div className="fav-empty-sub">
-                  {visible.length === 0
+                  {items.length === 0
                     ? 'Нажмите ❤ на карточке мастера или заявки, чтобы быстро вернуться к ней позже.'
                     : 'Попробуйте изменить фильтр или поисковый запрос.'}
                 </div>
@@ -444,44 +385,30 @@ export default function FavoritesPage() {
                   if (i.missing) {
                     return (
                       <article key={i.key} className="fav-card fav-card-miss">
-                        <div className="fav-card-top">
-                          <div className="fav-card-photo">
-                            <button
-                              type="button"
-                              className={`fav-heart on ${popping === i.key ? 'pop' : ''}`}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                bumpRemove(i.key, () => removeItem(i));
-                              }}
-                              title="Убрать из избранного"
-                            >
-                              ❤
-                            </button>
-                            <span className="emoji">📭</span>
+                        <div className="fav-card-photo-wrap">
+                          <div className="fav-card-photo fav-card-photo--empty">
+                            <span className="fav-card-photo-emoji">📭</span>
                           </div>
-                          <div className="fav-card-body">
-                            <div className="fav-card-row">
-                              <h3 className="fav-card-title">
-                                {i.kind === 'master'
-                                  ? 'Объявление недоступно'
-                                  : 'Заявка недоступна или закрыта'}
-                              </h3>
-                              <span className={`fav-type ${i.kind}`}>
-                                {i.kind === 'master' ? 'Мастер' : 'Заявка'}
-                              </span>
-                            </div>
-                            <div className="fav-card-desc">Уберите запись из избранного.</div>
-                          </div>
-                        </div>
-                        <div className="fav-meta">
-                          <span className="fav-meta-item">—</span>
-                          <span className="fav-saved-at">сохранено · —</span>
-                        </div>
-                        <div className="fav-actions">
                           <button
                             type="button"
-                            className="fav-btn fav-btn-primary"
+                            className={`fav-heart on${popping === i.key ? ' pop' : ''}`}
+                            onClick={() => bumpRemove(i.key, () => removeItem(i))}
+                            title="Убрать из избранного"
+                          >
+                            <HeartIcon filled />
+                          </button>
+                          <div className="fav-type-badge">
+                            {i.kind === 'master' ? 'Мастер' : 'Заявка'}
+                          </div>
+                        </div>
+                        <div className="fav-card-body">
+                          <div className="fav-card-name">
+                            {i.kind === 'master' ? 'Объявление недоступно' : 'Заявка закрыта'}
+                          </div>
+                          <div className="fav-card-subtitle">Уберите запись из избранного</div>
+                          <button
+                            type="button"
+                            className="fav-btn-action"
                             onClick={() => bumpRemove(i.key, () => removeItem(i))}
                           >
                             Убрать из избранного
@@ -493,130 +420,110 @@ export default function FavoritesPage() {
 
                   const primaryTo =
                     i.kind === 'master'
-                      ? `/listings/${i.rawId}?from=favorites`
-                      : `/find-work?request=${encodeURIComponent(i.rawId)}&from=favorites`;
+                      ? `/listings/${i.rawId}`
+                      : `/find-work?request=${encodeURIComponent(i.rawId)}`;
                   const sharePath =
-                    i.kind === 'master' ? `/listings/${i.rawId}` : `/find-work?request=${encodeURIComponent(i.rawId)}`;
-
-                  const detailAria =
                     i.kind === 'master'
-                      ? `Открыть объявление: ${i.title}`
-                      : `Открыть заявку: ${i.title}`;
+                      ? `/listings/${i.rawId}`
+                      : `/find-work?request=${encodeURIComponent(i.rawId)}`;
 
                   return (
-                    <article key={i.key} className="fav-card">
-                      <Link
-                        to={primaryTo}
-                        className="fav-card-hit"
-                        aria-label={detailAria}
-                      >
-                        <div className="fav-card-top">
-                          <div className="fav-card-photo">
-                            <button
-                              type="button"
-                              className={`fav-heart on ${popping === i.key ? 'pop' : ''}`}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                bumpRemove(i.key, () => removeItem(i));
-                              }}
-                              title="Убрать из избранного"
-                            >
-                              ❤
-                            </button>
-                            {i.photo ? (
-                              <img src={i.photo} alt="" />
-                            ) : (
-                              <span className="emoji">{i.emoji}</span>
+                    <article
+                      key={i.key}
+                      className="fav-card"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.boxShadow = '0 8px 28px rgba(17,24,39,.10)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.boxShadow = '';
+                        e.currentTarget.style.transform = '';
+                      }}
+                    >
+                      {/* Photo */}
+                      <div className="fav-card-photo-wrap">
+                        <Link to={primaryTo} className="fav-card-photo-link" tabIndex={-1}>
+                          {i.photo ? (
+                            <img src={i.photo} alt={i.name} className="fav-card-img" />
+                          ) : (
+                            <div className="fav-card-photo fav-card-photo--empty">
+                              <span className="fav-card-photo-emoji">{i.emoji}</span>
+                            </div>
+                          )}
+                        </Link>
+                        {/* Heart */}
+                        <button
+                          type="button"
+                          className={`fav-heart on${popping === i.key ? ' pop' : ''}`}
+                          onClick={() => bumpRemove(i.key, () => removeItem(i))}
+                          title="Убрать из избранного"
+                        >
+                          <HeartIcon filled />
+                        </button>
+                        {/* Type badge */}
+                        <div className="fav-type-badge">
+                          {i.kind === 'master' ? 'Мастер' : 'Заявка'}
+                        </div>
+                      </div>
+
+                      {/* Body */}
+                      <div className="fav-card-body">
+                        <Link to={primaryTo} className="fav-card-link-title">
+                          <div className="fav-card-name">{i.name} — {i.title}</div>
+                        </Link>
+                        <div className="fav-card-subtitle">Подробно в описании</div>
+
+                        <span className="fav-cat">
+                          {i.emoji} {i.category}
+                        </span>
+
+                        {i.kind === 'master' && i.rating != null && (
+                          <div className="fav-rating">
+                            <span className="fav-star">★</span>
+                            {i.rating.toFixed(1)}
+                            {i.reviews != null && (
+                              <span className="fav-rating-count">· {i.reviews} отзывов</span>
                             )}
                           </div>
-                          <div className="fav-card-body">
-                            <div className="fav-card-row">
-                              <h3 className="fav-card-title">{i.title}</h3>
-                              <span className={`fav-type ${i.kind}`}>
-                                {i.kind === 'master' ? 'Мастер' : 'Заявка'}
-                              </span>
-                            </div>
-                            {i.desc ? <div className="fav-card-desc">{i.desc}</div> : null}
-                            <div
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 10,
-                                flexWrap: 'wrap',
-                                marginTop: 4,
-                              }}
-                            >
-                              <span className="fav-cat">
-                                {i.emoji} {i.category}
-                              </span>
-                              {i.kind === 'master' && i.rating != null && (
-                                <span className="fav-rating">
-                                  <span className="star">★</span>
-                                  {i.rating.toFixed(1)}
-                                  {i.reviews != null && (
-                                    <span className="fav-rating-count">· {i.reviews} отзывов</span>
-                                  )}
-                                </span>
-                              )}
-                            </div>
-                            <div className="fav-price-row">
-                              <div>
-                                {i.price ? (
-                                  <>
-                                    <span className="fav-price-num">{fmt(i.price)} ₽</span>
-                                    <span className="fav-price-lbl">{i.priceLabel}</span>
-                                  </>
-                                ) : (
-                                  <span
-                                    className="fav-price-lbl"
-                                    style={{
-                                      fontSize: 15,
-                                      fontWeight: 700,
-                                      color: '#64748b',
-                                      marginLeft: 0,
-                                    }}
-                                  >
-                                    {i.priceLabel === 'договорная' ? 'Договорная' : i.priceLabel}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
+                        )}
+
+                        {i.price ? (
+                          <div className="fav-price">
+                            {fmt(i.price)} ₽
+                            <span className="fav-price-lbl">{i.priceLabel}</span>
                           </div>
+                        ) : (
+                          <div className="fav-price fav-price--neg">
+                            {i.priceLabel === 'договорная' ? 'Договорная' : i.priceLabel}
+                          </div>
+                        )}
+
+                        <div className="fav-meta-row">
+                          <span className="fav-city">📍 {i.city}</span>
+                          <span className="fav-saved">сохранено · {i.savedAt}</span>
                         </div>
 
-                        <div className="fav-meta">
-                          <span className="fav-meta-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M12 22s8-7 8-13a8 8 0 0 0-16 0c0 6 8 13 8 13z" />
-                              <circle cx="12" cy="9" r="2.5" />
-                            </svg>
-                            {i.city}
-                          </span>
-                          <span className="fav-saved-at">сохранено · {i.savedAt}</span>
+                        <div className="fav-card-actions">
+                          <Link to={primaryTo} className="fav-btn-action">
+                            {i.kind === 'master' ? 'Написать мастеру' : 'Открыть заявку'}
+                          </Link>
+                          <button
+                            type="button"
+                            className="fav-btn-icon-sm"
+                            title="Поделиться"
+                            onClick={() => shareUrl(sharePath)}
+                          >
+                            🔗
+                          </button>
+                          <button
+                            type="button"
+                            className="fav-btn-icon-sm fav-btn-icon-sm--del"
+                            title="Убрать"
+                            onClick={() => bumpRemove(i.key, () => removeItem(i))}
+                          >
+                            🗑
+                          </button>
                         </div>
-                      </Link>
-
-                      <div className="fav-actions">
-                        <Link to={primaryTo} className="fav-btn fav-btn-primary">
-                          {i.kind === 'master' ? 'Написать мастеру' : 'Открыть заявку'}
-                        </Link>
-                        <button
-                          type="button"
-                          className="fav-btn fav-btn-ghost fav-btn-icon"
-                          title="Поделиться"
-                          onClick={() => shareUrl(sharePath)}
-                        >
-                          🔗
-                        </button>
-                        <button
-                          type="button"
-                          className="fav-btn fav-btn-ghost fav-btn-icon"
-                          title="Убрать"
-                          onClick={() => bumpRemove(i.key, () => removeItem(i))}
-                        >
-                          🗑
-                        </button>
                       </div>
                     </article>
                   );
