@@ -28,19 +28,13 @@ import GuestLandingHome from './GuestLandingHome';
 import CardFavoriteSlot from '../components/CardFavoriteSlot';
 import SortDropdown from '../components/SortDropdown';
 import { rankItemsBySmartMatch, listingHaystack, jobRequestHaystack } from '../utils/smartSearch';
+import { resolvePlatformFeedCycle, visiblePlatformFeedRows } from '../utils/platformLiveFeed';
+import PlatformLiveCard from '../components/PlatformLiveCard';
 import '../roles/worker/jobListings.css';
 import './customerHomeLovable.css';
 
 const BACKEND_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, '');
 const ALL_CATS = Object.values(CATEGORIES_BY_SECTION).flat();
-
-const FEED_AVATAR_GRADIENTS = [
-  'linear-gradient(135deg,#e8410a,#ff7043)',
-  'linear-gradient(135deg,#6366f1,#8b5cf6)',
-  'linear-gradient(135deg,#0ea5e9,#22d3ee)',
-  'linear-gradient(135deg,#10b981,#34d399)',
-  'linear-gradient(135deg,#f59e0b,#fbbf24)',
-];
 
 function pluralRu(n, one, few, many) {
   const abs = Math.abs(n) % 100;
@@ -127,13 +121,6 @@ function HomeCategoryGrid({ items, categories, getLink, getCount, countLabels })
   );
 }
 
-/** Демо-лента «Сейчас на платформе», если с API мало событий (как у мастера). */
-const FEED_PLATFORM_DEFAULT = [
-  { who: 'Ольга', what: 'ищет мастера «Установка двери»', time: '1 мин', color: 'linear-gradient(135deg,#e8410a,#ff7043)' },
-  { who: 'Сергей', what: 'принял отклик на заявку', time: '4 мин', color: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
-  { who: 'Мария', what: 'опубликовала «Генеральная уборка»', time: '6 мин', color: 'linear-gradient(135deg,#0ea5e9,#22d3ee)' },
-];
-
 const CHIPS_CUSTOMER = ['⚡ Электрика', '🔧 Сантехника', '🧹 Уборка', '💻 IT', '🚚 Перевозки', '🎨 Отделка', '🔨 Ремонт', '✂️ Красота'];
 const QUICK_CUSTOMER = ['⚡ электрик сегодня', '📍 рядом с вами', '💰 от 1500 ₽', '⭐ с рейтингом'];
 
@@ -161,63 +148,6 @@ function timeAgoShort(d) {
   const days = Math.floor(h / 24);
   if (days < 30) return `${days} дн назад`;
   return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-}
-
-/** Короткое время для ленты в hero (как на макете: «4 мин»). */
-function timeAgoFeed(d) {
-  if (!d) return '';
-  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
-  if (m < 1) return 'только что';
-  if (m < 60) return `${m} мин`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h} ч`;
-  const days = Math.floor(h / 24);
-  if (days < 30) return `${days} дн`;
-  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-}
-
-function buildPlatformFeedFromOpenRequests(openRequests) {
-  const sorted = [...(Array.isArray(openRequests) ? openRequests : [])].sort(
-    (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
-  );
-  return sorted.slice(0, 24).map((req, idx) => {
-    const full = [req.customerName, req.customerLastName].filter(Boolean).join(' ').trim();
-    const who = full.split(/\s+/)[0] || 'Заказчик';
-    const title = (req.title || 'Заявка').trim();
-    const short = title.length > 44 ? `${title.slice(0, 42)}…` : title;
-    return {
-      key: String(req.id ?? `req-${idx}`),
-      who,
-      what: `ищет мастера «${short}»`,
-      time: timeAgoFeed(req.createdAt),
-      color: FEED_AVATAR_GRADIENTS[idx % FEED_AVATAR_GRADIENTS.length],
-    };
-  });
-}
-
-/** ≥3 пункта: с API и/или демо; иначе только демо-ротация как у мастера. */
-function resolvePlatformFeedCycle(openRequests) {
-  const fromApi = buildPlatformFeedFromOpenRequests(openRequests);
-  if (fromApi.length >= 3) return fromApi;
-  if (fromApi.length > 0) {
-    const merged = [...fromApi];
-    for (let i = 0; merged.length < 3; i += 1) {
-      const d = FEED_PLATFORM_DEFAULT[i % FEED_PLATFORM_DEFAULT.length];
-      merged.push({ ...d, key: `def-${i}` });
-    }
-    return merged;
-  }
-  return FEED_PLATFORM_DEFAULT.map((row, i) => ({ ...row, key: `def-${i}` }));
-}
-
-function visiblePlatformFeedRows(feedCycle, feedIdx) {
-  const cycle = Array.isArray(feedCycle) && feedCycle.length > 0 ? feedCycle : FEED_PLATFORM_DEFAULT;
-  const n = cycle.length;
-  return [0, 1, 2].map((k) => {
-    const row = cycle[(feedIdx + k) % n] || FEED_PLATFORM_DEFAULT[k % FEED_PLATFORM_DEFAULT.length];
-    const key = row.key ?? `feed-${k}`;
-    return { ...row, _k: `${key}-${k}` };
-  });
 }
 
 function listingRatingValue(l) {
@@ -547,35 +477,13 @@ export function CustomerHomePage({ userId }) {
             </div>
           </div>
 
-          <aside className="chpv-livecard">
-            <div className="chpv-live-head">
-              <span className="chpv-live-title">Сейчас на платформе</span>
-              <span className="chpv-live-online">Онлайн</span>
-            </div>
-            <div className="chpv-feed">
-              {visibleFeed.map((f) => (
-                <div className="chpv-feed-row" key={f._k}>
-                  <div className="chpv-feed-ava" style={{ background: f.color }}>
-                    {(f.who && f.who[0]) || '·'}
-                  </div>
-                  <div className="chpv-feed-text">
-                    <b>{f.who}</b> {f.what}
-                  </div>
-                  <div className="chpv-feed-time">{f.time}</div>
-                </div>
-              ))}
-            </div>
-            <div className="chpv-mini-stats">
-              <div className="chpv-mini-stat">
-                <b>{masterCount.toLocaleString('ru-RU')}</b>
-                <span>мастеров с объявлениями</span>
-              </div>
-              <div className="chpv-mini-stat">
-                <b>{todayReqCount.toLocaleString('ru-RU')}</b>
-                <span>заявок сегодня</span>
-              </div>
-            </div>
-          </aside>
+          <PlatformLiveCard
+            visibleFeed={visibleFeed}
+            stats={[
+              { value: masterCount.toLocaleString('ru-RU'), label: 'мастеров с объявлениями' },
+              { value: todayReqCount.toLocaleString('ru-RU'), label: 'заявок сегодня' },
+            ]}
+          />
         </div>
       </section>
 
@@ -995,35 +903,13 @@ export function WorkerHomePage({ userId, userName }) {
             </div>
           </div>
 
-          <aside className="chpv-livecard">
-            <div className="chpv-live-head">
-              <span className="chpv-live-title">Сейчас на платформе</span>
-              <span className="chpv-live-online">Онлайн</span>
-            </div>
-            <div className="chpv-feed">
-              {visibleFeed.map((f) => (
-                <div className="chpv-feed-row" key={f._k}>
-                  <div className="chpv-feed-ava" style={{ background: f.color }}>
-                    {(f.who && f.who[0]) || '·'}
-            </div>
-                  <div className="chpv-feed-text">
-                    <b>{f.who}</b> {f.what}
-                    </div>
-                  <div className="chpv-feed-time">{f.time}</div>
-                        </div>
-              ))}
-                      </div>
-            <div className="chpv-mini-stats">
-              <div className="chpv-mini-stat">
-                <b>{openRequests.length}</b>
-                <span>в вашей ленте</span>
-                    </div>
-              <div className="chpv-mini-stat">
-                <b>{homeListingCats.length}</b>
-                <span>направлений</span>
-            </div>
-        </div>
-          </aside>
+          <PlatformLiveCard
+            visibleFeed={visibleFeed}
+            stats={[
+              { value: openRequests.length, label: 'в вашей ленте' },
+              { value: homeListingCats.length, label: 'направлений' },
+            ]}
+          />
         </div>
       </section>
 
