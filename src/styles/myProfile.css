@@ -30,14 +30,17 @@
 }
 .mp-loading-icon { font-size: 40px; }
 
-/* ── Hero: фон на всю ширину, контент в центрированной сетке ── */
+/* ── Hero: фон на всю ширину, изогнутый низ как на публичном профиле ── */
 .mp-hero-v2 {
   position: relative;
   width: 100%;
-  min-height: 360px;
+  min-height: 430px;
   overflow: hidden;
-  border-radius: 0;
+  border-radius: 0 0 42px 42px;
   margin: 0;
+  box-shadow: 0 28px 70px rgba(17, 24, 39, .18);
+  display: flex;
+  align-items: flex-end;
 }
 
 .mp-hero-bg,
@@ -68,9 +71,9 @@
 .mp-hero-inner {
   position: relative;
   z-index: 2;
-  width: min(1180px, 100%);
+  width: min(1120px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 44px 32px 40px;
+  padding: 44px 0 42px;
   box-sizing: border-box;
   min-height: 360px;
   display: grid;
@@ -80,9 +83,9 @@
 }
 
 .mp-shell-v2 {
-  width: min(1180px, 100%);
-  margin: 24px auto 0;
-  padding: 0 18px;
+  width: min(1120px, calc(100% - 40px));
+  margin: -26px auto 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -164,13 +167,13 @@
 }
 
 .mp-hero-panel {
-  border: 1px solid rgba(255, 255, 255, .14);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, .22);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  background: rgba(15, 23, 42, .42);
-  border-radius: 20px;
-  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, .22);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, .18);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, .13);
+  border-radius: 28px;
+  padding: 20px;
   display: grid;
   gap: 10px;
   align-self: end;
@@ -249,7 +252,6 @@
   display: grid;
   grid-template-columns: 330px minmax(0, 1fr);
   gap: 18px;
-  margin-top: 18px;
   align-items: start;
 }
 
@@ -1314,7 +1316,7 @@
   .mp-avatar-frame { width: 110px; height: 110px; }
   .mp-avatar-fb { font-size: 36px; }
   .mp-hero-inner {
-    padding: 40px 28px 36px;
+    padding: 40px 0 36px;
     gap: 24px;
     grid-template-columns: minmax(0, 1fr) minmax(230px, 270px);
   }
@@ -1327,7 +1329,7 @@
   .mp-hero-inner {
     grid-template-columns: 1fr;
     gap: 20px;
-    padding: 36px 24px 28px;
+    padding: 36px 0 28px;
     min-height: auto;
   }
 
@@ -1355,7 +1357,7 @@
   }
 
   /* Layout below hero */
-  .mp-shell-v2 { grid-template-columns: 1fr; margin-top: 18px; }
+  .mp-shell-v2 { grid-template-columns: 1fr; margin-top: -20px; }
   .mp-sidebar-v2 {
     position: static;
     display: grid;
@@ -1409,7 +1411,16 @@
 
 /* ── Большой телефон / маленький планшет 640-768px ── */
 @media (max-width: 768px) {
-  .mp-hero-inner { padding: 30px 20px 24px; gap: 16px; }
+  .mp-hero-v2 {
+    border-radius: 0 0 32px 32px;
+    box-shadow: 0 22px 52px rgba(17, 24, 39, .16);
+  }
+
+  .mp-hero-inner {
+    width: calc(100% - 32px);
+    padding: 30px 0 28px;
+    gap: 16px;
+  }
 
   .mp-hero-content h1 { font-size: clamp(26px, 6.5vw, 38px); }
 
@@ -1427,8 +1438,10 @@
   .mp-hero-meta::-webkit-scrollbar { display: none; }
   .mp-hero-meta span {
     flex: 0 0 auto;
-    padding: 7px 11px;
+    padding: 8px 10px;
     font-size: 11px;
+    background: rgba(255, 255, 255, .15);
+    border: 0;
   }
 
   .mp-hero-panel {
@@ -1438,7 +1451,11 @@
     gap: 8px;
   }
 
-  .mp-shell-v2 { padding: 0 14px; margin-top: 14px; gap: 12px; }
+  .mp-shell-v2 {
+    width: calc(100% - 32px);
+    margin-top: -16px;
+    gap: 12px;
+  }
   .mp-main-v2 { gap: 12px; }
   .mp-glass-card, .mp-sidebar-v2, .mp-stats-v2 article {
     border-radius: 22px;
@@ -1509,13 +1526,22 @@
   }
 }
 
-/* ── Телефон < 640px ── */
+/* ── Телефон < 640px — вид hero как на публичном профиле ── */
 @media (max-width: 640px) {
-  .mp-page-v2 { padding: 0 0 88px; background: #f5f5f4; }
+  .mp-page-v2 {
+    padding: 0 0 88px;
+    background: #f5f5f4;
+  }
 
-  .mp-hero-v2 { min-height: auto; }
+  .mp-hero-v2 {
+    min-height: auto;
+    border-radius: 0 0 28px 28px;
+    box-shadow: 0 18px 42px rgba(17, 24, 39, .18);
+  }
+
   .mp-hero-inner {
-    padding: 24px 16px 20px;
+    width: calc(100% - 24px);
+    padding: 28px 0 22px;
     gap: 16px;
   }
 
@@ -1536,10 +1562,11 @@
   .mp-hero-panel {
     grid-template-columns: 1fr 1fr;
     max-width: 100%;
-    padding: 12px;
-    border-radius: 14px;
+    padding: 16px;
+    border-radius: 22px;
     gap: 8px;
-    background: rgba(10, 18, 38, .5);
+    background: rgba(255, 255, 255, .13);
+    border: 1px solid rgba(255, 255, 255, .22);
   }
 
   .mp-primary-action,
@@ -1552,9 +1579,9 @@
 
   /* Sidebar в горизонталь */
   .mp-shell-v2 {
-    padding: 0 10px;
+    width: calc(100% - 24px);
     gap: 10px;
-    margin-top: 12px;
+    margin-top: -12px;
     grid-template-columns: 1fr;
   }
   .mp-sidebar-v2 {
@@ -1645,9 +1672,10 @@
 /* ── Очень маленький телефон < 420px ── */
 @media (max-width: 420px) {
   .mp-page-v2 { padding: 0 0 84px; }
-  .mp-shell-v2 { padding: 0 8px; }
+  .mp-shell-v2 { width: calc(100% - 16px); }
 
-  .mp-hero-inner { padding: 20px 14px 18px; }
+  .mp-hero-v2 { border-radius: 0 0 24px 24px; }
+  .mp-hero-inner { width: calc(100% - 16px); padding: 24px 0 20px; }
   .mp-hero-content h1 { font-size: clamp(22px, 7.5vw, 30px); }
 
   .mp-hero-panel {
