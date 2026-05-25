@@ -93,8 +93,22 @@ export const moOrdersListShellCss = `
     box-sizing: border-box;
   }
 
-  .mo-orders-root .mo-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 22px; }
-  .mo-orders-root .mo-tabs { display: flex; gap: 4px; padding: 6px; background: #fff; border-radius: 14px; box-shadow: 0 4px 14px rgba(15,15,30,.05); }
+  .mo-orders-root .mo-toolbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 22px;
+  }
+  .mo-orders-root .mo-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 6px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(15,15,30,.05);
+    flex-shrink: 0;
+  }
   .mo-orders-root .mo-tab {
     background: none; border: none; padding: 10px 18px; border-radius: 10px; font: inherit; font-weight: 700; font-size: 14px;
     color: #64748b; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all .15s;
@@ -103,7 +117,14 @@ export const moOrdersListShellCss = `
   .mo-orders-root .mo-tab-count { background: rgba(0,0,0,.08); padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }
   .mo-orders-root .mo-tab.active .mo-tab-count { background: rgba(255,255,255,.28); }
 
-  .mo-orders-root .mo-search { flex: 1; min-width: 220px; max-width: 420px; position: relative; }
+  .mo-orders-root .mo-search {
+    grid-column: 2;
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+    position: relative;
+  }
   .mo-orders-root .mo-search input {
     width: 100%; padding: 13px 16px 13px 44px; border: 1.5px solid #ececec; background: #fff; border-radius: 14px;
     font: inherit; font-size: 14px; outline: none; transition: all .2s; font-weight: 500;

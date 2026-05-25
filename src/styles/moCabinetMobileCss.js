@@ -123,12 +123,14 @@ export const moCabinetMobileCss = `
 
   .mo-orders-root .mo-toolbar {
     margin-bottom: 18px;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
     align-items: stretch;
     gap: 12px;
   }
 
   .mo-orders-root .mo-tabs {
+    grid-column: 1;
     width: 100%;
     justify-content: stretch;
     padding: 5px;
@@ -145,6 +147,7 @@ export const moCabinetMobileCss = `
   }
 
   .mo-orders-root .mo-search {
+    grid-column: 1;
     max-width: none;
     min-width: 0;
     flex: none;
