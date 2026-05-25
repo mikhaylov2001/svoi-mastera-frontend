@@ -16,6 +16,7 @@ import {
   hasJobRequestPublishedPrice,
 } from '../utils/jobRequestBudget';
 import CardFavoriteSlot from '../components/CardFavoriteSlot';
+import SortDropdown from '../components/SortDropdown';
 import '../styles/moCabinetStyle.css';
 import './favorites.css';
 
@@ -389,16 +390,13 @@ export default function FavoritesPage() {
                 />
               </div>
 
-              <select
-                className="mo-sort"
+              <SortDropdown
                 value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                aria-label="Сортировка"
-              >
-                {SORT_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
+                onChange={setSort}
+                options={SORT_OPTIONS}
+                variant="toolbar"
+                ariaLabel="Сортировка избранного"
+              />
             </div>
 
             {/* Info bar */}

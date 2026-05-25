@@ -26,6 +26,7 @@ import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
 import GuestLandingHome from './GuestLandingHome';
 import CardFavoriteSlot from '../components/CardFavoriteSlot';
+import SortDropdown from '../components/SortDropdown';
 import { rankItemsBySmartMatch, listingHaystack, jobRequestHaystack } from '../utils/smartSearch';
 import '../roles/worker/jobListings.css';
 import './customerHomeLovable.css';
@@ -247,76 +248,6 @@ function SpotlightAvatar({ photoUrl, name }) {
 
 function SpotlightRate({ rate }) {
   return <div className="chpv-tm-rate">{rate != null ? `★ ${Number(rate).toFixed(1)}` : '★ —'}</div>;
-}
-
-function HomeSortDropdown({ value, onChange, options }) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef(null);
-  const selected = options.find((o) => o.value === value) || options[0];
-
-  useEffect(() => {
-    if (!open) return undefined;
-    const onDoc = (e) => {
-      if (!rootRef.current?.contains(e.target)) setOpen(false);
-    };
-    const onKey = (e) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', onDoc);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDoc);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
-
-  const pick = (next) => {
-    onChange(next);
-    setOpen(false);
-  };
-
-  return (
-    <div ref={rootRef} className={`chpv-sort-dropdown${open ? ' is-open' : ''}`}>
-      <div className="chpv-sort-panel">
-        <button
-          type="button"
-          className="chpv-sort-trigger"
-          aria-expanded={open}
-          aria-haspopup="listbox"
-          aria-label="Сортировка"
-          onClick={() => setOpen((v) => !v)}
-        >
-          <span className="chpv-sort-trigger-label">{selected?.label}</span>
-          <span className={`chpv-sort-chevron${open ? ' is-open' : ''}`} aria-hidden />
-        </button>
-        {open && (
-          <div
-            className="chpv-sort-menu"
-            role="listbox"
-            aria-label="Варианты сортировки"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            {options.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                role="option"
-                aria-selected={value === opt.value}
-                className={`chpv-sort-option${value === opt.value ? ' is-selected' : ''}`}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  pick(opt.value);
-                }}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
 }
 
 function HomeHeroTitle({ line1, city }) {
@@ -637,7 +568,7 @@ export function CustomerHomePage({ userId }) {
               ))}
             </div>
             <div className="chpv-sort-row">
-              <HomeSortDropdown value={sortBy} onChange={setSortBy} options={SORT_LISTING} />
+              <SortDropdown value={sortBy} onChange={setSortBy} options={SORT_LISTING} variant="pill" />
             </div>
           </div>
 
@@ -1090,7 +1021,7 @@ export function WorkerHomePage({ userId, userName }) {
               ))}
             </div>
             <div className="chpv-sort-row">
-              <HomeSortDropdown value={sortBy} onChange={setSortBy} options={SORT_REQUEST} />
+              <SortDropdown value={sortBy} onChange={setSortBy} options={SORT_REQUEST} variant="pill" />
             </div>
           </div>
 

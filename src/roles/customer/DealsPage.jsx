@@ -10,6 +10,7 @@ import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
+import SortDropdown from '../../components/SortDropdown';
 import {
   dealsWdCss,
   edListingDetailMergedCss,
@@ -706,10 +707,16 @@ export default function DealsPage() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden><circle cx="11" cy="11" r="7" /><path d="m20 20-3-3" /></svg>
             <input type="search" placeholder="Поиск по сделкам или мастеру…" value={search} onChange={e => setSearch(e.target.value)} autoComplete="off" />
           </div>
-          <select className="mo-sort" value={sort} onChange={e => setSort(e.target.value)}>
-            <option value="newest">Сначала новые</option>
-            <option value="oldest">Сначала старые</option>
-          </select>
+          <SortDropdown
+            value={sort}
+            onChange={setSort}
+            options={[
+              { value: 'newest', label: 'Сначала новые' },
+              { value: 'oldest', label: 'Сначала старые' },
+            ]}
+            variant="toolbar"
+            ariaLabel="Сортировка сделок"
+          />
         </div>
 
         {loading ? (

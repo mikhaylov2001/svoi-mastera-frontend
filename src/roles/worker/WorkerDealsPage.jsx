@@ -11,6 +11,7 @@ import {
   dealsMoConfirmDarkCss,
   dealCategoryEmoji,
 } from '../shared/dealsWdStyles';
+import SortDropdown from '../../components/SortDropdown';
 import {
   DealDarkProgress,
   DealConfirmCard,
@@ -787,10 +788,16 @@ export default function WorkerDealsPage() {
               autoComplete="off"
             />
           </div>
-          <select className="mo-sort" value={dealSort} onChange={(e) => setDealSort(e.target.value)}>
-            <option value="new">Сначала новые</option>
-            <option value="price">По цене</option>
-          </select>
+          <SortDropdown
+            value={dealSort}
+            onChange={setDealSort}
+            options={[
+              { value: 'new', label: 'Сначала новые' },
+              { value: 'price', label: 'По цене' },
+            ]}
+            variant="toolbar"
+            ariaLabel="Сортировка сделок"
+          />
         </div>
 
         {loading ? (
