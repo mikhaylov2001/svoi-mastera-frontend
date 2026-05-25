@@ -5,6 +5,12 @@
   margin-top: auto;
 }
 
+@media (max-width: 900px) {
+  body.has-mobile-tab-bar .footer {
+    display: none;
+  }
+}
+
 .footer-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;

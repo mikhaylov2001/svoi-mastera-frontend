@@ -1,9 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUnreadCount, getListings } from '../api';
 import { rankItemsBySmartMatch, listingHaystack } from '../utils/smartSearch';
 import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../constants/homePaths';
+import {
+  CUSTOMER_DESKTOP_LINKS,
+  WORKER_DESKTOP_LINKS,
+  isNavTabActive,
+} from '../constants/appNavConfig';
 import { dispatchSameRouteRefetch, isSameNavDest } from '../utils/sameRouteRefetch';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
@@ -259,7 +264,7 @@ function Header() {
     : 'SM';
   return (
     <>
-    <header className="header">
+    <header className={`header${userId ? ' header--tab-nav' : ''}`}>
       <div className="container">
         <div className="header-inner">
 
@@ -275,15 +280,33 @@ function Header() {
             }}
           />
 
-          {/* ── BURGER ── */}
-          <button
-            className={`header-burger ${mobileMenuOpen ? 'open' : ''}`}
-            onClick={() => setMobileMenuOpen(prev => !prev)}
-            aria-label="Меню"
-            type="button"
-          >
-            <span /><span /><span />
-          </button>
+          {/* ── MOBILE: чат с бейджем (авторизованные) ── */}
+          {userId && (
+            <Link to="/chat" className="header-mobile-chat" aria-label="Сообщения">
+              <span className="header-mobile-chat-btn">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </span>
+              {unread > 0 && (
+                <span className="header-mobile-chat-badge">
+                  {unread > 99 ? '99+' : unread}
+                </span>
+              )}
+            </Link>
+          )}
+
+          {/* ── BURGER (гости) ── */}
+          {!userId && (
+            <button
+              className={`header-burger ${mobileMenuOpen ? 'open' : ''}`}
+              onClick={() => setMobileMenuOpen(prev => !prev)}
+              aria-label="Меню"
+              type="button"
+            >
+              <span /><span /><span />
+            </button>
+          )}
 
           {/* ── SEARCH (подсказки без ухода со страницы) ── */}
           <div className="header-search-wrap" ref={searchWrapRef}>
@@ -377,100 +400,33 @@ function Header() {
             )}
           </div>
 
-          {/* ── NAV ── */}
+          {/* ── NAV (desktop) ── */}
           <nav className="header-nav">
-            <NavLink
-              to={homePath}
-              end
-              className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-              onClick={onRepeatNavClick(homePath, { end: true })}
-            >
-              Главная
-            </NavLink>
-
-            {userId && userRole === 'WORKER' ? (
-              <>
-                {/* ══ НАВИГАЦИЯ ДЛЯ МАСТЕРА ══ */}
-                <NavLink
-                  to="/find-work"
-                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                  onClick={onRepeatNavClick('/find-work')}
-                >
-                  Найти работу
-                </NavLink>
-                <NavLink
-                  to="/my-listings"
-                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                  onClick={onRepeatNavClick('/my-listings')}
-                >
-                  Мои объявления
-                </NavLink>
-                <NavLink
-                  to="/chat"
-                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                  onClick={onRepeatNavClick('/chat')}
-                >
-                  Сообщения
-                  {unread > 0 && (
-                    <span className="header-unread-badge" style={{background:'#e8410a',color:'#fff',borderRadius:999,fontSize:11,fontWeight:800,padding:'1px 6px',marginLeft:4,verticalAlign:'middle'}}>{unread}</span>
-                  )}
-                </NavLink>
-                <NavLink
-                  to="/deals"
-                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                  onClick={onRepeatNavClick('/deals')}
-                >
-                  Мои сделки
-                </NavLink>
-              </>
-            ) : userId ? (
-              <>
-                {/* ══ НАВИГАЦИЯ ДЛЯ ЗАКАЗЧИКА: поиск → заявки → сообщения → сделки ══ */}
-                <NavLink
-                  to="/find-master"
-                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                  onClick={onRepeatNavClick('/find-master')}
-                >
-                  Найти мастера
-                </NavLink>
-                <NavLink
-                  to="/my-requests"
-                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                  onClick={onRepeatNavClick('/my-requests')}
-                >
-                  Мои заявки
-                </NavLink>
-                <NavLink
-                  to="/chat"
-                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                  onClick={onRepeatNavClick('/chat')}
-                >
-                  Сообщения
-                  {unread > 0 && (
-                    <span className="header-unread-badge" style={{background:'#e8410a',color:'#fff',borderRadius:999,fontSize:11,fontWeight:800,padding:'1px 6px',marginLeft:4,verticalAlign:'middle'}}>{unread}</span>
-                  )}
-                </NavLink>
-                <NavLink
-                  to="/deals"
-                  className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                  onClick={onRepeatNavClick('/deals')}
-                >
-                  Мои сделки
-                </NavLink>
-              </>
-            ) : (
-              <>
-                {/* ══ ДЛЯ НЕАВТОРИЗОВАННЫХ — только Войти/Регистрация ══ */}
-              </>
+            {userId && (
+              (userRole === 'WORKER' ? WORKER_DESKTOP_LINKS : CUSTOMER_DESKTOP_LINKS).map((link) => {
+                const active = isNavTabActive(location.pathname, link);
+                const badge = link.badgeKey === 'chat' ? unread : 0;
+                return (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`header-nav-link header-nav-link--tab${active ? ' active' : ''}`}
+                    onClick={onRepeatNavClick(link.to, link.end ? { end: true } : {})}
+                  >
+                    {link.label}
+                    {badge > 0 && (
+                      <span className="header-nav-tab-badge">{badge > 99 ? '99+' : badge}</span>
+                    )}
+                  </Link>
+                );
+              })
             )}
 
             {userId && (
-              <NavLink
+              <Link
                 to="/favorites"
                 aria-label="Избранное"
-                className={({ isActive }) =>
-                  `header-nav-link header-nav-favorites${isActive ? ' active' : ''}`
-                }
+                className={`header-nav-link header-nav-favorites${location.pathname.startsWith('/favorites') ? ' active' : ''}`}
                 onClick={onRepeatNavClick('/favorites')}
                 title="Избранное"
               >
@@ -479,7 +435,7 @@ function Header() {
                     <FavoritesNavIcon />
                   </span>
                 </span>
-              </NavLink>
+              </Link>
             )}
 
             {/* 🔔 Колокольчик уведомлений */}
@@ -635,98 +591,16 @@ function Header() {
             )}
           </nav>
 
-          {/* ── MOBILE MENU ── */}
-          {mobileMenuOpen && (
+          {/* ── MOBILE MENU (только гости) ── */}
+          {!userId && mobileMenuOpen && (
             <>
               <div
                 className="header-mobile-backdrop"
                 onClick={() => setMobileMenuOpen(false)}
               />
               <div className="header-mobile-menu">
-                <NavLink to={homePath} end className="header-mobile-link" onClick={(e) => { onRepeatNavClick(homePath, { end: true })(e); setMobileMenuOpen(false); }}>
-                  Главная
-                </NavLink>
-
-                {userId && userRole === 'WORKER' ? (
-                  <>
-                    {/* ══ МОБИЛЬНОЕ МЕНЮ МАСТЕРА ══ */}
-                    <NavLink to="/find-work" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/find-work')(e); setMobileMenuOpen(false); }}>
-                      Найти работу
-                    </NavLink>
-                    <NavLink to="/my-listings" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/my-listings')(e); setMobileMenuOpen(false); }}>
-                      Мои объявления
-                    </NavLink>
-                    <NavLink to="/chat" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/chat')(e); setMobileMenuOpen(false); }}>
-                      Сообщения {unread > 0 && `• ${unread}`}
-                    </NavLink>
-                    <NavLink to="/deals" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/deals')(e); setMobileMenuOpen(false); }}>
-                      Мои сделки
-                    </NavLink>
-                    <NavLink
-                      to="/favorites"
-                      aria-label="Избранное"
-                      className="header-mobile-link header-mobile-favorites"
-                      onClick={(e) => { onRepeatNavClick('/favorites')(e); setMobileMenuOpen(false); }}
-                    >
-                      <span className="header-nav-fav-icwrap" aria-hidden>
-                        <FavoritesNavIcon />
-                      </span>
-                      <span>Избранное</span>
-                    </NavLink>
-                  </>
-                ) : userId ? (
-                  <>
-                    {/* ══ МОБИЛЬНОЕ МЕНЮ ЗАКАЗЧИКА ══ */}
-                    <NavLink to="/find-master" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/find-master')(e); setMobileMenuOpen(false); }}>
-                      Найти мастера
-                    </NavLink>
-                    <NavLink to="/my-requests" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/my-requests')(e); setMobileMenuOpen(false); }}>
-                      Мои заявки
-                    </NavLink>
-                    <NavLink to="/chat" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/chat')(e); setMobileMenuOpen(false); }}>
-                      Сообщения {unread > 0 && `• ${unread}`}
-                    </NavLink>
-                    <NavLink to="/deals" className="header-mobile-link" onClick={(e) => { onRepeatNavClick('/deals')(e); setMobileMenuOpen(false); }}>
-                      Мои сделки
-                    </NavLink>
-                    <NavLink
-                      to="/favorites"
-                      aria-label="Избранное"
-                      className="header-mobile-link header-mobile-favorites"
-                      onClick={(e) => { onRepeatNavClick('/favorites')(e); setMobileMenuOpen(false); }}
-                    >
-                      <span className="header-nav-fav-icwrap" aria-hidden>
-                        <FavoritesNavIcon />
-                      </span>
-                      <span>Избранное</span>
-                    </NavLink>
-                  </>
-                ) : (
-                  // Неавторизованные — пустой блок
-                  null
-                )}
-
-                {userId && (
-                  <>
-                    <NavLink to="/profile" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                      Профиль
-                    </NavLink>
-                    <button
-                      type="button"
-                      className="header-mobile-link header-mobile-logout"
-                      onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-                    >
-                      Выйти
-                    </button>
-                  </>
-                )}
-
-                {!userId && (
-                  <>
-                    <Link to="/login"    className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Войти</Link>
-                    <Link to="/register" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Регистрация</Link>
-                  </>
-                )}
+                <Link to="/login" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Войти</Link>
+                <Link to="/register" className="header-mobile-link" onClick={() => setMobileMenuOpen(false)}>Регистрация</Link>
               </div>
             </>
           )}

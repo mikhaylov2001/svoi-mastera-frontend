@@ -314,6 +314,93 @@
 .header-nav-link:hover   { background: var(--gray-100); color: var(--gray-800); }
 .header-nav-link.active  { color: var(--primary); background: var(--primary-light); }
 
+/* Base44-style desktop tabs */
+.header-nav-link--tab {
+  position: relative;
+  padding: 7px 16px;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: -1px;
+}
+
+.header-nav-link--tab:hover {
+  background: none;
+  color: #374151;
+}
+
+.header-nav-link--tab.active {
+  color: #e8410a;
+  background: none;
+  border-bottom-color: #e8410a;
+}
+
+.header-nav-tab-badge {
+  position: absolute;
+  top: 6px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #e8410a;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* Mobile top bar: чат */
+.header-mobile-chat {
+  display: none;
+  position: relative;
+  margin-left: auto;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.header-mobile-chat-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #374151;
+}
+
+.header-mobile-chat-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: #e8410a;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  line-height: 1;
+}
+
+.header--tab-nav {
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
+  border-bottom-color: #f3f4f6;
+}
+
 /* Избранное: красное сердце, без счётчика; active — тонкая обводка */
 .header-nav-link.header-nav-favorites {
   gap: 0;
@@ -706,6 +793,17 @@
   .header-search-wrap { display: none; }
   .header-burger { display: flex; }
   .header-nav    { display: none; }
+
+  .header--tab-nav .header-burger { display: none; }
+  .header--tab-nav .header-mobile-chat { display: block; }
+  .header--tab-nav .header-inner {
+    height: 48px;
+    gap: 12px;
+  }
+  .header--tab-nav .header-logo .brand-logo-name {
+    font-size: 15px;
+  }
+
   .header-dropdown {
     left: auto;
     right: max(10px, env(safe-area-inset-right));
@@ -720,6 +818,6 @@
 }
 
 @media (max-width: 640px) {
-  .header-logo-text { display: none; }
+  .header--tab-nav .header-logo .brand-logo-city { display: none; }
   .header-inner     { gap: 10px; }
 }

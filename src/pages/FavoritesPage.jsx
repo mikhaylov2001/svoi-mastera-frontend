@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   getCategories,
   getListingById,
@@ -65,7 +65,6 @@ function SearchIcon() {
 
 export default function FavoritesPage() {
   const { userId, isWorker } = useAuth();
-  const navigate = useNavigate();
   const { listingIds, jobRequestIds, toggleListing, toggleJobRequest } = useFavorites();
 
   const [listings, setListings] = useState([]);

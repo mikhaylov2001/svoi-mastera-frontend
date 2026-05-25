@@ -1,0 +1,113 @@
+/* ══════════════════════════════════════
+   MOBILE BOTTOM TAB BAR (iOS-style)
+══════════════════════════════════════ */
+.mobile-tab-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 250;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.mobile-tab-bar-inner {
+  display: flex;
+  align-items: stretch;
+  height: 60px;
+}
+
+.mobile-tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-decoration: none;
+  position: relative;
+  color: #9ca3af;
+  transition: color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-tab-item.is-active {
+  color: #e8410a;
+}
+
+.mobile-tab-indicator {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: #e8410a;
+}
+
+.mobile-tab-icon-wrap {
+  position: relative;
+  width: 40px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+.mobile-tab-item.is-active .mobile-tab-icon-wrap {
+  background: rgba(232, 65, 10, 0.08);
+}
+
+.mobile-tab-badge {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: #e8410a;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  line-height: 1;
+}
+
+.mobile-tab-label {
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Manrope', system-ui, sans-serif;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.mobile-tab-item.is-active .mobile-tab-label {
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .mobile-tab-bar {
+    display: block;
+  }
+
+  body.has-mobile-tab-bar .app-main {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body.has-mobile-tab-bar .fav-page {
+    padding-bottom: calc(80px + 60px + env(safe-area-inset-bottom, 0px));
+  }
+}

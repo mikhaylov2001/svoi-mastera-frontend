@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { ToastProvider } from './context/ToastContext';
 import Header from './components/Header';
+import MobileAppNav from './components/MobileAppNav';
 import Footer from './components/Footer';
 import { WORKER_HOME_PATH } from './constants/homePaths';
 import HomePage, { WorkerHomeGate } from './pages/HomePage';
@@ -67,6 +68,7 @@ function CustomerHomeRoute() {
 
 function AppContent() {
   const location = useLocation();
+  const { userId } = useAuth();
 
   const isChatPage = location.pathname.startsWith('/chat');
   const isAuthPage = ['/login', '/register', '/forgot-password'].includes(location.pathname);
@@ -76,6 +78,12 @@ function AppContent() {
     location.pathname.startsWith('/find-work') ||
     location.pathname.startsWith('/listings/');
   const isContentPage = !isAuthPage && !isHomeCatalog;
+
+  useEffect(() => {
+    const on = Boolean(userId) && !isAuthPage;
+    document.body.classList.toggle('has-mobile-tab-bar', on);
+    return () => document.body.classList.remove('has-mobile-tab-bar');
+  }, [userId, isAuthPage]);
 
   return (
     <div className="app-shell">
@@ -125,6 +133,7 @@ function AppContent() {
       </main>
       {/* Футер скрыт на странице чата */}
       {!isChatPage && !isAuthPage && <Footer />}
+      {!isAuthPage && <MobileAppNav />}
     </div>
   );
 }
