@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getUnreadCount, getListings } from '../api';
+import { getUnreadCount, getListings, getNotifications, getNotificationsUnreadCount, markNotificationRead, markAllNotificationsRead } from '../api';
 import { rankItemsBySmartMatch, listingHaystack } from '../utils/smartSearch';
 import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../constants/homePaths';
 import {
@@ -12,11 +12,19 @@ import {
 import { dispatchSameRouteRefetch, isSameNavDest } from '../utils/sameRouteRefetch';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../utils/listingPublishedPrice';
+import {
+  countUnreadNotifications,
+  formatNotifTimeAgo,
+  isNotificationUnread,
+  normalizeNotificationBody,
+  notifCountLabel,
+  notificationIcon,
+  notificationTone,
+  resolveNotificationLink,
+} from '../utils/notifications';
 import './Header.css';
 import FavoriteHeartButton from './FavoriteHeartButton';
 import BrandLogo from './BrandLogo';
-
-const NOTIF_API = 'https://svoi-mastera-backend.onrender.com/api/v1/notifications';
 
 function SearchIcon() {
   return (
@@ -48,53 +56,10 @@ function BellIcon() {
   );
 }
 
-const NOTIF_ICONS = {
-  NEW_OFFER: '📩',
-  OFFER_ACCEPTED: '🎉',
-  DEAL_CONFIRMED: '✅',
-  DEAL_COMPLETED: '🏆',
-  NEW_MESSAGE: '💬',
-  DEAL_NEW: '🔔',
-  DEAL_STARTED: '🚀',
-  DEAL_CANCELLED: '❌',
-};
-
-const NOTIF_TONES = {
-  NEW_OFFER: 'blue',
-  OFFER_ACCEPTED: 'green',
-  DEAL_CONFIRMED: 'green',
-  DEAL_COMPLETED: 'amber',
-  NEW_MESSAGE: 'violet',
-  DEAL_NEW: 'orange',
-  DEAL_STARTED: 'orange',
-  DEAL_CANCELLED: 'rose',
-};
-
-function notifTone(type) {
-  return NOTIF_TONES[type] || 'neutral';
-}
-
-function timeAgoShort(d) {
-  if (!d) return '';
-  const m = Math.floor((Date.now() - new Date(d)) / 60000);
-  if (m < 1) return 'только что';
-  if (m < 60) return `${m} мин`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h} ч`;
-  return `${Math.floor(h / 24)} дн`;
-}
-
-function notifCountLabel(count) {
-  const n = Math.abs(count) % 100;
-  const n1 = n % 10;
-  if (n1 === 1 && n !== 11) return `${count} новое`;
-  if (n1 >= 2 && n1 <= 4 && (n < 12 || n > 14)) return `${count} новых`;
-  return `${count} новых`;
-}
-
 function HeaderNotificationsBell({
   notifCount,
   notifOpen,
+  notifLoading,
   onToggle,
   onClose,
   notifs,
@@ -159,15 +124,27 @@ function HeaderNotificationsBell({
                   </span>
                 )}
               </div>
-              {notifCount > 0 && (
-                <button type="button" className="header-notif-mark-all" onClick={onMarkAllRead}>
-                  Прочитать все
+              <div className="header-notif-dropdown-head-actions">
+                {notifCount > 0 && (
+                  <button type="button" className="header-notif-mark-all" onClick={onMarkAllRead}>
+                    Прочитать все
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="header-notif-close"
+                  onClick={onClose}
+                  aria-label="Закрыть"
+                >
+                  ×
                 </button>
-              )}
+              </div>
             </div>
 
             <div className="header-notif-dropdown-list">
-              {notifs.length === 0 ? (
+              {notifLoading ? (
+                <div className="header-notif-loading">Загружаем…</div>
+              ) : notifs.length === 0 ? (
                 <div className="header-notif-empty">
                   <div className="header-notif-empty-visual" aria-hidden>
                     <span className="header-notif-empty-bell">🔔</span>
@@ -176,9 +153,10 @@ function HeaderNotificationsBell({
                   <p className="header-notif-empty-text">Здесь появятся отклики, сообщения и статусы сделок</p>
                 </div>
               ) : (
-                notifs.slice(0, 8).map((n) => {
-                  const unread = !(n.isRead ?? n.read);
-                  const tone = notifTone(n.type);
+                notifs.map((n) => {
+                  const unread = isNotificationUnread(n);
+                  const tone = notificationTone(n.type);
+                  const body = normalizeNotificationBody(n.body);
                   return (
                     <button
                       key={n.id}
@@ -187,15 +165,15 @@ function HeaderNotificationsBell({
                       onClick={() => onMarkOneRead(n)}
                     >
                       <span className={`header-notif-item-icon header-notif-item-icon--${tone}`} aria-hidden>
-                        {NOTIF_ICONS[n.type] || '🔔'}
+                        {notificationIcon(n.type)}
                       </span>
                       <span className="header-notif-item-body">
                         <span className="header-notif-item-top">
                           <span className="header-notif-item-title">{n.title}</span>
-                          <span className="header-notif-item-time">{timeAgoShort(n.createdAt)}</span>
+                          <span className="header-notif-item-time">{formatNotifTimeAgo(n.createdAt)}</span>
                         </span>
-                        {n.body ? (
-                          <span className="header-notif-item-text">{n.body}</span>
+                        {body ? (
+                          <span className="header-notif-item-text">{body}</span>
                         ) : null}
                       </span>
                       {unread && <span className="header-notif-item-dot" aria-hidden />}
@@ -203,6 +181,12 @@ function HeaderNotificationsBell({
                   );
                 })
               )}
+            </div>
+
+            <div className="header-notif-dropdown-foot">
+              <Link to="/settings/notifications" className="header-notif-settings-link" onClick={onClose}>
+                Настройки уведомлений
+              </Link>
             </div>
           </div>
         </>
@@ -243,9 +227,32 @@ function Header() {
   const [notifCount,     setNotifCount]     = useState(0);
   const [notifOpen,      setNotifOpen]      = useState(false);
   const [notifs,         setNotifs]         = useState([]);
-  const [inAppToasts,    setInAppToasts]    = useState([]); // ВК-стиль тосты
+  const [notifsLoading,  setNotifsLoading]  = useState(false);
+  const [inAppToasts,    setInAppToasts]    = useState([]);
   const prevNotifCount = useRef(0);
   const isFirstLoad    = useRef(true);
+  const notifOpenRef   = useRef(false);
+
+  useEffect(() => {
+    notifOpenRef.current = notifOpen;
+  }, [notifOpen]);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!userId) return [];
+    setNotifsLoading(true);
+    try {
+      const list = await getNotifications(userId);
+      const arr = Array.isArray(list) ? list : [];
+      setNotifs(arr);
+      setNotifCount(countUnreadNotifications(arr));
+      return arr;
+    } catch {
+      setNotifs([]);
+      return [];
+    } finally {
+      setNotifsLoading(false);
+    }
+  }, [userId]);
 
   const showInAppToast = useCallback((notif) => {
     const id = `${Date.now()}-${Math.random()}`;
@@ -255,78 +262,104 @@ function Header() {
 
   useEffect(() => {
     let iv;
-    async function loadUnread() {
-      if (!userId) { setUnread(0); setNotifCount(0); return; }
+    let cancelled = false;
+
+    async function pollNotifications() {
+      if (!userId) {
+        setUnread(0);
+        setNotifCount(0);
+        setNotifs([]);
+        return;
+      }
+
       try {
         const count = await getUnreadCount(userId);
-        setUnread(count || 0);
-      } catch { setUnread(0); }
-      try {
-        const r = await fetch(`${NOTIF_API}/unread-count`, { headers: { 'X-User-Id': userId } });
-        if (r.ok) {
-          const d = await r.json();
-          const newCount = d.count || 0;
-          setNotifCount(newCount);
+        if (!cancelled) setUnread(count || 0);
+      } catch {
+        if (!cancelled) setUnread(0);
+      }
 
-          // Показываем тост если появились новые уведомления
+      try {
+        const data = await getNotificationsUnreadCount(userId);
+        const newCount = data?.count ?? 0;
+
+        if (!cancelled) {
           if (!isFirstLoad.current && newCount > prevNotifCount.current) {
-            // Загружаем новые уведомления для показа тоста
             try {
-              const nr = await fetch(NOTIF_API, { headers: { 'X-User-Id': userId } });
-              if (nr.ok) {
-                const all = await nr.json();
-                const fresh = all.filter(n => !(n.isRead ?? n.read)).slice(0, newCount - prevNotifCount.current);
-                fresh.forEach(n => showInAppToast(n));
-              }
-            } catch {}
+              const all = await getNotifications(userId);
+              const fresh = (Array.isArray(all) ? all : [])
+                .filter(isNotificationUnread)
+                .slice(0, newCount - prevNotifCount.current);
+              fresh.forEach((n) => showInAppToast(n));
+            } catch {
+              /* ignore toast fetch errors */
+            }
           }
+
+          setNotifCount(newCount);
           prevNotifCount.current = newCount;
           isFirstLoad.current = false;
+
+          if (notifOpenRef.current) {
+            await fetchNotifications();
+          }
         }
-      } catch { setNotifCount(0); }
+      } catch {
+        if (!cancelled) setNotifCount(0);
+      }
     }
-    loadUnread();
-    iv = setInterval(loadUnread, 3000);
-    return () => clearInterval(iv);
-  }, [userId, showInAppToast]);
+
+    pollNotifications();
+    iv = setInterval(pollNotifications, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(iv);
+    };
+  }, [userId, showInAppToast, fetchNotifications]);
 
   const openNotifs = async () => {
     const opening = !notifOpen;
     setNotifOpen(opening);
-    // Загружаем только если список пустой
-    if (opening && userId && notifs.length === 0) {
-      try {
-        const r = await fetch(NOTIF_API, { headers: { 'X-User-Id': userId } });
-        if (r.ok) setNotifs(await r.json());
-      } catch {}
+    if (opening && userId) {
+      await fetchNotifications();
     }
   };
 
   const markAllRead = async () => {
     if (!userId) return;
     try {
-      await fetch(`${NOTIF_API}/read-all`, { method: 'POST', headers: { 'X-User-Id': userId } });
+      await markAllNotificationsRead(userId);
       setNotifCount(0);
-      setNotifs(prev => prev.map(n => ({ ...n, isRead: true })));
-    } catch {}
+      prevNotifCount.current = 0;
+      setNotifs((prev) => prev.map((n) => ({ ...n, isRead: true, read: true })));
+    } catch {
+      /* ignore */
+    }
   };
 
   const markOneRead = async (notif) => {
-    // 1. Отправляем на сервер
-    await fetch(`${NOTIF_API}/${notif.id}/read`, { method: 'POST' }).catch(() => {});
-    // 2. Перезагружаем список с сервера
-    try {
-      const r = await fetch(NOTIF_API, { headers: { 'X-User-Id': userId } });
-      if (r.ok) {
-        const fresh = await r.json();
-        setNotifs(fresh);
-        setNotifCount(fresh.filter(n => !(n.isRead ?? n.read)).length);
+    if (!userId || !notif?.id) return;
+
+    if (isNotificationUnread(notif)) {
+      try {
+        await markNotificationRead(notif.id);
+        setNotifs((prev) =>
+          prev.map((n) => (n.id === notif.id ? { ...n, isRead: true, read: true } : n)),
+        );
+        setNotifCount((prev) => {
+          const next = Math.max(0, prev - 1);
+          prevNotifCount.current = next;
+          return next;
+        });
+      } catch {
+        /* ignore */
       }
-    } catch {}
-    // 3. Навигация
-    if (notif.link) {
+    }
+
+    const link = resolveNotificationLink(notif.link);
+    if (link) {
       setNotifOpen(false);
-      navigate(notif.link);
+      navigate(link);
     }
   };
 
@@ -447,6 +480,7 @@ function Header() {
               <HeaderNotificationsBell
                 notifCount={notifCount}
                 notifOpen={notifOpen}
+                notifLoading={notifsLoading}
                 onToggle={openNotifs}
                 onClose={() => setNotifOpen(false)}
                 notifs={notifs}
@@ -604,6 +638,7 @@ function Header() {
               <HeaderNotificationsBell
                 notifCount={notifCount}
                 notifOpen={notifOpen}
+                notifLoading={notifsLoading}
                 onToggle={openNotifs}
                 onClose={() => setNotifOpen(false)}
                 notifs={notifs}
@@ -702,48 +737,38 @@ function Header() {
 
     {/* ВК-стиль тосты — правый нижний угол */}
     {inAppToasts.length > 0 && (
-      <div style={{ position:'fixed', bottom:24, right:24, zIndex:9999, display:'flex', flexDirection:'column-reverse', gap:10, maxWidth:360 }}>
-        {inAppToasts.map(toast => (
-          <div key={toast.toastId}
+      <div className="header-notif-toasts">
+        {inAppToasts.map((toast) => (
+          <div
+            key={toast.toastId}
+            className="header-notif-toast"
             onClick={() => {
               markOneRead(toast);
-              setInAppToasts(prev => prev.filter(t => t.toastId !== toast.toastId));
-            }}
-            style={{
-              display:'flex', alignItems:'flex-start', gap:12,
-              background:'#fff', borderRadius:14, padding:'14px 16px',
-              boxShadow:'0 8px 32px rgba(0,0,0,0.18)', cursor:'pointer',
-              borderLeft:'4px solid #e8410a',
-              animation:'slideInRight .3s cubic-bezier(.16,1,.3,1)',
-              minWidth:300,
+              setInAppToasts((prev) => prev.filter((t) => t.toastId !== toast.toastId));
             }}
           >
-            <span style={{ fontSize:22, flexShrink:0, lineHeight:1.2 }}>
-              {({'NEW_OFFER':'📩','OFFER_ACCEPTED':'🎉','DEAL_CONFIRMED':'✅','DEAL_COMPLETED':'🏆','NEW_MESSAGE':'💬'})[toast.type] || '🔔'}
+            <span className="header-notif-toast-icon" aria-hidden>
+              {notificationIcon(toast.type)}
             </span>
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontSize:13, fontWeight:800, color:'#111827', marginBottom:3 }}>{toast.title}</div>
-              <p style={{ fontSize:12, color:'#6b7280', margin:0, lineHeight:1.5,
-                overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
-                {toast.body}
-              </p>
+            <div className="header-notif-toast-body">
+              <div className="header-notif-toast-title">{toast.title}</div>
+              <p className="header-notif-toast-text">{normalizeNotificationBody(toast.body)}</p>
             </div>
             <button
-              onClick={e => { e.stopPropagation(); setInAppToasts(prev => prev.filter(t => t.toastId !== toast.toastId)); }}
-              style={{ background:'none', border:'none', color:'#9ca3af', cursor:'pointer', fontSize:18, padding:0, flexShrink:0, lineHeight:1 }}>
+              type="button"
+              className="header-notif-toast-close"
+              aria-label="Закрыть"
+              onClick={(e) => {
+                e.stopPropagation();
+                setInAppToasts((prev) => prev.filter((t) => t.toastId !== toast.toastId));
+              }}
+            >
               ×
             </button>
           </div>
         ))}
       </div>
     )}
-
-    <style>{`
-      @keyframes slideInRight {
-        from { opacity:0; transform:translateX(40px); }
-        to   { opacity:1; transform:translateX(0); }
-      }
-    `}</style>
     </>
   );
 }
