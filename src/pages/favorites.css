@@ -1,235 +1,33 @@
 /* ════════════════════════════════════════════
-   FAVORITES PAGE — Base44-style
+   FAVORITES — карточки + доп. элементы
+   Shell/hero/toolbar: moCabinetStyle.css
    ════════════════════════════════════════════ */
-.fav-page {
-  background: #f9fafb;
-  min-height: 100vh;
-  font-family: 'Manrope', system-ui, sans-serif;
-  color: #111827;
-  padding-bottom: 80px;
-}
 
-/* ── Hero ── */
-.fav-hero {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
-  min-height: 220px;
-}
-
-.fav-hero img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.18;
-}
-
-.fav-hero-inner {
-  position: relative;
-  z-index: 1;
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 40px 24px 36px;
-}
-
-.fav-hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 999px;
-  padding: 6px 14px;
-  margin-bottom: 18px;
-  font-size: 11px;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.9);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.fav-hero-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.fav-hero-title {
-  margin: 0 0 8px;
-  font-size: clamp(28px, 5vw, 38px);
-  font-weight: 950;
-  color: #fff;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-}
-
-.fav-hero-sub {
-  margin: 0;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.62);
-  font-weight: 600;
-}
-
-.fav-cta {
-  flex-shrink: 0;
-  background: #e8410a;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 11px 20px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(232, 65, 10, 0.4);
-  transition: transform 0.2s, box-shadow 0.2s;
+.fav-page a.mo-cta {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.fav-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(232, 65, 10, 0.5);
-}
-
-/* ── Main ── */
-.fav-main {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 24px 20px;
-}
-
-/* ── Toolbar ── */
-.fav-toolbar {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.fav-tabs {
-  flex-shrink: 0;
-  display: flex;
-  gap: 2px;
-  background: #fff;
-  border: 1.5px solid #f3f4f6;
-  border-radius: 12px;
-  padding: 4px;
-}
-
-.fav-tab {
-  border: none;
-  border-radius: 9px;
-  padding: 8px 16px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  background: transparent;
-  color: #6b7280;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-
-.fav-tab.active {
-  background: #e8410a;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(232, 65, 10, 0.32);
-}
-
-.fav-tab-count {
-  font-size: 11px;
-  border-radius: 6px;
-  padding: 1px 6px;
-  background: rgba(0, 0, 0, 0.08);
-  color: #9ca3af;
-}
-
-.fav-tab.active .fav-tab-count {
-  background: rgba(255, 255, 255, 0.25);
-  color: #fff;
-}
-
-.fav-search {
-  flex: 1;
-  min-width: 180px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #fff;
-  border: 1.5px solid #f3f4f6;
-  border-radius: 12px;
-  padding: 0 14px;
-  height: 42px;
-  color: #9ca3af;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.fav-search:focus-within {
-  border-color: rgba(232, 65, 10, 0.4);
-  box-shadow: 0 0 0 3px rgba(232, 65, 10, 0.08);
-  color: #374151;
-}
-
-.fav-search input {
-  border: none;
-  background: none;
-  outline: none;
-  flex: 1;
-  font-family: inherit;
-  font-size: 13px;
-  color: #111827;
-}
-
-.fav-search input::placeholder { color: #9ca3af; }
-
-.fav-sort {
-  border: 1.5px solid #f3f4f6;
-  border-radius: 12px;
-  padding: 0 14px;
-  height: 42px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  color: #374151;
-  background: #fff;
-  cursor: pointer;
-  outline: none;
-  flex-shrink: 0;
-  transition: border-color 0.2s;
-}
-
-.fav-sort:focus { border-color: rgba(232, 65, 10, 0.4); }
-
-/* ── Bulk bar ── */
+/* Bulk bar */
 .fav-bulk {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 12px 16px;
-  border-radius: 12px;
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
-  margin-bottom: 20px;
-  animation: fav-fade 0.3s;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 12px 32px rgba(17, 24, 39, 0.06);
+  backdrop-filter: blur(18px);
+  margin-bottom: 16px;
 }
 
 .fav-bulk-text {
   font-size: 13px;
-  color: #92400e;
+  color: #374151;
   font-weight: 700;
   flex: 1;
   min-width: 0;
@@ -237,11 +35,11 @@
 
 .fav-bulk-btn {
   flex-shrink: 0;
-  border: 1px solid #f97316;
-  border-radius: 8px;
-  padding: 6px 12px;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 8px 14px;
   background: #fff;
-  color: #e8410a;
+  color: #374151;
   cursor: pointer;
   font-family: inherit;
   font-size: 12px;
@@ -250,9 +48,16 @@
 }
 
 .fav-bulk-btn:hover {
-  background: #e8410a;
-  color: #fff;
   border-color: #e8410a;
+  color: #e8410a;
+  background: #fff7f3;
+}
+
+.fav-err {
+  text-align: center;
+  padding: 24px;
+  color: #c2410c;
+  font-weight: 700;
 }
 
 /* ── Grid & cards (как на главной — chpv-card) ── */
@@ -272,7 +77,6 @@
   flex-direction: column;
   position: relative;
   color: inherit;
-  animation: fav-fade 0.4s both;
 }
 
 .fav-page .chpv-card:hover {
@@ -519,142 +323,7 @@
   border-color: #fecaca;
 }
 
-@keyframes fav-fade {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: none; }
-}
-
-/* ── Empty ── */
-.fav-empty {
-  text-align: center;
-  padding: 70px 20px;
-  background: #fff;
-  border-radius: 22px;
-  border: 1.5px solid #f3f4f6;
-}
-
-.fav-empty-emoji {
-  font-size: 56px;
-  margin-bottom: 14px;
-  display: block;
-}
-
-.fav-empty-title {
-  font-weight: 800;
-  font-size: 20px;
-  color: #111827;
-  margin-bottom: 6px;
-}
-
-.fav-empty-sub {
-  color: #6b7280;
-  font-size: 14px;
-  max-width: 360px;
-  margin: 0 auto 18px;
-  line-height: 1.55;
-}
-
-.fav-empty-cta {
-  background: linear-gradient(135deg, #e8410a, #ff6b3d);
-  color: #fff;
-  border: none;
-  padding: 12px 22px;
-  border-radius: 12px;
-  font-family: inherit;
-  font-weight: 800;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 10px 24px rgba(232, 65, 10, 0.35);
-  transition: transform 0.2s;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.fav-empty-cta:hover { transform: translateY(-2px); }
-
-/* ── Loading / Error ── */
-.fav-loading {
-  text-align: center;
-  padding: 48px 20px;
-  color: #6b7280;
-  font-weight: 700;
-  font-size: 15px;
-}
-
-.fav-err {
-  text-align: center;
-  padding: 24px;
-  color: #c2410c;
-  font-weight: 700;
-}
-
-.fav-card-miss { opacity: 0.88; }
-
-/* ════════════════════
-   RESPONSIVE
-════════════════════ */
-
-@media (min-width: 720px) {
-  .fav-page .chpv-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-  }
-}
-
-/* 640px: мобильный */
 @media (max-width: 640px) {
-  .fav-hero-inner { padding: 28px 16px 24px; }
-
-  .fav-hero-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
-  }
-
-  .fav-cta {
-    width: 100%;
-    text-align: center;
-    padding: 14px 20px;
-    min-height: 50px;
-    border-radius: 14px;
-    font-size: 15px;
-  }
-
-  .fav-main { padding: 16px 12px; }
-
-  .fav-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .fav-tabs {
-    width: 100%;
-  }
-
-  .fav-tab {
-    flex: 1;
-    justify-content: center;
-    padding: 9px 10px;
-    font-size: 12px;
-  }
-
-  .fav-search {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .fav-sort {
-    width: 100%;
-    padding: 12px 14px;
-    font-size: 14px;
-    height: 46px;
-  }
-
-  .fav-grid,
   .fav-page .chpv-grid {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
@@ -664,7 +333,6 @@
   .fav-page .chpv-card-price { font-size: 16px; }
   .fav-page .chpv-card-body { padding: 10px 12px 12px; }
 
-  /* На тач-устройствах кнопки всегда видны */
   .fav-page .chpv-card-quick {
     opacity: 1;
     transform: none;
@@ -676,11 +344,8 @@
     gap: 8px;
   }
 
-  .fav-bulk-btn { width: 100%; text-align: center; padding: 10px; font-size: 13px; }
-}
-
-/* 420px: самый маленький */
-@media (max-width: 420px) {
-  .fav-hero-title { font-size: 26px; }
-  .fav-tab-count { display: none; }
+  .fav-bulk-btn {
+    width: 100%;
+    text-align: center;
+  }
 }

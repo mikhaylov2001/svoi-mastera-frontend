@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   getCategories,
@@ -16,10 +16,11 @@ import {
   hasJobRequestPublishedPrice,
 } from '../utils/jobRequestBudget';
 import FavoriteHeartButton from '../components/FavoriteHeartButton';
+import '../styles/moCabinetStyle.css';
 import './favorites.css';
 
 const BACKEND_ORIGIN = 'https://svoi-mastera-backend.onrender.com';
-const HERO_IMG = 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600&q=80';
+const HERO_IMG = 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=2400&q=86';
 
 function mediaUrl(u) {
   if (!u) return null;
@@ -47,15 +48,6 @@ function categoryEmoji(name) {
   return '📌';
 }
 
-function SearchIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.35-4.35" />
-    </svg>
-  );
-}
-
 export default function FavoritesPage() {
   const { userId, isWorker } = useAuth();
   const { listingIds, jobRequestIds, toggleListing, toggleJobRequest } = useFavorites();
@@ -69,7 +61,6 @@ export default function FavoritesPage() {
   const [tab, setTab] = useState('all');
   const [q, setQ] = useState('');
   const [sort, setSort] = useState('recent');
-  const [popping, setPopping] = useState(null);
 
   const listingKey = listingIds.join(',');
   const jobRequestKey = jobRequestIds.join(',');
@@ -246,11 +237,7 @@ export default function FavoritesPage() {
     { key: 'job', label: 'Заявки', count: counts.job },
   ];
 
-  const bumpRemove = (key, fn) => {
-    setPopping(key);
-    setTimeout(() => setPopping(null), 350);
-    fn();
-  };
+  const bumpRemove = (_key, fn) => fn();
 
   const removeItem = (i) => {
     if (i.kind === 'master') toggleListing(i.rawId);
@@ -355,65 +342,62 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="fav-page">
-      {/* ── Hero ── */}
-      <div className="fav-hero">
+    <div className="mo-page mo-orders-root fav-page">
+      <header className="mo-hero">
         <img src={HERO_IMG} alt="" />
-        <div className="fav-hero-inner">
-          <div className="fav-hero-content">
-            <div className="fav-hero-badge">
-              <span>❤️</span>
-              <span>Избранное</span>
-            </div>
-            <div className="fav-hero-row">
-              <div>
-                <h1 className="fav-hero-title">Избранное</h1>
-                <p className="fav-hero-sub">Мастера и заявки, которые вы сохранили</p>
-              </div>
-              <Link to={catalogLink} className="fav-cta">
-                Найти ещё →
-              </Link>
-            </div>
+        <div className="mo-hero-inner">
+          <div>
+            <h1>Избранное</h1>
+            <p>Мастера и заявки, которые вы сохранили</p>
           </div>
+          <Link to={catalogLink} className="mo-cta">
+            {isWorker ? '+ Найти работу' : '+ Найти ещё'}
+          </Link>
         </div>
-      </div>
+      </header>
 
-      {/* ── Main ── */}
-      <main className="fav-main">
+      <main className="mo-main">
         {loading ? (
-          <div className="fav-loading">⏳ Загружаем избранное…</div>
+          <div className="mo-empty">
+            <div className="mo-empty-emoji">⏳</div>
+            <div className="mo-empty-title">Загружаем избранное…</div>
+          </div>
         ) : err ? (
           <div className="fav-err">{err}</div>
         ) : (
           <>
-            {/* Toolbar */}
-            <div className="fav-toolbar">
-              <div className="fav-tabs">
+            <div className="mo-toolbar">
+              <div className="mo-status-tabs">
                 {TABS.map((t) => (
                   <button
                     key={t.key}
                     type="button"
-                    className={`fav-tab${tab === t.key ? ' active' : ''}`}
+                    className={`mo-status-tab${tab === t.key ? ' active' : ''}`}
                     onClick={() => setTab(t.key)}
                   >
                     {t.label}
-                    <span className="fav-tab-count">{t.count}</span>
+                    <span className="mo-status-tab-count">{t.count}</span>
                   </button>
                 ))}
               </div>
 
-              <div className="fav-search">
-                <SearchIcon />
+              <div className="mo-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3-3" />
+                </svg>
                 <input
+                  type="search"
                   placeholder="Поиск в избранном…"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   aria-label="Поиск в избранном"
+                  autoComplete="off"
                 />
               </div>
 
               <select
-                className="fav-sort"
+                className="mo-sort"
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
                 aria-label="Сортировка"
@@ -438,19 +422,21 @@ export default function FavoritesPage() {
 
             {/* Grid / empty */}
             {filtered.length === 0 ? (
-              <div className="fav-empty">
-                <div className="fav-empty-emoji">💔</div>
-                <div className="fav-empty-title">
+              <div className="mo-empty">
+                <div className="mo-empty-emoji">💔</div>
+                <div className="mo-empty-title">
                   {items.length === 0 ? 'В избранном пока пусто' : 'Ничего не нашли'}
                 </div>
-                <div className="fav-empty-sub">
+                <div className="mo-empty-sub">
                   {items.length === 0
                     ? 'Нажмите ❤ на карточке мастера или заявки, чтобы быстро вернуться к ней позже.'
                     : 'Попробуйте изменить фильтр или поисковый запрос.'}
                 </div>
-                <Link to={catalogLink} className="fav-empty-cta">
-                  Перейти в каталог
-                </Link>
+                <div className="mo-empty-actions">
+                  <Link to={catalogLink} className="mo-cta">
+                    {isWorker ? '+ Найти работу' : '+ Перейти в каталог'}
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="chpv-grid fav-grid">

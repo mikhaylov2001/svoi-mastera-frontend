@@ -107,7 +107,7 @@
     padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
   }
 
-  body.has-mobile-tab-bar .fav-page {
-    padding-bottom: calc(80px + 60px + env(safe-area-inset-bottom, 0px));
+  body.has-mobile-tab-bar .mo-page.fav-page {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
   }
 }
