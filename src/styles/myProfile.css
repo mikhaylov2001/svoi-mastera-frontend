@@ -30,11 +30,53 @@
 }
 .mp-loading-icon { font-size: 40px; }
 
+/* ── Hero: фон на всю ширину, контент в центрированной сетке ── */
 .mp-hero-v2 {
+  position: relative;
   width: 100%;
-  max-width: none;
-  margin: 0;
+  min-height: 360px;
+  overflow: hidden;
   border-radius: 0;
+  margin: 0;
+}
+
+.mp-hero-bg,
+.mp-hero-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mp-hero-bg {
+  background-size: cover;
+  background-position: center 42%;
+  transform: scale(1.04);
+  z-index: 0;
+}
+
+.mp-hero-shade {
+  z-index: 1;
+  background:
+    linear-gradient(105deg,
+      rgba(8, 14, 28, .88) 0%,
+      rgba(8, 14, 28, .62) 42%,
+      rgba(8, 14, 28, .38) 68%,
+      rgba(8, 14, 28, .52) 100%),
+    linear-gradient(180deg, rgba(8, 14, 28, .15) 0%, rgba(8, 14, 28, .55) 100%);
+}
+
+.mp-hero-inner {
+  position: relative;
+  z-index: 2;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 44px 32px 40px;
+  box-sizing: border-box;
+  min-height: 360px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
+  gap: 28px;
+  align-items: end;
 }
 
 .mp-shell-v2 {
@@ -42,59 +84,6 @@
   margin: 24px auto 0;
   padding: 0 18px;
   box-sizing: border-box;
-}
-
-/* ── Hero (grid: фон + тень на всю область, контент и панель поверх) ── */
-.mp-hero-v2 {
-  position: relative;
-  min-height: 430px;
-  overflow: hidden;
-  border-radius: 42px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 26px;
-  align-items: end;
-  padding: 38px;
-  box-shadow: 0 32px 90px rgba(17, 24, 39, .22);
-}
-
-.mp-hero-bg,
-.mp-hero-shade {
-  position: absolute;
-  inset: 0;
-  grid-column: 1 / -1;
-  grid-row: 1;
-}
-
-.mp-hero-bg {
-  background-size: cover;
-  background-position: center;
-  transform: scale(1.03);
-  z-index: 0;
-}
-
-.mp-hero-shade {
-  z-index: 1;
-  background:
-    linear-gradient(115deg, rgba(10, 12, 18, .9) 0%, rgba(10, 12, 18, .64) 46%, rgba(10, 12, 18, .35) 100%),
-    radial-gradient(circle at 20% 20%, rgba(255, 75, 31, .35), transparent 30%);
-}
-
-.mp-hero-content,
-.mp-hero-panel {
-  position: relative;
-  z-index: 2;
-  grid-column: auto;
-  grid-row: 1;
-  align-self: end;
-}
-
-.mp-hero-content {
-  grid-column: 1;
-}
-
-.mp-hero-panel {
-  grid-column: 2;
 }
 
 .mp-profile-chip,
@@ -110,13 +99,16 @@
 }
 
 .mp-profile-chip {
-  border: 1px solid rgba(255,255,255,.18);
+  border: 1px solid rgba(255, 255, 255, .14);
   border-radius: 999px;
-  padding: 9px 13px;
-  background: rgba(255,255,255,.12);
-  color: #fff;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  padding: 7px 12px;
+  background: rgba(255, 255, 255, .08);
+  color: rgba(255, 255, 255, .82);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .11em;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .mp-hero-content .mp-profile-chip {
@@ -124,41 +116,42 @@
 }
 
 .mp-hero-content h1 {
-  max-width: 760px;
-  margin: 18px 0 14px;
+  max-width: 680px;
+  margin: 14px 0 12px;
   color: #fff;
-  font-size: clamp(42px, 7vw, 86px);
-  line-height: .86;
-  letter-spacing: -.085em;
-  font-weight: 950;
+  font-size: clamp(34px, 4.8vw, 56px);
+  line-height: 1.04;
+  letter-spacing: -.04em;
+  font-weight: 800;
 }
 
 .mp-hero-content p,
 .mp-hero-content .mp-hero-sub {
-  max-width: 660px;
+  max-width: 580px;
   margin: 0;
-  color: rgba(255,255,255,.78);
-  font-size: 17px;
-  line-height: 1.6;
-  font-weight: 720;
+  color: rgba(255, 255, 255, .76);
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 500;
 }
 
 .mp-hero-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 9px;
-  margin-top: 24px;
+  gap: 8px;
+  margin-top: 20px;
 }
 
 .mp-hero-meta span {
   border-radius: 999px;
-  padding: 10px 13px;
-  background: rgba(255,255,255,.14);
-  color: #fff;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, .32);
+  border: 1px solid rgba(255, 255, 255, .1);
+  color: rgba(255, 255, 255, .92);
   font-size: 12px;
-  font-weight: 900;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .mp-sidebar-v2,
@@ -171,10 +164,16 @@
 }
 
 .mp-hero-panel {
-  border: 1px solid rgba(255,255,255,.72);
-  box-shadow: 0 20px 55px rgba(17,24,39,.1);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, .14);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .22);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  background: rgba(15, 23, 42, .42);
+  border-radius: 20px;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+  align-self: end;
 }
 
 .mp-glass-card {
@@ -183,15 +182,6 @@
   box-shadow: 0 4px 18px rgba(17,24,39,.07);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-}
-
-.mp-hero-panel {
-  border-color: rgba(255,255,255,.24);
-  background: rgba(255,255,255,.14);
-  border-radius: 30px;
-  padding: 18px;
-  display: grid;
-  gap: 10px;
 }
 
 .mp-mode-switch {
@@ -233,14 +223,21 @@
 .mp-primary-action,
 .mp-secondary-action {
   width: 100%;
-  min-height: 52px;
-  border-radius: 17px;
-  margin-top: 10px;
+  min-height: 48px;
+  border-radius: 14px;
+  font-size: 14px;
+  transition: transform .15s ease, opacity .15s ease, background .15s ease;
+}
+
+.mp-hero-panel .mp-primary-action,
+.mp-hero-panel .mp-secondary-action {
+  margin-top: 0;
 }
 
 .mp-secondary-action {
-  background: rgba(255,255,255,.18);
+  background: rgba(255, 255, 255, .12);
   color: #fff;
+  border: 1px solid rgba(255, 255, 255, .14);
 }
 
 .mp-primary-action:hover { opacity: .92; }
@@ -1317,21 +1314,17 @@
 }
 
 @media (max-width: 960px) {
-  .mp-hero-v2 {
+  .mp-hero-inner {
     grid-template-columns: 1fr;
-    gap: 18px;
-    align-items: end;
-  }
-
-  .mp-hero-content,
-  .mp-hero-panel {
-    grid-column: 1;
+    gap: 20px;
+    padding: 36px 24px 32px;
+    min-height: auto;
   }
 
   .mp-hero-panel {
     max-width: 420px;
     width: 100%;
-    justify-self: center;
+    justify-self: start;
   }
 
   .mp-shell-v2 { grid-template-columns: 1fr; margin-top: 18px; }
@@ -1360,24 +1353,20 @@
   }
 
   .mp-hero-v2 {
-    grid-template-columns: 1fr;
-    gap: 18px;
     min-height: auto;
-    border-radius: 28px;
-    padding: 22px;
-    box-shadow: 0 18px 46px rgba(17, 24, 39, .18);
   }
 
-  .mp-hero-content,
-  .mp-hero-panel {
-    grid-column: 1;
+  .mp-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 24px 18px 22px;
   }
 
   .mp-hero-content h1 {
-    max-width: 320px;
-    margin-top: 14px;
-    font-size: clamp(38px, 12vw, 48px);
-    line-height: .92;
+    max-width: 100%;
+    margin-top: 12px;
+    font-size: clamp(30px, 9vw, 42px);
+    line-height: 1.06;
   }
 
   .mp-hero-content p,
@@ -1388,28 +1377,27 @@
 
   .mp-hero-meta {
     gap: 7px;
-    margin-top: 18px;
+    margin-top: 16px;
   }
 
   .mp-hero-meta span {
-    padding: 8px 10px;
+    padding: 7px 10px;
     font-size: 11px;
-  }
-
-  .mp-hero-panel,
-  .mp-sidebar-v2,
-  .mp-glass-card,
-  .mp-stats-v2 article {
-    border-radius: 22px;
-    padding: 18px;
   }
 
   .mp-hero-panel {
     max-width: none;
     width: 100%;
-    justify-self: stretch;
-    background: rgba(255, 255, 255, .18);
+    border-radius: 16px;
+    padding: 14px;
     gap: 8px;
+  }
+
+  .mp-sidebar-v2,
+  .mp-glass-card,
+  .mp-stats-v2 article {
+    border-radius: 22px;
+    padding: 18px;
   }
 
   .mp-mode-switch button { padding: 10px 8px; font-size: 12px; }

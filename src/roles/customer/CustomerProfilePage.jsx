@@ -14,7 +14,7 @@ import ProfileShowcaseGrid from '../../components/myprofile/ProfileShowcaseGrid'
 import ProfileSettingsDetail from '../../components/myprofile/ProfileSettingsDetail';
 import '../../styles/myProfile.css';
 
-const COVER_DEFAULT = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1600&q=85';
+const COVER_DEFAULT = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2400&q=85';
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 
 const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND + u);
