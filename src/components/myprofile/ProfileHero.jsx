@@ -15,7 +15,6 @@ export default function ProfileHero({
         aria-hidden
       />
       <div className="mp-hero-shade" aria-hidden />
-      <div className="mp-hero-curve" aria-hidden />
 
       <div className="mp-hero-inner">
         <div className="mp-hero-content">
