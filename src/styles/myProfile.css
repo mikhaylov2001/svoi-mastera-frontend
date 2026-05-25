@@ -32,8 +32,9 @@
 
 .mp-hero-v2 {
   width: 100%;
-  max-width: 1180px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
 }
 
 .mp-shell-v2 {
@@ -1591,7 +1592,7 @@
 @media (max-width: 420px) {
   .mp-page-v2 { padding: 0 0 88px; }
   .mp-shell-v2 { padding: 0 8px; }
-  .mp-hero-v2 { border-radius: 20px; }
+  .mp-hero-v2 { border-radius: 0; }
   .mp-hero-content h1 { font-size: 28px; }
   .mp-stats-v2 { grid-template-columns: 1fr; }
 }

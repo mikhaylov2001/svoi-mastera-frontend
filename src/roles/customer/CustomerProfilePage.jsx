@@ -163,7 +163,7 @@ export default function CustomerProfilePage() {
           r.city || cityLabel,
         ].filter(Boolean).join(' · '),
         image: r.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ categoryName: r.categoryName, categoryId: r.categoryId }),
-        onClick: () => navigate(`/orders/${r.id}`),
+        onClick: () => navigate(`/my-requests?request=${encodeURIComponent(r.id)}`),
       })),
     [activeRequests, cityLabel, navigate]);
 
@@ -282,8 +282,13 @@ export default function CustomerProfilePage() {
                 dealsListPath="/my-requests"
                 onSettingsSelect={setSettingsKey}
                 onDealClick={(d) => {
-                  const isRequest = ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED'].includes(d.status);
-                  navigate(isRequest ? '/my-requests' : `/deals/${d.id}`);
+                  const isRequest = requests.some(r => String(r.id) === String(d.id))
+                    || ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'].includes(d.status);
+                  navigate(
+                    isRequest
+                      ? `/my-requests?request=${encodeURIComponent(d.id)}`
+                      : `/deals?dealId=${encodeURIComponent(d.id)}`,
+                  );
                 }}
               />
               <ProfileShowcaseGrid

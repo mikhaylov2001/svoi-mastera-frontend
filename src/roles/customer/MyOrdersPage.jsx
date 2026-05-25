@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import { SECTIONS } from '../../pages/SectionsPage';
@@ -570,6 +570,7 @@ function requestCanRemove(req) {
 export default function MyOrdersPage() {
   const { userId, userName, userLastName, userAvatar } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [requests,       setRequests]       = useState([]);
   const [categories,     setCategories]     = useState([]);
@@ -694,6 +695,17 @@ export default function MyOrdersPage() {
   useEffect(() => { if (userId) load(); }, [userId, load]);
 
   useSameRouteRefetch('/my-requests', load);
+
+  useEffect(() => {
+    const reqId = searchParams.get('request');
+    if (!reqId || !requests.length) return;
+    const req = requests.find(r => String(r.id) === String(reqId));
+    if (req) {
+      setDetailShowOffersPanel(false);
+      setDetail(req);
+      setPhotoIdx(0);
+    }
+  }, [searchParams, requests]);
 
   /** Обновить счётчики просмотров (и заявки) при возврате на вкладку — не чаще раз в 25 с. */
   const lastListRefreshRef = useRef(0);
