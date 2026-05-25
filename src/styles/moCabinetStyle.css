@@ -1849,31 +1849,13 @@
   .mo-detail-grid { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 960px) {
-  .mo-hero { height: 240px; }
-  .mo-grid { grid-template-columns: 1fr; gap: 16px; }
-}
-
 @media (max-width: 860px) {
   .req-grid-sections { grid-template-columns: 1fr 1fr; }
   .req-grid-sections .req-sec-card:nth-child(n) { grid-column: span 2; grid-row: span 1; }
   .req-grid-cats { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 768px) {
-  .mo-hero { height: var(--mo-hero-h-mobile); }
-  .mo-detail-grid { grid-template-columns: 1fr; }
-  .req-flow-layout { grid-template-columns: 1fr; }
-  .req-help, .req-preview-card { order: 2; }
-  .req-photo-grid { grid-template-columns: 1fr 1fr; }
-  .req-photo-cell.main { grid-row: span 1; }
-}
-
 @media (max-width: 640px) {
-  .mo-toolbar { flex-direction: column; align-items: stretch; }
-  .mo-status-tabs { overflow-x: auto; }
-  .mo-search { max-width: none; min-width: 0; }
-
   .cab-sheet { width: 100vw; max-height: 94vh; bottom: 0; border-radius: 26px 26px 0 0; }
   .cab-sheet-head { padding: 16px 18px; }
   .cab-sheet-head h2 { font-size: 24px; }
@@ -1891,15 +1873,270 @@
   .req-grid-cats { grid-template-columns: 1fr; }
   .req-form-grid { grid-template-columns: 1fr; }
   .req-address, .req-textarea { grid-column: span 1; }
+
+  .req-flow-layout { grid-template-columns: 1fr; }
+  .req-help, .req-preview-card { order: 2; }
+  .req-photo-grid { grid-template-columns: 1fr 1fr; }
+  .req-photo-cell.main { grid-row: span 1; }
 }
 
+/* ══ MOBILE: deals page (mo-page / mo-orders-root) ══ */
+
+/* 960px: одна колонка */
+@media (max-width: 960px) {
+  .mo-hero { height: 240px; }
+  .mo-grid { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* 768px: hero мобильный, контент-«шторка» */
+@media (max-width: 768px) {
+  .mo-page {
+    overflow-x: hidden;
+  }
+
+  .mo-hero {
+    height: var(--mo-hero-h-mobile, 240px);
+    border-radius: 0 0 30px 30px;
+    box-shadow: 0 18px 44px rgba(17, 24, 39, 0.12);
+  }
+
+  .mo-hero-inner {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-end;
+    padding: 12px 16px 20px;
+    gap: 14px;
+  }
+
+  .mo-hero h1 {
+    font-size: clamp(26px, 7vw, 32px);
+  }
+
+  .mo-hero p {
+    font-size: 14px;
+  }
+
+  .mo-cta {
+    width: 100%;
+    text-align: center;
+    padding: 14px 20px;
+    min-height: 50px;
+    border-radius: 14px;
+    font-size: 15px;
+    justify-content: center;
+  }
+
+  .mo-main {
+    margin-top: 0;
+    padding: 20px 16px 32px;
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.08);
+  }
+
+  .mo-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    margin-bottom: 20px;
+  }
+
+  .mo-status-tabs {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px;
+    padding: 5px;
+  }
+  .mo-status-tabs::-webkit-scrollbar { display: none; }
+
+  .mo-status-tab {
+    flex-shrink: 0;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .mo-search {
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+    height: 48px;
+    border-radius: 16px;
+  }
+
+  .mo-sort {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  .mo-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* Card */
+  .mo-card {
+    border-radius: 24px;
+    box-shadow: 0 8px 28px rgba(20, 24, 31, 0.10);
+  }
+  .mo-card:hover {
+    transform: none;
+    box-shadow: 0 8px 28px rgba(20, 24, 31, 0.10);
+  }
+  .mo-card:active {
+    transform: scale(0.985);
+    box-shadow: 0 4px 16px rgba(20, 24, 31, 0.13);
+  }
+
+  /* Photo stays 16:9 */
+  .mo-card-photo {
+    aspect-ratio: 16 / 9;
+  }
+
+  /* Status badge: compact */
+  .mo-card-status-badge {
+    top: 10px;
+    left: 10px;
+    padding: 5px 10px;
+    font-size: 11px;
+    gap: 5px;
+  }
+
+  /* Price overlay */
+  .mo-card-overlay-bottom {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+  }
+
+  .mo-card-price-num {
+    font-size: 19px;
+  }
+
+  .mo-card-master-pill {
+    padding: 5px 8px 5px 5px;
+    gap: 6px;
+  }
+
+  .mo-card-master-avatar {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+
+  .mo-card-master-name {
+    font-size: 11px;
+  }
+  .mo-card-master-role {
+    font-size: 10px;
+  }
+
+  /* Body */
+  .mo-card-body {
+    padding: 14px 16px 6px;
+    gap: 10px;
+  }
+
+  .mo-card-title {
+    font-size: 15px;
+  }
+
+  .mo-card-cat-chip {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+
+  /* Progress */
+  .mo-card-progress {
+    gap: 8px;
+  }
+
+  .mo-card-progress-label {
+    font-size: 11px;
+  }
+
+  .mo-card-progress-pct {
+    font-size: 12px;
+  }
+
+  .mo-card-progress-bar {
+    height: 4px;
+    border-radius: 4px;
+  }
+
+  .mo-card-step-dot {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+
+  .mo-card-step-label {
+    font-size: 10px;
+  }
+
+  /* Footer */
+  .mo-card-footer {
+    padding: 6px 0;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .mo-card-date {
+    font-size: 11px;
+  }
+
+  /* Actions: primary pill full-width, icons beside */
+  .mo-card-actions {
+    padding: 10px 14px 14px;
+    gap: 8px;
+  }
+
+  .mo-card-btn-primary {
+    font-size: 14px;
+    min-height: 46px;
+    border-radius: 22px;
+  }
+
+  .mo-card-btn-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+  }
+}
+
+/* 480px: ещё компактнее */
 @media (max-width: 480px) {
   .mo-hero { border-radius: 0 0 24px 24px; }
-  .mo-hero-inner { padding: 0 14px 22px; flex-direction: column; align-items: flex-start; justify-content: flex-end; }
-  .mo-cta { width: 100%; text-align: center; }
-  .mo-main { padding: 14px 12px 92px; }
-  .mo-status-tabs { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
-  .mo-status-tab { justify-content: center; }
-  .mo-card-actions { flex-wrap: wrap; }
-  .mo-card-btn-primary { min-width: calc(100% - 108px); }
+  .mo-hero-inner { padding: 10px 14px 18px; }
+  .mo-hero h1 { font-size: clamp(22px, 6.5vw, 28px); }
+
+  .mo-main { padding: 16px 12px 92px; }
+
+  .mo-status-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow-x: unset;
+    width: 100%;
+  }
+  .mo-status-tab {
+    justify-content: center;
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .mo-card-actions { flex-wrap: nowrap; }
+
+  /* Меню выше экрана не уходит */
+  .mo-card-more-menu {
+    right: 0;
+    left: auto;
+    min-width: 180px;
+  }
 }

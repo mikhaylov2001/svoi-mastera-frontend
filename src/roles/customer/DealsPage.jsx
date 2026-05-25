@@ -673,7 +673,7 @@ export default function DealsPage() {
   /* ── List view ── */
   return (
     <>
-    <div className="mo-page">
+    <div className="mo-page mo-orders-root">
       {/* Hero */}
       <header className="mo-hero">
         <img src={HERO} alt="" />

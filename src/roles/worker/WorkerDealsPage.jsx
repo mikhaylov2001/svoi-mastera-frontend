@@ -745,7 +745,7 @@ export default function WorkerDealsPage() {
   /* ══ LIST ══ */
   return (
     <>
-    <div className="mo-page">
+    <div className="mo-page mo-orders-root">
       <header className="mo-hero">
         <img src={MY_DEALS_HERO_PHOTO} alt="" />
         <div className="mo-hero-inner">
