@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════
-   MOBILE BOTTOM TAB BAR (iOS-style)
+   MOBILE BOTTOM TAB BAR — Lovable v13
 ══════════════════════════════════════ */
 .mobile-tab-bar {
   display: none;
@@ -8,18 +8,16 @@
   left: 0;
   right: 0;
   z-index: 250;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  border-top: 1px solid #e4e4e7;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .mobile-tab-bar-inner {
   display: flex;
   align-items: stretch;
-  height: 60px;
+  height: 72px;
+  padding: 0 8px;
 }
 
 .mobile-tab-item {
@@ -28,56 +26,62 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
+  padding-top: 8px;
   text-decoration: none;
   position: relative;
-  color: #9ca3af;
+  color: #8a8f99;
   transition: color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .mobile-tab-item.is-active {
-  color: #1f2937;
+  color: #ff6b1a;
 }
 
 .mobile-tab-icon-wrap {
   position: relative;
-  width: 40px;
+  width: 42px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 999px;
   background: transparent;
   transition: background 0.15s ease;
 }
 
-.mobile-tab-icon-wrap svg {
+.mobile-tab-item.is-active .mobile-tab-icon-wrap {
+  background: #fff1e6;
+}
+
+.mobile-tab-icon {
   width: 22px;
   height: 22px;
   display: block;
+  color: inherit;
 }
 
-.mobile-tab-item.is-active .mobile-tab-icon-wrap {
-  background: rgba(17, 24, 39, 0.06);
+.mobile-tab-item:not(.is-active) .mobile-tab-icon {
+  color: #8a8f99;
 }
 
-.mobile-tab-item.is-active svg {
-  stroke-width: 2;
+.mobile-tab-item.is-active .mobile-tab-icon {
+  color: #ff6b1a;
 }
 
 .mobile-tab-badge {
   position: absolute;
-  top: 2px;
-  right: 4px;
-  min-width: 14px;
-  height: 14px;
-  padding: 0 3px;
+  top: -4px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
   border-radius: 999px;
-  background: #e8410a;
+  background: #ff4d4f;
   color: #fff;
-  font-size: 8px;
-  font-weight: 900;
+  font-size: 10px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,15 +90,18 @@
 }
 
 .mobile-tab-label {
-  font-size: 10px;
-  font-weight: 600;
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  font-weight: 500;
   font-family: 'Manrope', system-ui, sans-serif;
   line-height: 1;
   letter-spacing: -0.01em;
 }
 
 .mobile-tab-item.is-active .mobile-tab-label {
-  font-weight: 800;
+  color: #ff6b1a;
+  font-weight: 700;
 }
 
 @media (max-width: 900px) {
@@ -103,10 +110,10 @@
   }
 
   body.has-mobile-tab-bar .app-main {
-    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
   body.has-mobile-tab-bar .mo-page.fav-page {
-    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 }

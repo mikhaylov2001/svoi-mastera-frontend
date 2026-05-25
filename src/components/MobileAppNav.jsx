@@ -45,6 +45,7 @@ export default function MobileAppNav() {
         {items.map((item) => {
           const active = isNavTabActive(pathname, item, items);
           const badge = item.badgeKey === 'chat' && unread > 0 ? unread : 0;
+          const Icon = item.Icon;
 
           return (
             <Link
@@ -54,10 +55,14 @@ export default function MobileAppNav() {
               aria-current={active ? 'page' : undefined}
             >
               <span className="mobile-tab-icon-wrap">
-                {item.icon}
-                {badge > 0 && !active && (
+                <Icon
+                  className="mobile-tab-icon"
+                  strokeWidth={active ? 2.4 : 1.8}
+                  aria-hidden
+                />
+                {badge > 0 && (
                   <span className="mobile-tab-badge">
-                    {badge > 99 ? '99+' : badge}
+                    {badge > 9 ? '9+' : badge}
                   </span>
                 )}
               </span>
