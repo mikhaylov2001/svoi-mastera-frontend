@@ -661,13 +661,27 @@
   display: block;
 }
 
-/* Dark progress card */
+/* Dark progress card — тёплая палитра проекта */
 .mo-progress-card {
-  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 85% 70% at 100% 0%, rgba(232, 65, 10, .16), transparent 58%),
+    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(255, 112, 67, .09), transparent 52%),
+    linear-gradient(155deg, #1c1715 0%, #241e1b 50%, #1a1614 100%);
   border-radius: 24px;
   padding: 22px 24px;
-  box-shadow: 0 2px 8px rgba(17,24,39,.08), 0 12px 32px rgba(17,24,39,.14);
-  border: 1px solid rgba(255,255,255,.07);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .05),
+    0 16px 40px rgba(18, 12, 8, .28);
+  border: 1px solid rgba(255, 214, 196, .1);
+}
+.mo-progress-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .03), transparent 38%);
+  pointer-events: none;
 }
 
 .mo-progress-card-header {
@@ -675,6 +689,24 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 22px;
+  position: relative;
+  z-index: 1;
+}
+
+.mo-progress-card-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(255, 206, 180, .52);
+  margin-bottom: 4px;
+}
+
+.mo-progress-card-title {
+  font-size: 18px;
+  font-weight: 950;
+  color: #fff7f2;
+  letter-spacing: -.3px;
 }
 
 .mo-progress-ring {
@@ -685,18 +717,20 @@
   height: 54px;
   border-radius: 50%;
   position: relative;
+  flex-shrink: 0;
 }
 
 .mo-progress-ring-inner {
   position: absolute;
   inset: 5px;
   border-radius: 50%;
-  background: #1a1a2e;
+  background: #221c19;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
   font-weight: 950;
+  box-shadow: inset 0 0 0 1px rgba(255, 214, 196, .08);
 }
 
 /* Steps vertical timeline */
@@ -704,6 +738,8 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .mo-timeline-item {
@@ -747,15 +783,18 @@
 .mo-timeline-step-name {
   font-size: 13px;
   font-weight: 900;
-  color: #fff;
+  color: #fff7f2;
 }
-.mo-timeline-step-name.future { color: rgba(255,255,255,.22); }
+.mo-timeline-step-name.future { color: rgba(255, 220, 200, .28); }
 
 .mo-timeline-step-sub {
   font-size: 11px;
   font-weight: 700;
   margin-top: 2px;
 }
+.mo-timeline-step-sub--done { color: rgba(110, 231, 183, .82); }
+.mo-timeline-step-sub--curr { color: rgba(255, 206, 180, .55); }
+.mo-timeline-step-sub--future { color: rgba(255, 220, 200, .22); }
 
 /* Info cards */
 .mo-info-card {
@@ -869,19 +908,52 @@
 }
 .mo-cancel-btn:hover { background: #fef2f2; }
 
-/* Dark confirmation (deals detail) */
+/* Dark confirmation (deals detail) — тёплая палитра проекта */
 .mo-confirm-card.mo-confirm-card--dark {
-  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%) !important;
-  box-shadow: 0 2px 8px rgba(17,24,39,.08), 0 12px 32px rgba(17,24,39,.14);
-  border: 1px solid rgba(255,255,255,.07) !important;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 80% 55% at 100% 0%, rgba(232, 65, 10, .14), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 0% 100%, rgba(255, 112, 67, .07), transparent 50%),
+    linear-gradient(155deg, #1c1715 0%, #241e1b 50%, #1a1614 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .05),
+    0 16px 40px rgba(18, 12, 8, .28) !important;
+  border: 1px solid rgba(255, 214, 196, .1) !important;
+}
+
+.mo-confirm-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+}
+.mo-confirm-banner--wait {
+  background: linear-gradient(135deg, #c93a0a 0%, #e8410a 48%, #ff7043 100%);
+  box-shadow: 0 10px 28px rgba(232, 65, 10, .32);
+}
+.mo-confirm-banner--done {
+  background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+  box-shadow: 0 10px 28px rgba(34, 197, 94, .28);
+}
+.mo-confirm-banner-title {
+  font-size: 14px;
+  font-weight: 950;
+  color: #fff;
+}
+.mo-confirm-banner-sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, .88);
+  margin-top: 2px;
 }
 
 .mo-cancel-btn--dark {
-  border: 1.5px solid rgba(239,68,68,.35);
-  background: rgba(239,68,68,.08);
-  color: #f87171;
+  border: 1.5px solid rgba(248, 113, 113, .32) !important;
+  background: rgba(127, 29, 29, .22) !important;
+  color: #fca5a5 !important;
 }
-.mo-cancel-btn--dark:hover { background: rgba(239,68,68,.15); }
+.mo-cancel-btn--dark:hover { background: rgba(127, 29, 29, .34) !important; }
 
 .mo-master-btn--dark {
   border: 2px solid rgba(232,65,10,.55);

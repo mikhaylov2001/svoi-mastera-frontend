@@ -122,7 +122,8 @@ function DealDarkProgress({ deal }) {
   const stepIdx = dealStepIndex(deal.status);
   const isCompleted = deal.status === 'COMPLETED';
   const progress = stepIdx < 0 ? 0 : Math.round((stepIdx / (DEAL_STEPS.length - 1)) * 100);
-  const progressColor = isCompleted ? '#22c55e' : '#e8410a';
+  const progressColor = isCompleted ? '#2dd4a8' : '#e8410a';
+  const progressRingTrack = 'rgba(255, 214, 196, .12)';
   const stageLabel = isCompleted
     ? 'Сделка завершена 🎉'
     : deal.status === 'CANCELLED'
@@ -133,15 +134,14 @@ function DealDarkProgress({ deal }) {
     <div className="mo-progress-card">
       <div className="mo-progress-card-header">
         <div>
-          <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: 1.4, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 4 }}>
-            Прогресс сделки
-          </div>
-          <div style={{ fontSize: 18, fontWeight: 950, color: '#fff', letterSpacing: '-.3px' }}>
-            {stageLabel}
-          </div>
+          <div className="mo-progress-card-label">Прогресс сделки</div>
+          <div className="mo-progress-card-title">{stageLabel}</div>
         </div>
-        <div className="mo-progress-ring" style={{ background: `conic-gradient(${progressColor} ${progress * 3.6}deg, rgba(255,255,255,.08) 0deg)` }}>
-          <div className="mo-progress-ring-inner" style={{ color: isCompleted ? '#22c55e' : '#ff7043' }}>
+        <div
+          className="mo-progress-ring"
+          style={{ background: `conic-gradient(${progressColor} ${progress * 3.6}deg, ${progressRingTrack} 0deg)` }}
+        >
+          <div className="mo-progress-ring-inner" style={{ color: isCompleted ? '#6ee7b7' : '#ff8a5b' }}>
             {progress}%
           </div>
         </div>
@@ -159,12 +159,12 @@ function DealDarkProgress({ deal }) {
                   className="mo-timeline-dot"
                   style={{
                     background: done
-                      ? 'linear-gradient(135deg,#22c55e,#16a34a)'
+                      ? 'linear-gradient(135deg,#2dd4a8,#16a34a)'
                       : curr
-                        ? (isCompleted ? 'linear-gradient(135deg,#22c55e,#16a34a)' : 'linear-gradient(135deg,#ff4b1f,#e8410a)')
-                        : 'rgba(255,255,255,.07)',
-                    boxShadow: curr ? `0 0 0 4px ${isCompleted ? 'rgba(34,197,94,.2)' : 'rgba(232,65,10,.25)'}` : 'none',
-                    color: done || curr ? '#fff' : 'rgba(255,255,255,.22)',
+                        ? (isCompleted ? 'linear-gradient(135deg,#2dd4a8,#16a34a)' : 'linear-gradient(135deg,#ff642f,#e8410a)')
+                        : 'rgba(255,214,196,.08)',
+                    boxShadow: curr ? `0 0 0 4px ${isCompleted ? 'rgba(45,212,168,.22)' : 'rgba(232,65,10,.28)'}` : 'none',
+                    color: done || curr ? '#fff' : 'rgba(255,206,180,.35)',
                   }}
                 >
                   {done ? (
@@ -178,15 +178,14 @@ function DealDarkProgress({ deal }) {
                 {!isLast && (
                   <div
                     className="mo-timeline-line"
-                    style={{ background: done ? 'linear-gradient(180deg,#22c55e,rgba(232,65,10,.4))' : 'rgba(255,255,255,.06)' }}
+                    style={{ background: done ? 'linear-gradient(180deg,#2dd4a8,rgba(232,65,10,.35))' : 'rgba(255,214,196,.08)' }}
                   />
                 )}
               </div>
               <div style={{ paddingBottom: isLast ? 0 : 18, paddingTop: 7 }}>
                 <div className={`mo-timeline-step-name${future ? ' future' : ''}`}>{s}</div>
                 <div
-                  className="mo-timeline-step-sub"
-                  style={{ color: done ? 'rgba(34,197,94,.75)' : curr ? 'rgba(255,255,255,.45)' : 'rgba(255,255,255,.15)' }}
+                  className={`mo-timeline-step-sub ${done ? 'mo-timeline-step-sub--done' : curr ? 'mo-timeline-step-sub--curr' : 'mo-timeline-step-sub--future'}`}
                 >
                   {done ? '✓ Выполнено' : curr ? 'Текущий этап' : '—'}
                 </div>
@@ -203,21 +202,15 @@ function DealConfirmCard({
   myOk, workerOk, actionId, dealId, onComplete, onCancelActive,
 }) {
   return (
-    <div
-      className="mo-confirm-card mo-confirm-card--dark"
-      style={{
-        background: 'linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)',
-        border: '1px solid rgba(255,255,255,.07)',
-      }}
-    >
-      <div className="mo-confirm-accent" style={{ background: myOk ? '#22c55e' : 'linear-gradient(90deg,#e8410a,#ff7043)' }} />
+    <div className="mo-confirm-card mo-confirm-card--dark">
+      <div className="mo-confirm-accent" style={{ background: myOk ? 'linear-gradient(90deg,#2dd4a8,#16a34a)' : 'linear-gradient(90deg,#e8410a,#ff7043)' }} />
       <div className="mo-confirm-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <div
             className="mo-confirm-icon"
             style={{
-              background: myOk ? 'linear-gradient(135deg,#22c55e,#16a34a)' : 'linear-gradient(135deg,#ff4b1f,#e8410a)',
-              boxShadow: `0 4px 12px ${myOk ? 'rgba(34,197,94,.3)' : 'rgba(232,65,10,.3)'}`,
+              background: myOk ? 'linear-gradient(135deg,#2dd4a8,#16a34a)' : 'linear-gradient(135deg,#ff642f,#e8410a)',
+              boxShadow: `0 4px 14px ${myOk ? 'rgba(45,212,168,.28)' : 'rgba(232,65,10,.32)'}`,
             }}
           >
             {myOk ? (
@@ -281,17 +274,17 @@ function DealConfirmCard({
             {actionId === dealId ? 'Подтверждаем…' : '✓ Подтвердить выполнение'}
           </button>
         ) : !workerOk ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 14, background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', boxShadow: '0 8px 22px rgba(245,158,11,.3)' }}>
+          <div className="mo-confirm-banner mo-confirm-banner--wait">
             <div style={{ fontSize: 24 }}>⏳</div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 950, color: '#fff' }}>Вы подтвердили!</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.82)', marginTop: 2 }}>Ожидаем мастера…</div>
+              <div className="mo-confirm-banner-title">Вы подтвердили!</div>
+              <div className="mo-confirm-banner-sub">Ожидаем мастера…</div>
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 14, background: 'linear-gradient(135deg,#22c55e,#16a34a)', boxShadow: '0 8px 22px rgba(34,197,94,.3)' }}>
+          <div className="mo-confirm-banner mo-confirm-banner--done">
             <div style={{ fontSize: 24 }}>🎉</div>
-            <div><div style={{ fontSize: 14, fontWeight: 950, color: '#fff' }}>Обе стороны подтвердили!</div></div>
+            <div><div className="mo-confirm-banner-title">Обе стороны подтвердили!</div></div>
           </div>
         )}
         <button type="button" className="mo-cancel-btn mo-cancel-btn--dark" onClick={onCancelActive}>Отменить сделку в работе</button>
@@ -491,17 +484,11 @@ function DealDetail({
             </div>
 
             {deal.status === 'NEW' ? (
-              <div
-                className="mo-confirm-card mo-confirm-card--dark"
-                style={{
-                  background: 'linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)',
-                  border: '1px solid rgba(255,255,255,.07)',
-                }}
-              >
-                <div className="mo-confirm-accent" style={{ background: 'linear-gradient(90deg,#f59e0b,#fbbf24)' }} />
+              <div className="mo-confirm-card mo-confirm-card--dark">
+                <div className="mo-confirm-accent" style={{ background: 'linear-gradient(90deg,#e8410a,#ff7043)' }} />
                 <div className="mo-confirm-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <div className="mo-confirm-icon" style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', boxShadow: '0 4px 12px rgba(245,158,11,.3)' }}>
+                    <div className="mo-confirm-icon" style={{ background: 'linear-gradient(135deg,#ff642f,#e8410a)', boxShadow: '0 4px 14px rgba(232,65,10,.32)' }}>
                       ⏳
                     </div>
                     <div>
