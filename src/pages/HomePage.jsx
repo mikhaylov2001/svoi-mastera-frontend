@@ -42,6 +42,54 @@ const FEED_AVATAR_GRADIENTS = [
   'linear-gradient(135deg,#f59e0b,#fbbf24)',
 ];
 
+function pluralRu(n, one, few, many) {
+  const abs = Math.abs(n) % 100;
+  const n1 = abs % 10;
+  if (abs > 10 && abs < 20) return many;
+  if (n1 === 1) return one;
+  if (n1 >= 2 && n1 <= 4) return few;
+  return many;
+}
+
+function HomeCategoryGrid({ items, categories, getLink, getCount, countLabels }) {
+  return (
+    <div className="chpv-cat-grid">
+      {items.map((cat) => {
+        const n = getCount(cat.name);
+        const img =
+          CAT_PHOTOS[cat.slug] ||
+          getCategoryPlaceholderPhotoUrlOrDefault(
+            countLabels.kind === 'listing'
+              ? { category: cat.name, categorySlug: cat.slug }
+              : { categoryName: cat.name, categorySlug: cat.slug },
+            categories,
+          );
+        const meta = n
+          ? `${n} ${pluralRu(n, countLabels.one, countLabels.few, countLabels.many)}`
+          : countLabels.empty;
+
+        return (
+          <Link key={cat.slug} className="chpv-cat-card" to={getLink(cat)}>
+            <div className="chpv-cat-media">
+              {img ? (
+                <img src={img} alt="" loading="lazy" />
+              ) : (
+                <div className="chpv-cat-ph" aria-hidden>
+                  {cat.emoji || '🛠️'}
+                </div>
+              )}
+            </div>
+            <div className="chpv-cat-body">
+              <div className="chpv-cat-name">{cat.name}</div>
+              <div className="chpv-cat-meta">{meta}</div>
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
 /** Демо-лента «Сейчас на платформе», если с API мало событий (как у мастера). */
 const FEED_PLATFORM_DEFAULT = [
   { who: 'Ольга', what: 'ищет мастера «Установка двери»', time: '1 мин', color: 'linear-gradient(135deg,#e8410a,#ff7043)' },
@@ -500,34 +548,19 @@ export function CustomerHomePage({ userId }) {
             <h2>Популярные категории</h2>
             <Link to="/find-master">Все категории →</Link>
           </div>
-          <div className="chpv-bento">
-            {bentoCats.map((cat, i) => {
-              const n = countInCategory(cat.name);
-              const img =
-                CAT_PHOTOS[cat.slug] ||
-                getCategoryPlaceholderPhotoUrlOrDefault(
-                  { category: cat.name, categorySlug: cat.slug },
-                  categoriesApi,
-                );
-              return (
-                <Link key={cat.slug} className={`chpv-bento-tile ${i === 0 ? 'big' : ''}`} to={`/find-master/${cat.slug}`}>
-                  {img ? (
-                    <div className="chpv-bento-bg" style={{ backgroundImage: `url(${img})` }} />
-                  ) : (
-                    <div className="chpv-bento-bg chpv-bento-ph">{cat.emoji || '🛠️'}</div>
-                  )}
-                  <div className="chpv-bento-overlay" />
-                  <div className="chpv-bento-body">
-                    <div className="chpv-bento-name">{cat.name}</div>
-                    <div className="chpv-bento-meta">
-                      <span>{n ? `${n} объявлений` : 'мастера'}</span>
-                      <span>в каталоге</span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+          <HomeCategoryGrid
+            items={bentoCats}
+            categories={categoriesApi}
+            getLink={(cat) => `/find-master/${cat.slug}`}
+            getCount={countInCategory}
+            countLabels={{
+              kind: 'listing',
+              one: 'объявление',
+              few: 'объявления',
+              many: 'объявлений',
+              empty: 'Открыть каталог',
+            }}
+          />
 
           <div className="chpv-chips">
             {CHIPS_CUSTOMER.map((chip) => (
@@ -953,34 +986,19 @@ export function WorkerHomePage({ userId, userName }) {
             <h2>Популярные направления</h2>
             <Link to="/find-work">Все заявки →</Link>
           </div>
-          <div className="chpv-bento">
-            {bentoCats.map((cat, i) => {
-              const n = countRequestsInCategory(cat.name);
-              const img =
-                CAT_PHOTOS[cat.slug] ||
-                getCategoryPlaceholderPhotoUrlOrDefault(
-                  { categoryName: cat.name, categorySlug: cat.slug },
-                  categories,
-                );
-              return (
-                <Link key={cat.slug} className={`chpv-bento-tile ${i === 0 ? 'big' : ''}`} to={`/find-work?q=${encodeURIComponent(cat.name)}`}>
-                  {img ? (
-                    <div className="chpv-bento-bg" style={{ backgroundImage: `url(${img})` }} />
-                  ) : (
-                    <div className="chpv-bento-bg chpv-bento-ph">{cat.emoji || '🛠️'}</div>
-                  )}
-                  <div className="chpv-bento-overlay" />
-                  <div className="chpv-bento-body">
-                    <div className="chpv-bento-name">{cat.name}</div>
-                    <div className="chpv-bento-meta">
-                      <span>{n ? `${n} заявок` : 'заявки'}</span>
-                      <span>рядом</span>
-            </div>
-                </div>
-                </Link>
-              );
-            })}
-          </div>
+          <HomeCategoryGrid
+            items={bentoCats}
+            categories={categories}
+            getLink={(cat) => `/find-work?q=${encodeURIComponent(cat.name)}`}
+            getCount={countRequestsInCategory}
+            countLabels={{
+              kind: 'job',
+              one: 'заявка',
+              few: 'заявки',
+              many: 'заявок',
+              empty: 'Смотреть заявки',
+            }}
+          />
 
           <div className="chpv-chips">
             {CHIPS_WORKER.map((chip) => (
