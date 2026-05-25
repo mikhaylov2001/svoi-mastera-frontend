@@ -305,38 +305,167 @@
   border-color: #fecaca;
 }
 
-@media (max-width: 640px) {
-  .fav-page .mo-search {
-    height: 36px;
+/* ── Mobile (≤768px) ── */
+@media (max-width: 768px) {
+  .fav-page.mo-orders-root {
+    min-height: 100dvh;
   }
 
-  .fav-page .sort-dd {
-    width: 100%;
-    max-width: none;
+  .fav-page .mo-toolbar {
+    margin-bottom: 14px;
   }
 
-  .fav-page .chpv-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+  .fav-page .mo-toolbar .mo-search {
+    height: 44px;
   }
 
-  .fav-page .chpv-card { border-radius: 14px; }
-  .fav-page .chpv-card-price { font-size: 16px; }
-  .fav-page .chpv-card-body { padding: 10px 12px 12px; }
+  .fav-page .mo-status-tabs {
+    margin: 0 -2px;
+    padding-bottom: 4px;
+  }
 
-  .fav-page .chpv-card-quick {
-    opacity: 1;
-    transform: none;
+  .fav-page .mo-status-tab {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .fav-page .mo-status-tab-count {
+    font-size: 10px;
+    padding: 1px 5px;
   }
 
   .fav-bulk {
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
+    gap: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    border-radius: 18px;
+    background: #f8fafc;
+    border: 1px solid #eef2f7;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .fav-bulk-text {
+    font-size: 12px;
+    line-height: 1.45;
+    color: #64748b;
   }
 
   .fav-bulk-btn {
     width: 100%;
-    text-align: center;
+    min-height: 44px;
+    padding: 11px 16px;
+    font-size: 13px;
+    border-radius: 12px;
+  }
+
+  .fav-page .chpv-grid,
+  .fav-page .fav-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .fav-page .chpv-card {
+    border-radius: 18px;
+    border-color: #eceff3;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .fav-page .chpv-card:hover {
+    transform: none;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+  }
+
+  .fav-page .chpv-card-img {
+    aspect-ratio: 16 / 10;
+  }
+
+  .fav-page .chpv-card-tag {
+    top: 12px;
+    left: 12px;
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    max-width: calc(100% - 64px);
+  }
+
+  /* На мобилке карточка целиком кликабельна — оверлей-кнопки не нужны */
+  .fav-page .chpv-card-quick {
+    display: none;
+  }
+
+  .fav-page .chpv-card-body {
+    padding: 14px 16px 16px;
+    gap: 6px;
+  }
+
+  .fav-page .chpv-card-price {
+    font-size: 20px;
+  }
+
+  .fav-page .chpv-card-unit {
+    font-size: 12px;
+  }
+
+  .fav-page .chpv-card-title {
+    font-size: 14px;
+    -webkit-line-clamp: 2;
+  }
+
+  .fav-page .chpv-card-meta {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    margin-top: 2px;
+    font-size: 12px;
+  }
+
+  .fav-page .chpv-card-city {
+    margin-left: 0;
+    flex: 1 1 100%;
+  }
+
+  .fav-page .chpv-card-verified {
+    font-size: 11px;
+  }
+
+  .fav-page .mo-empty {
+    padding: 32px 8px 24px;
+  }
+
+  .fav-page .mo-empty-title {
+    font-size: 18px;
+  }
+
+  .fav-page .mo-empty-sub {
+    font-size: 13px;
+    padding: 0 8px;
+  }
+
+  .fav-page .mo-empty-actions .mo-cta {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .fav-err {
+    padding: 20px 16px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 390px) {
+  .fav-page .mo-status-tab {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  .fav-page .chpv-card-price {
+    font-size: 18px;
+  }
+
+  .fav-page .chpv-card-body {
+    padding: 12px 14px 14px;
   }
 }

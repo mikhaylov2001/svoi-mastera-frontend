@@ -340,7 +340,7 @@ export default function FavoritesPage() {
       <header className="mo-hero">
         <img src={HERO_IMG} alt="" />
         <div className="mo-hero-inner">
-          <div>
+          <div className="mo-hero-copy">
             <h1>Избранное</h1>
             <p>Мастера и заявки, которые вы сохранили</p>
           </div>
