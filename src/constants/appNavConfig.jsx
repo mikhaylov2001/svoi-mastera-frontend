@@ -91,9 +91,9 @@ export const CUSTOMER_TAB_ITEMS = [
 export const WORKER_TAB_ITEMS = [
   { to: '/worker-home', label: 'Главная', icon: <IconHome />, alsoMatch: ['/find-work', '/jobs'] },
   { to: '/find-work', label: 'Заявки', icon: <IconBriefcase /> },
-  { to: '/deals', label: 'Сделки', icon: <IconDeals /> },
+  { to: '/my-listings', label: 'Объявления', icon: <IconListings />, alsoMatch: ['/listings'] },
   { to: '/chat', label: 'Чат', icon: <IconChat />, badgeKey: 'chat' },
-  { to: '/worker-profile', label: 'Профиль', icon: <IconProfile />, alsoMatch: ['/settings', '/my-listings', '/favorites'] },
+  { to: '/worker-profile', label: 'Профиль', icon: <IconProfile />, alsoMatch: ['/settings', '/deals', '/favorites'] },
 ];
 
 /** Десктоп — заказчик */
@@ -109,7 +109,7 @@ export const CUSTOMER_DESKTOP_LINKS = [
 export const WORKER_DESKTOP_LINKS = [
   { to: '/worker-home', label: 'Главная', alsoMatch: ['/find-work'] },
   { to: '/find-work', label: 'Найти работу' },
-  { to: '/deals', label: 'Мои сделки' },
+  { to: '/my-listings', label: 'Объявления', alsoMatch: ['/listings'] },
   { to: '/chat', label: 'Сообщения', badgeKey: 'chat' },
-  { to: '/my-listings', label: 'Объявления' },
+  { to: '/deals', label: 'Мои сделки' },
 ];
