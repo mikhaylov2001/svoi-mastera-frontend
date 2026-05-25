@@ -697,13 +697,45 @@ export default function MyOrdersPage() {
   useSameRouteRefetch('/my-requests', load);
 
   useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'archive') setTab('archive');
+
+    const create = searchParams.get('create');
+    if (create === '1' || create === 'true') {
+      setForm(EMPTY_FORM);
+      setFormErr('');
+      setPickedSection(null);
+      setHoverSectionSlug(null);
+      setHoverCategoryName(null);
+      setView('create');
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     const reqId = searchParams.get('request');
-    if (!reqId || !requests.length) return;
-    const req = requests.find(r => String(r.id) === String(reqId));
-    if (req) {
-      setDetailShowOffersPanel(false);
-      setDetail(req);
-      setPhotoIdx(0);
+    const offers = searchParams.get('offers');
+    if (!requests.length) return;
+
+    if (reqId) {
+      const req = requests.find(r => String(r.id) === String(reqId));
+      if (req) {
+        setDetailShowOffersPanel(offers === '1' || offers === 'true');
+        setDetail(req);
+        setPhotoIdx(0);
+      }
+      return;
+    }
+
+    if (offers === '1' || offers === 'true') {
+      const pool = requests.filter(r => isActiveStatus(r.status));
+      const best = [...pool].sort(
+        (a, b) => (Number(b.offersCount) || 0) - (Number(a.offersCount) || 0),
+      )[0];
+      if (best) {
+        setDetail(best);
+        setPhotoIdx(0);
+        setDetailShowOffersPanel(true);
+      }
     }
   }, [searchParams, requests]);
 

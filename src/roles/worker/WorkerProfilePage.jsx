@@ -174,10 +174,16 @@ export default function WorkerProfilePage() {
 
   /* Quick actions */
   const quickActions = [
-    { label: 'Добавить услугу',    action: () => navigate('/listings/new') },
+    { label: 'Добавить услугу',    action: () => navigate('/my-listings?create=1') },
     { label: 'Мои объявления',     action: () => navigate('/my-listings') },
-    { label: 'Ответить клиентам',  action: () => navigate('/messages') },
-    { label: 'Настроить профиль',  action: () => setSettingsKey('personal') },
+    { label: 'Ответить клиентам',  action: () => navigate('/chat') },
+    {
+      label: 'Настроить профиль',
+      action: () => {
+        setSettingsKey('personal');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+    },
   ];
 
   /* Feature cards */

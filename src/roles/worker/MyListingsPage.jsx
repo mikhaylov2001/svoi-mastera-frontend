@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
@@ -759,6 +759,7 @@ const css = `
 export default function MyListingsPage() {
   const { userId, userName, userLastName, userAvatar } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [listings, setListings] = useState([]);
   const [workerDeals, setWorkerDeals] = useState([]);
@@ -831,6 +832,17 @@ export default function MyListingsPage() {
   }, [userId]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const create = searchParams.get('create');
+    if (create !== '1' && create !== 'true') return;
+    setForm(EMPTY_FORM);
+    setFormErr('');
+    setPickedSection(null);
+    setHoverSectionSlug(null);
+    setHoverCategoryName(null);
+    setView('create');
+  }, [searchParams]);
 
   useSameRouteRefetch('/my-listings', load);
 

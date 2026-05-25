@@ -183,12 +183,39 @@ export default function CustomerProfilePage() {
   }), [fullName, tags, cover, requests, active]);
 
   /* Quick actions */
-  const quickActions = [
-    { label: 'Создать заявку',     action: () => navigate('/orders/new') },
-    { label: 'Посмотреть отклики', action: () => navigate('/orders') },
-    { label: 'Открыть историю',    action: () => navigate('/deals') },
-    { label: 'Настроить профиль',  action: () => setSettingsKey('personal') },
-  ];
+  const quickActions = useMemo(() => {
+    const firstWithOffers = [...activeRequests]
+      .sort((a, b) => (Number(b.offersCount) || 0) - (Number(a.offersCount) || 0))[0];
+
+    return [
+      {
+        label: 'Создать заявку',
+        action: () => navigate('/my-requests?create=1'),
+      },
+      {
+        label: 'Посмотреть отклики',
+        action: () => {
+          const target = firstWithOffers || activeRequests[0];
+          if (target) {
+            navigate(`/my-requests?request=${encodeURIComponent(target.id)}&offers=1`);
+          } else {
+            navigate('/my-requests');
+          }
+        },
+      },
+      {
+        label: 'Открыть историю',
+        action: () => navigate('/my-requests?tab=archive'),
+      },
+      {
+        label: 'Настроить профиль',
+        action: () => {
+          setSettingsKey('personal');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+      },
+    ];
+  }, [activeRequests, navigate]);
 
   /* Feature cards */
   const featureCards = [
