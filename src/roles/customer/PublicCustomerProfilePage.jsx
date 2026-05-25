@@ -118,6 +118,7 @@ export default function PublicCustomerProfilePage() {
         time: publicTimeAgo(r.createdAt),
         image: resolveImg(r),
         photos: r.photos,
+        favoriteKind: 'jobRequest',
       })),
       ...completedReqs.map(r => ({
         id: r.id,
@@ -128,6 +129,7 @@ export default function PublicCustomerProfilePage() {
         time: publicTimeAgo(r.createdAt),
         image: resolveImg(r),
         photos: r.photos,
+        favoriteKind: 'jobRequest',
       })),
       ...completedDeals.filter(d => !completedReqs.length).map(d => ({
         id: d.id,

@@ -25,6 +25,7 @@ import {
   mergeApiCategoriesWithCatalog,
 } from '../../utils/mergeApiCategoriesWithCatalog';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
 import '../worker/jobListings.css';
 
@@ -369,6 +370,7 @@ export default function FindMasterPage() {
                     <Link key={s.id} to={listingPublicUrl(s.id)} className="fmp-gcard">
                       <div className="fmp-gcard-photo">
                         <img src={mainPhoto} alt="" />
+                        <CardFavoriteSlot kind="listing" id={s.id} className="fmp-gcard-fav-slot card-fav-slot" />
                       </div>
                       <div className="fmp-gcard-body">
                         {s.category && <span className="fmp-gcard-cat">{s.category}</span>}

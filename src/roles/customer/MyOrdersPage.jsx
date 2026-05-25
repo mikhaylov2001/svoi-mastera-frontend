@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import { SECTIONS } from '../../pages/SectionsPage';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import {
@@ -2221,6 +2222,7 @@ export default function MyOrdersPage() {
                     <span className={`mo-card-status-on-img ${pillClass}`}>{stPillLabel}</span>
                     {urgent && <span className="mo-card-urgent">Срочно</span>}
                     <div className="mo-card-price-on-img">{priceOnImg}</div>
+                    <CardFavoriteSlot kind="jobRequest" id={req.id} className="mo-card-fav-slot card-fav-slot" />
                   </div>
 
                   <div className="mo-card-content">

@@ -11,6 +11,7 @@ import {
   API_BASE,
 } from '../../api';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import PhotoLightbox from '../../components/PhotoLightbox';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
@@ -775,6 +776,7 @@ export default function ListingDetailPage() {
                     <Link key={s.id} to={`/listings/${s.id}`} className="ed-sim-item">
                       <div className="ed-sim-img">
                         <img src={sPhoto} alt="" />
+                        <CardFavoriteSlot kind="listing" id={s.id} className="card-fav-slot" />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div className="ed-sim-title">{s.title}</div>

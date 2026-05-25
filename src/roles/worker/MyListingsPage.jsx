@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
+import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
 import { SECTIONS } from '../../pages/SectionsPage';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
@@ -1975,6 +1976,7 @@ export default function MyListingsPage() {
                     <img src={thumbSrc} alt="" />
                     <span className={`mo-card-status-on-img ${pillClass}`}>{stPillLabel}</span>
                     <div className="mo-card-price-on-img">{priceOnImg}</div>
+                    <CardFavoriteSlot kind="listing" id={l.id} className="mo-card-fav-slot card-fav-slot" />
                   </div>
 
                   <div className="mo-card-content">

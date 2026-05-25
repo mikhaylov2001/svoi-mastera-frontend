@@ -1,5 +1,6 @@
 import React from 'react';
 import '../../styles/publicProfilePage.css';
+import CardFavoriteSlot from '../CardFavoriteSlot';
 
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 function resolveUrl(u) {
@@ -226,11 +227,20 @@ export default function ProfileShowcase({
                         className="pro-listing-card"
                         onClick={() => onListingClick?.(item)}
                       >
-                        <img
-                          src={item.image || ''}
-                          alt={item.title}
-                          onError={e => { e.currentTarget.style.display = 'none'; }}
-                        />
+                        <div className="pro-listing-card-media">
+                          <img
+                            src={item.image || ''}
+                            alt={item.title}
+                            onError={e => { e.currentTarget.style.display = 'none'; }}
+                          />
+                          {item.favoriteKind && item.id != null && (
+                            <CardFavoriteSlot
+                              kind={item.favoriteKind}
+                              id={item.id}
+                              className="pro-listing-fav-slot card-fav-slot"
+                            />
+                          )}
+                        </div>
                         <div>
                           <span className="pro-listing-badge">Открыта</span>
                           <h3>{item.title}</h3>
@@ -256,11 +266,20 @@ export default function ProfileShowcase({
                         className="pro-listing-card is-completed"
                         onClick={() => onListingClick?.(item)}
                       >
-                        <img
-                          src={item.image || ''}
-                          alt={item.title}
-                          onError={e => { e.currentTarget.style.display = 'none'; }}
-                        />
+                        <div className="pro-listing-card-media">
+                          <img
+                            src={item.image || ''}
+                            alt={item.title}
+                            onError={e => { e.currentTarget.style.display = 'none'; }}
+                          />
+                          {item.favoriteKind && item.id != null && (
+                            <CardFavoriteSlot
+                              kind={item.favoriteKind}
+                              id={item.id}
+                              className="pro-listing-fav-slot card-fav-slot"
+                            />
+                          )}
+                        </div>
                         <div>
                           <span className="pro-listing-badge done">Завершена</span>
                           <h3>{item.title}</h3>

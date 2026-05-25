@@ -134,6 +134,7 @@ export default function PublicWorkerProfilePage() {
       image: resolveImg(s),
       photos: s.photos,
       isActiveListing: true,
+      favoriteKind: 'listing',
     }));
 
     const completedItems = completedWorks.map(w => ({
