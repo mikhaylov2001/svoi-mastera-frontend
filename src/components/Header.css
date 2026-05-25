@@ -997,6 +997,23 @@
   outline: none;
 }
 
+.header-user--mobile {
+  margin-left: 0;
+}
+
+.header-avatar-btn {
+  padding: 0;
+  font: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+@media (min-width: 901px) {
+  .header-user--mobile {
+    display: none;
+  }
+}
+
 /* «Мостик» под аватаром: пока меню открыто, зазор до дропдауна остаётся в зоне hover */
 .header-user--menu-open::after {
   content: '';

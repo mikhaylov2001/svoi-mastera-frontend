@@ -195,6 +195,123 @@ function HeaderNotificationsBell({
   );
 }
 
+function HeaderUserMenu({
+  userRole,
+  userName,
+  userLastName,
+  fullAvatarUrl,
+  initials,
+  onLogout,
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const profilePath = userRole === 'WORKER' ? '/worker-profile' : '/profile';
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const onDoc = (e) => {
+      if (!wrapRef.current?.contains(e.target)) setMenuOpen(false);
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('touchstart', onDoc);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('touchstart', onDoc);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
+
+  return (
+    <div
+      ref={wrapRef}
+      className={`header-user header-user--mobile${menuOpen ? ' header-user--menu-open' : ''}`}
+      onMouseEnter={() => setMenuOpen(true)}
+      onMouseLeave={() => setMenuOpen(false)}
+    >
+      <button
+        type="button"
+        className="header-avatar header-avatar-btn"
+        aria-label="Меню профиля"
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((v) => !v)}
+      >
+        {fullAvatarUrl ? (
+          <img src={fullAvatarUrl} alt="" className="header-avatar-img" />
+        ) : (
+          initials
+        )}
+      </button>
+
+      {menuOpen && (
+        <div className="header-dropdown">
+          <div className="header-dropdown-profile">
+            <div className="header-dropdown-name">
+              {[userName, userLastName].filter(Boolean).join(' ') || 'Профиль'}
+            </div>
+            <span
+              className={
+                userRole === 'WORKER'
+                  ? 'header-dropdown-role header-dropdown-role--worker'
+                  : 'header-dropdown-role header-dropdown-role--customer'
+              }
+            >
+              {userRole === 'WORKER' ? 'Мастер' : 'Заказчик'}
+            </span>
+          </div>
+          <div className="header-dropdown-actions">
+            <Link
+              to={profilePath}
+              className="header-dropdown-item"
+              onClick={() => setMenuOpen(false)}
+            >
+              <span className="header-dropdown-item-icon" aria-hidden>
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeLinecap="round" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </span>
+              Мой профиль
+            </Link>
+            <Link
+              to="/settings/personal"
+              className="header-dropdown-item"
+              onClick={() => setMenuOpen(false)}
+            >
+              <span className="header-dropdown-item-icon" aria-hidden>
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" strokeLinecap="round" />
+                </svg>
+              </span>
+              Настройки
+            </Link>
+            <button
+              type="button"
+              className="header-dropdown-item header-dropdown-logout"
+              onClick={() => {
+                setMenuOpen(false);
+                onLogout();
+              }}
+            >
+              <span className="header-dropdown-item-icon" aria-hidden>
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" />
+                  <path d="M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              Выйти
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Header() {
   const { userId, userRole, userName, userLastName, userAvatar, logout } = useAuth();
   const BACKEND = 'https://svoi-mastera-backend.onrender.com';
@@ -488,6 +605,15 @@ function Header() {
                 onMarkOneRead={markOneRead}
                 buttonClassName="header-mobile-action-btn"
               />
+
+              <HeaderUserMenu
+                userRole={userRole}
+                userName={userName}
+                userLastName={userLastName}
+                fullAvatarUrl={fullAvatarUrl}
+                initials={initials}
+                onLogout={handleLogout}
+              />
             </div>
           )}
 
@@ -691,6 +817,19 @@ function Header() {
                             </svg>
                           </span>
                           Мой профиль
+                        </Link>
+                        <Link
+                          to="/settings/personal"
+                          className="header-dropdown-item"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          <span className="header-dropdown-item-icon" aria-hidden>
+                            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="3" />
+                              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" strokeLinecap="round" />
+                            </svg>
+                          </span>
+                          Настройки
                         </Link>
                         <button
                           type="button"
