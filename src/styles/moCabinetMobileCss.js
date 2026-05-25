@@ -123,14 +123,14 @@ export const moCabinetMobileCss = `
 
   .mo-orders-root .mo-toolbar {
     margin-bottom: 18px;
-    display: grid;
-    grid-template-columns: 1fr;
-    align-items: stretch;
-    gap: 12px;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
   }
 
   .mo-orders-root .mo-tabs {
-    grid-column: 1;
     width: 100%;
     justify-content: stretch;
     padding: 5px;
@@ -144,20 +144,6 @@ export const moCabinetMobileCss = `
     padding: 11px 10px;
     font-size: 13px;
     border-radius: 12px;
-  }
-
-  .mo-orders-root .mo-search {
-    grid-column: 1;
-    max-width: none;
-    min-width: 0;
-    flex: none;
-    width: 100%;
-  }
-
-  .mo-orders-root .mo-search input {
-    padding: 14px 16px 14px 44px;
-    border-radius: 16px;
-    font-size: 15px;
   }
 
   .mo-orders-root .mo-grid,

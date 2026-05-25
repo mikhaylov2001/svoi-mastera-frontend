@@ -3,6 +3,8 @@
    Порт Base44 → SvoiMastera. Responsive: mobile/tablet/desktop
    ═══════════════════════════════════════════════════ */
 
+@import './moToolbar.css';
+
 :root {
   --mo-primary: #e8410a;
   --mo-primary-grad: linear-gradient(135deg, #ff642f, #e8410a);
@@ -124,12 +126,8 @@
   box-sizing: border-box;
 }
 
-/* ── Toolbar ── */
+/* ── Toolbar (layout: moToolbar.css) ── */
 .mo-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
   margin-bottom: 16px;
   padding: 10px;
   border-radius: 20px;
@@ -185,9 +183,6 @@
 
 /* ── Search ── */
 .mo-search {
-  flex: 1;
-  min-width: 200px;
-  max-width: 340px;
   height: 43px;
   border-radius: 16px;
   background: #f7f5f2;
@@ -1935,10 +1930,6 @@
   }
 
   .mo-toolbar {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 8px 10px;
     padding: 0;
     background: none;
     border: none;
@@ -1948,18 +1939,10 @@
   }
 
   .mo-status-tabs {
-    grid-column: 1 / -1;
-    display: flex;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    gap: 8px;
-    padding: 2px 0 6px;
     margin: 0 -4px;
     background: transparent;
     border-radius: 0;
   }
-  .mo-status-tabs::-webkit-scrollbar { display: none; }
 
   .mo-status-tab {
     flex-shrink: 0;
@@ -1982,17 +1965,12 @@
   }
 
   .mo-search {
-    grid-column: 1;
-    max-width: none;
-    min-width: 0;
-    width: auto;
     height: 44px;
     border-radius: 14px;
     background: #f7f5f2;
   }
 
   .mo-sort {
-    grid-column: 2;
     width: auto;
     min-width: 0;
     max-width: 132px;

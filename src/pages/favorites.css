@@ -10,32 +10,9 @@
   justify-content: center;
 }
 
-/* ── Toolbar: вкладки · поиск · сортировка в одну линию ── */
-.fav-page .mo-toolbar {
-  display: grid;
-  grid-template-columns: auto minmax(180px, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: nowrap;
-}
-
-.fav-page .mo-status-tabs {
-  grid-column: 1;
-  align-self: center;
-}
-
-.fav-page .mo-search {
-  grid-column: 2;
-  flex: none;
-  width: 100%;
-  min-width: 0;
-  max-width: none;
+/* ── Toolbar layout: moToolbar.css ── */
+.fav-page .mo-toolbar .mo-search {
   height: 36px;
-}
-
-.fav-page .sort-dd {
-  grid-column: 3;
-  align-self: center;
 }
 
 /* ── Grid карточек ── */
@@ -329,39 +306,11 @@
 }
 
 @media (max-width: 640px) {
-  .fav-page .mo-toolbar {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 8px 10px;
-    padding: 0;
-    background: none;
-    border: none;
-    box-shadow: none;
-    backdrop-filter: none;
-  }
-
-  .fav-page .mo-status-tabs {
-    grid-column: 1 / -1;
-    display: flex;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    gap: 8px;
-    padding: 2px 0 6px;
-    margin: 0;
-    background: transparent;
-  }
-
-  .fav-page .mo-status-tabs::-webkit-scrollbar { display: none; }
-
   .fav-page .mo-search {
-    grid-column: 1;
     height: 36px;
   }
 
   .fav-page .sort-dd {
-    grid-column: 2;
     width: 100%;
     max-width: none;
   }

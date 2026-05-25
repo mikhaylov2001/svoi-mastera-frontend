@@ -98,26 +98,16 @@
 
   .mo-orders-root .mo-toolbar {
     margin-bottom: 16px !important;
-    display: grid !important;
-    grid-template-columns: 1fr auto !important;
-    align-items: center !important;
-    gap: 8px 10px !important;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
   }
 
   .mo-orders-root .mo-status-tabs {
-    grid-column: 1 / -1 !important;
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    gap: 8px !important;
-    padding: 2px 0 6px !important;
-    background: transparent !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
+    margin: 0 -4px !important;
   }
-  .mo-orders-root .mo-status-tabs::-webkit-scrollbar { display: none; }
 
   .mo-orders-root .mo-status-tab {
     flex: 0 0 auto !important;
@@ -151,27 +141,13 @@
   }
 
   .mo-orders-root .mo-search {
-    grid-column: 1 !important;
-    max-width: none !important;
-    min-width: 0 !important;
-    width: auto !important;
     height: 44px !important;
     border-radius: 14px !important;
     background: #f7f5f2 !important;
   }
 
-  .mo-orders-root .mo-search input {
-    padding: 12px 14px 12px 40px !important;
-    border-radius: 14px !important;
-    font-size: 14px !important;
-  }
-
   .mo-orders-root .sort-dd--toolbar {
-    grid-column: 2 !important;
-    width: auto !important;
-    min-width: 0 !important;
     max-width: 124px !important;
-    justify-self: end !important;
   }
 
   .mo-orders-root .sort-dd--toolbar .sort-dd__trigger {

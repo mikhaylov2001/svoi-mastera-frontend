@@ -1,0 +1,137 @@
+/**
+ * Единая панель фильтрации: вкладки · поиск · сортировка
+ * Страницы: объявления, заявки, сделки, избранное
+ */
+
+/* ── Desktop: вкладки слева, поиск на всю ширину, сортировка справа ── */
+.mo-toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.mo-toolbar:has(.sort-dd) {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.mo-tabs,
+.mo-status-tabs {
+  grid-column: 1;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.mo-toolbar .mo-search {
+  grid-column: 2;
+  flex: none;
+  min-width: 0;
+  max-width: none;
+  width: 100%;
+  height: 43px;
+  border-radius: 16px;
+  background: #f7f5f2;
+  border: 1.5px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 13px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.mo-toolbar .sort-dd,
+.mo-toolbar .sort-dd--toolbar {
+  grid-column: 3;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.mo-toolbar .mo-search:focus-within {
+  border-color: rgba(232, 65, 10, 0.35);
+  box-shadow: 0 0 0 3px rgba(232, 65, 10, 0.08);
+}
+
+.mo-toolbar .mo-search svg {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.mo-toolbar .mo-search input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #111827;
+  font: 600 13px/1 'Manrope', sans-serif;
+}
+
+.mo-toolbar .mo-search input::placeholder {
+  color: #9ca3af;
+}
+
+.mo-page .mo-toolbar {
+  margin-bottom: 16px;
+  padding: 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 18px 42px rgba(17, 24, 39, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .mo-page .mo-toolbar {
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .mo-toolbar {
+    grid-template-columns: 1fr auto;
+    gap: 8px 10px;
+    align-items: center;
+  }
+
+  .mo-toolbar:has(.sort-dd) {
+    grid-template-columns: 1fr auto;
+  }
+
+  .mo-tabs,
+  .mo-status-tabs {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 8px;
+    padding: 2px 0 6px;
+    width: 100%;
+  }
+
+  .mo-tabs::-webkit-scrollbar,
+  .mo-status-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mo-toolbar .mo-search {
+    grid-column: 1;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    height: 44px;
+    border-radius: 14px;
+  }
+
+  .mo-toolbar .sort-dd,
+  .mo-toolbar .sort-dd--toolbar {
+    grid-column: 2;
+    justify-self: end;
+    max-width: 124px;
+  }
+}
