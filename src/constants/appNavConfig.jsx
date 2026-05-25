@@ -4,7 +4,7 @@ import {
   Handshake,
   MessageCircle,
   User,
-  Briefcase,
+  ClipboardList,
   LayoutList,
 } from 'lucide-react';
 
@@ -62,13 +62,13 @@ export const CUSTOMER_TAB_ITEMS = [
   { to: '/profile', label: 'Профиль', Icon: User, alsoMatch: ['/settings'] },
 ];
 
-/** Нижний таб-bar — мастер (Lovable v13) */
+/** Нижний tab-bar — мастер (Lovable v13) */
 export const WORKER_TAB_ITEMS = [
   { to: '/worker-home', label: 'Главная', Icon: Home, alsoMatch: ['/jobs'] },
-  { to: '/find-work', label: 'Заявки', Icon: Briefcase },
+  { to: '/find-work', label: 'Заявки', Icon: ClipboardList },
   { to: '/my-listings', label: 'Объявления', Icon: LayoutList, alsoMatch: ['/listings'] },
+  { to: '/deals', label: 'Сделки', Icon: Handshake },
   { to: '/chat', label: 'Чат', Icon: MessageCircle, badgeKey: 'chat' },
-  { to: '/worker-profile', label: 'Профиль', Icon: User, alsoMatch: ['/settings', '/deals'] },
 ];
 
 /** Десктоп — заказчик */
