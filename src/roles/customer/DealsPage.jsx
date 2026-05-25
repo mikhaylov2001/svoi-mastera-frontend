@@ -10,13 +10,11 @@ import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
-import { getDealEdProgress } from '../../utils/dealDetailEdProgress';
 import {
   dealsWdCss,
   edListingDetailMergedCss,
   dealCategoryEmoji,
 } from '../shared/dealsWdStyles';
-import DealDetailEdProgress, { DealDetailEdCheck, DealDetailEdHourglass } from '../shared/DealDetailEdProgress';
 import OrderCard from '../../components/myorders/OrderCard';
 import '../../styles/moCabinetStyle.css';
 
@@ -109,6 +107,199 @@ function EmptyState({ icon, title, text, btnLabel, onBtn }) {
   );
 }
 
+const DEAL_STEPS = ['Создана', 'Принята', 'В работе', 'Подтверждение', 'Завершена'];
+
+function dealStepIndex(status) {
+  if (status === 'NEW') return 1;
+  if (status === 'IN_PROGRESS') return 3;
+  if (status === 'COMPLETED') return 4;
+  return -1;
+}
+
+function DealDarkProgress({ deal }) {
+  const stepIdx = dealStepIndex(deal.status);
+  const isCompleted = deal.status === 'COMPLETED';
+  const progress = stepIdx < 0 ? 0 : Math.round((stepIdx / (DEAL_STEPS.length - 1)) * 100);
+  const progressColor = isCompleted ? '#22c55e' : '#e8410a';
+  const stageLabel = isCompleted
+    ? 'Сделка завершена 🎉'
+    : deal.status === 'CANCELLED'
+      ? 'Сделка отменена'
+      : DEAL_STEPS[Math.max(0, stepIdx)];
+
+  return (
+    <div className="mo-progress-card">
+      <div className="mo-progress-card-header">
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: 1.4, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 4 }}>
+            Прогресс сделки
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 950, color: '#fff', letterSpacing: '-.3px' }}>
+            {stageLabel}
+          </div>
+        </div>
+        <div className="mo-progress-ring" style={{ background: `conic-gradient(${progressColor} ${progress * 3.6}deg, rgba(255,255,255,.08) 0deg)` }}>
+          <div className="mo-progress-ring-inner" style={{ color: isCompleted ? '#22c55e' : '#ff7043' }}>
+            {progress}%
+          </div>
+        </div>
+      </div>
+      <div className="mo-timeline">
+        {DEAL_STEPS.map((s, i) => {
+          const done = stepIdx >= 0 && i < stepIdx;
+          const curr = i === stepIdx;
+          const future = i > stepIdx;
+          const isLast = i === DEAL_STEPS.length - 1;
+          return (
+            <div key={s} className="mo-timeline-item">
+              <div className="mo-timeline-track">
+                <div
+                  className="mo-timeline-dot"
+                  style={{
+                    background: done
+                      ? 'linear-gradient(135deg,#22c55e,#16a34a)'
+                      : curr
+                        ? (isCompleted ? 'linear-gradient(135deg,#22c55e,#16a34a)' : 'linear-gradient(135deg,#ff4b1f,#e8410a)')
+                        : 'rgba(255,255,255,.07)',
+                    boxShadow: curr ? `0 0 0 4px ${isCompleted ? 'rgba(34,197,94,.2)' : 'rgba(232,65,10,.25)'}` : 'none',
+                    color: done || curr ? '#fff' : 'rgba(255,255,255,.22)',
+                  }}
+                >
+                  {done ? (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
+                  ) : curr ? (
+                    <svg width="8" height="8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="white" /></svg>
+                  ) : (
+                    i + 1
+                  )}
+                </div>
+                {!isLast && (
+                  <div
+                    className="mo-timeline-line"
+                    style={{ background: done ? 'linear-gradient(180deg,#22c55e,rgba(232,65,10,.4))' : 'rgba(255,255,255,.06)' }}
+                  />
+                )}
+              </div>
+              <div style={{ paddingBottom: isLast ? 0 : 18, paddingTop: 7 }}>
+                <div className={`mo-timeline-step-name${future ? ' future' : ''}`}>{s}</div>
+                <div
+                  className="mo-timeline-step-sub"
+                  style={{ color: done ? 'rgba(34,197,94,.75)' : curr ? 'rgba(255,255,255,.45)' : 'rgba(255,255,255,.15)' }}
+                >
+                  {done ? '✓ Выполнено' : curr ? 'Текущий этап' : '—'}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DealConfirmCard({
+  myOk, workerOk, actionId, dealId, onComplete, onCancelActive,
+}) {
+  return (
+    <div className="mo-confirm-card" style={{ border: myOk ? '1px solid #bbf7d0' : '1px solid rgba(232,65,10,.15)' }}>
+      <div className="mo-confirm-accent" style={{ background: myOk ? '#22c55e' : 'linear-gradient(90deg,#e8410a,#ff7043)' }} />
+      <div className="mo-confirm-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <div
+            className="mo-confirm-icon"
+            style={{
+              background: myOk ? 'linear-gradient(135deg,#22c55e,#16a34a)' : 'linear-gradient(135deg,#ff4b1f,#e8410a)',
+              boxShadow: `0 4px 12px ${myOk ? 'rgba(34,197,94,.3)' : 'rgba(232,65,10,.3)'}`,
+            }}
+          >
+            {myOk ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+            )}
+          </div>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: 1.2, textTransform: 'uppercase', color: myOk ? '#16a34a' : '#e8410a', marginBottom: 1 }}>
+              Подтверждение
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 950, color: '#111827' }}>
+              {myOk ? 'Ваш голос учтён!' : 'Работа выполнена?'}
+            </div>
+          </div>
+        </div>
+        <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 700, lineHeight: 1.5 }}>
+          {myOk ? 'Ожидаем подтверждения от мастера' : 'Подтвердите, что мастер выполнил задачу'}
+        </div>
+      </div>
+      <div className="mo-confirm-parties">
+        {[
+          { name: 'Заказчик (вы)', sub: myOk ? '✓ Подтверждено' : 'Ожидает вашего действия', confirmed: myOk, icon: '👤' },
+          { name: 'Мастер', sub: workerOk ? '✓ Подтверждено' : 'Ожидает подтверждения', confirmed: workerOk, icon: '🔧' },
+        ].map((p, i) => (
+          <div
+            key={i}
+            className="mo-confirm-party"
+            style={{
+              background: p.confirmed ? 'rgba(34,197,94,.08)' : '#f9fafb',
+              border: `1px solid ${p.confirmed ? 'rgba(34,197,94,.25)' : '#f3f4f6'}`,
+            }}
+          >
+            <div
+              className="mo-confirm-party-icon"
+              style={{
+                background: p.confirmed ? 'linear-gradient(135deg,#22c55e,#16a34a)' : '#e5e7eb',
+                boxShadow: p.confirmed ? '0 4px 12px rgba(34,197,94,.25)' : 'none',
+              }}
+            >
+              {p.confirmed ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
+              ) : (
+                p.icon
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, color: '#111827' }}>{p.name}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, marginTop: 2, color: p.confirmed ? '#16a34a' : '#9ca3af' }}>{p.sub}</div>
+            </div>
+            <div
+              style={{
+                width: 18, height: 18, borderRadius: '50%',
+                background: p.confirmed ? '#22c55e' : '#e5e7eb',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}
+            >
+              {p.confirmed && (
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mo-confirm-cta">
+        {!myOk ? (
+          <button type="button" className="mo-confirm-btn" disabled={actionId === dealId} onClick={() => onComplete(dealId)}>
+            {actionId === dealId ? 'Подтверждаем…' : '✓ Подтвердить выполнение'}
+          </button>
+        ) : !workerOk ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 14, background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', boxShadow: '0 8px 22px rgba(245,158,11,.3)' }}>
+            <div style={{ fontSize: 24 }}>⏳</div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 950, color: '#fff' }}>Вы подтвердили!</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.82)', marginTop: 2 }}>Ожидаем мастера…</div>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 14, background: 'linear-gradient(135deg,#22c55e,#16a34a)', boxShadow: '0 8px 22px rgba(34,197,94,.3)' }}>
+            <div style={{ fontSize: 24 }}>🎉</div>
+            <div><div style={{ fontSize: 14, fontWeight: 950, color: '#fff' }}>Обе стороны подтвердили!</div></div>
+          </div>
+        )}
+        <button type="button" className="mo-cancel-btn" onClick={onCancelActive}>Отменить сделку в работе</button>
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════
    DEAL DETAIL — ed--listing-detail (как заявки / объявления / сделки мастера)
 ═══════════════════════════════ */
@@ -123,7 +314,6 @@ function DealDetail({
   const myOk = deal.customerConfirmed;
   const workerOk = deal.workerConfirmed;
   const taskDescShown = formatListingOriginDescription('CUSTOMER', deal.description);
-  const prog = getDealEdProgress(deal, 'customer', timeAgo);
   const workerLabel = workerFullName(deal);
   const workerAva = workerAvatarUrl(deal);
   const pulseShadow = `0 0 0 3px ${st.dot}26`;
@@ -225,7 +415,7 @@ function DealDetail({
               ) : null}
             </div>
 
-            <DealDetailEdProgress {...prog} />
+            <DealDarkProgress deal={deal} />
 
             {taskDescShown ? (
               <section className="ed-card">
@@ -277,72 +467,42 @@ function DealDetail({
             </div>
 
             {deal.status === 'NEW' ? (
-              <div className="ed-card">
-                <div className="ed-eyebrow">Статус</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a', marginBottom: 8 }}>Ждём мастера</div>
-                <div className="ed-callout ed-callout-warn">
-                  Вы выбрали мастера. После подтверждения заказ перейдёт в работу.
+              <div className="mo-confirm-card" style={{ border: '1px solid rgba(245,158,11,.2)' }}>
+                <div className="mo-confirm-accent" style={{ background: 'linear-gradient(90deg,#f59e0b,#fbbf24)' }} />
+                <div className="mo-confirm-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <div className="mo-confirm-icon" style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', boxShadow: '0 4px 12px rgba(245,158,11,.3)' }}>
+                      ⏳
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: 1.2, textTransform: 'uppercase', color: '#d97706', marginBottom: 1 }}>Статус</div>
+                      <div style={{ fontSize: 15, fontWeight: 950, color: '#111827' }}>Ждём мастера</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 700, lineHeight: 1.5 }}>
+                    Вы выбрали мастера. После подтверждения заказ перейдёт в работу.
+                  </div>
                 </div>
-                <div className="ed-actions">
+                <div className="mo-confirm-cta">
                   {deal.workerId ? (
-                    <button type="button" className="ed-btn ed-btn-ghost" onClick={() => navigate(`/chat/${deal.workerId}`)}>
-                      Написать мастеру
+                    <button type="button" className="mo-master-btn" style={{ marginTop: 0, minHeight: 46 }} onClick={() => navigate(`/chat/${deal.workerId}`)}>
+                      💬 Написать мастеру
                     </button>
                   ) : null}
-                  <button type="button" className="ed-btn ed-btn-cancel" onClick={onCancelNew}>
-                    Отменить заявку
-                  </button>
-                  <p className="ed-callout-muted">Пока мастер не принял заказ, отмена без последствий</p>
+                  <button type="button" className="mo-cancel-btn" onClick={onCancelNew}>Отменить заявку</button>
                 </div>
               </div>
             ) : null}
 
             {deal.status === 'IN_PROGRESS' ? (
-              <div className="ed-card">
-                <div className="ed-eyebrow">Подтверждение</div>
-                <div className="ed-conf-rows">
-                  <div className={`ed-conf-row ${myOk ? 'ok' : 'wait'}`}>
-                    <div className="ed-conf-icon">{myOk ? <DealDetailEdCheck /> : <DealDetailEdHourglass />}</div>
-                    <div>
-                      <div className="ed-conf-name">Заказчик (вы)</div>
-                      <div className="ed-conf-status">
-                        {myOk ? 'Подтверждено' : 'Ожидает вашего действия'}
-                      </div>
-                    </div>
-                  </div>
-                  <div className={`ed-conf-row ${workerOk ? 'ok' : 'wait'}`}>
-                    <div className="ed-conf-icon">{workerOk ? <DealDetailEdCheck /> : <DealDetailEdHourglass />}</div>
-                    <div>
-                      <div className="ed-conf-name">Мастер</div>
-                      <div className="ed-conf-status">
-                        {workerOk ? 'Подтверждено' : 'Ожидает подтверждения'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="ed-actions">
-                  {!myOk ? (
-                    <button
-                      type="button"
-                      className="ed-btn ed-btn-confirm"
-                      disabled={actionId === deal.id}
-                      onClick={() => onComplete(deal.id)}
-                    >
-                      {actionId === deal.id ? 'Подтверждаем…' : 'Подтвердить выполнение'}
-                    </button>
-                  ) : (
-                    <div className="ed-inline-wait">
-                      ✓ Вы подтвердили{!workerOk ? ' — ожидаем мастера…' : ''}
-                    </div>
-                  )}
-                  <div className="ed-actions-split">
-                    <button type="button" className="ed-btn ed-btn-cancel" onClick={onCancelActive}>
-                      Отменить сделку в работе
-                    </button>
-                    <p className="ed-callout-muted">После завершения отмена невозможна</p>
-                  </div>
-                </div>
-              </div>
+              <DealConfirmCard
+                myOk={myOk}
+                workerOk={workerOk}
+                actionId={actionId}
+                dealId={deal.id}
+                onComplete={onComplete}
+                onCancelActive={onCancelActive}
+              />
             ) : null}
 
             {deal.status === 'COMPLETED' ? (
