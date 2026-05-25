@@ -53,18 +53,17 @@ export default function MobileAppNav() {
               className={`mobile-tab-item${active ? ' is-active' : ''}`}
               aria-current={active ? 'page' : undefined}
             >
-              {active && <span className="mobile-tab-indicator" aria-hidden />}
-
-              <span className="mobile-tab-icon-wrap">
-                {item.icon}
-                {badge > 0 && !active && (
-                  <span className="mobile-tab-badge">
-                    {badge > 99 ? '99+' : badge}
-                  </span>
-                )}
+              <span className="mobile-tab-pill">
+                <span className="mobile-tab-icon-wrap">
+                  {item.icon}
+                  {badge > 0 && !active && (
+                    <span className="mobile-tab-badge">
+                      {badge > 99 ? '99+' : badge}
+                    </span>
+                  )}
+                </span>
+                <span className="mobile-tab-label">{item.label}</span>
               </span>
-
-              <span className="mobile-tab-label">{item.label}</span>
             </Link>
           );
         })}
