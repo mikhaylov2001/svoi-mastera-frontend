@@ -30,7 +30,7 @@
   width: 100%;
   min-width: 0;
   max-width: none;
-  height: 43px;
+  height: 36px;
 }
 
 .fav-page .sort-dd {
@@ -357,7 +357,7 @@
 
   .fav-page .mo-search {
     grid-column: 1;
-    height: 44px;
+    height: 36px;
   }
 
   .fav-page .sort-dd {

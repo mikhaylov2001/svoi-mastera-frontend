@@ -170,16 +170,16 @@
     grid-column: 2 !important;
     width: auto !important;
     min-width: 0 !important;
-    max-width: 132px !important;
+    max-width: 124px !important;
     justify-self: end !important;
   }
 
   .mo-orders-root .sort-dd--toolbar .sort-dd__trigger {
-    height: 44px !important;
-    padding: 0 12px !important;
-    font-size: 12px !important;
+    height: 36px !important;
+    padding: 0 10px !important;
+    font-size: 11px !important;
     font-weight: 700 !important;
-    border-radius: 14px !important;
+    border-radius: 11px !important;
     border: none !important;
     background: #f7f5f2 !important;
     color: #374151 !important;
