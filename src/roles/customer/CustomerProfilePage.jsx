@@ -181,12 +181,21 @@ export default function CustomerProfilePage() {
     ],
   }), [fullName, tags, cover, requests, active]);
 
+  const customerDeals = useMemo(
+    () => (deals || []).filter((d) => String(d.customerId || '') === String(userId)),
+    [deals, userId],
+  );
+
   /* Quick actions */
   const quickActions = useMemo(() => {
     const firstWithOffers = [...activeRequests]
       .sort((a, b) => (Number(b.offersCount) || 0) - (Number(a.offersCount) || 0))[0];
 
     return [
+      {
+        label: 'Мои сделки',
+        action: () => navigate('/deals'),
+      },
       {
         label: 'Создать заявку',
         action: () => navigate('/my-requests?create=1'),
@@ -302,12 +311,12 @@ export default function CustomerProfilePage() {
           ) : (
             <>
               <ProfileWorkspace
-                deals={requests.length > 0 ? requests : deals}
+                deals={customerDeals.length > 0 ? customerDeals : (requests.length > 0 ? requests : deals)}
                 reviews={reviews}
                 about={profile?.bio || profile?.description || ''}
                 tags={tags}
-                dealsTitle="Ваши заявки и сделки"
-                dealsListPath="/my-requests"
+                dealsTitle={customerDeals.length > 0 ? 'Ваши сделки' : 'Ваши заявки и сделки'}
+                dealsListPath={customerDeals.length > 0 ? '/deals' : '/my-requests'}
                 onSettingsSelect={setSettingsKey}
                 onDealClick={(d) => {
                   const isRequest = requests.some(r => String(r.id) === String(d.id))

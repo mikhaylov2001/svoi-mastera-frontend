@@ -1,4 +1,5 @@
 import React from 'react';
+import DealCardActions from './DealCardActions';
 
 export const STATUS_CONFIG = {
   OPEN:           { label: 'Открыта',    dot: '#22c55e', bg: '#f0fdf4', color: '#16a34a' },
@@ -41,7 +42,7 @@ export function timeAgo(iso) {
   return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
-export default function OrderCard({ order, onOpen, onOpenOffers, onEdit }) {
+export default function OrderCard({ order, onOpen, onChat, menuItems, onOpenOffers, onEdit }) {
   const st = STATUS_CONFIG[order.status] || STATUS_CONFIG.OPEN;
   const thumb = order.photos?.[0] || FALLBACK;
   const stepIdx = STEP_MAP[order.status] ?? 0;
@@ -143,14 +144,7 @@ export default function OrderCard({ order, onOpen, onOpenOffers, onEdit }) {
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="mo-card-actions" onClick={e => e.stopPropagation()}>
-        <button type="button" className="mo-card-btn-primary" onClick={onOpen}>
-          Открыть сделку
-        </button>
-        <button type="button" className="mo-card-btn-icon" title="Чат" onClick={e => { e.stopPropagation(); }}>💬</button>
-        <button type="button" className="mo-card-btn-icon" title="Ещё" onClick={e => { e.stopPropagation(); onEdit?.(); }}>···</button>
-      </div>
+      <DealCardActions onOpen={onOpen} onChat={onChat} menuItems={menuItems} />
     </article>
   );
 }

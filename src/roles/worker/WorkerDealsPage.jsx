@@ -19,6 +19,7 @@ import {
   DealConfirmCard,
   DealNewStatusCard,
 } from '../shared/DealDetailBlocks';
+import DealCardActions from '../../components/myorders/DealCardActions';
 import PhotoLightbox from '../../components/PhotoLightbox';
 import '../../styles/moCabinetStyle.css';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
@@ -846,6 +847,43 @@ export default function WorkerDealsPage() {
 
               const openDeal = () => { setDetail(d); setPhotoIdx(0); };
 
+              const workerMenuItems = [];
+              if (isDone && !d.hasWorkerReview && d.customerId && dealEligibleForReviews(d)) {
+                workerMenuItems.push({
+                  label: '★ Оставить отзыв',
+                  onClick: () => {
+                    setReviewForm({ rating: 5, text: '' });
+                    setReviewStatus('idle');
+                    setReviewDeal(d);
+                  },
+                });
+              }
+              if (isNew) {
+                workerMenuItems.push({
+                  label: 'Отказаться от заказа',
+                  danger: true,
+                  disabled: declId === d.id,
+                  onClick: async () => {
+                    if (!window.confirm('Отказаться от заказа? Заказчик сможет выбрать другого мастера.')) return;
+                    setDeclId(d.id);
+                    try {
+                      await cancelPendingDeal(userId, d.id, '');
+                      await load();
+                    } catch (err) {
+                      window.alert(err?.message || 'Не удалось');
+                    } finally {
+                      setDeclId(null);
+                    }
+                  },
+                });
+              }
+              if (d.customerId) {
+                workerMenuItems.push({
+                  label: 'Профиль заказчика',
+                  onClick: () => navigate(`/customers/${d.customerId}`),
+                });
+              }
+
               return (
                 <article
                   key={d.id}
@@ -920,69 +958,11 @@ export default function WorkerDealsPage() {
                     {footRight}
                   </div>
 
-                  <div className="md-actions" onClick={(e) => e.stopPropagation()}>
-                    <button type="button" className="md-btn md-btn-primary" onClick={openDeal}>
-                      Открыть сделку
-                    </button>
-                    {isDone && !d.hasWorkerReview && d.customerId && dealEligibleForReviews(d) && (
-                      <button
-                        type="button"
-                        className="md-btn md-btn-review"
-                        onClick={() => {
-                          setReviewForm({ rating: 5, text: '' });
-                          setReviewStatus('idle');
-                          setReviewDeal(d);
-                        }}
-                      >
-                        ★ Отзыв
-                      </button>
-                    )}
-                    {d.customerId && (
-                      <button
-                        type="button"
-                        className="md-btn md-btn-ghost md-btn-icon"
-                        title="Сообщения"
-                        aria-label="Сообщения"
-                        onClick={() => navigate(`/chat/${d.customerId}`)}
-                      >
-                        💬
-                      </button>
-                    )}
-                    {isNew ? (
-                      <button
-                        type="button"
-                        className="md-btn md-btn-ghost md-btn-icon"
-                        title="Отказаться"
-                        aria-label="Отказаться"
-                        disabled={declId === d.id}
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          if (!window.confirm('Отказаться от заказа? Заказчик сможет выбрать другого мастера.')) return;
-                          setDeclId(d.id);
-                          try {
-                            await cancelPendingDeal(userId, d.id, '');
-                            await load();
-                          } catch (err) {
-                            window.alert(err?.message || 'Не удалось');
-                          } finally {
-                            setDeclId(null);
-                          }
-                        }}
-                      >
-                        {declId === d.id ? '…' : '✕'}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="md-btn md-btn-ghost md-btn-icon"
-                        title="Подробнее"
-                        aria-label="Подробнее"
-                        onClick={openDeal}
-                      >
-                        ⋯
-                      </button>
-                    )}
-                  </div>
+                  <DealCardActions
+                    onOpen={openDeal}
+                    onChat={d.customerId ? () => navigate(`/chat/${d.customerId}`) : undefined}
+                    menuItems={workerMenuItems}
+                  />
                 </article>
               );
             })}

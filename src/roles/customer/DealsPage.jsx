@@ -585,6 +585,53 @@ export default function DealsPage() {
     } catch { setReviewStatus('error'); }
   };
 
+  const dealCardMenuItems = useCallback((deal) => {
+    const items = [];
+    if (
+      deal.status === 'COMPLETED'
+      && !deal.hasReview
+      && deal.workerId
+      && dealEligibleForReviews(deal)
+    ) {
+      items.push({
+        label: '★ Оставить отзыв',
+        onClick: () => {
+          setReviewStatus('idle');
+          setReviewDeal(deal);
+        },
+      });
+    }
+    if (deal.status === 'NEW') {
+      items.push({
+        label: 'Отменить заявку',
+        danger: true,
+        onClick: () => {
+          setDetail(deal);
+          setCancelNewErr('');
+          setCancelNewOpen(true);
+        },
+      });
+    }
+    if (deal.status === 'IN_PROGRESS') {
+      items.push({
+        label: 'Отменить сделку',
+        danger: true,
+        onClick: () => {
+          setDetail(deal);
+          setCancelActErr('');
+          setCancelActOpen(true);
+        },
+      });
+    }
+    if (deal.workerId) {
+      items.push({
+        label: 'Профиль мастера',
+        onClick: () => navigate(`/workers/${deal.workerId}`),
+      });
+    }
+    return items;
+  }, [navigate]);
+
   /* ── Filter / sort ── */
   const shown = deals
     .filter(d => statusTab === 'ALL' || d.status === statusTab)
@@ -625,6 +672,7 @@ export default function DealsPage() {
 
   /* ── List view ── */
   return (
+    <>
     <div className="mo-page">
       {/* Hero */}
       <header className="mo-hero">
@@ -681,12 +729,24 @@ export default function DealsPage() {
                 key={deal.id}
                 order={dealToCard(deal)}
                 onOpen={() => setDetail(deal)}
-                onEdit={null}
+                onChat={deal.workerId ? () => navigate(`/chat/${deal.workerId}`) : undefined}
+                menuItems={dealCardMenuItems(deal)}
               />
             ))}
           </div>
         )}
       </main>
     </div>
+
+    {cancelNewOpen && detail && (
+      <CancelModal title="Отменить заявку?" subtitle="Мастер получит уведомление. Можно указать причину." onClose={() => !cancelNewBusy && setCancelNewOpen(false)} onConfirm={handleCancelNew} busy={cancelNewBusy} err={cancelNewErr} />
+    )}
+    {cancelActOpen && detail && (
+      <CancelModal title="Отменить сделку?" warning="⚠️ Сделка уже в работе. Это действие необратимо." onClose={() => !cancelActBusy && setCancelActOpen(false)} onConfirm={handleCancelActive} busy={cancelActBusy} err={cancelActErr} />
+    )}
+    {reviewDeal && (
+      <ReviewModal deal={reviewDeal} onClose={() => setReviewDeal(null)} onSubmit={handleReviewSubmit} status={reviewStatus} />
+    )}
+    </>
   );
 }

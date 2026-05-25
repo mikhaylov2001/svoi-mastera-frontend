@@ -512,13 +512,14 @@
   flex: 1;
   min-height: 44px;
   border: none;
-  border-radius: 14px;
+  border-radius: 22px;
   background: var(--mo-primary-grad);
   color: #fff;
   cursor: pointer;
   font-family: 'Manrope', sans-serif;
   font-size: 13px;
   font-weight: 900;
+  letter-spacing: -.01em;
   box-shadow: 0 6px 16px rgba(232,65,10,.28);
   transition: transform .15s, box-shadow .15s;
 }
@@ -527,19 +528,56 @@
 .mo-card-btn-icon {
   width: 44px;
   height: 44px;
-  border: 1.5px solid #f3f4f6;
-  border-radius: 12px;
+  border: none;
+  border-radius: 14px;
   background: #fff;
   cursor: pointer;
-  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: #9ca3af;
   flex-shrink: 0;
-  transition: border-color .18s, background .18s;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+  transition: transform .15s, box-shadow .15s, color .15s;
 }
-.mo-card-btn-icon:hover { border-color: #e0e0e0; background: #f9f9f9; }
+.mo-card-btn-icon:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+  color: #6b7280;
+}
+
+.mo-card-more-wrap { position: relative; flex-shrink: 0; }
+.mo-card-more-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  min-width: 196px;
+  background: #fff;
+  border: 1px solid #ececef;
+  border-radius: 14px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.14);
+  padding: 6px;
+  z-index: 20;
+}
+.mo-card-more-item {
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  cursor: pointer;
+  transition: background .15s;
+}
+.mo-card-more-item:hover:not(:disabled) { background: #f3f4f6; }
+.mo-card-more-item:disabled { opacity: .45; cursor: not-allowed; }
+.mo-card-more-item--danger { color: #dc2626; }
+.mo-card-more-item--danger:hover:not(:disabled) { background: #fef2f2; }
 
 /* ══════════════════════════════════════
    ORDER DETAIL

@@ -542,7 +542,13 @@ export const dealsMdListCss = `
   .md-confirm.ok { color: #16a34a; }
   .md-confirm.wait { color: #b45309; }
 
-  .md-actions { display: flex; gap: 8px; padding: 14px 18px 18px; flex-wrap: wrap; }
+  .md-actions { display: flex; gap: 8px; padding: 0; flex-wrap: wrap; }
+  .md-card .mo-card-actions {
+    padding: 12px 16px 16px;
+    border-top: 1px solid #f0ebe6;
+    background: linear-gradient(180deg, rgba(250,250,250,.68), rgba(246,244,241,.92));
+    border-radius: 0 0 22px 22px;
+  }
   .md-btn { flex: 1; border: none; border-radius: 13px; padding: 12px 14px; font: inherit; font-weight: 800; font-size: 13.5px; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; }
   .md-btn-primary { background: linear-gradient(135deg, #e8410a, #ff6b3d); color: #fff; box-shadow: 0 8px 20px rgba(232,65,10,.32); }
   .md-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(232,65,10,.45); }

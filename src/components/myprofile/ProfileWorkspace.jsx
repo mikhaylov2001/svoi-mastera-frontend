@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProfileSettingsPanel from './ProfileSettingsPanel';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 
@@ -44,6 +45,7 @@ export default function ProfileWorkspace({
   onSettingsSelect,
   onDealClick,
 }) {
+  const navigate = useNavigate();
   const [tab, setTab]       = useState('deals');
   const [filter, setFilter] = useState('Все');
 
@@ -86,7 +88,7 @@ export default function ProfileWorkspace({
                 <h2>{dealsTitle}</h2>
               </div>
               {dealsListPath && (
-                <button type="button" onClick={() => { /* handled by navigate in parent */ }}>
+                <button type="button" onClick={() => navigate(dealsListPath)}>
                   Все →
                 </button>
               )}
