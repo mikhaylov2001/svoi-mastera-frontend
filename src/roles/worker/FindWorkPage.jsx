@@ -499,7 +499,7 @@ export default function FindWorkPage() {
                 </div>
               </div>
               <div className="ed-head-right">
-                <FavoriteHeartButton kind="jobRequest" id={req.id} className="ulc-fav-heart ed-fav" />
+                <FavoriteHeartButton kind="jobRequest" id={req.id} variant="detail" className="ed-fav" />
                 <span className="ed-status-pill">
                   <span className="dot" style={{ background: openStatusPill.dot, boxShadow: openStatusPill.shadow }} />
                   {openStatusPill.label}
@@ -1065,9 +1065,7 @@ export default function FindWorkPage() {
                         <img src={hasPhoto ? photos[0] : placeholderBg} alt="" draggable={false} />
                         <span className="jl-bigcard-status">{statusUpper}</span>
                         {urgent && <span className="jl-bigcard-urgent">⚡ Срочно</span>}
-                        <div className="jl-bigcard-fav-slot" onClick={e => e.stopPropagation()}>
-                          <FavoriteHeartButton kind="jobRequest" id={req.id} />
-                        </div>
+                        <CardFavoriteSlot kind="jobRequest" id={req.id} className="jl-bigcard-fav-slot card-fav-slot" />
                         {photos.length > 1 && (
                           <span className="jl-bigcard-photo-cnt">📷 {photos.length}</span>
                         )}

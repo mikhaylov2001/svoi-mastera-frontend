@@ -293,27 +293,6 @@ export const listingDetailSurfaceExtraCss = `
   flex-wrap: wrap;
   justify-content: flex-end;
 }
-.ed-fav.ulc-fav-heart {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: 1px solid #ececef;
-  background: #fff;
-  color: #71717a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  box-shadow: none;
-  cursor: pointer;
-}
-.ed-fav.ulc-fav-heart:hover,
-.ed-fav.ulc-fav-heart--on {
-  color: var(--surface-accent);
-  border-color: #ffd4c2;
-  background: #fff7f3;
-}
-.ed-fav.ulc-fav-heart svg { width: 18px; height: 18px; }
 .ed-listing-meta {
   margin-top: 10px;
   font-size: 13px;

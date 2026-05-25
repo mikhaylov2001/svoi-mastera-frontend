@@ -469,46 +469,6 @@
   backdrop-filter: blur(8px);
   letter-spacing: 0.04em;
 }
-.chpv-card-fav-slot {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 3;
-}
-.chpv-card-fav-slot .ulc-fav-heart,
-.chpv-card-fav-slot .chpv-fav-heart {
-  position: static;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #b8b8b8;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-.chpv-card-fav-slot .ulc-fav-heart:hover,
-.chpv-card-fav-slot .chpv-fav-heart:hover {
-  transform: scale(1.06);
-  color: #e8410a;
-  border-color: rgba(232, 65, 10, 0.25);
-}
-.chpv-card-fav-slot .ulc-fav-heart--on,
-.chpv-card-fav-slot .chpv-fav-heart.ulc-fav-heart--on {
-  background: #fff;
-  color: #e8410a;
-  border-color: rgba(232, 65, 10, 0.35);
-  box-shadow: 0 2px 12px rgba(232, 65, 10, 0.2);
-}
-.chpv-card-fav-slot .ulc-fav-heart svg,
-.chpv-card-fav-slot .chpv-fav-heart svg {
-  width: 18px;
-  height: 18px;
-  display: block;
-}
 
 .chpv-card-quick {
   position: absolute;

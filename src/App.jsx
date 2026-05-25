@@ -39,6 +39,7 @@ import ListingDetailPage from './roles/worker/ListingDetailPage';
 import FavoritesPage from './pages/FavoritesPage';
 import './App.css';
 import './styles/unifiedListingCards.css';
+import './styles/favoriteHeart.css';
 
 /** Старый роут /jobs/:id — открываем ту же заявку в FindWorkPage */
 function RedirectJobsDetailToFindWork() {

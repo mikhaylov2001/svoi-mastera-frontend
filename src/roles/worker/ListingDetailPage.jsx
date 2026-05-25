@@ -432,7 +432,7 @@ export default function ListingDetailPage() {
             </div>
           </div>
           <div className="ed-head-right">
-            <FavoriteHeartButton kind="listing" id={listing.id} className="ulc-fav-heart ed-fav" />
+            <FavoriteHeartButton kind="listing" id={listing.id} variant="detail" className="ed-fav" />
             <span className="ed-status-pill">
               <span className="dot" style={{ background: statusPill.dot, boxShadow: statusPill.shadow }} />
               {statusPill.label}
@@ -776,7 +776,7 @@ export default function ListingDetailPage() {
                     <Link key={s.id} to={`/listings/${s.id}`} className="ed-sim-item">
                       <div className="ed-sim-img">
                         <img src={sPhoto} alt="" />
-                        <CardFavoriteSlot kind="listing" id={s.id} className="card-fav-slot" />
+                        <CardFavoriteSlot kind="listing" id={s.id} className="card-fav-slot card-fav-slot--xs" size="xs" />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div className="ed-sim-title">{s.title}</div>

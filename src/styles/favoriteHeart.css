@@ -1,0 +1,309 @@
+/* ═══════════════════════════════════════════════════════════════
+   Избранное — единый стиль сердечка по всему проекту
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --fav-accent: #e8410a;
+  --fav-accent-border: rgba(232, 65, 10, 0.42);
+  --fav-accent-border-hover: rgba(232, 65, 10, 0.55);
+  --fav-accent-glow: rgba(232, 65, 10, 0.24);
+  --fav-idle: #c4c4c4;
+  --fav-bg: #fff;
+  --fav-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
+  --fav-shadow-active: 0 2px 14px var(--fav-accent-glow);
+}
+
+/* ── Слот на карточках ── */
+.card-fav-slot,
+.chpv-card-fav-slot,
+.jl-bigcard-fav-slot,
+.mo-card-fav-slot,
+.fmp-gcard-fav-slot,
+.pro-listing-fav-slot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  pointer-events: auto;
+}
+
+.jl-bigcard-fav-slot {
+  top: 12px;
+  right: 12px;
+}
+
+.card-fav-slot--sm {
+  top: 4px;
+  right: 4px;
+}
+
+.card-fav-slot--xs {
+  top: 3px;
+  right: 3px;
+}
+
+/* ── Базовая кнопка ── */
+.fav-heart,
+.ulc-fav-heart {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.fav-heart svg,
+.ulc-fav-heart svg {
+  display: block;
+  transition: transform 0.2s cubic-bezier(0.34, 1.25, 0.64, 1);
+}
+
+.fav-heart--on svg,
+.ulc-fav-heart--on svg {
+  animation: fav-heart-pop 0.32s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+
+@keyframes fav-heart-pop {
+  0% { transform: scale(0.82); }
+  55% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+/* ── Карточка (круг на фото) ── */
+.card-fav-slot > .fav-heart,
+.card-fav-slot > .ulc-fav-heart,
+.chpv-card-fav-slot > .fav-heart,
+.chpv-card-fav-slot > .ulc-fav-heart,
+.jl-bigcard-fav-slot > .fav-heart,
+.jl-bigcard-fav-slot > .ulc-fav-heart,
+.mo-card-fav-slot > .fav-heart,
+.mo-card-fav-slot > .ulc-fav-heart,
+.fmp-gcard-fav-slot > .fav-heart,
+.fmp-gcard-fav-slot > .ulc-fav-heart,
+.pro-listing-fav-slot > .fav-heart,
+.pro-listing-fav-slot > .ulc-fav-heart,
+.fav-heart--card {
+  position: static;
+  top: auto;
+  right: auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--fav-bg);
+  border: 1.5px solid rgba(232, 65, 10, 0.22);
+  color: var(--fav-idle);
+  box-shadow: var(--fav-shadow);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition:
+    transform 0.18s cubic-bezier(0.34, 1.2, 0.64, 1),
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.card-fav-slot > .fav-heart:hover,
+.card-fav-slot > .ulc-fav-heart:hover,
+.chpv-card-fav-slot > .fav-heart:hover,
+.chpv-card-fav-slot > .ulc-fav-heart:hover,
+.jl-bigcard-fav-slot > .fav-heart:hover,
+.jl-bigcard-fav-slot > .ulc-fav-heart:hover,
+.mo-card-fav-slot > .fav-heart:hover,
+.mo-card-fav-slot > .ulc-fav-heart:hover,
+.fmp-gcard-fav-slot > .fav-heart:hover,
+.fmp-gcard-fav-slot > .ulc-fav-heart:hover,
+.pro-listing-fav-slot > .fav-heart:hover,
+.pro-listing-fav-slot > .ulc-fav-heart:hover,
+.fav-heart--card:hover {
+  transform: scale(1.07);
+  color: var(--fav-accent);
+  border-color: var(--fav-accent-border-hover);
+}
+
+.card-fav-slot > .fav-heart--on,
+.card-fav-slot > .ulc-fav-heart--on,
+.chpv-card-fav-slot > .fav-heart--on,
+.chpv-card-fav-slot > .ulc-fav-heart--on,
+.jl-bigcard-fav-slot > .fav-heart--on,
+.jl-bigcard-fav-slot > .ulc-fav-heart--on,
+.mo-card-fav-slot > .fav-heart--on,
+.mo-card-fav-slot > .ulc-fav-heart--on,
+.fmp-gcard-fav-slot > .fav-heart--on,
+.fmp-gcard-fav-slot > .ulc-fav-heart--on,
+.pro-listing-fav-slot > .fav-heart--on,
+.pro-listing-fav-slot > .ulc-fav-heart--on,
+.fav-heart--card.fav-heart--on,
+.fav-heart--card.ulc-fav-heart--on {
+  color: var(--fav-accent);
+  border-color: var(--fav-accent-border);
+  box-shadow: var(--fav-shadow-active);
+}
+
+.card-fav-slot > .fav-heart svg,
+.card-fav-slot > .ulc-fav-heart svg,
+.chpv-card-fav-slot > .fav-heart svg,
+.chpv-card-fav-slot > .ulc-fav-heart svg,
+.jl-bigcard-fav-slot > .fav-heart svg,
+.jl-bigcard-fav-slot > .ulc-fav-heart svg,
+.mo-card-fav-slot > .fav-heart svg,
+.mo-card-fav-slot > .ulc-fav-heart svg,
+.fmp-gcard-fav-slot > .fav-heart svg,
+.fmp-gcard-fav-slot > .ulc-fav-heart svg,
+.pro-listing-fav-slot > .fav-heart svg,
+.pro-listing-fav-slot > .ulc-fav-heart svg,
+.fav-heart--card svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── Детальная страница (квадратная кнопка) ── */
+.fav-heart--detail,
+.ed-fav.fav-heart,
+.ed-fav.ulc-fav-heart {
+  position: static;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--fav-bg);
+  border: 1px solid #ececef;
+  color: #71717a;
+  box-shadow: none;
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.fav-heart--detail:hover,
+.ed-fav.fav-heart:hover,
+.ed-fav.ulc-fav-heart:hover {
+  transform: scale(1.04);
+  color: var(--fav-accent);
+  border-color: #ffd4c2;
+  background: #fff7f3;
+}
+
+.fav-heart--detail.fav-heart--on,
+.fav-heart--detail.ulc-fav-heart--on,
+.ed-fav.fav-heart--on,
+.ed-fav.ulc-fav-heart--on {
+  color: var(--fav-accent);
+  border-color: #ffd4c2;
+  background: #fff7f3;
+  box-shadow: 0 2px 10px var(--fav-accent-glow);
+}
+
+.fav-heart--detail svg,
+.ed-fav.fav-heart svg,
+.ed-fav.ulc-fav-heart svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── Компакт (поиск в шапке) ── */
+.header-search-hit-ph .fav-heart,
+.header-search-hit-ph .ulc-fav-heart,
+.fav-heart--compact {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--fav-bg);
+  border: 1.5px solid rgba(232, 65, 10, 0.22);
+  color: var(--fav-idle);
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.14);
+}
+
+.header-search-hit-ph .fav-heart:hover,
+.header-search-hit-ph .ulc-fav-heart:hover,
+.fav-heart--compact:hover {
+  transform: scale(1.06);
+  color: var(--fav-accent);
+  border-color: var(--fav-accent-border);
+}
+
+.header-search-hit-ph .fav-heart--on,
+.header-search-hit-ph .ulc-fav-heart--on,
+.fav-heart--compact.fav-heart--on,
+.fav-heart--compact.ulc-fav-heart--on {
+  color: var(--fav-accent);
+  border-color: var(--fav-accent-border);
+  box-shadow: var(--fav-shadow-active);
+}
+
+.header-search-hit-ph .fav-heart svg,
+.header-search-hit-ph .ulc-fav-heart svg,
+.fav-heart--compact svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ── Мини (похожие объявления) ── */
+.card-fav-slot--xs > .fav-heart,
+.card-fav-slot--xs > .ulc-fav-heart,
+.fav-heart--compact-sm {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--fav-bg);
+  border: 1.5px solid rgba(232, 65, 10, 0.22);
+  color: var(--fav-idle);
+  box-shadow: 0 1px 5px rgba(15, 23, 42, 0.12);
+}
+
+.card-fav-slot--xs > .fav-heart--on,
+.card-fav-slot--xs > .ulc-fav-heart--on,
+.fav-heart--compact-sm.fav-heart--on,
+.fav-heart--compact-sm.ulc-fav-heart--on {
+  color: var(--fav-accent);
+  border-color: var(--fav-accent-border);
+}
+
+.card-fav-slot--xs > .fav-heart svg,
+.card-fav-slot--xs > .ulc-fav-heart svg,
+.fav-heart--compact-sm svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* ── Профиль: медиа-блок ── */
+.pro-listing-card {
+  position: relative;
+}
+
+.pro-listing-card-media {
+  position: relative;
+  overflow: hidden;
+}
+
+.pro-listing-card-media img {
+  width: 100%;
+  aspect-ratio: 1.55 / 1;
+  object-fit: cover;
+  display: block;
+  background: #ece7e0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fav-heart--on svg,
+  .ulc-fav-heart--on svg {
+    animation: none;
+  }
+  .fav-heart,
+  .ulc-fav-heart {
+    transition: none;
+  }
+}

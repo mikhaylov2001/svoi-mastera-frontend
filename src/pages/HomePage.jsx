@@ -25,7 +25,7 @@ import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../constants/homePaths';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
 import GuestLandingHome from './GuestLandingHome';
-import FavoriteHeartButton from '../components/FavoriteHeartButton';
+import CardFavoriteSlot from '../components/CardFavoriteSlot';
 import { rankItemsBySmartMatch, listingHaystack, jobRequestHaystack } from '../utils/smartSearch';
 import '../roles/worker/jobListings.css';
 import './customerHomeLovable.css';
@@ -675,9 +675,7 @@ export function CustomerHomePage({ userId }) {
                         <img src={src} alt="" loading="lazy" />
                       </Link>
                       {l.category ? <div className="chpv-card-tag">{l.category}</div> : null}
-                      <div className="chpv-card-fav-slot">
-                        <FavoriteHeartButton kind="listing" id={l.id} className="chpv-fav-heart" />
-                      </div>
+                      <CardFavoriteSlot kind="listing" id={l.id} className="chpv-card-fav-slot card-fav-slot" />
                       <div className="chpv-card-quick">
                         <Link to={detail} className="chpv-quick-btn primary" onClick={(e) => e.stopPropagation()}>
                           Написать
@@ -1140,9 +1138,7 @@ export function WorkerHomePage({ userId, userName }) {
                         <img src={photoSrc} alt="" loading="lazy" />
                       </Link>
                       {catLabel ? <div className="chpv-card-tag">{catLabel}</div> : null}
-                      <div className="chpv-card-fav-slot">
-                        <FavoriteHeartButton kind="jobRequest" id={item.id} className="chpv-fav-heart" />
-                </div>
+                      <CardFavoriteSlot kind="jobRequest" id={item.id} className="chpv-card-fav-slot card-fav-slot" />
                       <div className="chpv-card-quick">
                         <Link to={detail} className="chpv-quick-btn primary" onClick={(e) => e.stopPropagation()}>
                           Написать

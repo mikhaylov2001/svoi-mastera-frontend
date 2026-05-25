@@ -1225,37 +1225,6 @@ a.jd-btn.jd-btn-ghost {
     transform: translateY(0);
   }
 }
-.jl-bigcard-fav-slot {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 3;
-}
-.jl-bigcard-fav-slot .ulc-fav-heart {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
-  border: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #e8410a;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  transition: transform 0.15s;
-}
-.jl-bigcard-fav-slot .ulc-fav-heart:hover {
-  transform: scale(1.08);
-}
-.jl-bigcard-fav-slot .ulc-fav-heart--on {
-  background: #e8410a;
-  color: #fff;
-}
-.jl-bigcard-fav-slot .ulc-fav-heart svg {
-  width: 17px;
-  height: 17px;
-}
 .jl-bigcard-photo-cnt {
   position: absolute;
   bottom: 12px;

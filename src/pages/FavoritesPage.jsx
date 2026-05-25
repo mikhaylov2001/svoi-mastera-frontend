@@ -15,7 +15,7 @@ import {
   getJobRequestPublishedBudgetNumber,
   hasJobRequestPublishedPrice,
 } from '../utils/jobRequestBudget';
-import FavoriteHeartButton from '../components/FavoriteHeartButton';
+import CardFavoriteSlot from '../components/CardFavoriteSlot';
 import '../styles/moCabinetStyle.css';
 import './favorites.css';
 
@@ -257,18 +257,13 @@ export default function FavoritesPage() {
         <article key={i.key} className="chpv-card fav-card-miss">
           <div className="chpv-card-img">
             <div className="fav-card-ph-empty">{i.kind === 'master' ? '🔨' : '📋'}</div>
-            <div className="chpv-card-fav-slot">
-              <button
-                type="button"
-                className="chpv-fav-heart ulc-fav-heart ulc-fav-heart--on"
-                onClick={() => bumpRemove(i.key, () => removeItem(i))}
-                title="Убрать из избранного"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                  <path d="M12 20.25l-1.1-1C6.14 15.36 3.5 12.64 3.5 9.75 3.5 7.4 5.4 5.5 7.75 5.5c1.52 0 2.98.78 3.75 2.02.77-1.24 2.23-2.02 3.75-2.02 2.35 0 4.25 1.9 4.25 4.25 0 2.89-2.64 5.61-7.4 9.5l-1.1 1z" />
-                </svg>
-              </button>
-            </div>
+            <CardFavoriteSlot
+              kind={i.kind === 'master' ? 'listing' : 'jobRequest'}
+              id={i.rawId}
+              className="chpv-card-fav-slot card-fav-slot"
+              forcedActive
+              onToggle={() => bumpRemove(i.key, () => removeItem(i))}
+            />
           </div>
           <div className="chpv-card-body">
             <div className="chpv-card-title">
@@ -303,13 +298,11 @@ export default function FavoritesPage() {
             )}
           </Link>
           {i.category ? <div className="chpv-card-tag">{i.category}</div> : null}
-          <div className="chpv-card-fav-slot">
-            <FavoriteHeartButton
-              kind={i.kind === 'master' ? 'listing' : 'jobRequest'}
-              id={i.rawId}
-              className="chpv-fav-heart"
-            />
-          </div>
+          <CardFavoriteSlot
+            kind={i.kind === 'master' ? 'listing' : 'jobRequest'}
+            id={i.rawId}
+            className="chpv-card-fav-slot card-fav-slot"
+          />
           <div className="chpv-card-quick">
             <Link to={primaryTo} className="chpv-quick-btn primary">
               {writeLabel}

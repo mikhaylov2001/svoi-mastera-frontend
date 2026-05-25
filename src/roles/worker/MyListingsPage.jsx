@@ -1612,7 +1612,7 @@ export default function MyListingsPage() {
               </div>
             </div>
             <div className="ed-head-right">
-              <FavoriteHeartButton kind="listing" id={detail.id} className="ulc-fav-heart ed-fav" />
+              <FavoriteHeartButton kind="listing" id={detail.id} variant="detail" className="ed-fav" />
               <span className="ed-status-pill">
                 <span className="dot" style={{ background: statusPill.dot, boxShadow: statusPill.shadow }} />
                 {statusPill.label}

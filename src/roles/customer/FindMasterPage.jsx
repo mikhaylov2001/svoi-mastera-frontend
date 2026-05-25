@@ -24,7 +24,6 @@ import {
   listingMatchesCatalogCategory,
   mergeApiCategoriesWithCatalog,
 } from '../../utils/mergeApiCategoriesWithCatalog';
-import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
 import '../worker/jobListings.css';
@@ -814,9 +813,7 @@ export default function FindMasterPage() {
                         <span className="jl-bigcard-urgent">⚡ Срочно</span>
                       )}
                       {s.active !== false && (
-                        <div className="jl-bigcard-fav-slot" onClick={e => e.stopPropagation()}>
-                          <FavoriteHeartButton kind="listing" id={s.id} />
-                        </div>
+                        <CardFavoriteSlot kind="listing" id={s.id} className="jl-bigcard-fav-slot card-fav-slot" />
                       )}
                       {photos.length > 1 && (
                         <span className="jl-bigcard-photo-cnt">📷 {photos.length}</span>

@@ -6,14 +6,25 @@ export default function CardFavoriteSlot({
   kind,
   id,
   className = 'card-fav-slot',
-  buttonClassName = '',
+  variant = 'card',
+  size,
   ...buttonProps
 }) {
   if (!kind || id == null) return null;
 
+  const sizeClass =
+    size === 'sm' ? ' card-fav-slot--sm' : size === 'xs' ? ' card-fav-slot--xs' : '';
+  const buttonVariant =
+    size === 'xs' ? 'compact-sm' : size === 'sm' ? 'compact' : variant;
+
   return (
-    <div className={className} onClick={(e) => e.stopPropagation()}>
-      <FavoriteHeartButton kind={kind} id={id} className={buttonClassName} {...buttonProps} />
+    <div className={`${className}${sizeClass}`.trim()} onClick={(e) => e.stopPropagation()}>
+      <FavoriteHeartButton
+        kind={kind}
+        id={id}
+        variant={buttonVariant}
+        {...buttonProps}
+      />
     </div>
   );
 }

@@ -1836,7 +1836,7 @@ export default function MyOrdersPage() {
               </div>
             </div>
             <div className="ed-head-right">
-              <FavoriteHeartButton kind="jobRequest" id={detail.id} className="ulc-fav-heart ed-fav" />
+              <FavoriteHeartButton kind="jobRequest" id={detail.id} variant="detail" className="ed-fav" />
               <span className="ed-status-pill">
                 <span className="dot" style={{ background: statusPill.dot, boxShadow: statusPill.shadow }} />
                 {statusPill.label}

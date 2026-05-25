@@ -186,44 +186,7 @@
   white-space: nowrap;
 }
 
-.fav-page .chpv-card-fav-slot {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 3;
-}
-
-.fav-page .chpv-card-fav-slot .ulc-fav-heart,
-.fav-page .chpv-card-fav-slot .chpv-fav-heart {
-  position: static;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #b8b8b8;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  cursor: pointer;
-}
-
-.fav-page .chpv-card-fav-slot .ulc-fav-heart:hover,
-.fav-page .chpv-card-fav-slot .chpv-fav-heart:hover {
-  transform: scale(1.06);
-  color: #e8410a;
-  border-color: rgba(232, 65, 10, 0.25);
-}
-
-.fav-page .chpv-card-fav-slot .ulc-fav-heart--on,
-.fav-page .chpv-card-fav-slot .chpv-fav-heart.ulc-fav-heart--on {
-  background: #fff;
-  color: #e8410a;
-  border-color: rgba(232, 65, 10, 0.35);
-  box-shadow: 0 2px 12px rgba(232, 65, 10, 0.2);
-}
+/* сердечко на карточках — src/styles/favoriteHeart.css */
 
 .fav-page .chpv-card-quick {
   position: absolute;

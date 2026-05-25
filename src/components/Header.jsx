@@ -366,7 +366,7 @@ function Header() {
                           onClick={() => closeSearchUi()}
                         >
                           <div className="header-search-hit-ph">
-                            <FavoriteHeartButton kind="listing" id={s.id} />
+                            <FavoriteHeartButton kind="listing" id={s.id} variant="compact" />
                             <img src={src} alt="" />
                           </div>
                           <div className="header-search-hit-body">
