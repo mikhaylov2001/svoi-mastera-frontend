@@ -59,6 +59,21 @@ const NOTIF_ICONS = {
   DEAL_CANCELLED: '❌',
 };
 
+const NOTIF_TONES = {
+  NEW_OFFER: 'blue',
+  OFFER_ACCEPTED: 'green',
+  DEAL_CONFIRMED: 'green',
+  DEAL_COMPLETED: 'amber',
+  NEW_MESSAGE: 'violet',
+  DEAL_NEW: 'orange',
+  DEAL_STARTED: 'orange',
+  DEAL_CANCELLED: 'rose',
+};
+
+function notifTone(type) {
+  return NOTIF_TONES[type] || 'neutral';
+}
+
 function timeAgoShort(d) {
   if (!d) return '';
   const m = Math.floor((Date.now() - new Date(d)) / 60000);
@@ -67,6 +82,14 @@ function timeAgoShort(d) {
   const h = Math.floor(m / 60);
   if (h < 24) return `${h} ч`;
   return `${Math.floor(h / 24)} дн`;
+}
+
+function notifCountLabel(count) {
+  const n = Math.abs(count) % 100;
+  const n1 = n % 10;
+  if (n1 === 1 && n !== 11) return `${count} новое`;
+  if (n1 >= 2 && n1 <= 4 && (n < 12 || n > 14)) return `${count} новых`;
+  return `${count} новых`;
 }
 
 function HeaderNotificationsBell({
@@ -80,6 +103,15 @@ function HeaderNotificationsBell({
   className = '',
   buttonClassName = '',
 }) {
+  useEffect(() => {
+    if (!notifOpen) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [notifOpen, onClose]);
+
   return (
     <div
       className={`header-notif-wrap${className ? ` ${className}` : ''}`}
@@ -90,7 +122,7 @@ function HeaderNotificationsBell({
     >
       <button
         type="button"
-        className={`header-notif-btn${buttonClassName ? ` ${buttonClassName}` : ''}`}
+        className={`header-notif-btn${notifOpen ? ' is-open' : ''}${buttonClassName ? ` ${buttonClassName}` : ''}`}
         onClick={onToggle}
         aria-label="Уведомления"
         aria-expanded={notifOpen}
@@ -104,44 +136,76 @@ function HeaderNotificationsBell({
       </button>
 
       {notifOpen && (
-        <div className="header-notif-dropdown" onClick={(e) => e.stopPropagation()}>
-          <div className="header-notif-dropdown-head">
-            <span>Уведомления</span>
-            {notifCount > 0 && (
-              <button type="button" className="header-notif-mark-all" onClick={onMarkAllRead}>
-                Прочитать все
-              </button>
-            )}
-          </div>
+        <>
+          <button
+            type="button"
+            className="header-notif-backdrop"
+            aria-label="Закрыть уведомления"
+            onClick={onClose}
+          />
 
-          <div className="header-notif-dropdown-list">
-            {notifs.length === 0 ? (
-              <div className="header-notif-empty">
-                <div className="header-notif-empty-icon" aria-hidden>🔔</div>
-                <p>Уведомлений пока нет</p>
+          <div
+            className="header-notif-dropdown"
+            role="dialog"
+            aria-label="Уведомления"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="header-notif-dropdown-head">
+              <div className="header-notif-dropdown-head-main">
+                <h2 className="header-notif-dropdown-title">Уведомления</h2>
+                {notifCount > 0 && (
+                  <span className="header-notif-new-pill">
+                    {notifCountLabel(notifCount)}
+                  </span>
+                )}
               </div>
-            ) : (
-              notifs.slice(0, 6).map((n) => (
-                <button
-                  key={n.id}
-                  type="button"
-                  className={`header-notif-item${(n.isRead ?? n.read) ? '' : ' is-unread'}`}
-                  onClick={() => onMarkOneRead(n)}
-                >
-                  <span className="header-notif-item-icon" aria-hidden>
-                    {NOTIF_ICONS[n.type] || '🔔'}
-                  </span>
-                  <span className="header-notif-item-body">
-                    <span className="header-notif-item-title">{n.title}</span>
-                    <span className="header-notif-item-text">{n.body}</span>
-                    <span className="header-notif-item-time">{timeAgoShort(n.createdAt)}</span>
-                  </span>
-                  {!(n.isRead ?? n.read) && <span className="header-notif-item-dot" aria-hidden />}
+              {notifCount > 0 && (
+                <button type="button" className="header-notif-mark-all" onClick={onMarkAllRead}>
+                  Прочитать все
                 </button>
-              ))
-            )}
+              )}
+            </div>
+
+            <div className="header-notif-dropdown-list">
+              {notifs.length === 0 ? (
+                <div className="header-notif-empty">
+                  <div className="header-notif-empty-visual" aria-hidden>
+                    <span className="header-notif-empty-bell">🔔</span>
+                  </div>
+                  <p className="header-notif-empty-title">Пока тихо</p>
+                  <p className="header-notif-empty-text">Здесь появятся отклики, сообщения и статусы сделок</p>
+                </div>
+              ) : (
+                notifs.slice(0, 8).map((n) => {
+                  const unread = !(n.isRead ?? n.read);
+                  const tone = notifTone(n.type);
+                  return (
+                    <button
+                      key={n.id}
+                      type="button"
+                      className={`header-notif-item${unread ? ' is-unread' : ''}`}
+                      onClick={() => onMarkOneRead(n)}
+                    >
+                      <span className={`header-notif-item-icon header-notif-item-icon--${tone}`} aria-hidden>
+                        {NOTIF_ICONS[n.type] || '🔔'}
+                      </span>
+                      <span className="header-notif-item-body">
+                        <span className="header-notif-item-top">
+                          <span className="header-notif-item-title">{n.title}</span>
+                          <span className="header-notif-item-time">{timeAgoShort(n.createdAt)}</span>
+                        </span>
+                        {n.body ? (
+                          <span className="header-notif-item-text">{n.body}</span>
+                        ) : null}
+                      </span>
+                      {unread && <span className="header-notif-item-dot" aria-hidden />}
+                    </button>
+                  );
+                })
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
