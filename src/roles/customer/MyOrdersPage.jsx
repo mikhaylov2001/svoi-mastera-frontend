@@ -249,7 +249,13 @@ const css = `
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; }
 
-  .ml-page { background: #f5f5f7; min-height: 100vh; font-family: 'Manrope', Inter, system-ui, sans-serif; color: #0f172a; }
+  .ml-page {
+    background: radial-gradient(circle at 12% -6%, rgba(232,65,10,.1), transparent 32%),
+      linear-gradient(180deg, #f7f3ef 0%, #f3f4f6 52%, #f8f8f7 100%);
+    min-height: 100vh;
+    font-family: 'Manrope', Inter, system-ui, sans-serif;
+    color: #111827;
+  }
 
   ${moOrdersListShellCss}
 

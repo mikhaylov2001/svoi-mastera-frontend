@@ -245,7 +245,13 @@ const css = `
   *, *::before, *::after { box-sizing: border-box; }
 
   /* ── GENERAL (форма и деталь) ── */
-  .ml-page { background: #f2f2f2; min-height: 100vh; font-family: Inter, Arial, sans-serif; color: #1a1a1a; }
+  .ml-page {
+    background: radial-gradient(circle at 12% -6%, rgba(232,65,10,.1), transparent 32%),
+      linear-gradient(180deg, #f7f3ef 0%, #f3f4f6 52%, #f8f8f7 100%);
+    min-height: 100vh;
+    font-family: 'Manrope', Inter, system-ui, sans-serif;
+    color: #111827;
+  }
 
   ${moOrdersListShellCss}
 

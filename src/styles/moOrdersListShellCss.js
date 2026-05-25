@@ -2,31 +2,81 @@
  * Общая оболочка списка «Lovable / mo-*» для «Мои заявки» и «Мои объявления».
  * Подключается в <style> страниц после базовых reset-правил.
  */
-export const moOrdersListShellCss = `
-  .mo-orders-root { padding-bottom: 80px; background: #f5f5f7; }
+export const moCabinetPageBackground = `
+  radial-gradient(circle at 12% -6%, rgba(232,65,10,.1), transparent 32%),
+  linear-gradient(180deg, #f7f3ef 0%, #f3f4f6 52%, #f8f8f7 100%)
+`;
 
-  /* === Hero: на всю ширину экрана, контент по центру в 1200px === */
+export const moOrdersListShellCss = `
+  .mo-orders-root {
+    padding-bottom: 80px;
+    background: ${moCabinetPageBackground};
+    min-height: 100vh;
+  }
+
+  /* === Hero: как «Мои сделки» (moCabinetStyle) === */
   .mo-orders-root .mo-hero {
-    position: relative; width: 100%; height: 240px; overflow: hidden;
-    border-radius: 0; box-shadow: none;
+    position: relative;
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+    border-radius: 0 0 30px 30px;
+    box-shadow: 0 18px 44px rgba(17, 24, 39, .12);
   }
   .mo-orders-root .mo-hero img {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; object-position: center 40%;
-    filter: saturate(1.06) contrast(1.02);
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 46%;
+    filter: brightness(.68) saturate(1.03);
   }
   .mo-orders-root .mo-hero::after {
-    content: ''; position: absolute; inset: 0; z-index: 0;
-    background: linear-gradient(90deg, rgba(0,0,0,.65) 0%, rgba(0,0,0,.34) 50%, rgba(0,0,0,.12) 100%);
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(172deg, rgba(13,13,13,.05) 0%, rgba(232,65,10,.12) 44%, rgba(13,13,13,.68) 100%);
+  }
+  .mo-orders-root .mo-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(circle at 78% 18%, rgba(255,255,255,.18), transparent 28%);
+    pointer-events: none;
   }
   .mo-orders-root .mo-hero-inner {
-    position: relative; z-index: 1; height: 100%; max-width: 1200px; margin: 0 auto;
-    padding: 0 clamp(24px, 5vw, 52px);
-    display: flex; align-items: center; justify-content: space-between; gap: 24px; color: #fff;
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    color: #fff;
+    box-sizing: border-box;
   }
   /* Мобильный hero — src/styles/moCabinetMobile.css */
-  .mo-orders-root .mo-hero h1 { margin: 0 0 6px; font-size: 32px; font-weight: 900; letter-spacing: -0.02em; color: #fff; }
-  .mo-orders-root .mo-hero p { margin: 0; color: rgba(255,255,255,.92); font-size: 14px; font-weight: 500; }
+  .mo-orders-root .mo-hero h1 {
+    margin: 0 0 6px;
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 900;
+    letter-spacing: -.03em;
+    line-height: .96;
+    color: #fff;
+    text-shadow: 0 8px 30px rgba(0,0,0,.22);
+  }
+  .mo-orders-root .mo-hero p {
+    margin: 0;
+    color: rgba(255,255,255,.78);
+    font-size: 15px;
+    font-weight: 650;
+  }
   .mo-orders-root .mo-cta {
     background: #ff5722; color: #fff; border: none; padding: 13px 26px; border-radius: 999px;
     font: inherit; font-weight: 800; font-size: 14px; cursor: pointer;
@@ -56,7 +106,14 @@ export const moOrdersListShellCss = `
 
   /* alias Base44: mo-page */
   .mo-orders-root.mo-page,
-  .mo-page.mo-orders-root { padding-bottom: 80px; background: #f5f5f7; }
+  .mo-page.mo-orders-root,
+  .ml-page.ml-list-shell.mo-orders-root.mo-page {
+    padding-bottom: 80px;
+    background: ${moCabinetPageBackground};
+    min-height: 100vh;
+    font-family: 'Manrope', Inter, system-ui, sans-serif;
+    color: #111827;
+  }
 
   .mo-orders-root .mo-grid,
   .mo-orders-root .listing-grid {
