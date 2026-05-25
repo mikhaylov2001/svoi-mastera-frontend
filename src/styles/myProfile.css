@@ -663,6 +663,9 @@
   border: 0;
   cursor: pointer;
   font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
   width: auto;
   min-width: 104px;
@@ -692,30 +695,33 @@
   box-shadow: 0 10px 22px rgba(255,75,31,.26);
 }
 
-/* Desktop: широкая pill-полоска на всю колонку, вкладки компактные */
+/* Desktop: широкая pill-полоска — вкладки на всю ширину, равномерно */
 @media (min-width: 961px) {
   .mp-tabs-v2 {
     display: flex;
     width: 100%;
     max-width: 100%;
-    min-height: 50px;
-    padding: 5px;
-    gap: 4px;
+    min-height: 58px;
+    padding: 6px;
+    gap: 6px;
     box-sizing: border-box;
-    justify-content: flex-start;
+    background: rgba(255, 255, 255, .92);
+    border: 1px solid rgba(17, 24, 39, .06);
+    box-shadow: 0 14px 34px rgba(17, 24, 39, .07);
   }
 
   .mp-tabs-v2 button {
+    flex: 1 1 0;
     min-width: 0;
-    height: 38px;
-    min-height: 38px;
-    max-height: 38px;
-    padding: 0 16px;
-    font-size: 13px;
+    height: 46px;
+    min-height: 46px;
+    max-height: 46px;
+    padding: 0 20px;
+    font-size: 14px;
   }
 
   .mp-tabs-v2 button.active {
-    box-shadow: 0 8px 18px rgba(255, 75, 31, .22);
+    box-shadow: 0 12px 26px rgba(255, 75, 31, .28);
   }
 }
 
