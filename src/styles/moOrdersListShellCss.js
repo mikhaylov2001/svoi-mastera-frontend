@@ -84,7 +84,14 @@ export const moOrdersListShellCss = `
   }
   .mo-orders-root .mo-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(255, 87, 34, 0.5); }
 
-  .mo-orders-root .mo-main { max-width: 1200px; margin: 0 auto; padding: 40px 28px 28px; }
+  .mo-orders-root .mo-main {
+    max-width: 1000px;
+    margin: -26px auto 0;
+    padding: 18px 20px 100px;
+    position: relative;
+    z-index: 3;
+    box-sizing: border-box;
+  }
 
   .mo-orders-root .mo-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 22px; }
   .mo-orders-root .mo-tabs { display: flex; gap: 4px; padding: 6px; background: #fff; border-radius: 14px; box-shadow: 0 4px 14px rgba(15,15,30,.05); }
@@ -119,43 +126,42 @@ export const moOrdersListShellCss = `
   .mo-orders-root .listing-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 22px;
+    gap: 24px;
   }
-  @media (max-width: 880px) {
+  @media (max-width: 960px) {
     .mo-orders-root .mo-grid,
-    .mo-orders-root .listing-grid { grid-template-columns: 1fr; gap: 18px; }
+    .mo-orders-root .listing-grid { grid-template-columns: 1fr; gap: 16px; }
   }
 
-  /* —— Cabinet cards (Base44 / moCabinetStyle), без иконок —— */
+  /* —— Карточки списка: габариты как «Мои сделки» (OrderCard / moCabinetStyle) —— */
   .mo-orders-root .mo-card {
     background: #fff;
-    border: 1px solid #ebebeb;
-    border-radius: 18px;
+    border: 1px solid #ebe7e2;
+    border-radius: 28px;
     overflow: hidden;
     position: relative;
-    transition: transform .2s ease, box-shadow .2s ease;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     display: flex;
     flex-direction: column;
     animation: mo-orders-fade .45s both;
     cursor: pointer;
-    box-shadow: 0 2px 14px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 18px 44px rgba(20, 24, 31, .12);
+    font-family: 'Manrope', sans-serif;
   }
   @keyframes mo-orders-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   .mo-orders-root .mo-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.1);
+    transform: translateY(-4px);
+    border-color: rgba(232, 65, 10, .18);
+    box-shadow: 0 28px 64px rgba(20, 24, 31, .16);
   }
 
   .mo-orders-root .mo-card-media {
     position: relative;
     width: 100%;
-    aspect-ratio: 5 / 4;
-    min-height: 176px;
-    background: #eef1f5;
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+    background: #f3f4f6;
     overflow: hidden;
-  }
-  @media (min-width: 769px) {
-    .mo-orders-root .mo-card-media { min-height: 198px; }
   }
   .mo-orders-root .mo-card-media img {
     width: 100%;
@@ -163,7 +169,10 @@ export const moOrdersListShellCss = `
     object-fit: cover;
     object-position: center center;
     display: block;
+    filter: contrast(1.06) saturate(1.08);
+    transition: transform .35s ease;
   }
+  .mo-orders-root .mo-card:hover .mo-card-media img { transform: scale(1.035); }
 
   .mo-orders-root .mo-card-status-on-img {
     position: absolute;
@@ -223,10 +232,10 @@ export const moOrdersListShellCss = `
   }
 
   .mo-orders-root .mo-card-content {
-    padding: 14px 16px 0;
+    padding: 18px 20px 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 14px;
     flex: 1;
     min-width: 0;
   }
@@ -240,10 +249,10 @@ export const moOrdersListShellCss = `
   .mo-orders-root .mo-card-title {
     margin: 0;
     font-size: 16px;
-    font-weight: 800;
+    font-weight: 950;
     color: #111827;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
+    letter-spacing: -.3px;
+    line-height: 1.3;
     flex: 1;
     min-width: 0;
   }
@@ -350,9 +359,11 @@ export const moOrdersListShellCss = `
 
   .mo-orders-root .mo-actions {
     display: flex;
-    gap: 10px;
-    padding: 12px 16px 14px;
+    gap: 8px;
+    padding: 12px 16px;
     margin-top: auto;
+    border-top: 1px solid #f0ebe6;
+    background: linear-gradient(180deg, rgba(250,250,250,.68), rgba(246,244,241,.92));
   }
   .mo-orders-root .mo-btn {
     flex: 1;
@@ -360,14 +371,14 @@ export const moOrdersListShellCss = `
     border-radius: 14px;
     padding: 12px 14px;
     font: inherit;
-    font-weight: 700;
+    font-weight: 950;
     font-size: 14px;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 46px;
+    min-height: 44px;
   }
   .mo-orders-root .mo-btn-primary {
     background: linear-gradient(180deg, #ef6339 0%, #e85a32 55%, #d1522d 100%);

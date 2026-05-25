@@ -164,9 +164,9 @@ export const moCabinetMobileCss = `
   }
 
   .mo-orders-root .mo-card {
-    border-radius: var(--catalog-mobile-card-radius);
-    border: 1px solid #e8e8ec;
-    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.07);
+    border-radius: 28px;
+    border: 1px solid #ebe7e2;
+    box-shadow: 0 18px 44px rgba(20, 24, 31, .12);
   }
 
   .mo-orders-root .mo-card:active {
@@ -174,9 +174,8 @@ export const moCabinetMobileCss = `
   }
 
   .mo-orders-root .mo-card-media {
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 9;
     min-height: 0;
-    border-radius: var(--catalog-mobile-card-radius) var(--catalog-mobile-card-radius) 0 0;
   }
 
   .mo-orders-root .mo-card-status-on-img {
@@ -196,8 +195,8 @@ export const moCabinetMobileCss = `
   }
 
   .mo-orders-root .mo-card-content {
-    padding: 16px 16px 4px;
-    gap: 10px;
+    padding: 18px 20px 4px;
+    gap: 14px;
   }
 
   .mo-orders-root .mo-card-headline {
