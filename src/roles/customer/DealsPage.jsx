@@ -17,6 +17,7 @@ import {
   dealCategoryEmoji,
 } from '../shared/dealsWdStyles';
 import OrderCard from '../../components/myorders/OrderCard';
+import PhotoLightbox from '../../components/PhotoLightbox';
 import '../../styles/moCabinetStyle.css';
 
 const HERO = 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=2400&q=86';
@@ -307,6 +308,7 @@ function DealDetail({
   userName, userLastName, userAvatar,
 }) {
   const [photoIdx, setPhotoIdx] = useState(0);
+  const [lightbox, setLightbox] = useState(null);
   const st = ST[deal.status] || ST.NEW;
   const photoList = dealPhotoList(deal);
   const hasPhoto = photoList.length > 0;
@@ -319,11 +321,29 @@ function DealDetail({
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Заказчик';
   const customerAva = resolvePhoto(userAvatar);
 
+  useEffect(() => {
+    setPhotoIdx(0);
+    setLightbox(null);
+  }, [deal.id]);
+
+  const handleBack = () => {
+    setLightbox(null);
+    onBack();
+  };
+
   return (
     <div className="ed ed--listing-detail">
       <style>{`${dealsWdCss}\n${edListingDetailMergedCss}\n${dealsMoConfirmDarkCss}`}</style>
+
+      <PhotoLightbox
+        lightbox={lightbox}
+        setLightbox={setLightbox}
+        onIndexChange={setPhotoIdx}
+        alt={deal.title || ''}
+      />
+
       <div className="ed-wrap">
-        <button type="button" className="ed-back" onClick={onBack}>
+        <button type="button" className="ed-back" onClick={handleBack}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
@@ -343,9 +363,14 @@ function DealDetail({
         <div className="ed-grid">
           <div className="ed-col">
             <div className="ed-gallery">
-              <div className="ed-main">
+              <div
+                className="ed-main"
+                role="presentation"
+                onClick={() => hasPhoto && setLightbox({ photos: photoList, index: photoIdx })}
+                style={hasPhoto ? { cursor: 'zoom-in' } : undefined}
+              >
                 {hasPhoto ? (
-                  <img src={photoList[photoIdx]} alt="" />
+                  <img src={photoList[photoIdx]} alt={deal.title || ''} />
                 ) : (
                   <div className="ed-main-placeholder" aria-hidden>
                     {dealCategoryEmoji(deal.category)}
