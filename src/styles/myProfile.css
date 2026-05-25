@@ -634,7 +634,11 @@
   align-items: start;
 }
 
-.mp-work-main { display: grid; gap: 14px; }
+.mp-work-main {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
 
 /* Сделки / отзывы — блок ниже витрины (как Base44) */
 .mp-activity-block {
@@ -695,13 +699,22 @@
   box-shadow: 0 10px 22px rgba(255,75,31,.26);
 }
 
-/* Desktop: широкая pill-полоска — вкладки на всю ширину, равномерно */
+/* Desktop: табы по ширине контента, лента шире, настройки компактнее */
 @media (min-width: 961px) {
+  .mp-workspace {
+    grid-template-columns: minmax(0, 1fr) 272px;
+    gap: 14px;
+  }
+
+  .mp-work-main {
+    gap: 12px;
+  }
+
   .mp-tabs-v2 {
-    display: flex;
-    width: 100%;
+    display: inline-flex;
+    width: fit-content;
     max-width: 100%;
-    min-height: 58px;
+    min-height: 54px;
     padding: 6px;
     gap: 6px;
     box-sizing: border-box;
@@ -711,17 +724,69 @@
   }
 
   .mp-tabs-v2 button {
-    flex: 1 1 0;
-    min-width: 0;
-    height: 46px;
-    min-height: 46px;
-    max-height: 46px;
-    padding: 0 20px;
+    flex: 0 0 auto;
+    min-width: 108px;
+    height: 42px;
+    min-height: 42px;
+    max-height: 42px;
+    padding: 0 18px;
     font-size: 14px;
   }
 
   .mp-tabs-v2 button.active {
-    box-shadow: 0 12px 26px rgba(255, 75, 31, .28);
+    box-shadow: 0 10px 22px rgba(255, 75, 31, .26);
+  }
+
+  .mp-deals-card {
+    padding: 24px;
+  }
+
+  .mp-deal-list {
+    gap: 12px;
+  }
+
+  .mp-deal-item {
+    grid-template-columns: 80px minmax(0, 1fr) auto;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .mp-deal-item img {
+    width: 80px;
+    height: 80px;
+  }
+
+  .mp-deal-title {
+    font-size: 16px;
+  }
+
+  .mp-workspace .mp-settings-panel.mp-apple-settings {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .mp-workspace .mp-apple-settings-title {
+    margin: 0 0 14px;
+    font-size: 28px;
+  }
+
+  .mp-workspace .mp-apple-settings-card {
+    padding: 18px 16px 16px;
+  }
+
+  .mp-workspace .mp-apple-settings .mp-section-title.compact {
+    margin: 0 0 18px;
+  }
+
+  .mp-workspace .mp-apple-settings .mp-settings-list button {
+    min-height: 64px;
+    padding: 12px 14px;
   }
 }
 
