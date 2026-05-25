@@ -4,16 +4,13 @@
 .mobile-tab-bar {
   display: none;
   position: fixed;
-  inset: auto 0 0 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 250;
   background: #fff;
   border-top: 1px solid #e4e4e7;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  backface-visibility: hidden;
-  contain: layout style;
-  touch-action: manipulation;
 }
 
 .mobile-tab-bar-inner {

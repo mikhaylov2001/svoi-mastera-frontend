@@ -42,6 +42,21 @@ input, textarea, select {
 }
 
 /* ═══════════════════════════════════════════════
+   MOBILE (≤900px) — tab bar + без горизонтального сдвига
+═══════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  html {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+  }
+
+  body {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════
    MOBILE (≤768px)
 ═══════════════════════════════════════════════ */
 @media (max-width: 768px) {
