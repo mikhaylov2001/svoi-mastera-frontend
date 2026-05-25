@@ -100,9 +100,9 @@ export const WORKER_TAB_ITEMS = [
 export const CUSTOMER_DESKTOP_LINKS = [
   { to: '/', label: 'Главная', end: true },
   { to: '/find-master', label: 'Найти мастера' },
-  { to: '/deals', label: 'Мои сделки', alsoMatch: ['/my-requests'] },
-  { to: '/chat', label: 'Сообщения', badgeKey: 'chat' },
   { to: '/my-requests', label: 'Заявки' },
+  { to: '/chat', label: 'Сообщения', badgeKey: 'chat' },
+  { to: '/deals', label: 'Мои сделки' },
 ];
 
 /** Десктоп — мастер */
