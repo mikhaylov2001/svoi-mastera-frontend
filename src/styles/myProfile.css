@@ -30,13 +30,13 @@
 }
 .mp-loading-icon { font-size: 40px; }
 
-/* ── Hero: фон на всю ширину, изогнутый низ как на публичном профиле ── */
+/* ── Hero: фото внутри, вогнутая дуга снаружи (фон страницы) ── */
 .mp-hero-v2 {
   position: relative;
   width: 100%;
   min-height: 430px;
   overflow: hidden;
-  border-radius: 0 0 42px 42px;
+  border-radius: 0;
   margin: 0;
   box-shadow: 0 28px 70px rgba(17, 24, 39, .18);
   display: flex;
@@ -47,6 +47,20 @@
 .mp-hero-shade {
   position: absolute;
   inset: 0;
+  pointer-events: none;
+}
+
+/* Вогнутая дуга: цвет страницы заходит в hero снизу, фото остаётся прямым внутри */
+.mp-hero-curve {
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120%;
+  height: 64px;
+  background: #f8f2ec;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  z-index: 3;
   pointer-events: none;
 }
 
@@ -70,7 +84,7 @@
 
 .mp-hero-inner {
   position: relative;
-  z-index: 2;
+  z-index: 4;
   width: min(1120px, calc(100% - 40px));
   margin: 0 auto;
   padding: 44px 0 42px;
@@ -84,9 +98,11 @@
 
 .mp-shell-v2 {
   width: min(1120px, calc(100% - 40px));
-  margin: -26px auto 0;
+  margin: -48px auto 0;
   padding: 0;
   box-sizing: border-box;
+  position: relative;
+  z-index: 4;
 }
 
 .mp-profile-chip,
@@ -1357,7 +1373,7 @@
   }
 
   /* Layout below hero */
-  .mp-shell-v2 { grid-template-columns: 1fr; margin-top: -20px; }
+  .mp-shell-v2 { grid-template-columns: 1fr; margin-top: -42px; }
   .mp-sidebar-v2 {
     position: static;
     display: grid;
@@ -1411,9 +1427,9 @@
 
 /* ── Большой телефон / маленький планшет 640-768px ── */
 @media (max-width: 768px) {
-  .mp-hero-v2 {
-    border-radius: 0 0 32px 32px;
-    box-shadow: 0 22px 52px rgba(17, 24, 39, .16);
+  .mp-hero-curve {
+    height: 52px;
+    width: 130%;
   }
 
   .mp-hero-inner {
@@ -1453,7 +1469,7 @@
 
   .mp-shell-v2 {
     width: calc(100% - 32px);
-    margin-top: -16px;
+    margin-top: -38px;
     gap: 12px;
   }
   .mp-main-v2 { gap: 12px; }
@@ -1535,8 +1551,13 @@
 
   .mp-hero-v2 {
     min-height: auto;
-    border-radius: 0 0 28px 28px;
     box-shadow: 0 18px 42px rgba(17, 24, 39, .18);
+  }
+
+  .mp-hero-curve {
+    height: 44px;
+    width: 140%;
+    background: #f5f5f4;
   }
 
   .mp-hero-inner {
@@ -1581,7 +1602,7 @@
   .mp-shell-v2 {
     width: calc(100% - 24px);
     gap: 10px;
-    margin-top: -12px;
+    margin-top: -34px;
     grid-template-columns: 1fr;
   }
   .mp-sidebar-v2 {
@@ -1674,7 +1695,8 @@
   .mp-page-v2 { padding: 0 0 84px; }
   .mp-shell-v2 { width: calc(100% - 16px); }
 
-  .mp-hero-v2 { border-radius: 0 0 24px 24px; }
+  .mp-hero-curve { height: 38px; width: 150%; }
+
   .mp-hero-inner { width: calc(100% - 16px); padding: 24px 0 20px; }
   .mp-hero-content h1 { font-size: clamp(22px, 7.5vw, 30px); }
 
