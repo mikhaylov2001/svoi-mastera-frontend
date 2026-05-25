@@ -2,29 +2,26 @@ import React, { useEffect, useRef, useState } from 'react';
 
 function IconChat() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden className="mo-card-icon-chat">
       <path
-        d="M8 10.5h8M8 14h5"
+        d="M20 11.5a7.5 7.5 0 0 1-8.72 7.41L5.5 21l1.79-4.38A7.5 7.5 0 1 1 20 11.5Z"
         stroke="currentColor"
-        strokeWidth="1.75"
+        strokeWidth="1.55"
         strokeLinecap="round"
-      />
-      <path
-        d="M6 19l-1.5 3 3.2-1.6c1.2.7 2.6 1.1 4.1 1.1 4.4 0 8-3.1 8-7s-3.6-7-8-7-8 3.1-8 7c0 1.4.4 2.7 1.2 3.8Z"
-        stroke="currentColor"
-        strokeWidth="1.75"
         strokeLinejoin="round"
       />
+      <path d="M9.25 10.75h6.5" stroke="currentColor" strokeWidth="1.55" strokeLinecap="round" />
+      <path d="M9.25 13.5h3.75" stroke="currentColor" strokeWidth="1.55" strokeLinecap="round" />
     </svg>
   );
 }
 
 function IconMore() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="6" cy="12" r="1.75" fill="currentColor" />
-      <circle cx="12" cy="12" r="1.75" fill="currentColor" />
-      <circle cx="18" cy="12" r="1.75" fill="currentColor" />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden className="mo-card-icon-more">
+      <circle cx="5.5" cy="12" r="1.35" fill="currentColor" />
+      <circle cx="12" cy="12" r="1.35" fill="currentColor" />
+      <circle cx="18.5" cy="12" r="1.35" fill="currentColor" />
     </svg>
   );
 }
