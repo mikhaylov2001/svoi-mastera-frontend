@@ -37,18 +37,7 @@
 }
 
 .mobile-tab-item.is-active {
-  color: #e8410a;
-}
-
-.mobile-tab-indicator {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 28px;
-  height: 3px;
-  border-radius: 0 0 3px 3px;
-  background: #e8410a;
+  color: #1f2937;
 }
 
 .mobile-tab-icon-wrap {
@@ -70,7 +59,11 @@
 }
 
 .mobile-tab-item.is-active .mobile-tab-icon-wrap {
-  background: rgba(232, 65, 10, 0.08);
+  background: rgba(17, 24, 39, 0.06);
+}
+
+.mobile-tab-item.is-active svg {
+  stroke-width: 2;
 }
 
 .mobile-tab-badge {

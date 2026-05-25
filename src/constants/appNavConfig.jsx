@@ -6,7 +6,7 @@ const ICON_PROPS = {
   viewBox: '0 0 24 24',
   fill: 'none',
   stroke: 'currentColor',
-  strokeWidth: 1.75,
+  strokeWidth: 1.5,
   strokeLinecap: 'round',
   strokeLinejoin: 'round',
   'aria-hidden': true,
@@ -15,8 +15,8 @@ const ICON_PROPS = {
 export function IconHome() {
   return (
     <svg {...ICON_PROPS}>
-      <path d="M4.5 10.5 12 4l7.5 6.5V19a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 19v-8.5Z" />
-      <path d="M9.5 20.5V13h5v7.5" />
+      <path d="M4.5 10.75 12 4.75l7.5 6V19a1.25 1.25 0 0 1-1.25 1.25H5.75A1.25 1.25 0 0 1 4.5 19v-8.25Z" />
+      <path d="M9.75 20.25V13.5h4.5v6.75" />
     </svg>
   );
 }
@@ -24,8 +24,8 @@ export function IconHome() {
 export function IconSearch() {
   return (
     <svg {...ICON_PROPS}>
-      <circle cx="11" cy="11" r="6.5" />
-      <path d="m20 20-4.2-4.2" />
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20l-4.35-4.35" />
     </svg>
   );
 }
@@ -33,9 +33,9 @@ export function IconSearch() {
 export function IconDeals() {
   return (
     <svg {...ICON_PROPS}>
-      <path d="M8 7h8l1.5 3H6.5L8 7Z" />
-      <path d="M6.5 10h11l-1 9h-9l-1-9Z" />
-      <path d="M10 14h4" />
+      <path d="M8 6.5h8a1 1 0 0 1 .96.73l1.04 4.02H6l1-4.02A1 1 0 0 1 8 6.5Z" />
+      <path d="M6 11.25h12l-1.1 8.25H7.1L6 11.25Z" />
+      <path d="M10 15h4" />
     </svg>
   );
 }
@@ -43,8 +43,8 @@ export function IconDeals() {
 export function IconChat() {
   return (
     <svg {...ICON_PROPS}>
-      <path d="M5.5 5.5h13A1.5 1.5 0 0 1 20 7v7.5a1.5 1.5 0 0 1-1.5 1.5H9l-3.5 3v-3.5H5.5A1.5 1.5 0 0 1 4 14.5V7a1.5 1.5 0 0 1 1.5-1.5Z" />
-      <path d="M8.5 10.5h7M8.5 13h4.5" />
+      <path d="M5.25 5.25h13.5A1.25 1.25 0 0 1 20 6.5v7.25a1.25 1.25 0 0 1-1.25 1.25H9.5L6 18.75v-3.75H5.25A1.25 1.25 0 0 1 4 13.75V6.5a1.25 1.25 0 0 1 1.25-1.25Z" />
+      <path d="M8.25 10.5h7.5M8.25 13.25h4.5" />
     </svg>
   );
 }
@@ -52,8 +52,8 @@ export function IconChat() {
 export function IconProfile() {
   return (
     <svg {...ICON_PROPS}>
-      <circle cx="12" cy="8" r="3.25" />
-      <path d="M6.5 19.5c.8-2.8 3-4.5 5.5-4.5s4.7 1.7 5.5 4.5" />
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5.75 19.25c.85-3 3.15-4.75 6.25-4.75s5.4 1.75 6.25 4.75" />
     </svg>
   );
 }
@@ -61,9 +61,9 @@ export function IconProfile() {
 export function IconBriefcase() {
   return (
     <svg {...ICON_PROPS}>
-      <rect x="3.5" y="8.5" width="17" height="11" rx="2" />
-      <path d="M8.5 8.5V7a3 3 0 0 1 3-3h1a3 3 0 0 1 3 3v1.5" />
-      <path d="M3.5 13h17" />
+      <rect x="3.75" y="8.75" width="16.5" height="10.5" rx="2" />
+      <path d="M8.75 8.75V7a3.25 3.25 0 0 1 3.25-3.25h0A3.25 3.25 0 0 1 15.25 7v1.75" />
+      <path d="M3.75 13.25h16.5" />
     </svg>
   );
 }
@@ -71,9 +71,8 @@ export function IconBriefcase() {
 export function IconListings() {
   return (
     <svg {...ICON_PROPS}>
-      <rect x="4" y="5" width="16" height="14" rx="2" />
-      <path d="M8 9.5h8M8 13h8M8 16.5h5" />
-      <circle cx="17.5" cy="7.5" r="2.5" fill="currentColor" stroke="none" />
+      <rect x="4.25" y="4.75" width="15.5" height="14.5" rx="2" />
+      <path d="M8.25 9.25h7.5M8.25 12.25h7.5M8.25 15.25h5" />
     </svg>
   );
 }
