@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   getMyDeals, completeDeal, createCustomerReview,
   workerStartDeal, cancelPendingDeal, cancelActiveDeal,
@@ -7,19 +7,16 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import {
   dealsWdCss,
-  dealsMdListCss,
   edListingDetailMergedCss,
   dealsMoConfirmDarkCss,
   dealCategoryEmoji,
-  dealInitialsFromFullName,
-  dealToUiStatus,
 } from '../shared/dealsWdStyles';
 import {
   DealDarkProgress,
   DealConfirmCard,
   DealNewStatusCard,
 } from '../shared/DealDetailBlocks';
-import DealCardActions from '../../components/myorders/DealCardActions';
+import OrderCard from '../../components/myorders/OrderCard';
 import PhotoLightbox from '../../components/PhotoLightbox';
 import '../../styles/moCabinetStyle.css';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
@@ -39,7 +36,64 @@ const ST = {
   CANCELLED:   { label: 'Отменена',     color: '#dc2626', bg: 'rgba(239,68,68,.1)',    dot: '#ef4444' },
 };
 
-const WORKER_UI_STATUS_LABEL = { new: 'Новый заказ', work: 'В работе', done: 'Завершена', cancel: 'Отменена' };
+const WORKER_STATUS_TABS = [
+  { key: 'ALL',         label: 'Все' },
+  { key: 'NEW',         label: 'Ждут' },
+  { key: 'IN_PROGRESS', label: 'В работе' },
+  { key: 'COMPLETED',   label: 'Завершены' },
+  { key: 'CANCELLED',   label: 'Отменены' },
+];
+
+function EmptyState({ icon, title, text, btnLabel, onBtn, secondaryBtnLabel, onSecondaryBtn }) {
+  return (
+    <div className="mo-empty">
+      <div className="mo-empty-emoji">{icon}</div>
+      <div className="mo-empty-title">{title}</div>
+      <div className="mo-empty-sub">{text}</div>
+      {(btnLabel || secondaryBtnLabel) && (
+        <div className="mo-empty-actions">
+          {btnLabel && <button type="button" className="mo-cta" onClick={onBtn}>{btnLabel}</button>}
+          {secondaryBtnLabel && (
+            <button type="button" className="mo-cta mo-cta--outline" onClick={onSecondaryBtn}>{secondaryBtnLabel}</button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function dealToCardWorker(d) {
+  const photos = dealPhotoList(d);
+  const custName = customerFullName(d);
+  const custInitial = (custName[0] || 'З').toUpperCase();
+  const custAvatar = dealCustomerAvatarUrl(d);
+  return {
+    ...d,
+    status: d.status,
+    _dealStatus: d.status,
+    budget: d.agreedPrice ? Number(d.agreedPrice) : null,
+    category: d.category || '',
+    photos,
+    offers: [{ name: custName, initial: custInitial, avatarUrl: custAvatar }],
+  };
+}
+
+function workerFooterHint(d) {
+  if (d.status === 'CANCELLED') return { text: '✕ Сделка отменена', color: '#dc2626' };
+  if (d.status === 'COMPLETED') {
+    return {
+      text: d.customerConfirmed && d.workerConfirmed ? '✓ Завершена обеими сторонами' : '✓ Сделка завершена',
+      color: '#16a34a',
+    };
+  }
+  if (d.status === 'IN_PROGRESS') {
+    if (!d.customerConfirmed) return { text: '⏳ Ждём заказчика', color: '#d97706' };
+    if (!d.workerConfirmed) return { text: '⏳ Подтвердите выполнение', color: '#d97706' };
+    return { text: '✓ Подтверждена', color: '#16a34a' };
+  }
+  if (d.status === 'NEW') return { text: '⏳ Ждёт вашего ответа', color: '#d97706' };
+  return null;
+}
 
 const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=70';
 
@@ -54,64 +108,6 @@ function dealPhotoList(deal) {
   if (photos.length) return photos;
   const placeholder = getCategoryPlaceholderPhotoUrlOrDefault(deal.category, null);
   return [placeholder || FALLBACK_PHOTO];
-}
-
-
-const MD_STEPS = [
-  { key: 'create', label: 'Создана' },
-  { key: 'work', label: 'В работе' },
-  { key: 'done', label: 'Завершена' },
-];
-
-function DealsMdStepBar({ status }) {
-  const idx = status === 'new' ? 0 : status === 'work' ? 1 : status === 'done' ? 2 : -1;
-  const pct = status === 'new' ? 15 : status === 'work' ? 60 : status === 'done' ? 100 : 30;
-  const headLbl =
-    status === 'cancel'
-      ? 'Сделка отменена'
-      : status === 'done'
-        ? 'Сделка завершена'
-        : status === 'work'
-          ? 'Идёт работа'
-          : 'Ожидает старта';
-
-  return (
-    <>
-      <div className="md-progress-head">
-        <span className="md-progress-title">{headLbl}</span>
-        <span className="md-progress-pct">
-          <span className="md-pct-bar">
-            <span className="md-pct-fill" style={{ width: `${pct}%` }} />
-          </span>
-          {pct}%
-        </span>
-      </div>
-      <div className="md-steps">
-        {MD_STEPS.map((s, i) => {
-          let cls = '';
-          if (status === 'cancel') cls = i === 0 ? 'done' : 'cancel';
-          else if (status === 'done') cls = 'done';
-          else if (i < idx) cls = 'done';
-          else if (i === idx) cls = 'current';
-          return (
-            <div key={s.key} className={`md-step ${cls}`}>
-              <div className="md-step-dot">
-                {cls === 'done' ? (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12l5 5L20 7" /></svg>
-                ) : cls === 'cancel' ? (
-                  '✕'
-                ) : (
-                  i + 1
-                )}
-              </div>
-              <div className="md-step-lbl">{s.label}</div>
-              {i < MD_STEPS.length - 1 && <span className="md-step-bar" />}
-            </div>
-          );
-        })}
-      </div>
-    </>
-  );
 }
 
 function timeAgo(d) {
@@ -701,44 +697,87 @@ export default function WorkerDealsPage() {
     );
   }
 
+  const dealCardMenuItems = useCallback((deal) => {
+    const items = [];
+    if (
+      deal.status === 'COMPLETED'
+      && !deal.hasWorkerReview
+      && deal.customerId
+      && dealEligibleForReviews(deal)
+    ) {
+      items.push({
+        label: '★ Оставить отзыв',
+        onClick: () => {
+          setReviewForm({ rating: 5, text: '' });
+          setReviewStatus('idle');
+          setReviewDeal(deal);
+        },
+      });
+    }
+    if (deal.status === 'NEW') {
+      items.push({
+        label: 'Отказаться от заказа',
+        danger: true,
+        disabled: declId === deal.id,
+        onClick: async () => {
+          if (!window.confirm('Отказаться от заказа? Заказчик сможет выбрать другого мастера.')) return;
+          setDeclId(deal.id);
+          try {
+            await cancelPendingDeal(userId, deal.id, '');
+            await load();
+          } catch (err) {
+            window.alert(err?.message || 'Не удалось');
+          } finally {
+            setDeclId(null);
+          }
+        },
+      });
+    }
+    if (deal.customerId) {
+      items.push({
+        label: 'Профиль заказчика',
+        onClick: () => navigate(`/customers/${deal.customerId}`),
+      });
+    }
+    return items;
+  }, [userId, declId, load, navigate]);
+
   /* ══ LIST ══ */
   return (
-    <div className="md-page">
-      <style>{`${dealsWdCss}\n${dealsMdListCss}`}</style>
-
-      <header className="md-hero">
+    <>
+    <div className="mo-page">
+      <header className="mo-hero">
         <img src={MY_DEALS_HERO_PHOTO} alt="" />
-        <div className="md-hero-inner">
+        <div className="mo-hero-inner">
           <div>
             <h1>Мои сделки</h1>
             <p>Сделки с заказчиками — отслеживайте прогресс и подтверждайте</p>
           </div>
-          <Link to="/find-work" className="md-cta">+ Найти работу</Link>
+          <button type="button" className="mo-cta" onClick={() => navigate('/find-work')}>
+            + Найти работу
+          </button>
         </div>
       </header>
 
-      <main className="md-main">
-        <div className="md-toolbar">
-          <div className="md-tabs">
-            {[
-              ['ALL', 'Все', counts.ALL],
-              ['NEW', 'Ждут', counts.NEW],
-              ['IN_PROGRESS', 'В работе', counts.IN_PROGRESS],
-              ['COMPLETED', 'Завершены', counts.COMPLETED],
-              ['CANCELLED', 'Отменены', counts.CANCELLED],
-            ].map(([key, label, cnt]) => (
-              <button
-                key={key}
-                type="button"
-                className={`md-tab${filter === key ? ' active' : ''}`}
-                onClick={() => setFilter(key)}
-              >
-                {label}
-                <span className="md-tab-count">{cnt}</span>
-              </button>
-            ))}
+      <main className="mo-main">
+        <div className="mo-toolbar">
+          <div className="mo-status-tabs">
+            {WORKER_STATUS_TABS.map((t) => {
+              const count = t.key === 'ALL' ? counts.ALL : counts[t.key] ?? 0;
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  className={`mo-status-tab${filter === t.key ? ' active' : ''}`}
+                  onClick={() => setFilter(t.key)}
+                >
+                  {t.label}
+                  {count > 0 && <span className="mo-status-tab-count">{count}</span>}
+                </button>
+              );
+            })}
           </div>
-          <div className="md-search">
+          <div className="mo-search">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden><circle cx="11" cy="11" r="7" /><path d="m20 20-3-3" /></svg>
             <input
               type="search"
@@ -748,229 +787,63 @@ export default function WorkerDealsPage() {
               autoComplete="off"
             />
           </div>
-          <select className="md-sort" value={dealSort} onChange={(e) => setDealSort(e.target.value)}>
+          <select className="mo-sort" value={dealSort} onChange={(e) => setDealSort(e.target.value)}>
             <option value="new">Сначала новые</option>
             <option value="price">По цене</option>
           </select>
         </div>
 
         {loading ? (
-          <div className="md-grid">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="md-card" style={{ cursor: 'default', pointerEvents: 'none' }} aria-hidden>
-                <div className="md-card-cover"><div className="wd-sk" style={{ width: '100%', height: '100%', borderRadius: 0 }} /></div>
-                <div className="md-top">
-                  <div className="md-body">
-                    <div className="wd-sk" style={{ height: 16, width: '70%' }} />
-                    <div className="wd-sk" style={{ height: 12, width: '40%', marginTop: 10 }} />
-                    <div className="wd-sk" style={{ height: 36, width: '100%', marginTop: 12, borderRadius: 12 }} />
-                    <div className="wd-sk" style={{ height: 28, width: '45%', marginTop: 14 }} />
-                  </div>
-                </div>
-                <div className="md-progress">
-                  <div className="wd-sk" style={{ height: 14, width: '100%', marginBottom: 14 }} />
-                  <div className="wd-sk" style={{ height: 40, width: '100%' }} />
-                </div>
-                <div className="md-foot">
-                  <div className="wd-sk" style={{ height: 12, width: 100 }} />
-                  <div className="wd-sk" style={{ height: 12, width: 140, marginLeft: 'auto' }} />
-                </div>
-                <div className="md-actions">
-                  <div className="wd-sk md-btn" style={{ flex: 1, minHeight: 44, borderRadius: 13 }} />
-                  <div className="wd-sk md-btn md-btn-icon" style={{ width: 42, height: 42, borderRadius: 13 }} />
-                  <div className="wd-sk md-btn md-btn-icon" style={{ width: 42, height: 42, borderRadius: 13 }} />
-                </div>
-              </div>
-            ))}
-          </div>
+          <EmptyState icon="⏳" title="Загружаем сделки…" text="Пожалуйста, подождите" />
         ) : deals.length === 0 ? (
-          <div className="md-empty">
-            <div className="md-empty-emoji">🤝</div>
-            <div className="md-empty-title">Здесь появятся ваши сделки</div>
-            <div className="md-empty-sub">Откликайтесь на заявки и принимайте заказы — они появятся в этом списке.</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginTop: 18 }}>
-              <Link to="/find-work" className="md-cta">Найти работу</Link>
-              <Link to="/my-listings" className="md-cta" style={{ background: '#fff', color: '#e8410a', border: '2px solid #e8410a', boxShadow: 'none' }}>Мои объявления</Link>
-            </div>
-          </div>
+          <EmptyState
+            icon="🤝"
+            title="Здесь появятся ваши сделки"
+            text="Откликайтесь на заявки и принимайте заказы — они появятся в этом списке."
+            btnLabel="+ Найти работу"
+            onBtn={() => navigate('/find-work')}
+            secondaryBtnLabel="Мои объявления"
+            onSecondaryBtn={() => navigate('/my-listings')}
+          />
         ) : filteredBase.length === 0 && filter !== 'ALL' ? (
-          <div className="md-empty">
-            <div className="md-empty-emoji">{filter === 'COMPLETED' ? '✅' : '📋'}</div>
-            <div className="md-empty-title">В этой категории пока пусто</div>
-            <div className="md-empty-sub">Переключите вкладку или посмотрите все сделки.</div>
-            <button type="button" className="md-cta" onClick={() => setFilter('ALL')}>Все сделки</button>
-          </div>
+          <EmptyState
+            icon={filter === 'COMPLETED' ? '✅' : '📋'}
+            title="В этой категории пока пусто"
+            text="Переключите вкладку или посмотрите все сделки."
+            btnLabel="Все сделки"
+            onBtn={() => setFilter('ALL')}
+          />
         ) : filtered.length === 0 ? (
-          <div className="md-empty">
-            <div className="md-empty-emoji">🔍</div>
-            <div className="md-empty-title">Ничего не найдено</div>
-            <div className="md-empty-sub">Попробуйте изменить запрос, вкладку или сортировку.</div>
-            <button type="button" className="md-cta" onClick={() => { setListSearch(''); setFilter('ALL'); }}>Сбросить фильтры</button>
-          </div>
+          <EmptyState
+            icon="🔍"
+            title="Ничего не найдено"
+            text="Попробуйте изменить запрос, вкладку или сортировку."
+            btnLabel="Сбросить фильтры"
+            onBtn={() => { setListSearch(''); setFilter('ALL'); }}
+          />
         ) : (
-          <div className="md-grid">
+          <div className="mo-grid">
             {filtered.map((d) => {
-              const ui = dealToUiStatus(d.status);
-              const img = d.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ category: d.category });
-              const custName = customerFullName(d);
-              const custAva = d.customerAvatar && String(d.customerAvatar).length > 10
-                ? (String(d.customerAvatar).startsWith('http') || String(d.customerAvatar).startsWith('data:')
-                  ? d.customerAvatar
-                  : BACKEND + d.customerAvatar)
-                : null;
-              const isNew = d.status === 'NEW';
-              const isProg = d.status === 'IN_PROGRESS';
-              const isDone = d.status === 'COMPLETED';
-              const isCancel = d.status === 'CANCELLED';
-              const cardAccent = isNew ? 's-new' : isProg ? 's-work' : isDone ? 's-done' : isCancel ? 's-cancel' : '';
-
-              let footRight = null;
-              if (isCancel) {
-                footRight = <span className="md-confirm" style={{ color: '#b91c1c' }}>✕ Сделка отменена</span>;
-              } else if (isDone) {
-                footRight = (
-                  <span className="md-confirm ok">
-                    {d.customerConfirmed && d.workerConfirmed ? '✓ Завершена обеими сторонами' : '✓ Сделка завершена'}
-                  </span>
-                );
-              } else if (isProg) {
-                if (!d.customerConfirmed) {
-                  footRight = <span className="md-confirm wait">⏳ Ждём заказчика</span>;
-                } else if (!d.workerConfirmed) {
-                  footRight = <span className="md-confirm wait">⏳ Подтвердите выполнение</span>;
-                } else {
-                  footRight = <span className="md-confirm ok">✓ Подтверждена</span>;
-                }
-              } else {
-                footRight = <span className="md-confirm wait">⏳ Ждёт вашего ответа</span>;
-              }
-
-              const openDeal = () => { setDetail(d); setPhotoIdx(0); };
-
-              const workerMenuItems = [];
-              if (isDone && !d.hasWorkerReview && d.customerId && dealEligibleForReviews(d)) {
-                workerMenuItems.push({
-                  label: '★ Оставить отзыв',
-                  onClick: () => {
-                    setReviewForm({ rating: 5, text: '' });
-                    setReviewStatus('idle');
-                    setReviewDeal(d);
-                  },
-                });
-              }
-              if (isNew) {
-                workerMenuItems.push({
-                  label: 'Отказаться от заказа',
-                  danger: true,
-                  disabled: declId === d.id,
-                  onClick: async () => {
-                    if (!window.confirm('Отказаться от заказа? Заказчик сможет выбрать другого мастера.')) return;
-                    setDeclId(d.id);
-                    try {
-                      await cancelPendingDeal(userId, d.id, '');
-                      await load();
-                    } catch (err) {
-                      window.alert(err?.message || 'Не удалось');
-                    } finally {
-                      setDeclId(null);
-                    }
-                  },
-                });
-              }
-              if (d.customerId) {
-                workerMenuItems.push({
-                  label: 'Профиль заказчика',
-                  onClick: () => navigate(`/customers/${d.customerId}`),
-                });
-              }
-
+              const hint = workerFooterHint(d);
               return (
-                <article
+                <OrderCard
                   key={d.id}
-                  className={`md-card ${cardAccent}`}
-                  role="button"
-                  tabIndex={0}
-                  onClick={openDeal}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      openDeal();
-                    }
-                  }}
-                >
-                  <div className="md-card-cover">
-                    {img ? <img src={img} alt="" /> : <span className="emoji" aria-hidden>🤝</span>}
-                  </div>
-                  <div className="md-top">
-                    <div className="md-body">
-                      <div className="md-row">
-                        <h3 className="md-title">{d.title || 'Задача'}</h3>
-                        <span className={`md-status ${ui}`}>
-                          <span className="dot" aria-hidden />
-                          {WORKER_UI_STATUS_LABEL[ui]}
-                        </span>
-                      </div>
-                      {d.category && (
-                        <span className="md-cat">
-                          {dealCategoryEmoji(d.category)} {d.category}
-                        </span>
-                      )}
-                      <div className="md-master">
-                        <div className="md-ava">
-                          {custAva ? <img src={custAva} alt="" /> : dealInitialsFromFullName(custName)}
-                        </div>
-                        <div className="md-master-info">
-                          <div className="md-master-name">{custName}</div>
-                          <div className="md-master-role">Заказчик</div>
-                        </div>
-                        {d.customerId ? (
-                          <button
-                            type="button"
-                            className="md-msg-mini"
-                            onClick={(e) => { e.stopPropagation(); navigate(`/chat/${d.customerId}`); }}
-                          >
-                            Написать
-                          </button>
-                        ) : null}
-                      </div>
-                      <div className="md-price-row">
-                        {d.agreedPrice ? (
-                          <>
-                            <span className="md-price-num">{Number(d.agreedPrice).toLocaleString('ru-RU')} ₽</span>
-                            <span className="md-price-lbl">согласовано</span>
-                          </>
-                        ) : (
-                          <span className="md-price-lbl" style={{ fontSize: 15, fontWeight: 700, color: '#64748b' }}>Цена по договорённости</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="md-progress">
-                    <DealsMdStepBar status={ui} />
-                  </div>
-
-                  <div className="md-foot">
-                    <span className="md-foot-item">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
-                      {timeAgo(d.createdAt)}
-                    </span>
-                    {footRight}
-                  </div>
-
-                  <DealCardActions
-                    onOpen={openDeal}
-                    onChat={d.customerId ? () => navigate(`/chat/${d.customerId}`) : undefined}
-                    menuItems={workerMenuItems}
-                  />
-                </article>
+                  order={dealToCardWorker(d)}
+                  partnerRole="Заказчик"
+                  footerHint={hint?.text}
+                  footerHintColor={hint?.color}
+                  onOpen={() => { setDetail(d); setPhotoIdx(0); }}
+                  onChat={d.customerId ? () => navigate(`/chat/${d.customerId}`) : undefined}
+                  menuItems={dealCardMenuItems(d)}
+                />
               );
             })}
           </div>
         )}
       </main>
+    </div>
 
-      {reviewDeal && !detail && (
+    {reviewDeal && !detail && (
         <div className="wd-modal-bg" onClick={() => setReviewDeal(null)}>
           <div className="wd-modal" style={{ maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
             {reviewStatus === 'done' ? (
@@ -1027,6 +900,6 @@ export default function WorkerDealsPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

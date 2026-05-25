@@ -103,6 +103,16 @@
   transition: transform .18s, box-shadow .18s, background .18s;
 }
 .mo-cta:hover { transform: translateY(-1px); background: linear-gradient(135deg, #ff5533, #d83b08); box-shadow: 0 20px 42px rgba(232,65,10,.38); }
+.mo-cta--outline {
+  background: #fff;
+  color: #e8410a;
+  border: 2px solid #e8410a;
+  box-shadow: none;
+}
+.mo-cta--outline:hover {
+  background: #fff7f3;
+  box-shadow: none;
+}
 
 /* ── Main content ── */
 .mo-main {
@@ -1820,7 +1830,13 @@
 .mo-empty-emoji { font-size: 40px; margin-bottom: 12px; }
 .mo-empty-title { font-size: 20px; font-weight: 900; color: #111827; margin-bottom: 8px; }
 .mo-empty-sub { color: #6b7280; font-size: 14px; line-height: 1.5; }
-.mo-empty-actions { margin-top: 18px; }
+.mo-empty-actions {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
 
 /* badge */
 .badge { border-radius: 999px; padding: 4px 10px; font-size: 11px; font-weight: 800; }

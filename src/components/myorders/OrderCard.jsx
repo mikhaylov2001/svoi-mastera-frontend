@@ -2,6 +2,7 @@ import React from 'react';
 import DealCardActions from './DealCardActions';
 
 export const STATUS_CONFIG = {
+  NEW:            { label: 'Новый заказ', dot: '#f59e0b', bg: '#fffbeb', color: '#d97706' },
   OPEN:           { label: 'Открыта',    dot: '#22c55e', bg: '#f0fdf4', color: '#16a34a' },
   IN_NEGOTIATION: { label: 'Ждёт откликов', dot: '#f59e0b', bg: '#fffbeb', color: '#d97706' },
   ASSIGNED:       { label: 'Назначена',  dot: '#f59e0b', bg: '#fffbeb', color: '#d97706' },
@@ -13,6 +14,7 @@ export const STATUS_CONFIG = {
 
 const STEPS = ['Создана', 'В работе', 'Завершена'];
 const STEP_MAP = {
+  NEW: 0,
   OPEN: 0, IN_NEGOTIATION: 0, ASSIGNED: 0,
   IN_PROGRESS: 1,
   COMPLETED: 2,
@@ -42,12 +44,22 @@ export function timeAgo(iso) {
   return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
-export default function OrderCard({ order, onOpen, onChat, menuItems, onOpenOffers, onEdit }) {
+export default function OrderCard({
+  order,
+  onOpen,
+  onChat,
+  menuItems,
+  partnerRole = 'Мастер',
+  footerHint,
+  footerHintColor,
+  onOpenOffers,
+  onEdit,
+}) {
   const st = STATUS_CONFIG[order.status] || STATUS_CONFIG.OPEN;
   const thumb = order.photos?.[0] || FALLBACK;
   const stepIdx = STEP_MAP[order.status] ?? 0;
   const price = order.budget ? `${Number(order.budget).toLocaleString('ru-RU')} ₽` : 'Договорная';
-  const master = order.offers?.[0];
+  const partner = order.offers?.[0];
   const progressPct = stepIdx < 0 ? 0 : Math.round((stepIdx / (STEPS.length - 1)) * 100);
   const progressColor = progressPct === 100 ? '#22c55e' : '#e8410a';
 
@@ -70,17 +82,17 @@ export default function OrderCard({ order, onOpen, onChat, menuItems, onOpenOffe
             <div className="mo-card-price-num">{price}</div>
             <div className="mo-card-price-lbl">согласовано</div>
           </div>
-          {master && (
+          {partner && (
             <div className="mo-card-master-pill">
               <div className="mo-card-master-avatar">
-                {master.avatarUrl
-                  ? <img src={master.avatarUrl} alt={master.name} />
-                  : <span>{master.initial || (master.name?.[0] || 'М')}</span>
+                {partner.avatarUrl
+                  ? <img src={partner.avatarUrl} alt={partner.name} />
+                  : <span>{partner.initial || (partner.name?.[0] || 'М')}</span>
                 }
               </div>
               <div>
-                <div className="mo-card-master-name">{master.name || master.workerName || 'Мастер'}</div>
-                <div className="mo-card-master-role">Мастер</div>
+                <div className="mo-card-master-name">{partner.name || partner.workerName || partnerRole}</div>
+                <div className="mo-card-master-role">{partnerRole}</div>
               </div>
             </div>
           )}
@@ -99,7 +111,13 @@ export default function OrderCard({ order, onOpen, onChat, menuItems, onOpenOffe
           <div className="mo-card-progress">
             <div className="mo-card-progress-header">
               <span className="mo-card-progress-label">
-                {order.status === 'IN_PROGRESS' ? 'Идёт работа' : order.status === 'COMPLETED' ? 'Сделка завершена' : 'Статус сделки'}
+                {order.status === 'IN_PROGRESS'
+                  ? 'Идёт работа'
+                  : order.status === 'COMPLETED'
+                    ? 'Сделка завершена'
+                    : order.status === 'NEW'
+                      ? 'Ожидает старта'
+                      : 'Статус сделки'}
               </span>
               <span className="mo-card-progress-pct" style={{ color: progressColor }}>{progressPct}%</span>
             </div>
@@ -135,11 +153,17 @@ export default function OrderCard({ order, onOpen, onChat, menuItems, onOpenOffe
 
         <div className="mo-card-footer">
           <span className="mo-card-date">🗓 {timeAgo(order.createdAt)}</span>
-          {order.status === 'IN_PROGRESS' && (
-            <span style={{ fontSize: 11, fontWeight: 900, color: '#d97706' }}>⏳ Требует подтверждения</span>
-          )}
-          {order.status === 'COMPLETED' && (
-            <span style={{ fontSize: 11, fontWeight: 900, color: '#16a34a' }}>✓ Завершена</span>
+          {footerHint ? (
+            <span style={{ fontSize: 11, fontWeight: 900, color: footerHintColor || '#6b7280' }}>{footerHint}</span>
+          ) : (
+            <>
+              {order.status === 'IN_PROGRESS' && (
+                <span style={{ fontSize: 11, fontWeight: 900, color: '#d97706' }}>⏳ Требует подтверждения</span>
+              )}
+              {order.status === 'COMPLETED' && (
+                <span style={{ fontSize: 11, fontWeight: 900, color: '#16a34a' }}>✓ Завершена</span>
+              )}
+            </>
           )}
         </div>
       </div>
