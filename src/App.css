@@ -82,6 +82,35 @@ body {
   padding: 0;
 }
 
+/* Загрузка профиля — по центру экрана */
+.mp-loading,
+.pro-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: calc(100vh - 56px);
+  min-height: calc(100dvh - 56px);
+  gap: 16px;
+  text-align: center;
+  color: #756c64;
+  font-size: 15px;
+  font-weight: 750;
+  font-family: var(--font-body);
+}
+
+.mp-loading-icon,
+.pro-loading-icon {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.mp-loading p,
+.pro-loading p {
+  margin: 0;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;

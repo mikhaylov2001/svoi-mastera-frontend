@@ -209,10 +209,12 @@ export default function WorkerProfilePage() {
 
   if (loading) {
     return (
-      <div className="mp-loading">
-        <div className="mp-loading-icon">⏳</div>
-        <p>Загружаем профиль…</p>
-      </div>
+      <main className="mp-page-v2 mp-page-v2--loading">
+        <div className="mp-loading">
+          <div className="mp-loading-icon">⏳</div>
+          <p>Загружаем профиль…</p>
+        </div>
+      </main>
     );
   }
 

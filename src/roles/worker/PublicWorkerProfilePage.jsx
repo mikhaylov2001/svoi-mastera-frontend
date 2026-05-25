@@ -228,10 +228,12 @@ export default function PublicWorkerProfilePage() {
 
   if (loading || !profile) {
     return (
-      <div className="pro-loading">
-        <div className="pro-loading-icon">⏳</div>
-        <p>Загружаем профиль…</p>
-      </div>
+      <main className="pro-page pro-page--loading">
+        <div className="pro-loading">
+          <div className="pro-loading-icon">⏳</div>
+          <p>Загружаем профиль…</p>
+        </div>
+      </main>
     );
   }
 

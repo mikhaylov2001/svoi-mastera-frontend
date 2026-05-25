@@ -13,6 +13,18 @@
   font-family: 'Manrope', Inter, system-ui, sans-serif;
 }
 
+.pro-page--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 0;
+}
+
+.pro-page--loading .pro-loading {
+  min-height: auto;
+  flex: 1;
+}
+
 /* ────────────────────────────────
    Hero
 ──────────────────────────────── */
