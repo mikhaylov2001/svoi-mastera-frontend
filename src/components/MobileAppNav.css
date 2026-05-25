@@ -10,14 +10,15 @@
   z-index: 250;
   background: #fff;
   border-top: 1px solid #e4e4e7;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: 0;
+  --mobile-tab-safe: max(0px, calc(env(safe-area-inset-bottom, 0px) - 6px));
 }
 
 .mobile-tab-bar-inner {
   display: flex;
-  align-items: stretch;
-  height: 72px;
-  padding: 0 8px;
+  align-items: flex-end;
+  height: 46px;
+  padding: 0 8px var(--mobile-tab-safe);
 }
 
 .mobile-tab-item {
@@ -25,9 +26,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding-top: 8px;
+  justify-content: flex-end;
+  gap: 1px;
+  padding: 0;
   text-decoration: none;
   position: relative;
   color: #8a8f99;
@@ -41,10 +42,10 @@
 
 .mobile-tab-icon-wrap {
   position: relative;
-  width: 42px;
-  height: 32px;
-  min-width: 42px;
-  min-height: 32px;
+  width: 38px;
+  height: 26px;
+  min-width: 38px;
+  min-height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,8 +59,8 @@
 }
 
 .mobile-tab-icon {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   display: block;
   color: inherit;
 }
@@ -94,12 +95,12 @@
 .mobile-tab-label {
   position: relative;
   z-index: 1;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   font-family: 'Manrope', system-ui, sans-serif;
   line-height: 1;
   letter-spacing: -0.01em;
-  min-height: 11px;
+  min-height: 10px;
   white-space: nowrap;
 }
 
@@ -113,10 +114,10 @@
   }
 
   body.has-mobile-tab-bar .app-main {
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(46px + max(0px, calc(env(safe-area-inset-bottom, 0px) - 6px)));
   }
 
   body.has-mobile-tab-bar .mo-page.fav-page {
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(46px + max(0px, calc(env(safe-area-inset-bottom, 0px) - 6px)));
   }
 }
