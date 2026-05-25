@@ -402,9 +402,10 @@ function Header() {
 
           {/* ── NAV (desktop) ── */}
           <nav className="header-nav">
-            {userId && (
-              (userRole === 'WORKER' ? WORKER_DESKTOP_LINKS : CUSTOMER_DESKTOP_LINKS).map((link) => {
-                const active = isNavTabActive(location.pathname, link);
+            {userId && (() => {
+              const navLinks = userRole === 'WORKER' ? WORKER_DESKTOP_LINKS : CUSTOMER_DESKTOP_LINKS;
+              return navLinks.map((link) => {
+                const active = isNavTabActive(location.pathname, link, navLinks);
                 const badge = link.badgeKey === 'chat' ? unread : 0;
                 return (
                   <Link
@@ -419,8 +420,8 @@ function Header() {
                     )}
                   </Link>
                 );
-              })
-            )}
+              });
+            })()}
 
             {userId && (
               <Link

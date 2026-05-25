@@ -69,8 +69,45 @@ export function IconListings() {
   );
 }
 
+/** Счёт совпадения path с пунктом навигации (выше = точнее). */
+function navPathMatchScore(pathname, item, path) {
+  if (item.end || path === '/') {
+    return pathname === path ? 10000 + path.length : -1;
+  }
+  if (pathname === path) {
+    // Точное совпадение; приоритет у основного `to`, не alsoMatch
+    return 5000 + path.length + (path === item.to ? 1 : 0);
+  }
+  if (pathname.startsWith(`${path}/`)) {
+    return path.length + (path === item.to ? 0.5 : 0);
+  }
+  return -1;
+}
+
+/** Единственный активный пункт навигации (самое точное совпадение). */
+export function resolveActiveNavItem(pathname, items) {
+  let bestItem = null;
+  let bestScore = -1;
+
+  for (const item of items) {
+    const paths = [item.to, ...(item.alsoMatch || [])];
+    for (const p of paths) {
+      const score = navPathMatchScore(pathname, item, p);
+      if (score > bestScore) {
+        bestScore = score;
+        bestItem = item;
+      }
+    }
+  }
+
+  return bestItem;
+}
+
 /** Активна ли вкладка по текущему pathname */
-export function isNavTabActive(pathname, item) {
+export function isNavTabActive(pathname, item, allItems) {
+  if (allItems?.length) {
+    return resolveActiveNavItem(pathname, allItems) === item;
+  }
   const paths = [item.to, ...(item.alsoMatch || [])];
   return paths.some((p) => {
     if (item.end || p === '/') return pathname === p;
@@ -89,7 +126,7 @@ export const CUSTOMER_TAB_ITEMS = [
 
 /** Нижний таб-бар — мастер */
 export const WORKER_TAB_ITEMS = [
-  { to: '/worker-home', label: 'Главная', icon: <IconHome />, alsoMatch: ['/find-work', '/jobs'] },
+  { to: '/worker-home', label: 'Главная', icon: <IconHome />, alsoMatch: ['/jobs'] },
   { to: '/find-work', label: 'Заявки', icon: <IconBriefcase /> },
   { to: '/my-listings', label: 'Объявления', icon: <IconListings />, alsoMatch: ['/listings'] },
   { to: '/chat', label: 'Чат', icon: <IconChat />, badgeKey: 'chat' },
@@ -107,7 +144,7 @@ export const CUSTOMER_DESKTOP_LINKS = [
 
 /** Десктоп — мастер */
 export const WORKER_DESKTOP_LINKS = [
-  { to: '/worker-home', label: 'Главная', alsoMatch: ['/find-work'] },
+  { to: '/worker-home', label: 'Главная' },
   { to: '/find-work', label: 'Найти работу' },
   { to: '/my-listings', label: 'Объявления', alsoMatch: ['/listings'] },
   { to: '/chat', label: 'Сообщения', badgeKey: 'chat' },

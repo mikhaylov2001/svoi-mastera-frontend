@@ -43,7 +43,7 @@ export default function MobileAppNav() {
     <nav className="mobile-tab-bar" aria-label="Основная навигация">
       <div className="mobile-tab-bar-inner">
         {items.map((item) => {
-          const active = isNavTabActive(pathname, item);
+          const active = isNavTabActive(pathname, item, items);
           const badge = item.badgeKey === 'chat' && unread > 0 ? unread : 0;
 
           return (
