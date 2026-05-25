@@ -86,6 +86,19 @@ function AppContent() {
     return () => document.body.classList.remove('has-mobile-tab-bar');
   }, [userId, isAuthPage]);
 
+  /* iOS Safari: блок pinch-zoom через gesture-события (скролл не трогаем) */
+  useEffect(() => {
+    const blockGesture = (e) => e.preventDefault();
+    document.addEventListener('gesturestart', blockGesture);
+    document.addEventListener('gesturechange', blockGesture);
+    document.addEventListener('gestureend', blockGesture);
+    return () => {
+      document.removeEventListener('gesturestart', blockGesture);
+      document.removeEventListener('gesturechange', blockGesture);
+      document.removeEventListener('gestureend', blockGesture);
+    };
+  }, []);
+
   return (
     <div className="app-shell">
       {!isAuthPage && <Header />}

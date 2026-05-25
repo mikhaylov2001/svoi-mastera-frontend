@@ -48,11 +48,20 @@ input, textarea, select {
   html {
     overflow-x: hidden;
     overscroll-behavior-x: none;
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     overflow-x: hidden;
     overscroll-behavior-x: none;
+    touch-action: manipulation;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
   }
 }
 
