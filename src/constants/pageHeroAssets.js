@@ -21,6 +21,10 @@ export const PAGE_HERO_OBJECT_POSITION = 'center 46%';
 /** Заполнение баннера целиком (не contain — иначе полосы по бокам) */
 export const PAGE_HERO_OBJECT_FIT = 'cover';
 
+/** Фон личного профиля мастера — стандартное фото, не аватар пользователя */
+export const PROFILE_MASTER_HERO_PHOTO =
+  'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=max&w=2400&q=86';
+
 /** Поднимает качество готовых ссылок Unsplash в данных категорий / секций */
 export function heroPhotoHiRes(url) {
   if (!url || typeof url !== 'string') return PAGE_HERO_DEFAULT_PHOTO;

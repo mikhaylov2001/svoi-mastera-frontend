@@ -9,9 +9,9 @@ import ProfileSidebar from '../../components/myprofile/ProfileSidebar';
 import ProfileWorkspace from '../../components/myprofile/ProfileWorkspace';
 import ProfileShowcaseGrid from '../../components/myprofile/ProfileShowcaseGrid';
 import ProfileSettingsDetail from '../../components/myprofile/ProfileSettingsDetail';
+import { PROFILE_MASTER_HERO_PHOTO } from '../../constants/pageHeroAssets';
 import '../../styles/myProfile.css';
 
-const COVER_DEFAULT = 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=1600&q=85';
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 
 const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND + u);
@@ -53,7 +53,6 @@ export default function WorkerProfilePage() {
   const [listings, setListings]   = useState([]);
   const [reviews, setReviews]     = useState([]);
   const [loading, setLoading]     = useState(true);
-  const [cover, setCover]         = useState(null);
   const [settingsKey, setSettingsKey] = useState(null);
 
   const avatarUrl = resolveUrl(userAvatar);
@@ -61,10 +60,6 @@ export default function WorkerProfilePage() {
   useEffect(() => {
     if (userRole === 'CUSTOMER') navigate('/profile', { replace: true });
   }, [userRole, navigate]);
-
-  useEffect(() => {
-    try { const c = localStorage.getItem('worker:cover'); if (c) setCover(c); } catch {}
-  }, []);
 
   useEffect(() => {
     if (!userId || userRole === 'CUSTOMER') return;
@@ -164,13 +159,13 @@ export default function WorkerProfilePage() {
     subtitle: tags.length > 0
       ? `${tags.slice(0, 3).join(', ')} — с аккуратной сметой, гарантией и понятными сроками.`
       : 'Показывает услуги, портфолио, рейтинг и помогает получать больше качественных заказов.',
-    cover: cover || COVER_DEFAULT,
+    cover: PROFILE_MASTER_HERO_PHOTO,
     meta: [
       `${listings.length} услуг`,
       avgRating > 0 ? `${avgRating.toFixed(1)} рейтинг` : 'Нет отзывов',
       cityLabel || 'Не указан',
     ],
-  }), [fullName, tags, cover, listings, avgRating, cityLabel]);
+  }), [fullName, tags, listings, avgRating, cityLabel]);
 
   /* Quick actions */
   const quickActions = [
