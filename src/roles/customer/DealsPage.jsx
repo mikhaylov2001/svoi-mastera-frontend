@@ -10,24 +10,10 @@ import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
-import { moOrdersListShellCss } from '../../styles/moOrdersListShellCss.js';
+import OrderCard from '../../components/myorders/OrderCard';
 import '../../styles/moCabinetStyle.css';
 
-const HERO = 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=max&w=2400&q=86';
-
-const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
-  *, *::before, *::after { box-sizing: border-box; }
-  ${moOrdersListShellCss}
-  @keyframes mlsk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-  .ml-sk { background: linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%); background-size: 200% 100%; animation: mlsk 1.4s infinite; border-radius: 6px; }
-  .mo-deals-cabinet .mo-sort {
-    padding: 12px 14px; border: 1.5px solid #ececec; border-radius: 14px;
-    background: #fff; font: inherit; font-size: 14px; font-weight: 600; color: #374151;
-    outline: none; cursor: pointer;
-  }
-  .mo-deals-cabinet .mo-sort:focus { border-color: #ff5722; box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.12); }
-`;
+const HERO = 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=2400&q=86';
 const BACKEND = 'https://svoi-mastera-backend.onrender.com';
 
 const STATUS_TABS = [
@@ -74,30 +60,53 @@ function timeAgo(iso) {
   return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
-function dealStatusPillClass(status) {
-  if (status === 'NEW') return 'wait';
-  if (status === 'IN_PROGRESS') return 'work';
-  if (status === 'COMPLETED') return 'open';
-  return 'neutral';
+/** Map deal → format compatible with OrderCard */
+function dealToCard(d) {
+  const photos = (d.photos || []).map(resolvePhoto).filter(Boolean);
+  if (!photos.length) {
+    const placeholder = getCategoryPlaceholderPhotoUrlOrDefault(d.category, null);
+    if (placeholder) photos.push(placeholder);
+    else photos.push(FALLBACK_PHOTO);
+  }
+
+  const workerName = [d.workerName, d.workerLastName].filter(Boolean).join(' ') || 'Мастер';
+  const workerInitial = (d.workerName || 'М')[0].toUpperCase();
+  const workerAvatar = resolvePhoto(d.workerAvatarUrl);
+
+  const statusMap = {
+    NEW: 'ASSIGNED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED',
+  };
+
+  return {
+    ...d,
+    status: statusMap[d.status] || d.status,
+    _dealStatus: d.status,
+    budget: d.agreedPrice ? Number(d.agreedPrice) : null,
+    category: d.category || '',
+    photos,
+    offers: [{ name: workerName, initial: workerInitial, avatarUrl: workerAvatar }],
+    offersCount: 0,
+  };
 }
 
-function dealThumbForCard(deal) {
-  const photos = (deal.photos || []).map(resolvePhoto).filter(Boolean);
-  if (photos.length) return photos[0];
-  return getCategoryPlaceholderPhotoUrlOrDefault(deal.category, null) || FALLBACK_PHOTO;
-}
-
-function dealWorkerName(deal) {
-  return [deal.workerName, deal.workerLastName].filter(Boolean).join(' ') || 'Мастер';
+function EmptyState({ icon, title, text, btnLabel, onBtn }) {
+  return (
+    <div className="mo-empty">
+      <div className="mo-empty-emoji">{icon}</div>
+      <div className="mo-empty-title">{title}</div>
+      <div className="mo-empty-sub">{text}</div>
+      {btnLabel && <div className="mo-empty-actions"><button type="button" className="mo-cta" onClick={onBtn}>{btnLabel}</button></div>}
+    </div>
+  );
 }
 
 /* ═══════════════════════════════
    DEAL DETAIL PAGE
 ═══════════════════════════════ */
-function DealDetail({
-  deal, onBack, onComplete, onCancelNew, onCancelActive, onReview, actionId, navigate,
-  userName, userLastName, userAvatar,
-}) {
+function DealDetail({ deal, onBack, onComplete, onCancelNew, onCancelActive, onReview, actionId, navigate }) {
   const [photoIdx, setPhotoIdx] = useState(0);
   const st = STATUS_CONFIG[deal.status] || STATUS_CONFIG.NEW;
   const photos = (deal.photos || []).map(resolvePhoto).filter(Boolean);
@@ -110,8 +119,6 @@ function DealDetail({
   const isInProgress = deal.status === 'IN_PROGRESS';
   const isNew = deal.status === 'NEW';
   const isCompleted = deal.status === 'COMPLETED';
-  const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Заказчик';
-  const customerAvatar = resolvePhoto(userAvatar);
   const taskDescShown = formatListingOriginDescription('CUSTOMER', deal.description);
 
   const STEPS = ['Создана', 'Принята', 'В работе', 'Подтверждение', 'Завершена'];
@@ -396,23 +403,6 @@ function DealDetail({
               </button>
             )}
           </div>
-
-          <div className="mo-info-card">
-            <div className="mo-info-label">Ваш профиль</div>
-            <div
-              style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}
-              onClick={() => navigate('/profile')}
-              role="presentation"
-            >
-              <div className="mo-master-avatar" style={{ width: 42, height: 42, fontSize: 15 }}>
-                {customerAvatar ? <img src={customerAvatar} alt="" /> : (userName || 'З')[0].toUpperCase()}
-              </div>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 900, color: '#111827' }}>{fullName}</div>
-                <div style={{ fontSize: 12, color: '#22c55e', marginTop: 3, fontWeight: 700 }}>● Заказчик</div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -485,7 +475,7 @@ function ReviewModal({ deal, onClose, onSubmit, status }) {
    MAIN PAGE
 ═══════════════════════════════ */
 export default function DealsPage() {
-  const { userId, userName, userLastName, userAvatar } = useAuth();
+  const { userId } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -619,9 +609,6 @@ export default function DealsPage() {
           onReview={() => { setReviewStatus('idle'); setReviewDeal(detail); }}
           actionId={actionId}
           navigate={navigate}
-          userName={userName}
-          userLastName={userLastName}
-          userAvatar={userAvatar}
         />
         {cancelNewOpen && (
           <CancelModal title="Отменить заявку?" subtitle="Мастер получит уведомление. Можно указать причину." onClose={() => !cancelNewBusy && setCancelNewOpen(false)} onConfirm={handleCancelNew} busy={cancelNewBusy} err={cancelNewErr} />
@@ -638,13 +625,12 @@ export default function DealsPage() {
 
   /* ── List view ── */
   return (
-    <div className="ml-page ml-list-shell mo-orders-root mo-page mo-deals-cabinet">
-      <style>{css}</style>
-
+    <div className="mo-page">
+      {/* Hero */}
       <header className="mo-hero">
         <img src={HERO} alt="" />
         <div className="mo-hero-inner">
-          <div className="mo-hero-copy">
+          <div>
             <h1>Мои сделки</h1>
             <p>Сделки с мастерами — отслеживайте прогресс и подтверждайте</p>
           </div>
@@ -655,32 +641,22 @@ export default function DealsPage() {
       </header>
 
       <main className="mo-main">
+        {/* Toolbar */}
         <div className="mo-toolbar">
-          <div className="mo-tabs">
+          <div className="mo-status-tabs">
             {STATUS_TABS.map(t => {
               const count = t.key === 'ALL' ? deals.length : deals.filter(d => d.status === t.key).length;
               return (
-                <button
-                  key={t.key}
-                  type="button"
-                  className={`mo-tab${statusTab === t.key ? ' active' : ''}`}
-                  onClick={() => setStatusTab(t.key)}
-                >
+                <button key={t.key} type="button" className={`mo-status-tab${statusTab === t.key ? ' active' : ''}`} onClick={() => setStatusTab(t.key)}>
                   {t.label}
-                  <span className="mo-tab-count">{count}</span>
+                  {count > 0 && <span className="mo-status-tab-count">{count}</span>}
                 </button>
               );
             })}
           </div>
           <div className="mo-search">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden><circle cx="11" cy="11" r="7" /><path d="m20 20-3-3" /></svg>
-            <input
-              type="search"
-              placeholder="Поиск по сделкам или мастеру…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              autoComplete="off"
-            />
+            <input type="search" placeholder="Поиск по сделкам или мастеру…" value={search} onChange={e => setSearch(e.target.value)} autoComplete="off" />
           </div>
           <select className="mo-sort" value={sort} onChange={e => setSort(e.target.value)}>
             <option value="newest">Сначала новые</option>
@@ -689,117 +665,25 @@ export default function DealsPage() {
         </div>
 
         {loading ? (
-          <div className="mo-grid listing-grid">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="mo-card mo-card--sk" aria-hidden>
-                <div className="mo-card-media"><div className="ml-sk" style={{ width: '100%', height: '100%' }} /></div>
-                <div className="mo-card-content">
-                  <div className="ml-sk" style={{ height: 18, width: '75%' }} />
-                  <div className="ml-sk" style={{ height: 12, width: '55%', marginTop: 10 }} />
-                  <div className="ml-sk" style={{ height: 12, width: '90%', marginTop: 8 }} />
-                </div>
-                <div className="mo-actions">
-                  <div className="ml-sk mo-btn" style={{ flex: 1, minHeight: 46, borderRadius: 14 }} />
-                  <div className="ml-sk mo-btn" style={{ flex: 1, minHeight: 46, borderRadius: 14 }} />
-                </div>
-              </div>
-            ))}
-          </div>
+          <EmptyState icon="⏳" title="Загружаем сделки…" text="Пожалуйста, подождите" />
         ) : shown.length === 0 ? (
-          <div className="mo-empty">
-            <div className="mo-empty-emoji">{statusTab === 'ALL' ? '🤝' : '📦'}</div>
-            <div className="mo-empty-title">
-              {statusTab === 'ALL' ? 'Сделок пока нет' : 'Нет сделок в этой категории'}
-            </div>
-            <div className="mo-empty-sub">
-              {statusTab === 'ALL' ? 'Найдите мастера и создайте первую сделку' : 'Попробуйте другой фильтр'}
-            </div>
-            {statusTab === 'ALL' && (
-              <div className="mo-empty-actions">
-                <button type="button" className="mo-cta" onClick={() => navigate('/my-requests?create=1')}>
-                  + Найти мастера
-                </button>
-              </div>
-            )}
-          </div>
+          <EmptyState
+            icon="🤝"
+            title={statusTab === 'ALL' ? 'Сделок пока нет' : 'Нет сделок в этой категории'}
+            text={statusTab === 'ALL' ? 'Найдите мастера и создайте первую сделку' : ''}
+            btnLabel={statusTab === 'ALL' ? '+ Найти мастера' : undefined}
+            onBtn={() => navigate('/my-requests?create=1')}
+          />
         ) : (
-          <div className="mo-grid listing-grid">
-            {shown.map(deal => {
-              const st = STATUS_CONFIG[deal.status] || STATUS_CONFIG.NEW;
-              const thumbSrc = dealThumbForCard(deal);
-              const workerLabel = dealWorkerName(deal);
-              const priceOnImg = deal.agreedPrice
-                ? `${Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽`
-                : 'Договорная';
-              const needsConfirm = deal.status === 'IN_PROGRESS' && !deal.customerConfirmed;
-              const openDetail = () => setDetail(deal);
-
-              return (
-                <article
-                  key={deal.id}
-                  className="mo-card"
-                  role="button"
-                  tabIndex={0}
-                  onClick={openDetail}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      openDetail();
-                    }
-                  }}
-                >
-                  <div className="mo-card-media">
-                    <img src={thumbSrc} alt="" />
-                    <span className={`mo-card-status-on-img ${dealStatusPillClass(deal.status)}`}>{st.label}</span>
-                    <div className="mo-card-price-on-img">{priceOnImg}</div>
-                  </div>
-
-                  <div className="mo-card-content">
-                    <div className="mo-card-headline">
-                      <h3 className="mo-card-title">{deal.title || 'Сделка'}</h3>
-                      <span className="mo-card-time">{timeAgo(deal.createdAt)}</span>
-                    </div>
-                    {deal.category && (
-                      <div className="mo-card-tags">
-                        <span className="mo-tag mo-tag-cat">{deal.category}</span>
-                      </div>
-                    )}
-                    <p className="mo-card-hint">
-                      <span className="mo-card-hint-main">{workerLabel}</span>
-                      <span className="mo-card-hint-sub">Мастер по сделке</span>
-                    </p>
-                  </div>
-
-                  <div className="mo-actions" onClick={(e) => e.stopPropagation()}>
-                    <button type="button" className="mo-btn mo-btn-primary" onClick={openDetail}>
-                      Подробнее
-                    </button>
-                    {needsConfirm ? (
-                      <button
-                        type="button"
-                        className="mo-btn mo-btn-secondary mo-btn-offers"
-                        disabled={actionId === deal.id}
-                        onClick={(e) => { e.stopPropagation(); handleComplete(deal.id); }}
-                      >
-                        {actionId === deal.id ? '…' : 'Подтвердить'}
-                      </button>
-                    ) : deal.workerId ? (
-                      <button
-                        type="button"
-                        className="mo-btn mo-btn-secondary"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/chat/${deal.workerId}`); }}
-                      >
-                        Написать
-                      </button>
-                    ) : (
-                      <button type="button" className="mo-btn mo-btn-secondary" onClick={openDetail}>
-                        Открыть
-                      </button>
-                    )}
-                  </div>
-                </article>
-              );
-            })}
+          <div className="mo-grid">
+            {shown.map(deal => (
+              <OrderCard
+                key={deal.id}
+                order={dealToCard(deal)}
+                onOpen={() => setDetail(deal)}
+                onEdit={null}
+              />
+            ))}
           </div>
         )}
       </main>
