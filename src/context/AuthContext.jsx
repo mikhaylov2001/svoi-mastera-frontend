@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { DEFAULT_API_V1_BASE } from '../constants/backend';
 
 const API_BASE = process.env.NODE_ENV === 'development'
   ? 'http://localhost:8080/api/v1'
-  : 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
+  : DEFAULT_API_V1_BASE;
 
 const AuthContext = createContext();
 

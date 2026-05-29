@@ -1,17 +1,17 @@
 import { humanizeServerErrorMessage } from './utils/humanizeServerError';
+import { DEFAULT_API_V1_BASE, toApiV1Base } from './constants/backend';
 
 function resolveApiBase() {
   const raw =
     (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
     (typeof import.meta !== 'undefined' && import.meta.env?.REACT_APP_API_URL);
   if (raw && String(raw).trim()) {
-    const base = String(raw).trim().replace(/\/$/, '');
-    return base.endsWith('/api/v1') ? base : `${base}/api/v1`;
+    return toApiV1Base(raw);
   }
   if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
     return 'http://localhost:8080/api/v1';
   }
-  return 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
+  return DEFAULT_API_V1_BASE;
 }
 
 export const API_BASE = resolveApiBase();
