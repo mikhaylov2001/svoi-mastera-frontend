@@ -11,7 +11,7 @@ import { publicTimeAgo, publicMemberSince } from '../../utils/publicProfileUtils
 import PhotoLightbox from '../../components/PhotoLightbox';
 import ProfileShowcase from '../../components/profiles/ProfileShowcase';
 
-const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
+const API = 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
 const COVER_CUSTOMER = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1600&q=85';
 
 const OPEN_STATUSES = ['OPEN', 'IN_NEGOTIATION', 'ASSIGNED', 'IN_PROGRESS'];
@@ -39,7 +39,7 @@ function resolveImg(item) {
   const raw = item.photos?.[0] || null;
   if (raw) {
     if (raw.startsWith('http') || raw.startsWith('data:')) return raw;
-    return 'https://svoi-mastera-backend.onrender.com' + raw;
+    return 'https://svoi-mastera-backend-n9om.onrender.com' + raw;
   }
   return getCategoryPlaceholderPhotoUrlOrDefault({
     categoryName: item.categoryName,

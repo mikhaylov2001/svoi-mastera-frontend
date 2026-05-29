@@ -7,8 +7,8 @@ import { publicTimeAgo, publicMemberSince } from '../../utils/publicProfileUtils
 import PhotoLightbox from '../../components/PhotoLightbox';
 import ProfileShowcase from '../../components/profiles/ProfileShowcase';
 
-const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
-const BACKEND = 'https://svoi-mastera-backend.onrender.com';
+const API = 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
+const BACKEND = 'https://svoi-mastera-backend-n9om.onrender.com';
 const COVER_WORKER = 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=1600&q=85';
 
 function resolveImg(item, category) {

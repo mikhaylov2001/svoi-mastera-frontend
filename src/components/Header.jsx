@@ -314,7 +314,7 @@ function HeaderUserMenu({
 
 function Header() {
   const { userId, userRole, userName, userLastName, userAvatar, logout } = useAuth();
-  const BACKEND = 'https://svoi-mastera-backend.onrender.com';
+  const BACKEND = 'https://svoi-mastera-backend-n9om.onrender.com';
   const fullAvatarUrl = userAvatar
     ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http')
         ? userAvatar

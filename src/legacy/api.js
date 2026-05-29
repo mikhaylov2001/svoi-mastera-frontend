@@ -2,7 +2,7 @@ import { humanizeServerErrorMessage } from './utils/humanizeServerError';
 
 export const API_BASE = import.meta.env.DEV
   ? 'http://localhost:8080/api/v1'
-  : 'https://svoi-mastera-backend.onrender.com/api/v1';
+  : 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
 
 function getFriendlyMessage(status, endpoint, serverMessage) {
   const msg = (serverMessage || '').toLowerCase();

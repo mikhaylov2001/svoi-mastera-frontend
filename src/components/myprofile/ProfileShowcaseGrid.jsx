@@ -1,7 +1,7 @@
 import React from 'react';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 
-const BACKEND = 'https://svoi-mastera-backend.onrender.com';
+const BACKEND = 'https://svoi-mastera-backend-n9om.onrender.com';
 
 function resolveImg(u, item) {
   if (!u) return getCategoryPlaceholderPhotoUrlOrDefault({ category: item?.category, categoryName: item?.categoryName });

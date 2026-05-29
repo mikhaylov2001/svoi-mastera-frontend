@@ -7,7 +7,7 @@ import {
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉', '😍'];
 
-const BACKEND = 'https://svoi-mastera-backend.onrender.com';
+const BACKEND = 'https://svoi-mastera-backend-n9om.onrender.com';
 function fullUrl(u) {
   if (!u) return '';
   if (u.startsWith('http') || u.startsWith('data:')) return u;

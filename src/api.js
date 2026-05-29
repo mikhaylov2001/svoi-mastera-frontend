@@ -11,7 +11,7 @@ function resolveApiBase() {
   if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
     return 'http://localhost:8080/api/v1';
   }
-  return 'https://svoi-mastera-backend.onrender.com/api/v1';
+  return 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
 }
 
 export const API_BASE = resolveApiBase();

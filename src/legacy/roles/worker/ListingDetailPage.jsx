@@ -11,7 +11,7 @@ import {
 import { getListingPublishedPriceNumber } from '../../../utils/listingPublishedPrice';
 import FavoriteHeartButton from '../../../components/FavoriteHeartButton';
 
-const API = 'https://svoi-mastera-backend.onrender.com/api/v1';
+const API = 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
 
 /** Одна отправка просмотра на id за сессию (React StrictMode и повторные fetch) */
 const listingViewPostedIds = new Set();

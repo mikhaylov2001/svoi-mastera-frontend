@@ -468,7 +468,7 @@ function moDetailTimeAgo(d) {
 }
 
 function moDetailPhotoUrl(u, backend) {
-  const b = backend || 'https://svoi-mastera-backend.onrender.com';
+  const b = backend || 'https://svoi-mastera-backend-n9om.onrender.com';
   if (!u) return null;
   if (String(u).startsWith('http') || String(u).startsWith('data:')) return u;
   return b + u;
@@ -1089,7 +1089,7 @@ export default function MyOrdersPage() {
   };
 
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Заказчик';
-  const BACKEND  = 'https://svoi-mastera-backend.onrender.com';
+  const BACKEND  = 'https://svoi-mastera-backend-n9om.onrender.com';
   const ava      = userAvatar ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND + userAvatar) : null;
 
   // ══ ФОРМА СОЗДАНИЯ / РЕДАКТИРОВАНИЯ ══
