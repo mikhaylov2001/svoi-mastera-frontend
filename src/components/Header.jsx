@@ -545,7 +545,8 @@ function Header() {
     const q = searchTerm.trim();
     if (!q) return;
     setSearchFocused(false);
-    navigate(`/find-master?q=${encodeURIComponent(q)}`);
+    const path = `/find-master?q=${encodeURIComponent(q)}`;
+    navigate(path, location.pathname.startsWith('/find-master') ? { replace: true } : undefined);
     setSearchTerm('');
     setMobileMenuOpen(false);
   };
@@ -664,7 +665,8 @@ function Header() {
                       type="button"
                       className="header-search-linkish"
                       onClick={() => {
-                        navigate(`/find-master?q=${encodeURIComponent(debouncedQ)}`);
+                        const path = `/find-master?q=${encodeURIComponent(debouncedQ)}`;
+                        navigate(path, location.pathname.startsWith('/find-master') ? { replace: true } : undefined);
                         closeSearchUi();
                       }}
                     >
@@ -709,7 +711,8 @@ function Header() {
                       type="button"
                       className="header-search-footer"
                       onClick={() => {
-                        navigate(`/find-master?q=${encodeURIComponent(debouncedQ)}`);
+                        const path = `/find-master?q=${encodeURIComponent(debouncedQ)}`;
+                        navigate(path, location.pathname.startsWith('/find-master') ? { replace: true } : undefined);
                         closeSearchUi();
                       }}
                     >

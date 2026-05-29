@@ -265,7 +265,7 @@ export default function CustomerProfilePage() {
         profile={heroProfile}
         mode="customer"
         onModeChange={(role) => {
-          if (role === 'master') navigate('/worker-profile');
+          if (role === 'master') navigate('/worker-profile', { replace: true });
         }}
         onViewPublic={() => navigate(`/customers/${userId}`)}
         onEdit={() => setSettingsKey('personal')}

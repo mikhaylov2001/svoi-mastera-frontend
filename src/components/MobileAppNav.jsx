@@ -7,6 +7,7 @@ import {
   WORKER_TAB_ITEMS,
   isNavTabActive,
 } from '../constants/appNavConfig';
+import { dispatchSameRouteRefetch } from '../utils/sameRouteRefetch';
 import './MobileAppNav.css';
 
 export default function MobileAppNav() {
@@ -39,6 +40,13 @@ export default function MobileAppNav() {
 
   const items = userRole === 'WORKER' ? WORKER_TAB_ITEMS : CUSTOMER_TAB_ITEMS;
 
+  const onTabClick = (item) => (e) => {
+    if (isNavTabActive(pathname, item, items)) {
+      e.preventDefault();
+      dispatchSameRouteRefetch(item.to);
+    }
+  };
+
   return (
     <nav className="mobile-tab-bar" aria-label="Основная навигация">
       <div className="mobile-tab-bar-inner">
@@ -51,6 +59,7 @@ export default function MobileAppNav() {
             <Link
               key={item.to}
               to={item.to}
+              onClick={onTabClick(item)}
               className={`mobile-tab-item${active ? ' is-active' : ''}`}
               aria-current={active ? 'page' : undefined}
             >

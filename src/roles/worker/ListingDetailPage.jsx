@@ -23,6 +23,7 @@ import {
 } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../../constants/homePaths';
+import { goBackOr } from '../../utils/navigationHelpers';
 import { useSwipeNavigation } from '../../hooks/useSwipeNavigation';
 
 const BACKEND_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, '');
@@ -344,27 +345,26 @@ export default function ListingDetailPage() {
 
   const goBack = () => {
     if (isOwnListing) {
-      navigate('/my-listings');
+      navigate('/my-listings', { replace: true });
       return;
     }
     if (refFrom === 'home') {
-      navigate(userRole === 'WORKER' ? WORKER_HOME_PATH : CUSTOMER_HOME_PATH);
+      goBackOr(navigate, userRole === 'WORKER' ? WORKER_HOME_PATH : CUSTOMER_HOME_PATH);
       return;
     }
     if (refFrom === 'find-master') {
-      navigate(refCat ? `/find-master/${refCat}` : '/find-master');
+      goBackOr(navigate, refCat ? `/find-master/${refCat}` : '/find-master');
       return;
     }
     if (refFrom === 'favorites') {
-      navigate('/favorites');
+      goBackOr(navigate, '/favorites');
       return;
     }
     if (!userId) {
-      navigate(catSlug ? `/find-master/${catSlug}` : '/find-master');
+      navigate(catSlug ? `/find-master/${catSlug}` : '/find-master', { replace: true });
       return;
     }
-    if (userRole === 'WORKER') navigate('/find-master');
-    else navigate('/my-orders');
+    goBackOr(navigate, userRole === 'WORKER' ? '/find-master' : '/my-requests');
   };
 
   const backLabel = isOwnListing

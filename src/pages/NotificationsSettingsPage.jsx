@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getNotificationSettings, updateNotificationSettings } from '../api';
 import { useToast } from '../context/ToastContext';
+import { goBackOr } from '../utils/navigationHelpers';
 import './SettingsPages.css';
 
 export default function NotificationSettingsPage() {
@@ -64,7 +65,7 @@ export default function NotificationSettingsPage() {
       <div className="settings-page">
         <div className="settings-header">
           <div className="container">
-            <button onClick={() => navigate(-1)} className="settings-back">
+            <button onClick={() => goBackOr(navigate, '/profile')} className="settings-back">
               ← Назад к профилю
             </button>
           </div>
@@ -86,7 +87,7 @@ export default function NotificationSettingsPage() {
       {/* Header */}
       <div className="settings-header">
         <div className="container">
-          <button onClick={() => navigate(-1)} className="settings-back">
+          <button onClick={() => goBackOr(navigate, '/profile')} className="settings-back">
             ← Назад к профилю
           </button>
         </div>

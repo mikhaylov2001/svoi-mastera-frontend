@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
   getMyDeals, completeDeal, createCustomerReview,
   workerStartDeal, cancelPendingDeal, cancelActiveDeal,
@@ -22,6 +22,7 @@ import PhotoLightbox from '../../components/PhotoLightbox';
 import '../../styles/moCabinetStyle.css';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
+import { stripSearchParams } from '../../utils/navigationHelpers';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
@@ -160,6 +161,7 @@ export default function WorkerDealsPage() {
   const { userId, userName, userLastName, userAvatar } = useAuth();
   const navigate  = useNavigate();
   const location  = useLocation();
+  const [, setSearchParams] = useSearchParams();
 
   const [deals,    setDeals]    = useState([]);
   const [loading,  setLoading]  = useState(true);
@@ -204,6 +206,13 @@ export default function WorkerDealsPage() {
   useEffect(() => { load(); }, [load]);
 
   useSameRouteRefetch('/deals', load);
+
+  const closeDetail = useCallback(() => {
+    setLightbox(null);
+    setDetail(null);
+    setPhotoIdx(0);
+    stripSearchParams(setSearchParams, ['dealId']);
+  }, [setSearchParams]);
 
   // open deal from URL ?dealId=...
   useEffect(() => {
@@ -255,7 +264,7 @@ export default function WorkerDealsPage() {
     try {
       await cancelPendingDeal(userId, detail.id, cancelNewNote);
       setCancelNewOpen(false); setCancelNewNote('');
-      await load(); setDetail(null);
+      await load(); closeDetail();
     } catch (e) { setCancelNewErr(e?.message || 'Не удалось отменить'); }
     setCancelNewBusy(false);
   };
@@ -266,7 +275,7 @@ export default function WorkerDealsPage() {
     try {
       await cancelActiveDeal(userId, detail.id, cancelActNote);
       setCancelActOpen(false); setCancelActNote('');
-      await load(); setDetail(null);
+      await load(); closeDetail();
     } catch (e) { setCancelActErr(e?.message || 'Не удалось отменить'); }
     setCancelActBusy(false);
   };
@@ -329,11 +338,7 @@ export default function WorkerDealsPage() {
     const customerAva = dealCustomerAvatarUrl(detail);
     const pulseShadow = `0 0 0 3px ${st.dot}26`;
 
-    const handleDetailBack = () => {
-      setLightbox(null);
-      setDetail(null);
-      setPhotoIdx(0);
-    };
+    const handleDetailBack = closeDetail;
 
     return (
       <div className="ed ed--listing-detail">

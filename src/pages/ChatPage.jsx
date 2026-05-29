@@ -167,7 +167,7 @@ export default function ChatPage() {
   }, [navigate]);
 
   const handleBack = useCallback(() => {
-    navigate('/chat');
+    navigate('/chat', { replace: true });
   }, [navigate]);
 
   const handleNewChat = useCallback(() => {

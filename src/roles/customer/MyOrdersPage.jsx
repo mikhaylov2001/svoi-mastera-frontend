@@ -15,6 +15,7 @@ import {
 import { humanizeServerErrorMessage } from '../../utils/humanizeServerError';
 import { PAGE_HERO_DEFAULT_PHOTO } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
+import { stripSearchParams } from '../../utils/navigationHelpers';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
@@ -577,7 +578,7 @@ function requestCanRemove(req) {
 export default function MyOrdersPage() {
   const { userId, userName, userLastName, userAvatar } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [requests,       setRequests]       = useState([]);
   const [categories,     setCategories]     = useState([]);
@@ -702,6 +703,18 @@ export default function MyOrdersPage() {
   useEffect(() => { if (userId) load(); }, [userId, load]);
 
   useSameRouteRefetch('/my-requests', load);
+
+  const closeDetail = useCallback(() => {
+    setLightbox(null);
+    setDetail(null);
+    setPhotoIdx(0);
+    stripSearchParams(setSearchParams, ['request', 'offers']);
+  }, [setSearchParams]);
+
+  const closeView = useCallback(() => {
+    setView(null);
+    stripSearchParams(setSearchParams, ['create']);
+  }, [setSearchParams]);
 
   useEffect(() => {
     const tabParam = searchParams.get('tab');
@@ -1078,7 +1091,7 @@ export default function MyOrdersPage() {
         }
         if (slugSave && newId) setLocalJobRequestCategorySlug(userId, newId, slugSave);
       }
-      setView(null);
+      closeView();
       await load();
     } catch (e) {
       const m = e?.message || '';
@@ -1160,7 +1173,7 @@ export default function MyOrdersPage() {
               onClick={() => {
                 if (isCatStep) { setHoverCategoryName(null); setPickedSection(null); }
                 else if (isFormStep && !isEdit) { setHoverCategoryName(null); setForm(p => ({ ...p, categoryId: '', categorySlug: '' })); setPickedSection(null); }
-                else { setView(null); }
+                else { closeView(); }
               }}
             >
               {isCatStep ? '← Все разделы' : isFormStep && !isEdit ? '← Выбор категории' : '← Мои заявки'}
@@ -1811,8 +1824,7 @@ export default function MyOrdersPage() {
             className="ed-back"
             onClick={() => {
               setLightbox(null);
-              setDetail(null);
-              setPhotoIdx(0);
+              closeDetail();
             }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
@@ -2067,7 +2079,7 @@ export default function MyOrdersPage() {
 
               <div className="ed-card">
                 <div className="ed-eyebrow ed-eyebrow--block">Ваш профиль</div>
-                <div className="ed-cust-row ed-cust-row-static" onClick={() => navigate('/customer-profile')} role="presentation">
+                <div className="ed-cust-row ed-cust-row-static" onClick={() => navigate('/profile')} role="presentation">
                   <div className="ed-ava">
                     {ava ? <img src={ava} alt={fullName} /> : (
                       <div className="ed-ava-fallback neutral">{(userName || 'З')[0].toUpperCase()}</div>

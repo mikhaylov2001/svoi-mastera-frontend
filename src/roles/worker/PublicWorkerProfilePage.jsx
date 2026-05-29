@@ -6,6 +6,7 @@ import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPric
 import { publicTimeAgo, publicMemberSince } from '../../utils/publicProfileUtils';
 import PhotoLightbox from '../../components/PhotoLightbox';
 import ProfileShowcase from '../../components/profiles/ProfileShowcase';
+import { goBackOr } from '../../utils/navigationHelpers';
 
 const API = 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
 const BACKEND = 'https://svoi-mastera-backend-n9om.onrender.com';
@@ -242,7 +243,7 @@ export default function PublicWorkerProfilePage() {
     <>
       <ProfileShowcase
         profile={profile}
-        onBack={() => navigate(-1)}
+        onBack={() => goBackOr(navigate, '/find-master')}
         onPrimaryAction={() => userId ? navigate(`/chat/${workerId}`) : navigate('/login')}
         onSecondaryAction={() => userId ? navigate(`/chat/${workerId}?msg=Здравствуйте%2C+хотел+бы+запросить+смету`) : navigate('/login')}
         onListingClick={item => {

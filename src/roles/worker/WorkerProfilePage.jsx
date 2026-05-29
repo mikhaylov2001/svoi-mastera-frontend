@@ -219,7 +219,7 @@ export default function WorkerProfilePage() {
         profile={heroProfile}
         mode="master"
         onModeChange={(role) => {
-          if (role === 'customer') navigate('/profile');
+          if (role === 'customer') navigate('/profile', { replace: true });
         }}
         onViewPublic={() => navigate(`/workers/${userId}`)}
         onEdit={() => setSettingsKey('personal')}
@@ -272,7 +272,7 @@ export default function WorkerProfilePage() {
                 dealsTitle="Заказы и отклики"
                 dealsListPath="/deals"
                 onSettingsSelect={setSettingsKey}
-                onDealClick={(d) => navigate(`/deals/${d.id}`)}
+                onDealClick={(d) => navigate(`/deals?dealId=${encodeURIComponent(d.id)}`)}
               />
               <ProfileShowcaseGrid
                 quickActions={quickActions}

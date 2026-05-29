@@ -13,8 +13,9 @@ import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import './FindWorkPage.css';
 import './jobListings.css';
 import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes } from '../../constants/pageHeroAssets';
-import { findCatalogPageCss } from '../shared/findCatalogPageCss';
 import { WORKER_HOME_PATH } from '../../constants/homePaths';
+import { findCatalogPageCss } from '../shared/findCatalogPageCss';
+import { goBackOr } from '../../utils/navigationHelpers';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { useSwipeNavigation } from '../../hooks/useSwipeNavigation';
 import PhotoLightbox from '../../components/PhotoLightbox';
@@ -464,7 +465,7 @@ export default function FindWorkPage() {
                   setSelectedCategory(null);
                   setActivePhotoIdx(0);
                   setJobDetailFrom('find-work');
-                  navigate(WORKER_HOME_PATH);
+                  goBackOr(navigate, WORKER_HOME_PATH);
                   return;
                 }
                 if (jobDetailFrom === 'favorites') {
@@ -472,7 +473,7 @@ export default function FindWorkPage() {
                   setSelectedCategory(null);
                   setActivePhotoIdx(0);
                   setJobDetailFrom('find-work');
-                  navigate('/favorites');
+                  goBackOr(navigate, '/favorites');
                   return;
                 }
                 setSelectedRequest(null);

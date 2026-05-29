@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
   getMyDeals, completeDeal, createReview,
   cancelPendingDeal, cancelActiveDeal,
@@ -9,6 +9,7 @@ import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
+import { stripSearchParams } from '../../utils/navigationHelpers';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import SortDropdown from '../../components/SortDropdown';
 import {
@@ -476,6 +477,7 @@ export default function DealsPage() {
   const { userId, userName, userLastName, userAvatar } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [, setSearchParams] = useSearchParams();
 
   const [deals, setDeals]           = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -512,6 +514,11 @@ export default function DealsPage() {
 
   useEffect(() => { if (userId) load(); }, [userId, load]);
   useSameRouteRefetch('/deals', load);
+
+  const closeDetail = useCallback(() => {
+    setDetail(null);
+    stripSearchParams(setSearchParams, ['dealId']);
+  }, [setSearchParams]);
 
   useEffect(() => {
     const id = new URLSearchParams(location.search).get('dealId');
@@ -559,7 +566,7 @@ export default function DealsPage() {
       await cancelPendingDeal(userId, detail.id, note || '');
       setCancelNewOpen(false);
       await load();
-      setDetail(null);
+      closeDetail();
     } catch (e) { setCancelNewErr(e?.message || 'Не удалось отменить'); }
     setCancelNewBusy(false);
   };
@@ -571,7 +578,7 @@ export default function DealsPage() {
       await cancelActiveDeal(userId, detail.id, note || '');
       setCancelActOpen(false);
       await load();
-      setDetail(null);
+      closeDetail();
     } catch (e) { setCancelActErr(e?.message || 'Не удалось отменить'); }
     setCancelActBusy(false);
   };
@@ -647,7 +654,7 @@ export default function DealsPage() {
       <>
         <DealDetail
           deal={detail}
-          onBack={() => setDetail(null)}
+          onBack={closeDetail}
           onComplete={handleComplete}
           onCancelNew={() => { setCancelNewErr(''); setCancelNewOpen(true); }}
           onCancelActive={() => { setCancelActErr(''); setCancelActOpen(true); }}

@@ -208,7 +208,7 @@ function finishAuth(login, navigate, resp, fallbackName, explicitRole) {
   }
 
   login(userId, userRole, userName, avatarUrl, lastName);
-  navigate(userRole === 'WORKER' ? '/worker-profile' : '/profile');
+  navigate(userRole === 'WORKER' ? '/worker-profile' : '/profile', { replace: true });
 }
 
 export function LoginPage() {

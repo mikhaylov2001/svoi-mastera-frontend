@@ -281,7 +281,7 @@ export default function FindMasterPage() {
       const next = new URLSearchParams(prev);
       next.delete('q');
       return next;
-    });
+    }, { replace: true });
   }, [setSearchParams]);
 
   /* ══════════════════════════════
@@ -335,7 +335,7 @@ export default function FindMasterPage() {
                   </span>
                 )}
               </h2>
-              <button type="button" className="fmp-global-search-clear" onClick={() => setSearchParams({})}>
+              <button type="button" className="fmp-global-search-clear" onClick={() => setSearchParams({}, { replace: true })}>
                 Очистить поиск
               </button>
             </div>

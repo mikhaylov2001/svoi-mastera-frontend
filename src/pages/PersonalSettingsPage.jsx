@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile, updateUserProfile, changePassword } from '../api';
 import { useToast } from '../context/ToastContext';
+import { goBackOr } from '../utils/navigationHelpers';
 import './PersonalSettingsPage.css';
 
 function getInitials(first, last) {
@@ -108,7 +109,7 @@ export default function PersonalSettingsPage() {
     <div className="psp-root">
       <div className="psp-bar">
         <div className="psp-bar-inner">
-          <button type="button" onClick={() => navigate(-1)} className="psp-back">← Назад</button>
+          <button type="button" onClick={() => goBackOr(navigate, '/profile')} className="psp-back">← Назад</button>
           <span className="psp-bar-title">Личные данные</span>
         </div>
       </div>
@@ -131,7 +132,7 @@ export default function PersonalSettingsPage() {
       {/* ── top bar ── */}
       <div className="psp-bar">
         <div className="psp-bar-inner">
-          <button type="button" onClick={() => navigate(-1)} className="psp-back">
+          <button type="button" onClick={() => goBackOr(navigate, '/profile')} className="psp-back">
             ← Назад к профилю
           </button>
           <span className="psp-bar-title">Личные данные</span>

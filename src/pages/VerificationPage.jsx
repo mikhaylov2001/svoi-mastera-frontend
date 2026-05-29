@@ -176,7 +176,7 @@ export default function VerificationPage() {
         },
       });
       setOk('Заявка отправлена успешно.');
-      window.setTimeout(() => navigate(profileHref), 1200);
+      window.setTimeout(() => navigate(profileHref, { replace: true }), 1200);
     } catch (e) {
       setErr(e?.message || 'Не удалось отправить');
     } finally {

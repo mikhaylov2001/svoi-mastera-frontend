@@ -10,6 +10,7 @@ import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPla
 import { publicTimeAgo, publicMemberSince } from '../../utils/publicProfileUtils';
 import PhotoLightbox from '../../components/PhotoLightbox';
 import ProfileShowcase from '../../components/profiles/ProfileShowcase';
+import { goBackOr } from '../../utils/navigationHelpers';
 
 const API = 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
 const COVER_CUSTOMER = 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1600&q=85';
@@ -231,7 +232,7 @@ export default function PublicCustomerProfilePage() {
     <>
       <ProfileShowcase
         profile={profile}
-        onBack={() => navigate(-1)}
+        onBack={() => goBackOr(navigate, '/find-master')}
         onPrimaryAction={() => userId ? navigate(`/chat/${customerId}`) : navigate('/login')}
         onSecondaryAction={() => userId ? navigate(`/chat/${customerId}?msg=Здравствуйте%2C+хочу+предложить+свою+услугу`) : navigate('/login')}
         onListingClick={item => {
