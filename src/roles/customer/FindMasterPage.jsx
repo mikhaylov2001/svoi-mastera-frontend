@@ -194,6 +194,15 @@ export default function FindMasterPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [fmpSearchFocused]);
 
+  useEffect(() => {
+    if (!fmpSearchFocused) return undefined;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [fmpSearchFocused]);
+
   const reloadCatalog = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -567,11 +576,11 @@ export default function FindMasterPage() {
   const hasFilters = !showActive || onlyVerified || onlyWithPhoto || priceMin || priceMax || ratingMin > 0 || searchTerm;
 
   return (
-    <div className={`jl-page fw-jl-cat-feed${showFmpSearchDd ? ' cat-feed-search-active' : ''}`}>
+    <div className={`jl-page fw-jl-cat-feed${fmpSearchFocused ? ' cat-feed-search-active' : ''}`}>
       <style>{findCatalogPageCss}</style>
       <style>{catalogCatFeedMobileCss}</style>
 
-      {showFmpSearchDd ? (
+      {fmpSearchFocused ? (
         <button
           type="button"
           className="cat-feed-search-backdrop"

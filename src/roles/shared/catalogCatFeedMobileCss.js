@@ -139,13 +139,62 @@ export const catalogCatFeedMobileCss = `
     right: 0 !important;
     top: auto !important;
     bottom: 0 !important;
-    max-height: min(72vh, calc(100dvh - 120px)) !important;
+    max-height: min(70vh, calc(100dvh - 96px)) !important;
     border-radius: 20px 20px 0 0 !important;
     border-left: none !important;
     border-right: none !important;
+    border-bottom: none !important;
     z-index: 1700 !important;
     box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.18) !important;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .jl-page.fw-jl-cat-feed .fmp-search-dropdown::before,
+  .jl-page.fw-jl-cat-feed .fw2-search-dropdown::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    margin: 10px auto 6px;
+    border-radius: 999px;
+    background: #e5e7eb;
+  }
+
+  .jl-page.fw-jl-cat-feed.cat-feed-search-active .jl-crumbs,
+  .jl-page.fw-jl-cat-feed.cat-feed-search-active .jl-wrap {
+    display: none !important;
+  }
+
+  .jl-page.fw-jl-cat-feed.cat-feed-search-active .fmp-topbar,
+  .jl-page.fw-jl-cat-feed.cat-feed-search-active .fw2-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1800;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
+  }
+
+  .jl-page.fw-jl-cat-feed .fmp-search-hit {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .jl-page.fw-jl-cat-feed .fmp-search-hit-ph {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+  }
+
+  .jl-page.fw-jl-cat-feed .fmp-search-footer {
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+    font-size: 14px;
+    font-weight: 700;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-bigcard-fav-slot,
+  .fmp-page .fmp-gcard-fav-slot {
+    display: none !important;
   }
 
   /* Сначала фильтры, потом лента (как в макете) */
@@ -260,6 +309,16 @@ export const catalogCatFeedMobileCss = `
     border-radius: 24px;
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(15, 23, 42, 0.1);
+  }
+
+  .jl-page.fw-jl-cat-feed .jl-cat-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    filter: none;
+    transform: none;
   }
 
   .jl-page.fw-jl-cat-feed .jl-cat-cover::after {

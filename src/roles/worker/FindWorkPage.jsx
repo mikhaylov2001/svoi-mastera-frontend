@@ -250,6 +250,15 @@ export default function FindWorkPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [fwSearchFocused]);
 
+  useEffect(() => {
+    if (!fwSearchFocused) return undefined;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [fwSearchFocused]);
+
   const fwDdMatches = useMemo(() => {
     if (!selectedCategory || !debouncedFwSearch || debouncedFwSearch.length < 2) return [];
     const pool = requests.filter((r) => jobRequestMatchesCatalogCategory(r, selectedCategory));
@@ -787,11 +796,11 @@ export default function FindWorkPage() {
     const hasFilters = onlyWithPhoto || priceMin || priceMax || searchTerm || ratingMin > 0;
 
     return (
-      <div className={`jl-page fw-jl-cat-feed${showFwSearchDd ? ' cat-feed-search-active' : ''}`}>
+      <div className={`jl-page fw-jl-cat-feed${fwSearchFocused ? ' cat-feed-search-active' : ''}`}>
         <style>{findCatalogPageCss}</style>
         <style>{catalogCatFeedMobileCss}</style>
 
-        {showFwSearchDd ? (
+        {fwSearchFocused ? (
           <button
             type="button"
             className="cat-feed-search-backdrop"

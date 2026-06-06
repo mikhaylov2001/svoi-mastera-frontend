@@ -772,7 +772,7 @@ export default function ListingDetailPage() {
                   {similar.map(s => {
                     const sPhoto = s.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category });
                     const sp = getListingPublishedPriceNumber(s);
-                    const priceUnit = (s.priceUnit || 'за работу').trim();
+                    const priceUnit = String(s.priceUnit || 'за работу').trim();
                     return (
                       <Link key={s.id} to={`/listings/${s.id}`} className="ed-sim-item">
                         <div className="ed-sim-img">
