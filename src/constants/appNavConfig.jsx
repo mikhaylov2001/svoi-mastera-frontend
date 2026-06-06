@@ -74,7 +74,7 @@ export const WORKER_TAB_ITEMS = [
 export const CUSTOMER_DESKTOP_LINKS = [
   { to: '/', label: 'Главная', end: true },
   { to: '/find-master', label: 'Найти мастера' },
-  { to: '/my-requests', label: 'Заявки' },
+  { to: '/my-requests', label: 'Мои заявки и объявления' },
   { to: '/chat', label: 'Сообщения', badgeKey: 'chat' },
   { to: '/deals', label: 'Мои сделки' },
 ];
