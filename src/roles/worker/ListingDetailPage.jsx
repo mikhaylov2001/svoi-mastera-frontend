@@ -11,6 +11,7 @@ import {
   API_BASE,
 } from '../../api';
 import PhotoLightbox from '../../components/PhotoLightbox';
+import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import DealDetailEdProgress from '../shared/DealDetailEdProgress';
@@ -473,6 +474,13 @@ export default function ListingDetailPage() {
                     </div>
                   ) : null}
                 </div>
+                {!isOwnListing ? (
+                  <CardFavoriteSlot
+                    kind="listing"
+                    id={listing.id}
+                    className="ed-gallery-fav-slot card-fav-slot"
+                  />
+                ) : null}
                 {hasUploadedPhotos && photoCount > 1 ? (
                   <>
                     <button

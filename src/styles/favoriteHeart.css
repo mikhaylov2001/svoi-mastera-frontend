@@ -19,6 +19,7 @@
 .jl-bigcard-fav-slot,
 .mo-card-fav-slot,
 .fmp-gcard-fav-slot,
+.ed-gallery-fav-slot,
 .pro-listing-fav-slot {
   position: absolute;
   top: 10px;
@@ -30,6 +31,12 @@
 .jl-bigcard-fav-slot {
   top: 12px;
   right: 12px;
+}
+
+.ed-gallery-fav-slot {
+  top: 14px;
+  right: 14px;
+  z-index: 5;
 }
 
 .card-fav-slot--sm {
