@@ -15,7 +15,7 @@ import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes } from '../../constants/pageHeroAssets';
 import { findCatalogPageCss } from '../shared/findCatalogPageCss';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
-import { smartTextMatchScore, listingHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
+import { smartTextMatchScore, listingHaystack, rankItemsBySmartMatch, searchCatalogItems } from '../../utils/smartSearch';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
 } from '../../utils/categoryPlaceholderPhoto';
@@ -263,9 +263,22 @@ export default function FindMasterPage() {
 
   const globalMatches = useMemo(() => {
     if (!urlQ) return [];
-    const active = services.filter((s) => s.active !== false);
-    return rankItemsBySmartMatch(active, urlQ, listingHaystack);
+    return searchCatalogItems(services, urlQ, listingHaystack);
   }, [services, urlQ]);
+
+  const globalSearchCategories = useMemo(() => {
+    if (!urlQ || globalMatches.length > 0) return [];
+    return categories
+      .map((cat) => {
+        const inCat = services.filter(
+          (s) => listingMatchesCatalogCategory(s, cat) && s.active !== false,
+        );
+        const hits = searchCatalogItems(inCat, urlQ, listingHaystack);
+        return hits.length ? { cat, count: hits.length } : null;
+      })
+      .filter(Boolean)
+      .slice(0, 5);
+  }, [urlQ, globalMatches.length, categories, services]);
 
   const resetFilters = useCallback(() => {
     setSearchTerm('');
@@ -325,66 +338,106 @@ export default function FindMasterPage() {
 
         {urlQ && (
           <div className="fmp-global-search">
-            <div className="fmp-global-search-bar">
-              <h2 className="fmp-global-search-title">
-                Результаты поиска: «{urlQ}»
-                {!loading && (
-                  <span style={{ fontWeight: 600, fontSize: 14, color: '#888', marginLeft: 10 }}>
-                    · {globalMatches.length}{' '}
-                    {globalMatches.length === 1 ? 'объявление' : globalMatches.length < 5 ? 'объявления' : 'объявлений'}
-                  </span>
-                )}
-              </h2>
-              <button type="button" className="fmp-global-search-clear" onClick={() => setSearchParams({}, { replace: true })}>
-                Очистить поиск
-              </button>
-            </div>
-            {loading ? (
-              <div className="fmp-list fmp-global-list">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="fmp-gcard" style={{ pointerEvents: 'none' }}>
-                    <div className="fmp-gcard-photo">
-                      <div className="sk" style={{ height: '100%', minHeight: 160 }} />
-                    </div>
-                    <div className="fmp-gcard-body">
-                      <div className="sk" style={{ height: 12, width: '35%' }} />
-                      <div className="sk" style={{ height: 18, width: '88%', marginTop: 8 }} />
-                      <div className="sk" style={{ height: 14, width: '55%', marginTop: 8 }} />
-                    </div>
-                  </div>
-                ))}
+            <div className="fmp-global-search-panel">
+              <div className="fmp-global-search-bar">
+                <div className="fmp-global-search-head">
+                  <span className="fmp-global-search-kicker">Поиск по каталогу</span>
+                  <h2 className="fmp-global-search-title">
+                    Результаты: <span className="fmp-global-search-query">«{urlQ}»</span>
+                  </h2>
+                  {!loading && (
+                    <span className="fmp-global-search-count">
+                      {globalMatches.length}{' '}
+                      {globalMatches.length === 1 ? 'объявление' : globalMatches.length < 5 ? 'объявления' : 'объявлений'}
+                    </span>
+                  )}
+                </div>
+                <button type="button" className="fmp-global-search-clear" onClick={() => setSearchParams({}, { replace: true })}>
+                  Очистить поиск
+                </button>
               </div>
-            ) : globalMatches.length === 0 ? (
-              <div className="fmp-global-empty">
-                По запросу «{urlQ}» активных объявлений не найдено. Попробуйте другие слова или выберите категорию ниже.
-              </div>
-            ) : (
-              <div className="fmp-list fmp-global-list">
-                {globalMatches.map(s => {
-                  const photos = s.photos || [];
-                  const mainPhoto =
-                    photos[0] ||
-                    getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category }, categories);
-                  return (
-                    <Link key={s.id} to={listingPublicUrl(s.id)} className="fmp-gcard">
-                      <div className="fmp-gcard-photo">
-                        <img src={mainPhoto} alt="" />
-                        <CardFavoriteSlot kind="listing" id={s.id} className="fmp-gcard-fav-slot card-fav-slot" />
-                      </div>
+
+              {loading ? (
+                <div className={`fmp-global-grid${globalMatches.length <= 2 ? ' fmp-global-grid--few' : ''}`}>
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="fmp-gcard fmp-gcard--sk" aria-hidden>
+                      <div className="fmp-gcard-photo"><div className="sk" style={{ height: '100%', minHeight: 180 }} /></div>
                       <div className="fmp-gcard-body">
-                        {s.category && <span className="fmp-gcard-cat">{s.category}</span>}
-                        <div className="fmp-gcard-title">{s.title || 'Объявление'}</div>
-                        <div className="fmp-gcard-worker">{s.workerName}</div>
-                        <div className="fmp-gcard-price">
-                          {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
-                          {s.priceUnit ? ` ${s.priceUnit}` : ''}
-                        </div>
+                        <div className="sk" style={{ height: 12, width: '35%' }} />
+                        <div className="sk" style={{ height: 18, width: '88%', marginTop: 8 }} />
+                        <div className="sk" style={{ height: 14, width: '55%', marginTop: 8 }} />
                       </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
+                    </div>
+                  ))}
+                </div>
+              ) : globalMatches.length === 0 ? (
+                <div className="fmp-global-empty">
+                  <div className="fmp-global-empty-ico">🔍</div>
+                  <h3 className="fmp-global-empty-title">По запросу «{urlQ}» объявлений не найдено</h3>
+                  <p className="fmp-global-empty-sub">
+                    Попробуйте другое слово, полное название услуги или выберите категорию ниже.
+                  </p>
+                  {globalSearchCategories.length > 0 && (
+                    <div className="fmp-global-empty-cats">
+                      <span className="fmp-global-empty-cats-label">Есть совпадения в категориях:</span>
+                      <div className="fmp-global-empty-cat-list">
+                        {globalSearchCategories.map(({ cat, count }) => (
+                          <Link
+                            key={cat.slug}
+                            to={`/find-master/${cat.slug}?q=${encodeURIComponent(urlQ)}`}
+                            className="fmp-global-empty-cat"
+                          >
+                            {cat.name}
+                            <span>{count}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className={`fmp-global-grid${globalMatches.length <= 2 ? ' fmp-global-grid--few' : ''}`}>
+                  {globalMatches.map(s => {
+                    const photos = s.photos || [];
+                    const mainPhoto =
+                      photos[0] ||
+                      getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category }, categories);
+                    const stats = workerStats[s.workerId];
+                    const rating = stats?.averageRating || 0;
+                    const reviews = stats?.reviewsCount || 0;
+                    const city = (s.city && String(s.city).trim()) || 'Йошкар-Ола';
+                    const priceStr = s.priceFrom
+                      ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽`
+                      : 'Договорная';
+
+                    return (
+                      <Link key={s.id} to={listingPublicUrl(s.id)} className="fmp-gcard">
+                        <div className="fmp-gcard-photo">
+                          <img src={mainPhoto} alt="" />
+                          {s.category && <span className="fmp-gcard-tag">{s.category}</span>}
+                          <CardFavoriteSlot kind="listing" id={s.id} className="fmp-gcard-fav-slot card-fav-slot" />
+                          <span className="fmp-gcard-open">Открыть →</span>
+                        </div>
+                        <div className="fmp-gcard-body">
+                          <div className="fmp-gcard-price-row">
+                            <span className="fmp-gcard-price">{priceStr}</span>
+                            {s.priceUnit && <span className="fmp-gcard-price-unit">{s.priceUnit}</span>}
+                          </div>
+                          <div className="fmp-gcard-title">{displayListingTitle(s.title)}</div>
+                          <div className="fmp-gcard-meta">
+                            <span className="fmp-gcard-worker">{s.workerName}</span>
+                            {rating > 0 && (
+                              <span className="fmp-gcard-rating">★ {rating.toFixed(1)}{reviews > 0 ? ` · ${reviews}` : ''}</span>
+                            )}
+                            <span className="fmp-gcard-city">📍 {city}</span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

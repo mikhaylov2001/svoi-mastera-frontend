@@ -117,7 +117,12 @@ export function listingHaystack(listing) {
     listing.title,
     listing.description,
     listing.workerName,
+    listing.workerLastName,
     listing.category,
+    listing.categoryName,
+    listing.city,
+    listing.address,
+    listing.priceUnit,
   ].filter(Boolean);
 }
 
@@ -152,4 +157,21 @@ export function rankItemsBySmartMatch(items, query, getParts, { limit } = {}) {
   });
   const out = scored.map((x) => x.item);
   return limit != null ? out.slice(0, limit) : out;
+}
+
+/**
+ * Умный поиск + подстрочный fallback, если строгий отбор пуст.
+ */
+export function searchCatalogItems(items, query, getParts = listingHaystack, { limit } = {}) {
+  const q = (query || '').trim();
+  if (q.length < 2) return [];
+
+  const pool = (items || []).filter((item) => item?.active !== false);
+  const ranked = rankItemsBySmartMatch(pool, q, getParts, { limit });
+  if (ranked.length > 0) return ranked;
+
+  const nq = normalize(q);
+  const fallback = pool.filter((item) => normalize(getParts(item).join(' ')).includes(nq));
+  fallback.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  return limit != null ? fallback.slice(0, limit) : fallback;
 }
