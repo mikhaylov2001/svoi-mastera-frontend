@@ -74,7 +74,7 @@ export const WORKER_TAB_ITEMS = [
 export const CUSTOMER_DESKTOP_LINKS = [
   { to: '/', label: 'Главная', end: true },
   { to: '/find-master', label: 'Найти мастера' },
-  { to: '/my-requests', label: 'Мои заявки и объявления' },
+  { to: '/my-requests', label: 'Мои заявки' },
   { to: '/chat', label: 'Сообщения', badgeKey: 'chat' },
   { to: '/deals', label: 'Мои сделки' },
 ];
@@ -83,7 +83,7 @@ export const CUSTOMER_DESKTOP_LINKS = [
 export const WORKER_DESKTOP_LINKS = [
   { to: '/worker-home', label: 'Главная' },
   { to: '/find-work', label: 'Найти работу' },
-  { to: '/my-listings', label: 'Объявления', alsoMatch: ['/listings'] },
+  { to: '/my-listings', label: 'Мои объявления', alsoMatch: ['/listings'] },
   { to: '/chat', label: 'Сообщения', badgeKey: 'chat' },
   { to: '/deals', label: 'Мои сделки' },
 ];
