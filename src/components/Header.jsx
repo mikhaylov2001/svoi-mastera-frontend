@@ -23,7 +23,6 @@ import {
   resolveNotificationLink,
 } from '../utils/notifications';
 import './Header.css';
-import FavoriteHeartButton from './FavoriteHeartButton';
 import BrandLogo from './BrandLogo';
 
 function SearchIcon() {
@@ -689,7 +688,6 @@ function Header() {
                           onClick={() => closeSearchUi()}
                         >
                           <div className="header-search-hit-ph">
-                            <FavoriteHeartButton kind="listing" id={s.id} variant="compact" />
                             <img src={src} alt="" />
                           </div>
                           <div className="header-search-hit-body">
