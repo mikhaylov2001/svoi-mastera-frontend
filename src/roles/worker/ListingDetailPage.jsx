@@ -10,7 +10,6 @@ import {
   getListings,
   API_BASE,
 } from '../../api';
-import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import PhotoLightbox from '../../components/PhotoLightbox';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
@@ -431,7 +430,6 @@ export default function ListingDetailPage() {
             </div>
           </div>
           <div className="ed-head-right">
-            <FavoriteHeartButton kind="listing" id={listing.id} variant="detail" className="ed-fav" />
             <span className="ed-status-pill">
               <span className="dot" style={{ background: statusPill.dot, boxShadow: statusPill.shadow }} />
               {statusPill.label}
