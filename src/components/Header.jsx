@@ -753,12 +753,12 @@ function Header() {
                 aria-label="Избранное"
                 className={`header-nav-link header-nav-favorites${location.pathname.startsWith('/favorites') ? ' active' : ''}`}
                 onClick={onRepeatNavClick('/favorites')}
-                title="Избранное"
               >
                 <span className="header-nav-fav-hit">
                   <span className="header-nav-fav-icwrap">
                     <FavoritesNavIcon />
                   </span>
+                  <span className="header-nav-fav-tip" role="tooltip">Избранное</span>
                 </span>
               </Link>
             )}
