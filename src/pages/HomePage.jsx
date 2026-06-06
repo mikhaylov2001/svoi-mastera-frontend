@@ -27,7 +27,7 @@ import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
 import GuestLandingHome from './GuestLandingHome';
 import CardFavoriteSlot from '../components/CardFavoriteSlot';
 import SortDropdown from '../components/SortDropdown';
-import { rankItemsBySmartMatch, listingHaystack, jobRequestHaystack } from '../utils/smartSearch';
+import { searchCatalogItems, listingHaystack, jobRequestHaystack } from '../utils/smartSearch';
 import { resolvePlatformFeedCycle, visiblePlatformFeedRows } from '../utils/platformLiveFeed';
 import PlatformLiveCard from '../components/PlatformLiveCard';
 import '../roles/worker/jobListings.css';
@@ -278,6 +278,38 @@ function HomeHeroTitle({ line1, city }) {
   );
 }
 
+function extractQuickSearchTerm(chip) {
+  return chip.replace(/^[^\s]+\s+/u, '').replace(/\s+сегодня$/u, '').trim();
+}
+
+function scrollToHomeResults(ref) {
+  ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function HomeSearchResultsBar({ query, count, countLabel, onClear, catalogLink }) {
+  if (query.length < 2) return null;
+  return (
+    <div className="chpv-home-search-bar">
+      <div className="chpv-home-search-bar-text">
+        <span className="chpv-home-search-bar-kicker">Результаты на главной</span>
+        <strong>
+          «{query}» · {count} {countLabel}
+        </strong>
+      </div>
+      <div className="chpv-home-search-bar-actions">
+        <button type="button" className="chpv-home-search-clear" onClick={onClear}>
+          Сбросить
+        </button>
+        {catalogLink ? (
+          <Link to={catalogLink} className="chpv-home-search-catalog">
+            Все в каталоге →
+          </Link>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function HomeCatalogSearch({ value, onChange, onSubmit, placeholder, inputId }) {
   return (
     <form className="chpv-search" onSubmit={onSubmit}>
@@ -302,6 +334,7 @@ function HomeCatalogSearch({ value, onChange, onSubmit, placeholder, inputId }) 
 
 export function CustomerHomePage({ userId }) {
   const navigate = useNavigate();
+  const listingsRef = useRef(null);
   const [listings, setListings] = useState([]);
   const [openRequests, setOpenRequests] = useState([]);
   const [categoriesApi, setCategoriesApi] = useState([]);
@@ -367,9 +400,12 @@ export function CustomerHomePage({ userId }) {
   const filteredMasterListings = useMemo(() => {
     const trimmed = q.trim();
     if (trimmed.length < 2) return visibleMasterListings;
-    const ranked = rankItemsBySmartMatch(visibleMasterListings, trimmed, listingHaystack);
+    const ranked = searchCatalogItems(visibleMasterListings, trimmed, listingHaystack);
     return sortListings(ranked, sortBy, workerStats);
   }, [visibleMasterListings, q, sortBy, workerStats]);
+
+  const qTrimmed = q.trim();
+  const isHomeSearching = qTrimmed.length >= 2;
 
   const bentoCats = useMemo(() => {
     const raw =
@@ -429,12 +465,24 @@ export function CustomerHomePage({ userId }) {
 
   const onSearch = (e) => {
     e.preventDefault();
-    const s = q.trim();
-    navigate(s ? `/find-master?q=${encodeURIComponent(s)}` : '/find-master');
+    scrollToHomeResults(listingsRef);
   };
 
-  const quickGo = (text) => {
-    navigate(`/find-master?q=${encodeURIComponent(text)}`);
+  const clearHomeSearch = () => setQ('');
+
+  const applyCustomerQuick = (chip) => {
+    if (chip.includes('рейтинг')) {
+      setSortBy('rating');
+      setQ('');
+    } else if (chip.includes('1500')) {
+      setSortBy('cheap');
+      setQ('');
+    } else if (chip.includes('рядом')) {
+      setQ(city);
+    } else {
+      setQ(extractQuickSearchTerm(chip));
+    }
+    scrollToHomeResults(listingsRef);
   };
 
   return (
@@ -462,7 +510,7 @@ export function CustomerHomePage({ userId }) {
 
             <div className="chpv-quick">
               {QUICK_CUSTOMER.map((t) => (
-                <button key={t} type="button" className="chpv-quick-chip" onClick={() => quickGo(t)}>
+                <button key={t} type="button" className="chpv-quick-chip" onClick={() => applyCustomerQuick(t)}>
                   {t}
                 </button>
               ))}
@@ -517,15 +565,33 @@ export function CustomerHomePage({ userId }) {
               ))}
             </div>
 
-          <div className="chpv-section-hdr" style={{ marginTop: 28 }}>
+          <div className="chpv-section-hdr" ref={listingsRef} id="chpv-customer-results">
             <div>
-              <h2 style={{ margin: 0 }}>Объявления мастеров</h2>
+              <h2 style={{ margin: 0 }}>{isHomeSearching ? 'Результаты поиска' : 'Объявления мастеров'}</h2>
               <p style={{ margin: '6px 0 0', fontSize: 13, color: '#888', fontWeight: 600 }}>
-                {pluralListingsSubtitle(listings.length)}
+                {isHomeSearching
+                  ? pluralListingsSubtitle(filteredMasterListings.length)
+                  : pluralListingsSubtitle(listings.length)}
               </p>
             </div>
-            <Link to="/find-master">Все мастера →</Link>
+            <Link to={isHomeSearching ? `/find-master?q=${encodeURIComponent(qTrimmed)}` : '/find-master'}>
+              {isHomeSearching ? 'Все в каталоге →' : 'Все мастера →'}
+            </Link>
           </div>
+
+          <HomeSearchResultsBar
+            query={qTrimmed}
+            count={filteredMasterListings.length}
+            countLabel={
+              filteredMasterListings.length === 1
+                ? 'объявление'
+                : filteredMasterListings.length < 5
+                  ? 'объявления'
+                  : 'объявлений'
+            }
+            onClear={clearHomeSearch}
+            catalogLink={`/find-master?q=${encodeURIComponent(qTrimmed)}`}
+          />
 
           <div className="chpv-filters-block">
             <div className="chpv-filter-row">
@@ -715,6 +781,7 @@ function pluralListingsSubtitle(n) {
 
 export function WorkerHomePage({ userId, userName }) {
   const navigate = useNavigate();
+  const requestsRef = useRef(null);
   const [openRequests, setOpenRequests] = useState([]);
   const [categories, setCategories] = useState([]);
   const [city, setCity] = useState('Йошкар-Ола');
@@ -789,9 +856,12 @@ export function WorkerHomePage({ userId, userName }) {
   const filteredHomeRequests = useMemo(() => {
     const trimmed = q.trim();
     if (trimmed.length < 2) return sortJobRequests(homeVisibleRequests, sortBy);
-    const ranked = rankItemsBySmartMatch(homeVisibleRequests, trimmed, jobRequestHaystack);
+    const ranked = searchCatalogItems(homeVisibleRequests, trimmed, jobRequestHaystack);
     return sortJobRequests(ranked, sortBy);
   }, [homeVisibleRequests, q, sortBy]);
+
+  const qTrimmed = q.trim();
+  const isHomeSearching = qTrimmed.length >= 2;
 
   const firstName = (userName || 'Мастер').trim().split(/\s+/)[0] || 'Мастер';
   const bentoCats = useMemo(() => {
@@ -847,12 +917,23 @@ export function WorkerHomePage({ userId, userName }) {
 
   const onSearch = (e) => {
     e.preventDefault();
-    const s = q.trim();
-    navigate(s ? `/find-work?q=${encodeURIComponent(s)}` : '/find-work');
+    scrollToHomeResults(requestsRef);
   };
 
-  const quickGo = (text) => {
-    navigate(`/find-work?q=${encodeURIComponent(text)}`);
+  const clearHomeSearch = () => setQ('');
+
+  const applyWorkerQuick = (chip) => {
+    if (chip.includes('бюджет') || chip.includes('1500')) {
+      setSortBy('cheap');
+      setQ('');
+    } else if (chip.includes('рядом')) {
+      setQ(city);
+    } else if (chip.includes('срочн')) {
+      setQ('срочно');
+    } else {
+      setQ(extractQuickSearchTerm(chip));
+    }
+    scrollToHomeResults(requestsRef);
   };
 
   return (
@@ -880,7 +961,7 @@ export function WorkerHomePage({ userId, userName }) {
 
             <div className="chpv-quick">
               {QUICK_WORKER.map((t) => (
-                <button key={t} type="button" className="chpv-quick-chip" onClick={() => quickGo(t)}>
+                <button key={t} type="button" className="chpv-quick-chip" onClick={() => applyWorkerQuick(t)}>
                   {t}
                 </button>
               ))}
@@ -935,15 +1016,35 @@ export function WorkerHomePage({ userId, userName }) {
             ))}
       </div>
 
-          <div className="chpv-section-hdr" style={{ marginTop: 28 }}>
+          <div className="chpv-section-hdr" ref={requestsRef} id="chpv-worker-results">
             <div>
-              <h2 style={{ margin: 0 }}>Свежие заявки</h2>
+              <h2 style={{ margin: 0 }}>{isHomeSearching ? 'Результаты поиска' : 'Свежие заявки'}</h2>
               <p style={{ margin: '6px 0 0', fontSize: 13, color: '#888', fontWeight: 600 }}>
-                {loading ? 'Загрузка…' : pluralRequestsLabel(openRequests.length)}
+                {loading
+                  ? 'Загрузка…'
+                  : isHomeSearching
+                    ? pluralRequestsLabel(filteredHomeRequests.length)
+                    : pluralRequestsLabel(openRequests.length)}
               </p>
+            </div>
+            <Link to={isHomeSearching ? `/find-work?q=${encodeURIComponent(qTrimmed)}` : '/find-work'}>
+              {isHomeSearching ? 'Все в каталоге →' : 'Все заявки →'}
+            </Link>
           </div>
-            <Link to="/find-work">Все заявки →</Link>
-              </div>
+
+          <HomeSearchResultsBar
+            query={qTrimmed}
+            count={filteredHomeRequests.length}
+            countLabel={
+              filteredHomeRequests.length === 1
+                ? 'заявка'
+                : filteredHomeRequests.length < 5
+                  ? 'заявки'
+                  : 'заявок'
+            }
+            onClear={clearHomeSearch}
+            catalogLink={`/find-work?q=${encodeURIComponent(qTrimmed)}`}
+          />
 
           <div className="chpv-filters-block">
             <div className="chpv-filter-row">

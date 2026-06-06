@@ -19,7 +19,7 @@ import { goBackOr } from '../../utils/navigationHelpers';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { useSwipeNavigation } from '../../hooks/useSwipeNavigation';
 import PhotoLightbox from '../../components/PhotoLightbox';
-import { smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
+import { searchCatalogItems, smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { formatCatalogCountShort } from '../../utils/formatCatalogCountShort';
 import {
@@ -257,6 +257,13 @@ export default function FindWorkPage() {
   }, [requests, selectedCategory, debouncedFwSearch]);
 
   const showFwSearchDd = fwSearchFocused && debouncedFwSearch.length >= 2;
+
+  const urlQ = (searchParams.get('q') || '').trim();
+
+  const globalMatches = useMemo(() => {
+    if (!urlQ || selectedCategory) return [];
+    return searchCatalogItems(requests, urlQ, jobRequestHaystack);
+  }, [requests, urlQ, selectedCategory]);
 
   const jobDetailUploadedPhotos = useMemo(() => {
     if (!selectedRequest?.photos?.length) return [];
@@ -1284,6 +1291,97 @@ export default function FindWorkPage() {
           )}
         </div>
       </div>
+
+      {urlQ && !selectedCategory && (
+        <div className="fmp-global-search">
+          <div className="fmp-global-search-panel">
+            <div className="fmp-global-search-bar">
+              <div className="fmp-global-search-head">
+                <span className="fmp-global-search-kicker">Поиск по заявкам</span>
+                <h2 className="fmp-global-search-title">
+                  Результаты: <span className="fmp-global-search-query">«{urlQ}»</span>
+                </h2>
+                {!loading && (
+                  <span className="fmp-global-search-count">
+                    {globalMatches.length} {pluralRequests(globalMatches.length)}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                className="fmp-global-search-clear"
+                onClick={() => setSearchParams({}, { replace: true })}
+              >
+                Очистить поиск
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="fmp-global-grid fmp-global-grid--few">
+                {[1, 2].map((i) => (
+                  <div key={i} className="fmp-gcard fmp-gcard--sk" aria-hidden>
+                    <div className="fmp-gcard-photo"><div className="sk" style={{ height: '100%', minHeight: 180 }} /></div>
+                    <div className="fmp-gcard-body">
+                      <div className="sk" style={{ height: 18, width: '88%' }} />
+                      <div className="sk" style={{ height: 14, width: '55%', marginTop: 8 }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : globalMatches.length === 0 ? (
+              <div className="fmp-global-empty">
+                <div className="fmp-global-empty-ico">🔍</div>
+                <h3 className="fmp-global-empty-title">По запросу «{urlQ}» заявок не найдено</h3>
+                <p className="fmp-global-empty-sub">
+                  Попробуйте другое слово или выберите категорию ниже.
+                </p>
+              </div>
+            ) : (
+              <div className={`fmp-global-grid${globalMatches.length <= 2 ? ' fmp-global-grid--few' : ''}`}>
+                {globalMatches.map((req) => {
+                  const photos = req.photos || [];
+                  const mainPhoto =
+                    photos[0] ||
+                    getCategoryPlaceholderPhotoUrlOrDefault(
+                      { categoryName: req.categoryName, categoryId: req.categoryId },
+                      categories,
+                    );
+                  const catLabel = req.categoryName || categories.find((c) => String(c.id) === String(req.categoryId))?.name;
+                  const budgetLabel = hasJobRequestPublishedPrice(req)
+                    ? formatJobRequestBudgetLabel(req)
+                    : JOB_REQUEST_PRICE_MISSING_LABEL;
+                  const customerName = [req.customerName, req.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
+
+                  return (
+                    <Link
+                      key={req.id}
+                      to={`/find-work?request=${encodeURIComponent(req.id)}`}
+                      className="fmp-gcard"
+                    >
+                      <div className="fmp-gcard-photo">
+                        <img src={mainPhoto} alt="" />
+                        {catLabel ? <span className="fmp-gcard-tag">{catLabel}</span> : null}
+                        <span className="fmp-gcard-open">Открыть →</span>
+                      </div>
+                      <div className="fmp-gcard-body">
+                        <div className="fmp-gcard-price-row">
+                          <span className="fmp-gcard-price">{budgetLabel}</span>
+                          <span className="fmp-gcard-price-unit">в заявке</span>
+                        </div>
+                        <div className="fmp-gcard-title">{req.title || 'Заявка'}</div>
+                        <div className="fmp-gcard-meta">
+                          <span className="fmp-gcard-worker">{customerName}</span>
+                          {req.city ? <span className="fmp-gcard-city">📍 {req.city}</span> : null}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="fmp-cats-wrap">
         <div className="fmp-cats-label">Выберите категорию</div>

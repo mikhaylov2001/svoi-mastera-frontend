@@ -146,6 +146,72 @@
 }
 .chpv-quick-chip:hover { background: rgba(232, 65, 10, 0.15); border-color: rgba(232, 65, 10, 0.4); color: #ff8a65; }
 
+.chpv-home-search-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  background: #fff8f5;
+  border: 1px solid #fdeee6;
+  border-radius: 14px;
+}
+.chpv-home-search-bar-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.chpv-home-search-bar-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #e8410a;
+}
+.chpv-home-search-bar-text strong {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+.chpv-home-search-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chpv-home-search-clear,
+.chpv-home-search-catalog {
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.chpv-home-search-clear {
+  border: 1px solid #e8e8e8;
+  background: #fff;
+  color: #555;
+}
+.chpv-home-search-clear:hover {
+  border-color: #e8410a;
+  color: #e8410a;
+}
+.chpv-home-search-catalog {
+  border: none;
+  background: #e8410a;
+  color: #fff;
+}
+.chpv-home-search-catalog:hover {
+  background: #d03a09;
+  color: #fff;
+}
+
 .chpv-trust { display: flex; gap: 24px; flex-wrap: wrap; }
 .chpv-trust-item { font-size: 12px; color: rgba(255, 255, 255, 0.45); }
 .chpv-trust-item strong { display: block; font-size: 20px; color: #fff; font-weight: 900; letter-spacing: -0.3px; }
