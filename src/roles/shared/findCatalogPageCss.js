@@ -1274,11 +1274,15 @@ export const findCatalogPageCss = `
       padding-right: max(16px, env(safe-area-inset-right));
     }
     .fmp-global-search {
-      padding: 0 max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
+      padding: 16px max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left));
+      background: #fff;
     }
     .fmp-global-search-panel {
-      padding: 16px;
-      border-radius: 20px;
+      padding: 0;
+      border: none;
+      box-shadow: none;
+      background: transparent;
+      border-radius: 0;
     }
     .fmp-global-search-bar {
       flex-direction: column;
@@ -1288,6 +1292,13 @@ export const findCatalogPageCss = `
     }
     .fmp-global-search-head {
       min-width: 0;
+    }
+    .fmp-global-search-kicker {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9ca3af;
     }
     .fmp-global-search-title {
       font-size: 20px;
@@ -1304,30 +1315,82 @@ export const findCatalogPageCss = `
       gap: 12px;
     }
     .fmp-gcard {
-      border-radius: 20px;
+      border-radius: 20px !important;
+      border: 1px solid #ebebeb !important;
+      border-top: 3px solid #e8410a !important;
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06) !important;
+      overflow: hidden;
     }
     .fmp-gcard:hover {
       transform: none;
-      box-shadow: none;
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06) !important;
+      border-color: #ebebeb !important;
     }
     .fmp-gcard-photo {
-      aspect-ratio: 16 / 10;
+      aspect-ratio: 16 / 9;
+    }
+    .fmp-gcard-tag {
+      top: 12px;
+      left: 12px;
+    }
+    .fmp-gcard-fav-slot {
+      top: 12px;
+      right: 12px;
     }
     .fmp-gcard-open {
       display: none;
     }
     .fmp-gcard-body {
-      padding: 14px 16px 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .fmp-gcard-title {
+      order: 1;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      color: #111827;
+      margin: 0 0 6px;
     }
     .fmp-gcard-meta {
+      order: 2;
       flex-direction: column;
       align-items: flex-start;
-      gap: 4px;
+      gap: 2px;
+      margin-top: 0;
+      padding-top: 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #6b7280;
+    }
+    .fmp-gcard-worker {
+      font-weight: 600;
+      color: #6b7280;
     }
     .fmp-gcard-city {
-      font-size: 12px;
-      line-height: 1.4;
+      font-size: 13px;
+      line-height: 1.5;
       word-break: break-word;
+      color: #6b7280;
+    }
+    .fmp-gcard-price-row {
+      order: 3;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #f1f1f1;
+      width: 100%;
+    }
+    .fmp-gcard-price {
+      font-size: 15px;
+      font-weight: 800;
+      color: #e8410a;
+    }
+    .fmp-gcard-price-unit {
+      font-size: 13px;
+      color: #6b7280;
     }
     .jl-page.fw-jl-cat-feed .fmp-search-dropdown,
     .jl-page.fw-jl-cat-feed .fw2-search-dropdown {
