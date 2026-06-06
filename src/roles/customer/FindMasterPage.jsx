@@ -25,7 +25,9 @@ import {
   mergeApiCategoriesWithCatalog,
 } from '../../utils/mergeApiCategoriesWithCatalog';
 import CardFavoriteSlot from '../../components/CardFavoriteSlot';
+import CatalogSearchSheet from '../../components/CatalogSearchSheet';
 import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
+import { useIsMobileCatalog } from '../../hooks/useIsMobileCatalog';
 import '../worker/jobListings.css';
 
 /* Плоский словарь slug → данные категории (фото, описание, цена, …) */
@@ -116,6 +118,8 @@ export default function FindMasterPage() {
   const [fmpSearchFocused, setFmpSearchFocused] = useState(false);
   const [debouncedSearchInput, setDebouncedSearchInput] = useState('');
   const fmpSearchDdRef = useRef(null);
+  const feedListRef = useRef(null);
+  const isMobileCat = useIsMobileCatalog();
 
   // Строим pendingDeals из реальных сделок бэкенда (listingId → dealId)
   const buildPendingFromDeals = useCallback((deals) => {
@@ -175,7 +179,7 @@ export default function FindMasterPage() {
   }, [searchInput]);
 
   useEffect(() => {
-    if (!fmpSearchFocused) return;
+    if (!fmpSearchFocused || isMobileCat) return;
     const onDoc = (e) => {
       if (fmpSearchDdRef.current && !fmpSearchDdRef.current.contains(e.target)) {
         setFmpSearchFocused(false);
@@ -183,7 +187,7 @@ export default function FindMasterPage() {
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
-  }, [fmpSearchFocused]);
+  }, [fmpSearchFocused, isMobileCat]);
 
   useEffect(() => {
     if (!fmpSearchFocused) return;
@@ -269,6 +273,63 @@ export default function FindMasterPage() {
   }, [services, selectedCategory, debouncedSearchInput]);
 
   const showFmpSearchDd = fmpSearchFocused && debouncedSearchInput.length >= 2;
+
+  const applyCategorySearch = useCallback(() => {
+    setFmpSearchFocused(false);
+    setSearchTerm(searchInput);
+    requestAnimationFrame(() => {
+      feedListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [searchInput]);
+
+  const renderFmpSearchDropdown = () => {
+    if (debouncedSearchInput.length < 2) {
+      return (
+        <div className="fmp-search-hint">
+          Введите минимум 2 символа или нажмите «Найти», чтобы отфильтровать список ниже.
+        </div>
+      );
+    }
+    if (fmpDdMatches.length === 0) {
+      return (
+        <div className="fmp-search-hint">
+          В этой категории похожих объявлений не нашлось. Нажмите «Найти», чтобы применить запрос к списку.
+        </div>
+      );
+    }
+    return (
+      <>
+        {fmpDdMatches.map((s) => {
+          const mainPhoto =
+            (s.photos || [])[0] ||
+            getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category, categorySlug }, categories);
+          return (
+            <Link
+              key={s.id}
+              to={listingPublicUrl(s.id)}
+              className="fmp-search-hit"
+              onClick={() => setFmpSearchFocused(false)}
+            >
+              <div className="fmp-search-hit-ph">
+                <img src={mainPhoto} alt="" />
+              </div>
+              <div className="fmp-search-hit-body">
+                <div className="fmp-search-hit-title">{displayListingTitle(s.title)}</div>
+                <div className="fmp-search-hit-meta">{s.workerName || ''}</div>
+                <div className="fmp-search-hit-price">
+                  {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
+                  {s.priceUnit ? ` ${s.priceUnit}` : ''}
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+        <button type="button" className="fmp-search-footer" onClick={applyCategorySearch}>
+          Показать все совпадения в списке →
+        </button>
+      </>
+    );
+  };
 
   const globalMatches = useMemo(() => {
     if (!urlQ) return [];
@@ -580,7 +641,7 @@ export default function FindMasterPage() {
       <style>{findCatalogPageCss}</style>
       <style>{catalogCatFeedMobileCss}</style>
 
-      {fmpSearchFocused ? (
+      {!isMobileCat && fmpSearchFocused ? (
         <button
           type="button"
           className="cat-feed-search-backdrop"
@@ -603,13 +664,12 @@ export default function FindMasterPage() {
                 onFocus={() => setFmpSearchFocused(true)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    setFmpSearchFocused(false);
-                    setSearchTerm(searchInput);
+                    applyCategorySearch();
                   }
                 }}
                 placeholder={`Поиск в «${selectedCategory?.name || '...'}»`}
                 autoComplete="off"
-                aria-expanded={showFmpSearchDd}
+                aria-expanded={isMobileCat ? fmpSearchFocused : showFmpSearchDd}
                 aria-controls="fmp-search-dropdown-list"
               />
               {searchInput && (
@@ -619,58 +679,25 @@ export default function FindMasterPage() {
                 </button>
               )}
             </div>
-            {showFmpSearchDd && (
+            {!isMobileCat && showFmpSearchDd ? (
               <div id="fmp-search-dropdown-list" className="fmp-search-dropdown" role="listbox" aria-label="Подсказки поиска">
-                {fmpDdMatches.length === 0 ? (
-                  <div className="fmp-search-hint">В этой категории похожих объявлений не нашлось. Нажмите «Поиск», чтобы применить запрос к списку.</div>
-                ) : (
-                  <>
-                    {fmpDdMatches.map((s) => {
-                      const mainPhoto =
-                        (s.photos || [])[0] ||
-                        getCategoryPlaceholderPhotoUrlOrDefault(
-                          { category: s.category, categorySlug },
-                          categories,
-                        );
-                      return (
-                        <Link
-                          key={s.id}
-                          to={listingPublicUrl(s.id)}
-                          className="fmp-search-hit"
-                          onClick={() => setFmpSearchFocused(false)}
-                        >
-                          <div className="fmp-search-hit-ph">
-                            <img src={mainPhoto} alt="" />
-                          </div>
-                          <div className="fmp-search-hit-body">
-                            <div className="fmp-search-hit-title">{displayListingTitle(s.title)}</div>
-                            <div className="fmp-search-hit-meta">{s.workerName || ''}</div>
-                            <div className="fmp-search-hit-price">
-                              {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
-                              {s.priceUnit ? ` ${s.priceUnit}` : ''}
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                    <button
-                      type="button"
-                      className="fmp-search-footer"
-                      onClick={() => {
-                        setSearchTerm(debouncedSearchInput);
-                        setFmpSearchFocused(false);
-                      }}
-                    >
-                      Показать все совпадения в списке →
-                    </button>
-                  </>
-                )}
+                {renderFmpSearchDropdown()}
               </div>
-            )}
+            ) : null}
           </div>
-          <button type="button" className="fmp-topbar-btn" onClick={() => { setFmpSearchFocused(false); setSearchTerm(searchInput); }}>Найти</button>
+          <button type="button" className="fmp-topbar-btn" onClick={applyCategorySearch}>Найти</button>
         </div>
       </div>
+
+      <CatalogSearchSheet
+        open={isMobileCat && fmpSearchFocused}
+        onClose={() => setFmpSearchFocused(false)}
+        ariaLabel="Подсказки поиска"
+      >
+        <div id="fmp-search-dropdown-list" className="fmp-search-dropdown fmp-search-dropdown--sheet" role="listbox" aria-label="Подсказки поиска">
+          {renderFmpSearchDropdown()}
+        </div>
+      </CatalogSearchSheet>
 
       <nav className="jl-crumbs jl-crumbs--full" aria-label="Навигация по категориям">
         <Link to="/find-master" className="jl-crumbs-link">Все категории</Link>
@@ -752,7 +779,7 @@ export default function FindMasterPage() {
             )}
           </aside>
 
-          <main>
+          <main ref={feedListRef}>
             <div className="jl-toolbar">
               <span className="jl-toolbar-label">Сортировать:</span>
               {[

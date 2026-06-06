@@ -27,8 +27,10 @@ import {
 } from '../../utils/categoryPlaceholderPhoto';
 import { jobRequestMatchesCatalogCategory, mergeApiCategoriesWithCatalog } from '../../utils/mergeApiCategoriesWithCatalog';
 import CardFavoriteSlot from '../../components/CardFavoriteSlot';
+import CatalogSearchSheet from '../../components/CatalogSearchSheet';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
+import { useIsMobileCatalog } from '../../hooks/useIsMobileCatalog';
 
 const JOB_REQUEST_DETAIL_STYLES = edListingDetailMergedCss;
 
@@ -215,6 +217,8 @@ export default function FindWorkPage() {
   const [debouncedFwSearch, setDebouncedFwSearch] = useState('');
   const [fwSearchFocused, setFwSearchFocused] = useState(false);
   const fwSearchDdRef = useRef(null);
+  const feedListRef = useRef(null);
+  const isMobileCat = useIsMobileCatalog();
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedFwSearch(searchInput.trim()), 220);
@@ -230,7 +234,7 @@ export default function FindWorkPage() {
   }, [debouncedFwSearch, selectedCategory]);
 
   useEffect(() => {
-    if (!fwSearchFocused) return;
+    if (!fwSearchFocused || isMobileCat) return;
     const onDoc = (e) => {
       if (fwSearchDdRef.current && !fwSearchDdRef.current.contains(e.target)) {
         setFwSearchFocused(false);
@@ -238,7 +242,7 @@ export default function FindWorkPage() {
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
-  }, [fwSearchFocused]);
+  }, [fwSearchFocused, isMobileCat]);
 
   useEffect(() => {
     if (!fwSearchFocused) return;
@@ -265,6 +269,69 @@ export default function FindWorkPage() {
   }, [requests, selectedCategory, debouncedFwSearch]);
 
   const showFwSearchDd = fwSearchFocused && debouncedFwSearch.length >= 2;
+
+  const applyCategorySearch = useCallback(() => {
+    setFwSearchFocused(false);
+    setSearchTerm(searchInput);
+    requestAnimationFrame(() => {
+      feedListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [searchInput]);
+
+  const renderFwSearchDropdown = () => {
+    if (debouncedFwSearch.length < 2) {
+      return (
+        <div className="fmp-search-hint">
+          Введите минимум 2 символа или нажмите «Найти», чтобы отфильтровать список ниже.
+        </div>
+      );
+    }
+    if (fwDdMatches.length === 0) {
+      return (
+        <div className="fmp-search-hint">
+          Подходящих заявок не нашлось. Нажмите «Найти», чтобы применить запрос к списку.
+        </div>
+      );
+    }
+    return (
+      <>
+        {fwDdMatches.map((req) => {
+          const ph = (req.photos || [])[0];
+          const phSrc =
+            ph ||
+            getCategoryPlaceholderPhotoUrlOrDefault(
+              { categoryName: req.categoryName, categoryId: req.categoryId },
+              categories,
+            );
+          const custLabel = [req.customerName, req.customerLastName].filter(Boolean).join(' ');
+          const ddPrice = formatJobRequestBudgetLabel(req);
+          return (
+            <button
+              key={req.id}
+              type="button"
+              className="fmp-search-hit"
+              onClick={() => {
+                setFwSearchFocused(false);
+                openRequestDetail(req);
+              }}
+            >
+              <div className="fmp-search-hit-ph">
+                <img src={phSrc} alt="" />
+              </div>
+              <div className="fmp-search-hit-body">
+                <div className="fmp-search-hit-title">{req.title || 'Заявка'}</div>
+                <div className="fmp-search-hit-meta">{custLabel || 'Заказчик'}</div>
+                <div className="fmp-search-hit-price">{ddPrice}</div>
+              </div>
+            </button>
+          );
+        })}
+        <button type="button" className="fmp-search-footer" onClick={applyCategorySearch}>
+          Показать все совпадения в списке →
+        </button>
+      </>
+    );
+  };
 
   const urlQ = (searchParams.get('q') || '').trim();
 
@@ -803,7 +870,7 @@ export default function FindWorkPage() {
         <style>{findCatalogPageCss}</style>
         <style>{catalogCatFeedMobileCss}</style>
 
-        {fwSearchFocused ? (
+        {!isMobileCat && fwSearchFocused ? (
           <button
             type="button"
             className="cat-feed-search-backdrop"
@@ -826,13 +893,12 @@ export default function FindWorkPage() {
                   onFocus={() => setFwSearchFocused(true)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      setFwSearchFocused(false);
-                      setSearchTerm(searchInput);
+                      applyCategorySearch();
                     }
                   }}
                   placeholder={`Поиск в «${selectedCategory.name}»`}
                   autoComplete="off"
-                  aria-expanded={showFwSearchDd}
+                  aria-expanded={isMobileCat ? fwSearchFocused : showFwSearchDd}
                   aria-controls="fmp-search-dropdown-list"
                 />
                 {searchInput && (
@@ -842,61 +908,25 @@ export default function FindWorkPage() {
                   </button>
                 )}
               </div>
-              {showFwSearchDd && (
+              {!isMobileCat && showFwSearchDd ? (
                 <div id="fmp-search-dropdown-list" className="fmp-search-dropdown" role="listbox" aria-label="Подсказки поиска">
-                  {fwDdMatches.length === 0 ? (
-                    <div className="fmp-search-hint">Подходящих заявок не нашлось. Нажмите «Найти», чтобы применить запрос к списку.</div>
-                  ) : (
-                    <>
-                      {fwDdMatches.map((req) => {
-                        const ph = (req.photos || [])[0];
-                        const phSrc =
-                          ph ||
-                          getCategoryPlaceholderPhotoUrlOrDefault(
-                            { categoryName: req.categoryName, categoryId: req.categoryId },
-                            categories,
-                          );
-                        const custLabel = [req.customerName, req.customerLastName].filter(Boolean).join(' ');
-                        const ddPrice = formatJobRequestBudgetLabel(req);
-                        return (
-                          <button
-                            key={req.id}
-                            type="button"
-                            className="fmp-search-hit"
-                            onClick={() => {
-                              setFwSearchFocused(false);
-                              openRequestDetail(req);
-                            }}
-                          >
-                            <div className="fmp-search-hit-ph">
-                              <img src={phSrc} alt="" />
-                            </div>
-                            <div className="fmp-search-hit-body">
-                              <div className="fmp-search-hit-title">{req.title || 'Заявка'}</div>
-                              <div className="fmp-search-hit-meta">{custLabel || 'Заказчик'}</div>
-                              <div className="fmp-search-hit-price">{ddPrice}</div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                      <button
-                        type="button"
-                        className="fmp-search-footer"
-                        onClick={() => {
-                          setSearchTerm(debouncedFwSearch);
-                          setFwSearchFocused(false);
-                        }}
-                      >
-                        Показать все совпадения в списке →
-                      </button>
-                    </>
-                  )}
+                  {renderFwSearchDropdown()}
                 </div>
-              )}
+              ) : null}
             </div>
-            <button type="button" className="fmp-topbar-btn" onClick={() => { setFwSearchFocused(false); setSearchTerm(searchInput); }}>Найти</button>
+            <button type="button" className="fmp-topbar-btn" onClick={applyCategorySearch}>Найти</button>
           </div>
         </div>
+
+        <CatalogSearchSheet
+          open={isMobileCat && fwSearchFocused}
+          onClose={() => setFwSearchFocused(false)}
+          ariaLabel="Подсказки поиска"
+        >
+          <div id="fmp-search-dropdown-list" className="fmp-search-dropdown fmp-search-dropdown--sheet" role="listbox" aria-label="Подсказки поиска">
+            {renderFwSearchDropdown()}
+          </div>
+        </CatalogSearchSheet>
 
         <nav className="jl-crumbs jl-crumbs--full" aria-label="Навигация по категориям">
           <button type="button" className="jl-crumbs-link" onClick={() => { setSelectedCategory(null); resetCategoryFilters(); }}>Все категории</button>
@@ -976,7 +1006,7 @@ export default function FindWorkPage() {
             )}
           </aside>
 
-          <main>
+          <main ref={feedListRef}>
             <div className="jl-toolbar">
               <span className="jl-toolbar-label">Сортировать:</span>
               {[
