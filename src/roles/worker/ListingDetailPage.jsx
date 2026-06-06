@@ -11,7 +11,6 @@ import {
   API_BASE,
 } from '../../api';
 import FavoriteHeartButton from '../../components/FavoriteHeartButton';
-import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import PhotoLightbox from '../../components/PhotoLightbox';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
@@ -764,27 +763,36 @@ export default function ListingDetailPage() {
             )}
 
             {similar.length > 0 ? (
-              <div className="ed-card">
+              <div className="ed-card ed-similar-card">
                 <div className="ed-similar-head">
                   <strong>Похожие объявления</strong>
                   <Link to={catSlug ? `/find-master/${catSlug}` : '/find-master'}>Все →</Link>
                 </div>
-                {similar.map(s => {
-                  const sPhoto = s.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category });
-                  const sp = getListingPublishedPriceNumber(s);
-                  return (
-                    <Link key={s.id} to={`/listings/${s.id}`} className="ed-sim-item">
-                      <div className="ed-sim-img">
-                        <img src={sPhoto} alt="" />
-                        <CardFavoriteSlot kind="listing" id={s.id} className="card-fav-slot card-fav-slot--xs" size="xs" />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div className="ed-sim-title">{s.title}</div>
-                        <div className="ed-sim-price">{sp ? `${sp.toLocaleString('ru-RU')} ₽` : '—'}</div>
-                      </div>
-                    </Link>
-                  );
-                })}
+                <div className="ed-similar-list">
+                  {similar.map(s => {
+                    const sPhoto = s.photos?.[0] || getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category });
+                    const sp = getListingPublishedPriceNumber(s);
+                    const priceUnit = (s.priceUnit || 'за работу').trim();
+                    return (
+                      <Link key={s.id} to={`/listings/${s.id}`} className="ed-sim-item">
+                        <div className="ed-sim-img">
+                          <img src={sPhoto} alt="" loading="lazy" />
+                        </div>
+                        <div className="ed-sim-body">
+                          <div className="ed-sim-title">{s.title || 'Объявление'}</div>
+                          <div className="ed-sim-meta">
+                            {s.category ? <span className="ed-sim-cat">{s.category}</span> : null}
+                            <span className="ed-sim-price">
+                              {sp ? `${sp.toLocaleString('ru-RU')} ₽` : 'Договорная'}
+                              {sp && priceUnit ? ` · ${priceUnit}` : ''}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="ed-sim-chevron" aria-hidden>›</span>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
             ) : null}
           </aside>

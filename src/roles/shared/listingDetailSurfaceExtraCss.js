@@ -308,7 +308,11 @@ export const listingDetailSurfaceExtraCss = `
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.ed-similar-card {
+  overflow: hidden;
 }
 .ed.ed--listing-detail .ed-similar-head strong {
   font-size: 11px;
@@ -322,38 +326,151 @@ export const listingDetailSurfaceExtraCss = `
   color: var(--surface-accent);
   font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
 }
 .ed-similar-head a:hover { text-decoration: underline; }
-.ed-sim-item {
+.ed-similar-list {
   display: flex;
+  flex-direction: column;
+}
+.ed-sim-item {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  align-items: center;
   gap: 12px;
   text-decoration: none;
   color: inherit;
-  padding: 8px 0;
-  border-radius: 10px;
+  padding: 10px 6px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
-.ed-sim-item:hover { background: #fafafa; }
+.ed-sim-item + .ed-sim-item {
+  border-top: 1px solid #f0f0f0;
+}
+.ed-sim-item:hover {
+  background: #fff8f5;
+  border-color: #fdeee6;
+}
 .ed-sim-img {
-  width: 58px;
-  height: 44px;
+  width: 72px;
+  height: 54px;
   border-radius: 10px;
   overflow: hidden;
   flex-shrink: 0;
   background: #f4f4f5;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
 }
 .ed-sim-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ed-sim-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .ed-sim-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #52525b;
-  line-height: 1.4;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.ed-sim-price { font-size: 13px; font-weight: 800; color: #111827; margin-top: 2px; }
+.ed-sim-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ed-sim-cat {
+  font-size: 11px;
+  font-weight: 700;
+  color: #e8410a;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ed-sim-price {
+  font-size: 13px;
+  font-weight: 800;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ed-sim-chevron {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  color: #d1d5db;
+  background: #f8fafc;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.ed-sim-item:hover .ed-sim-chevron {
+  color: #e8410a;
+  background: #fff5f0;
+}
 .ed-error { font-size: 12px; color: #ef4444; font-weight: 600; padding: 4px 0; }
+
+@media (max-width: 768px) {
+  .ed-similar-list {
+    flex-direction: row;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 2px 2px 6px;
+    margin: 0 -4px;
+  }
+  .ed-similar-list::-webkit-scrollbar { display: none; }
+  .ed-sim-item {
+    flex: 0 0 min(220px, 78vw);
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    border: 1px solid #ececec;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+  }
+  .ed-sim-item + .ed-sim-item {
+    border-top: none;
+  }
+  .ed-sim-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
+  }
+  .ed-sim-img {
+    width: 100%;
+    height: 118px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .ed-sim-body {
+    padding: 10px 12px 12px;
+    gap: 6px;
+  }
+  .ed-sim-title {
+    font-size: 15px;
+    -webkit-line-clamp: 2;
+  }
+  .ed-sim-chevron { display: none; }
+}
 
 /* Десктоп: галерея и сайдбар как на «Найти мастера» (мобилку не трогаем) */
 @media (min-width: 769px) {
