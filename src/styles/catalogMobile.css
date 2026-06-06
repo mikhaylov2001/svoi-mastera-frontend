@@ -132,11 +132,6 @@
     display: none;
   }
 
-  .fmp-gcard-fav-slot,
-  .jl-page.fw-jl-cat-feed .jl-bigcard-fav-slot {
-    display: none !important;
-  }
-
   .fmp-gcard-body {
     padding: 14px 16px 16px;
   }

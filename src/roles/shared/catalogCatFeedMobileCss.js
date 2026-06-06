@@ -192,11 +192,6 @@ export const catalogCatFeedMobileCss = `
     border-top: 1px solid #f0f0f0;
   }
 
-  .jl-page.fw-jl-cat-feed .jl-bigcard-fav-slot,
-  .fmp-page .fmp-gcard-fav-slot {
-    display: none !important;
-  }
-
   /* Сначала фильтры, потом лента (как в макете) */
   .jl-page.fw-jl-cat-feed .jl-layout {
     display: flex;

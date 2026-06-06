@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import { parseListingDescription } from '../../components/ListingInfoPanels';
 import { SECTIONS } from '../../pages/SectionsPage';
@@ -1612,7 +1611,6 @@ export default function MyListingsPage() {
               </div>
             </div>
             <div className="ed-head-right">
-              <FavoriteHeartButton kind="listing" id={detail.id} variant="detail" className="ed-fav" />
               <span className="ed-status-pill">
                 <span className="dot" style={{ background: statusPill.dot, boxShadow: statusPill.shadow }} />
                 {statusPill.label}

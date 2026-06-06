@@ -1316,9 +1316,6 @@ export const findCatalogPageCss = `
     .fmp-gcard-open {
       display: none;
     }
-    .fmp-gcard-fav-slot {
-      display: none !important;
-    }
     .fmp-gcard-body {
       padding: 14px 16px 16px;
     }
@@ -1384,9 +1381,6 @@ export const findCatalogPageCss = `
       font-size: 14px;
       font-weight: 700;
       border-top: 1px solid #f0f0f0;
-    }
-    .jl-page.fw-jl-cat-feed .jl-bigcard-fav-slot {
-      display: none !important;
     }
     .fmp-list { grid-template-columns: 1fr; }
     /* Только сетка fmp-list, не карточки jl-bigcard в ленте категории */

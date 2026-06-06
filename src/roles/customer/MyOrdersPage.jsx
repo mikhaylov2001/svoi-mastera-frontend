@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import { SECTIONS } from '../../pages/SectionsPage';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
@@ -1848,7 +1847,6 @@ export default function MyOrdersPage() {
               </div>
             </div>
             <div className="ed-head-right">
-              <FavoriteHeartButton kind="jobRequest" id={detail.id} variant="detail" className="ed-fav" />
               <span className="ed-status-pill">
                 <span className="dot" style={{ background: statusPill.dot, boxShadow: statusPill.shadow }} />
                 {statusPill.label}
@@ -1884,6 +1882,11 @@ export default function MyOrdersPage() {
                       </div>
                     ) : null}
                   </div>
+                  <CardFavoriteSlot
+                    kind="jobRequest"
+                    id={detail.id}
+                    className="ed-gallery-fav-slot card-fav-slot"
+                  />
                   {hasMultiplePhotos ? (
                     <>
                       <button

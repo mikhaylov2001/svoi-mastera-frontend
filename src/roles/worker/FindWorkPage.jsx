@@ -26,7 +26,6 @@ import {
   getCategoryPlaceholderPhotoUrlOrDefault,
 } from '../../utils/categoryPlaceholderPhoto';
 import { jobRequestMatchesCatalogCategory, mergeApiCategoriesWithCatalog } from '../../utils/mergeApiCategoriesWithCatalog';
-import FavoriteHeartButton from '../../components/FavoriteHeartButton';
 import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
@@ -517,7 +516,6 @@ export default function FindWorkPage() {
                 </div>
               </div>
               <div className="ed-head-right">
-                <FavoriteHeartButton kind="jobRequest" id={req.id} variant="detail" className="ed-fav" />
                 <span className="ed-status-pill">
                   <span className="dot" style={{ background: openStatusPill.dot, boxShadow: openStatusPill.shadow }} />
                   {openStatusPill.label}
@@ -558,6 +556,11 @@ export default function FindWorkPage() {
                         </div>
                       ) : null}
                     </div>
+                    <CardFavoriteSlot
+                      kind="jobRequest"
+                      id={req.id}
+                      className="ed-gallery-fav-slot card-fav-slot"
+                    />
                     {hasMultiplePhotos ? (
                       <>
                         <button
