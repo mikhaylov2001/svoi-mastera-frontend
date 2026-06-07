@@ -28,6 +28,12 @@ import {
 } from '../../utils/mergeApiCategoriesWithCatalog';
 import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
+import {
+  CatalogSearchDropdownFooter,
+  CatalogSearchDropdownHint,
+  CatalogSearchDropdownHit,
+  formatCatalogSearchHitPrice,
+} from '../shared/catalogCategorySearchDropdown';
 import { useIsMobileCatalog } from '../../hooks/useIsMobileCatalog';
 import '../worker/jobListings.css';
 
@@ -275,16 +281,16 @@ export default function FindMasterPage() {
   const renderFmpSearchDropdown = () => {
     if (debouncedSearchInput.length < 2) {
       return (
-        <div className="fmp-search-hint">
+        <CatalogSearchDropdownHint>
           Введите минимум 2 символа или нажмите «Найти», чтобы отфильтровать список ниже.
-        </div>
+        </CatalogSearchDropdownHint>
       );
     }
     if (fmpDdMatches.length === 0) {
       return (
-        <div className="fmp-search-hint">
+        <CatalogSearchDropdownHint>
           В этой категории похожих объявлений не нашлось. Нажмите «Найти», чтобы применить запрос к списку.
-        </div>
+        </CatalogSearchDropdownHint>
       );
     }
     return (
@@ -293,30 +299,22 @@ export default function FindMasterPage() {
           const mainPhoto =
             (s.photos || [])[0] ||
             getCategoryPlaceholderPhotoUrlOrDefault({ category: s.category, categorySlug }, categories);
+          const price = s.priceFrom
+            ? formatCatalogSearchHitPrice(s.priceFrom)
+            : 'Договорная';
           return (
-            <Link
+            <CatalogSearchDropdownHit
               key={s.id}
-              to={listingPublicUrl(s.id)}
-              className="fmp-search-hit"
-              onClick={closeCategorySearch}
-            >
-              <div className="fmp-search-hit-ph">
-                <img src={mainPhoto} alt="" />
-              </div>
-              <div className="fmp-search-hit-body">
-                <div className="fmp-search-hit-title">{displayListingTitle(s.title)}</div>
-                <div className="fmp-search-hit-meta">{s.workerName || ''}</div>
-                <div className="fmp-search-hit-price">
-                  {s.priceFrom ? `${Number(s.priceFrom).toLocaleString('ru-RU')} ₽` : 'Договорная'}
-                  {s.priceUnit ? ` ${s.priceUnit}` : ''}
-                </div>
-              </div>
-            </Link>
+              photo={mainPhoto}
+              title={displayListingTitle(s.title)}
+              meta={s.workerName || ''}
+              price={price}
+              href={listingPublicUrl(s.id)}
+              onSelect={closeCategorySearch}
+            />
           );
         })}
-        <button type="button" className="fmp-search-footer" onClick={applyCategorySearch}>
-          Показать все совпадения в списке →
-        </button>
+        <CatalogSearchDropdownFooter onClick={applyCategorySearch} />
       </>
     );
   };

@@ -8,7 +8,7 @@
 }
 
 /* ===== Общая страница ===== */
-.jl-page {
+.jl-page:not(.fw-jl-cat-feed) {
   font-family: Manrope, Arial, sans-serif;
   min-height: 100vh;
   background:

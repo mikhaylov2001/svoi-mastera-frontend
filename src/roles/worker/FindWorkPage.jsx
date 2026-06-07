@@ -31,6 +31,12 @@ import { jobRequestMatchesCatalogCategory, mergeApiCategoriesWithCatalog } from 
 import CardFavoriteSlot from '../../components/CardFavoriteSlot';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
+import {
+  CatalogSearchDropdownFooter,
+  CatalogSearchDropdownHint,
+  CatalogSearchDropdownHit,
+  formatCatalogSearchHitPrice,
+} from '../shared/catalogCategorySearchDropdown';
 import { useIsMobileCatalog } from '../../hooks/useIsMobileCatalog';
 
 const JOB_REQUEST_DETAIL_STYLES = edListingDetailMergedCss;
@@ -265,16 +271,16 @@ export default function FindWorkPage() {
   const renderFwSearchDropdown = () => {
     if (debouncedFwSearch.length < 2) {
       return (
-        <div className="fmp-search-hint">
+        <CatalogSearchDropdownHint>
           Введите минимум 2 символа или нажмите «Найти», чтобы отфильтровать список ниже.
-        </div>
+        </CatalogSearchDropdownHint>
       );
     }
     if (fwDdMatches.length === 0) {
       return (
-        <div className="fmp-search-hint">
+        <CatalogSearchDropdownHint>
           Подходящих заявок не нашлось. Нажмите «Найти», чтобы применить запрос к списку.
-        </div>
+        </CatalogSearchDropdownHint>
       );
     }
     return (
@@ -288,31 +294,24 @@ export default function FindWorkPage() {
               categories,
             );
           const custLabel = [req.customerName, req.customerLastName].filter(Boolean).join(' ');
-          const ddPrice = formatJobRequestBudgetLabel(req);
+          const ddPrice = hasJobRequestPublishedPrice(req)
+            ? formatCatalogSearchHitPrice(getJobRequestPublishedBudgetNumber(req))
+            : JOB_REQUEST_PRICE_MISSING_LABEL;
           return (
-            <button
+            <CatalogSearchDropdownHit
               key={req.id}
-              type="button"
-              className="fmp-search-hit"
-              onClick={() => {
+              photo={phSrc}
+              title={req.title || 'Заявка'}
+              meta={custLabel || 'Заказчик'}
+              price={ddPrice}
+              onSelect={() => {
                 closeCategorySearch();
                 openRequestDetail(req);
               }}
-            >
-              <div className="fmp-search-hit-ph">
-                <img src={phSrc} alt="" />
-              </div>
-              <div className="fmp-search-hit-body">
-                <div className="fmp-search-hit-title">{req.title || 'Заявка'}</div>
-                <div className="fmp-search-hit-meta">{custLabel || 'Заказчик'}</div>
-                <div className="fmp-search-hit-price">{ddPrice}</div>
-              </div>
-            </button>
+            />
           );
         })}
-        <button type="button" className="fmp-search-footer" onClick={applyCategorySearch}>
-          Показать все совпадения в списке →
-        </button>
+        <CatalogSearchDropdownFooter onClick={applyCategorySearch} />
       </>
     );
   };

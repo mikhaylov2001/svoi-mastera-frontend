@@ -614,6 +614,22 @@ export const findCatalogPageCss = `
     border-top: 1px solid #f0f0f0;
     transition: background 0.12s;
   }
+  button.fmp-search-hit {
+    width: 100%;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button.fmp-search-hit:not(:first-of-type) {
+    border-top: 1px solid #f0f0f0;
+  }
   .fmp-search-hit:first-of-type { border-top: none; }
   .fmp-search-hit:hover { background: #fafafa; }
   .fmp-search-hit-ph {
@@ -655,7 +671,14 @@ export const findCatalogPageCss = `
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .fmp-search-hit-price { font-size: 12px; font-weight: 800; color: #1a1a1a; margin-top: 3px; }
+  .fmp-search-hit-price {
+    font-size: 12px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-top: 3px;
+    font-variant-numeric: lining-nums;
+    letter-spacing: 0.02em;
+  }
   .fmp-search-footer {
     display: block;
     width: 100%;
