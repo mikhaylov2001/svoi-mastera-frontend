@@ -13,6 +13,8 @@
   .app-main--catalog {
     overflow-x: hidden;
     min-height: auto;
+    flex: 1 1 auto;
+    align-self: stretch;
   }
 
   /* ── Хаб «Найти мастера» (.fmp-page) ── */

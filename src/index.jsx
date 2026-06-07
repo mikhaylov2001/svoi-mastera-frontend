@@ -1,22 +1,26 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const mountNode = document.getElementById('root');
+if (!mountNode) {
+  throw new Error('Root element #root not found');
+}
+
+const root = ReactDOM.createRoot(mountNode);
 root.render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </React.StrictMode>,
 );
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/service-worker.js')
-      .then((reg) => {
-        reg.update();
-        console.log('ServiceWorker registration successful:', reg);
-      })
-      .catch((err) => console.warn('ServiceWorker registration failed:', err));
+    navigator.serviceWorker.getRegistrations().then((regs) => {
+      regs.forEach((reg) => reg.unregister());
+    });
   });
 }

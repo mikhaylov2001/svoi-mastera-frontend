@@ -154,13 +154,12 @@ function AppContent() {
 
 export default function App() {
   useEffect(() => {
-    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-    if (Notification.permission === 'default') {
-      Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-          console.log('Push permission granted');
-        }
-      });
+    try {
+      if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+      if (Notification.permission !== 'default') return;
+      Notification.requestPermission().catch(() => {});
+    } catch {
+      /* in-app browsers (Telegram и т.д.) могут не поддерживать Notification */
     }
   }, []);
 

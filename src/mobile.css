@@ -88,6 +88,9 @@ input, textarea, select {
     border-radius: 14px;
   }
   .app-main {
+    flex: 1 1 auto;
+    min-height: auto;
+    align-self: stretch;
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   .form-input {
