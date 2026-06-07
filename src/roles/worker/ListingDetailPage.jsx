@@ -24,6 +24,9 @@ import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPric
 import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../../constants/homePaths';
 import { goBackOr } from '../../utils/navigationHelpers';
 import { useSwipeNavigation } from '../../hooks/useSwipeNavigation';
+import { categoryLabelFromFields } from '../../utils/categoryLabel';
+import { initialChar } from '../../utils/safeText';
+import { asPhotoArray } from '../../utils/photoArray';
 
 const BACKEND_ORIGIN = API_BASE.replace(/\/api\/v1\/?$/, '');
 
@@ -158,14 +161,13 @@ export default function ListingDetailPage() {
     };
   }, [listing, userId]);
 
-  const photos = listing?.photos?.length
-    ? listing.photos.map((p) => listingPhotoUrl(p)).filter(Boolean)
-    : [];
-  const fallbackPhoto = getCategoryPlaceholderPhotoUrlOrDefault({ category: listing?.category });
+  const listingCategory = categoryLabelFromFields(listing);
+  const photos = asPhotoArray(listing?.photos).map((p) => listingPhotoUrl(p)).filter(Boolean);
+  const fallbackPhoto = getCategoryPlaceholderPhotoUrlOrDefault({ categoryName: listingCategory });
   const hasUploadedPhotos = photos.length > 0;
   const photoList = hasUploadedPhotos ? photos : [];
   const displayPhoto = hasUploadedPhotos ? photos[activePhoto] : fallbackPhoto;
-  const catSlug = getCategorySlugFromLabel(listing?.category) || '';
+  const catSlug = getCategorySlugFromLabel(listingCategory) || '';
 
   const { bodyText, urgencyLabel } = useMemo(
     () => parseListingDescription(listing?.description || ''),
@@ -307,7 +309,7 @@ export default function ListingDetailPage() {
   }
 
   const workerName = [listing.workerName, listing.workerLastName].filter(Boolean).join(' ') || 'Мастер';
-  const initials = (listing.workerName || 'М')[0].toUpperCase();
+  const initials = initialChar(listing.workerName, 'М');
   const isOwnListing = String(userId) === String(listing.workerId);
   const ownerFullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
   const ownerAva = userAvatar
@@ -422,9 +424,9 @@ export default function ListingDetailPage() {
               <h1>{listing.title || 'Объявление'}</h1>
             </div>
             <div className="ed-listing-meta">
-              {listing.category && (
+              {listingCategory && (
                 <span>
-                  {dealCategoryEmoji(listing.category)} {listing.category}
+                  {dealCategoryEmoji(listingCategory)} {listingCategory}
                 </span>
               )}
               {listingCity && listingCity !== '—' && <span>📍 {listingCity}</span>}
@@ -466,10 +468,10 @@ export default function ListingDetailPage() {
                     <span className="pulse" style={{ background: statusPill.dot, boxShadow: statusPill.shadow }} />
                     <span className="ed-chip-text">{statusPill.label}</span>
                   </div>
-                  {listing.category ? (
+                  {listingCategory ? (
                     <div className="ed-chip">
                       <span className="ed-chip-text">
-                        {dealCategoryEmoji(listing.category)} {listing.category}
+                        {dealCategoryEmoji(listingCategory)} {listingCategory}
                       </span>
                     </div>
                   ) : null}
@@ -668,7 +670,7 @@ export default function ListingDetailPage() {
                     listingDeal.customerAvatar !== 'null' ? (
                       <img src={listingDeal.customerAvatar} alt="" />
                     ) : (
-                      <div className="ed-ava-fallback">{(listingDeal.customerName || 'З')[0].toUpperCase()}</div>
+                      <div className="ed-ava-fallback">{initialChar(listingDeal.customerName, 'З')}</div>
                     )}
                   </div>
                   <div className="ed-cust-info">
@@ -726,7 +728,7 @@ export default function ListingDetailPage() {
                 <div className="ed-cust-row ed-cust-row-static" onClick={() => navigate('/worker-profile')} role="presentation">
                   <div className="ed-ava">
                     {ownerAva ? <img src={ownerAva} alt={ownerFullName} /> : (
-                      <div className="ed-ava-fallback">{(userName || 'М')[0].toUpperCase()}</div>
+                      <div className="ed-ava-fallback">{initialChar(userName, 'М')}</div>
                     )}
                   </div>
                   <div className="ed-cust-info">

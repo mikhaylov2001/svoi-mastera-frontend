@@ -29,6 +29,7 @@ import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPla
 import { dealCategoryLabel } from '../../utils/categoryLabel';
 import { asPhotoArray } from '../../utils/photoArray';
 import { normalizeDealForView } from '../../utils/normalizeDeal';
+import { initialChar } from '../../utils/safeText';
 
 const MY_DEALS_HERO_PHOTO =
   'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=max&w=2400&q=86';
@@ -70,7 +71,7 @@ function EmptyState({ icon, title, text, btnLabel, onBtn, secondaryBtnLabel, onS
 function dealToCardWorker(d) {
   const photos = dealPhotoList(d);
   const custName = customerFullName(d);
-  const custInitial = (custName[0] || 'З').toUpperCase();
+  const custInitial = initialChar(custName, 'З');
   const custAvatar = dealCustomerAvatarUrl(d);
   return {
     ...d,
@@ -220,22 +221,28 @@ export default function WorkerDealsPage() {
     stripSearchParams(setSearchParams, ['dealId']);
   }, [setSearchParams]);
 
+  const openDetail = useCallback((deal) => {
+    setDetail(normalizeDealForView(deal));
+    setPhotoIdx(0);
+    setLightbox(null);
+  }, []);
+
   // open deal from URL ?dealId=...
   useEffect(() => {
     const id = new URLSearchParams(location.search).get('dealId');
     if (id && deals.length > 0) {
       const found = deals.find(d => d.id === id);
-      if (found) { setDetail(found); setPhotoIdx(0); setLightbox(null); }
+      if (found) openDetail(found);
     }
-  }, [location.search, deals]);
+  }, [location.search, deals, openDetail]);
 
   // sync detail with fresh data
   useEffect(() => {
     if (detail?.id) {
       const fresh = deals.find(d => d.id === detail.id);
-      if (fresh && JSON.stringify(fresh) !== JSON.stringify(detail)) setDetail(fresh);
+      if (fresh && JSON.stringify(fresh) !== JSON.stringify(detail)) openDetail(fresh);
     }
-  }, [deals, detail]);
+  }, [deals, detail, openDetail]);
 
   /* ── actions ── */
   const handleStart = async (dealId, e) => {
@@ -245,8 +252,8 @@ export default function WorkerDealsPage() {
       const updated = await workerStartDeal(userId, dealId);
       if (updated?.id) {
         const uid = String(updated.id);
-        setDeals(prev => prev.map(d => String(d.id) === uid ? { ...d, ...updated } : d));
-        setDetail(prev => (prev && String(prev.id) === uid ? { ...prev, ...updated } : prev));
+        setDeals(prev => prev.map(d => String(d.id) === uid ? normalizeDealForView({ ...d, ...updated }) : d));
+        setDetail(prev => (prev && String(prev.id) === uid ? normalizeDealForView({ ...prev, ...updated }) : prev));
       }
       await load();
     } catch {}
@@ -605,7 +612,7 @@ export default function WorkerDealsPage() {
                 <div className="ed-cust-row" onClick={() => navigate('/worker-profile')} role="presentation">
                   <div className="ed-ava">
                     {ava ? <img src={ava} alt="" /> : (
-                      <div className="ed-ava-fallback">{(userName || 'М')[0].toUpperCase()}</div>
+                      <div className="ed-ava-fallback">{initialChar(userName, 'М')}</div>
                     )}
                   </div>
                   <div className="ed-cust-info">
@@ -851,7 +858,7 @@ export default function WorkerDealsPage() {
                   partnerRole="Заказчик"
                   footerHint={hint?.text}
                   footerHintColor={hint?.color}
-                  onOpen={() => { setDetail(d); setPhotoIdx(0); }}
+                  onOpen={() => openDetail(d)}
                   onChat={d.customerId ? () => navigate(`/chat/${d.customerId}`) : undefined}
                   menuItems={dealCardMenuItems(d)}
                 />

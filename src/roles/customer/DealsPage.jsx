@@ -21,6 +21,12 @@ import {
   dealsMoConfirmDarkCss,
   dealCategoryEmoji,
 } from '../shared/dealsWdStyles';
+import {
+  DealDarkProgress,
+  DealConfirmCard,
+  DealNewStatusCard,
+} from '../shared/DealDetailBlocks';
+import { initialChar } from '../../utils/safeText';
 import OrderCard from '../../components/myorders/OrderCard';
 import PhotoLightbox from '../../components/PhotoLightbox';
 import '../../styles/moCabinetStyle.css';
@@ -84,7 +90,7 @@ function dealPhotoList(deal) {
 function dealToCard(d) {
   const photos = dealPhotoList(d);
   const workerName = workerFullName(d);
-  const workerInitial = (d.workerName || 'М')[0].toUpperCase();
+  const workerInitial = initialChar(d.workerName, 'М');
   const workerAvatar = workerAvatarUrl(d);
   const statusMap = {
     NEW: 'ASSIGNED',
@@ -114,12 +120,6 @@ function EmptyState({ icon, title, text, btnLabel, onBtn }) {
     </div>
   );
 }
-
-import {
-  DealDarkProgress,
-  DealConfirmCard,
-  DealNewStatusCard,
-} from '../shared/DealDetailBlocks';
 
 /* ═══════════════════════════════
    DEAL DETAIL — ed--listing-detail (как заявки / объявления / сделки мастера)
@@ -372,7 +372,7 @@ function DealDetail({
               >
                 <div className="ed-ava">
                   {workerAva ? <img src={workerAva} alt="" /> : (
-                    <div className="ed-ava-fallback">{(deal.workerName || 'М')[0].toUpperCase()}</div>
+                    <div className="ed-ava-fallback">{initialChar(deal.workerName, 'М')}</div>
                   )}
                 </div>
                 <div className="ed-cust-info">
@@ -397,7 +397,7 @@ function DealDetail({
               <div className="ed-cust-row" onClick={() => navigate('/profile')} role="presentation">
                 <div className="ed-ava">
                   {customerAva ? <img src={customerAva} alt="" /> : (
-                    <div className="ed-ava-fallback">{(userName || 'З')[0].toUpperCase()}</div>
+                    <div className="ed-ava-fallback">{initialChar(userName, 'З')}</div>
                   )}
                 </div>
                 <div className="ed-cust-info">
@@ -527,20 +527,24 @@ export default function DealsPage() {
     stripSearchParams(setSearchParams, ['dealId']);
   }, [setSearchParams]);
 
+  const openDetail = useCallback((deal) => {
+    setDetail(normalizeDealForView(deal));
+  }, []);
+
   useEffect(() => {
     const id = new URLSearchParams(location.search).get('dealId');
     if (id && deals.length > 0) {
       const found = deals.find(d => d.id === id);
-      if (found) setDetail(found);
+      if (found) openDetail(found);
     }
-  }, [location.search, deals]);
+  }, [location.search, deals, openDetail]);
 
   useEffect(() => {
     if (detail?.id) {
       const fresh = deals.find(d => d.id === detail.id);
-      if (fresh && JSON.stringify(fresh) !== JSON.stringify(detail)) setDetail(fresh);
+      if (fresh && JSON.stringify(fresh) !== JSON.stringify(detail)) openDetail(fresh);
     }
-  }, [deals, detail]);
+  }, [deals, detail, openDetail]);
 
   useEffect(() => {
     if (!userId) return;
@@ -621,7 +625,7 @@ export default function DealsPage() {
         label: 'Отменить заявку',
         danger: true,
         onClick: () => {
-          setDetail(deal);
+          openDetail(deal);
           setCancelNewErr('');
           setCancelNewOpen(true);
         },
@@ -632,7 +636,7 @@ export default function DealsPage() {
         label: 'Отменить сделку',
         danger: true,
         onClick: () => {
-          setDetail(deal);
+          openDetail(deal);
           setCancelActErr('');
           setCancelActOpen(true);
         },
@@ -749,7 +753,7 @@ export default function DealsPage() {
               <OrderCard
                 key={deal.id}
                 order={dealToCard(deal)}
-                onOpen={() => setDetail(deal)}
+                onOpen={() => openDetail(deal)}
                 onChat={deal.workerId ? () => navigate(`/chat/${deal.workerId}`) : undefined}
                 menuItems={dealCardMenuItems(deal)}
               />

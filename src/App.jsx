@@ -37,6 +37,7 @@ import VerificationPage from './pages/VerificationPage';
 import GuaranteeTermsPage from './pages/GuaranteeTermsPage';
 import ListingDetailPage from './roles/worker/ListingDetailPage';
 import FavoritesPage from './pages/FavoritesPage';
+import { RouteErrorBoundaryWithReset } from './components/RouteErrorBoundary';
 import './App.css';
 import './styles/unifiedListingCards.css';
 import './styles/favoriteHeart.css';
@@ -105,6 +106,7 @@ function AppContent() {
       <main
         className={`app-main${isAuthPage ? ' app-main--auth' : ''}${isHomeCatalog ? ' app-main--home' : ''}${isCatalogPage ? ' app-main--catalog' : ''}${isContentPage ? ' app-main--content' : ''}`}
       >
+        <RouteErrorBoundaryWithReset>
         <Routes>
           <Route path="/"                element={<CustomerHomeRoute />} />
           <Route path="/worker-home"     element={<WorkerHomeGate />} />
@@ -144,6 +146,7 @@ function AppContent() {
           <Route path="/listings/:id"    element={<ListingDetailPage />} />
           <Route path="*"                element={<NotFoundPage />} />
         </Routes>
+        </RouteErrorBoundaryWithReset>
       </main>
       {/* Футер скрыт на странице чата */}
       {!isChatPage && !isAuthPage && <Footer />}
