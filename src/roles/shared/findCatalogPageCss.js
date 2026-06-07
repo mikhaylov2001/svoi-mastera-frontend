@@ -138,6 +138,7 @@ export const findCatalogPageCss = `
   .fmp-global-search-count {
     display: inline-flex;
     align-items: center;
+    gap: 0.35em;
     width: fit-content;
     padding: 4px 10px;
     border-radius: 999px;
@@ -145,6 +146,14 @@ export const findCatalogPageCss = `
     color: #c2410c;
     font-size: 12px;
     font-weight: 700;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .fmp-global-search-count-num {
+    flex-shrink: 0;
+  }
+  .fmp-global-search-count-word {
+    flex-shrink: 0;
   }
   .fmp-global-search-clear {
     border: 1px solid #e8e8e8;

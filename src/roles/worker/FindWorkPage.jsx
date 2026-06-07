@@ -22,6 +22,8 @@ import PhotoLightbox from '../../components/PhotoLightbox';
 import { searchCatalogItems, smartTextMatchScore, jobRequestHaystack, rankItemsBySmartMatch } from '../../utils/smartSearch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { formatCatalogCountShort } from '../../utils/formatCatalogCountShort';
+import { formatRequestsCount, formatReviewsCount } from '../../utils/formatCountRu';
+import CatalogSearchCount from '../../components/CatalogSearchCount';
 import {
   getCategoryPlaceholderPhotoUrlOrDefault,
 } from '../../utils/categoryPlaceholderPhoto';
@@ -59,15 +61,6 @@ Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
   cats.forEach(cat => { CAT_ALL[cat.slug] = { ...cat, photo: heroPhotoHiRes(cat.photo) }; })
 );
 
-function reviewsCountLabel(n) {
-  const x = Number(n) || 0;
-  const abs = x % 100;
-  const d = x % 10;
-  if (abs > 10 && abs < 20) return `${x} отзывов`;
-  if (d === 1) return `${x} отзыв`;
-  if (d >= 2 && d <= 4) return `${x} отзыва`;
-  return `${x} отзывов`;
-}
 
 /** Бейдж на карточке заявки в ленте: свежие — «НОВОЕ», остальные — «АКТИВНО». */
 function jobRequestFeedStatusLabel(req) {
@@ -104,11 +97,6 @@ const CATEGORY_STYLES = {
   'kompyuternaya-pomosh': { emoji: '💻', color: '#e8f5e9' },
 };
 
-function pluralRequests(n) {
-  if (n % 10 === 1 && n % 100 !== 11) return `${n} заявка`;
-  if ([2,3,4].includes(n % 10) && ![12,13,14].includes(n % 100)) return `${n} заявки`;
-  return `${n} заявок`;
-}
 
 function jobRequestListPrice(req) {
   return getJobRequestPublishedBudgetNumber(req);
@@ -921,7 +909,7 @@ export default function FindWorkPage() {
           {!loading && (
             <>
               <span className="sep">·</span>
-              <span>{pluralRequests(filtered.length)}</span>
+              <span>{formatRequestsCount(filtered.length)}</span>
             </>
           )}
         </nav>
@@ -1010,7 +998,7 @@ export default function FindWorkPage() {
                   {o.label}
                 </button>
               ))}
-              <span className="jl-toolbar-count">{loading ? '…' : pluralRequests(filtered.length)}</span>
+              <span className="jl-toolbar-count">{loading ? '…' : formatRequestsCount(filtered.length)}</span>
             </div>
 
             {/* Карточки */}
@@ -1217,7 +1205,7 @@ export default function FindWorkPage() {
                               {'☆'.repeat(5 - cFill)}
                             </span>
                             <b>{cAvg.toFixed(1)}</b>
-                            <span>({reviewsCountLabel(cCnt)})</span>
+                            <span>({formatReviewsCount(cCnt)})</span>
                           </Link>
                         ) : (
                           <div className="jl-rating-line">
@@ -1226,7 +1214,7 @@ export default function FindWorkPage() {
                               {'☆'.repeat(5 - cFill)}
                             </span>
                             <b>{cAvg.toFixed(1)}</b>
-                            <span>({reviewsCountLabel(cCnt)})</span>
+                            <span>({formatReviewsCount(cCnt)})</span>
                           </div>
                         )}
 
@@ -1330,9 +1318,7 @@ export default function FindWorkPage() {
                   Результаты: <span className="fmp-global-search-query">«{urlQ}»</span>
                 </h2>
                 {!loading && (
-                  <span className="fmp-global-search-count">
-                    {pluralRequests(globalMatches.length)}
-                  </span>
+                  <CatalogSearchCount count={globalMatches.length} type="requests" />
                 )}
               </div>
               <button
@@ -1449,7 +1435,7 @@ export default function FindWorkPage() {
                         <div className="fmp-cat-img-ph">{meta.emoji || '🛠️'}</div>
                       )}
                       {count > 0 && (
-                        <span className="fmp-cat-badge fmp-cat-badge--num" aria-label={pluralRequests(count)}>
+                        <span className="fmp-cat-badge fmp-cat-badge--num" aria-label={formatRequestsCount(count)}>
                           {count}
                         </span>
                       )}

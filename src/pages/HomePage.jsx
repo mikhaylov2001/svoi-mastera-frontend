@@ -28,6 +28,7 @@ import GuestLandingHome from './GuestLandingHome';
 import CardFavoriteSlot from '../components/CardFavoriteSlot';
 import SortDropdown from '../components/SortDropdown';
 import { searchCatalogItems, listingHaystack, jobRequestHaystack } from '../utils/smartSearch';
+import { formatListingsCount, formatRequestsCount } from '../utils/formatCountRu';
 import { resolvePlatformFeedCycle, visiblePlatformFeedRows } from '../utils/platformLiveFeed';
 import PlatformLiveCard from '../components/PlatformLiveCard';
 import '../roles/worker/jobListings.css';
@@ -570,8 +571,12 @@ export function CustomerHomePage({ userId }) {
               <h2 style={{ margin: 0 }}>{isHomeSearching ? 'Результаты поиска' : 'Объявления мастеров'}</h2>
               <p style={{ margin: '6px 0 0', fontSize: 13, color: '#888', fontWeight: 600 }}>
                 {isHomeSearching
-                  ? pluralListingsSubtitle(filteredMasterListings.length)
-                  : pluralListingsSubtitle(listings.length)}
+                  ? (filteredMasterListings.length <= 0
+                    ? 'Пока нет объявлений'
+                    : formatListingsCount(filteredMasterListings.length))
+                  : (listings.length <= 0
+                    ? 'Пока нет объявлений'
+                    : formatListingsCount(listings.length))}
               </p>
             </div>
             <Link to={isHomeSearching ? `/find-master?q=${encodeURIComponent(qTrimmed)}` : '/find-master'}>
@@ -764,19 +769,6 @@ function cityInLocative(nominative) {
   const c = (nominative || '').trim();
   if (c === 'Йошкар-Ола') return 'Йошкар-Оле';
   return c || 'Йошкар-Оле';
-}
-
-function pluralRequestsLabel(n) {
-  if (n % 10 === 1 && n % 100 !== 11) return `${n} заявка`;
-  if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return `${n} заявки`;
-  return `${n} заявок`;
-}
-
-function pluralListingsSubtitle(n) {
-  if (n <= 0) return 'Пока нет объявлений';
-  if (n % 10 === 1 && n % 100 !== 11) return `${n} объявление`;
-  if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return `${n} объявления`;
-  return `${n} объявлений`;
 }
 
 export function WorkerHomePage({ userId, userName }) {
@@ -1023,8 +1015,8 @@ export function WorkerHomePage({ userId, userName }) {
                 {loading
                   ? 'Загрузка…'
                   : isHomeSearching
-                    ? pluralRequestsLabel(filteredHomeRequests.length)
-                    : pluralRequestsLabel(openRequests.length)}
+                    ? formatRequestsCount(filteredHomeRequests.length)
+                    : formatRequestsCount(openRequests.length)}
               </p>
             </div>
             <Link to={isHomeSearching ? `/find-work?q=${encodeURIComponent(qTrimmed)}` : '/find-work'}>

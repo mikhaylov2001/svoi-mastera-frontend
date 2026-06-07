@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { STATUS_CONFIG, timeAgo } from './OrderCard';
+import { formatOffersCount } from '../../utils/formatCountRu';
 
 const STEPS = ['Создана', 'Принята', 'В работе', 'Подтверждение', 'Завершена'];
 const STEP_TIMES = ['', '—', 'сейчас', '—', '—'];
@@ -18,14 +19,6 @@ const CAT_EMOJI = {
 const catEmoji = n => CAT_EMOJI[n] || '📌';
 
 const FALLBACK = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80';
-
-function pluralOffers(n) {
-  const a = Math.abs(Number(n)) % 100, b = a % 10;
-  if (a > 10 && a < 20) return 'откликов';
-  if (b > 1 && b < 5) return 'отклика';
-  if (b === 1) return 'отклик';
-  return 'откликов';
-}
 
 function arrowBtn(side) {
   return {
@@ -283,7 +276,7 @@ export default function OrderDetail({ order, onBack, onOpenOffers, onEdit, onCan
           {/* Offers button */}
           {['OPEN','ASSIGNED'].includes(order.status) && (order.offersCount > 0 || order.offers?.length > 0) && (
             <button onClick={onOpenOffers} style={{ width: '100%', minHeight: 52, border: 'none', borderRadius: 16, background: 'linear-gradient(135deg,#ff4b1f,#e8410a)', color: '#fff', cursor: 'pointer', fontFamily: 'Manrope,sans-serif', fontSize: 14, fontWeight: 900, boxShadow: '0 10px 28px rgba(232,65,10,.32)' }}>
-              🔔 {order.offersCount || order.offers?.length} {pluralOffers(order.offersCount || order.offers?.length)} — выбрать мастера
+              🔔 {formatOffersCount(order.offersCount || order.offers?.length || 0)} — выбрать мастера
             </button>
           )}
 

@@ -18,6 +18,7 @@ import { stripSearchParams } from '../../utils/navigationHelpers';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
+import { formatOffersCount, formatReviewsCount } from '../../utils/formatCountRu';
 import {
   getJobRequestPublishedBudgetNumber,
   JOB_REQUEST_PRICE_MISSING_LABEL,
@@ -99,25 +100,6 @@ function workerOfferShortName(offer) {
   const last = (offer?.workerLastName || '').trim();
   if (first && last) return `${first} ${last[0]}.`;
   return workerOfferFullName(offer);
-}
-
-function reviewsCountLabel(n) {
-  const num = Number(n) || 0;
-  const a = Math.abs(num) % 100;
-  const b = a % 10;
-  if (a > 10 && a < 20) return `${num} отзывов`;
-  if (b === 1) return `${num} отзыв`;
-  if (b > 1 && b < 5) return `${num} отзыва`;
-  return `${num} отзывов`;
-}
-
-function pluralOffers(n) {
-  const a = Math.abs(Number(n)) % 100;
-  const b = a % 10;
-  if (a > 10 && a < 20) return 'откликов';
-  if (b > 1 && b < 5)   return 'отклика';
-  if (b === 1)           return 'отклик';
-  return 'откликов';
 }
 
 function compressImage(file) {
@@ -1681,7 +1663,7 @@ export default function MyOrdersPage() {
                   <h2 id="mo-offers-sheet-title" className="mo-offers-sheet-title">Отклики</h2>
                   <p className="mo-offers-sheet-subtitle">{detail.title}</p>
                   <span className="mo-offers-sheet-badge">
-                    {offersCountDisplay} {pluralOffers(offersCountDisplay)}
+                    {formatOffersCount(offersCountDisplay)}
                   </span>
                 </div>
                 <button
@@ -1755,12 +1737,12 @@ export default function MyOrdersPage() {
                                   <span className="mo-offer-sheet-star" aria-hidden>★</span>
                                   {rating.toFixed(1)}
                                   <span className="mo-offer-sheet-reviews">
-                                    ({reviewsCountLabel(reviewsN)})
+                                    ({formatReviewsCount(reviewsN)})
                                   </span>
                                 </span>
                               ) : reviewsN > 0 ? (
                                 <span className="mo-offer-sheet-reviews">
-                                  {reviewsCountLabel(reviewsN)}
+                                  {formatReviewsCount(reviewsN)}
                                 </span>
                               ) : null}
                               {timeLabel ? (
@@ -2254,7 +2236,7 @@ export default function MyOrdersPage() {
                     <p className="mo-card-hint">
                       {hasOffers ? (
                         <>
-                          <span className="mo-card-hint-main">{offers} {pluralOffers(offers)}</span>
+                          <span className="mo-card-hint-main">{formatOffersCount(offers)}</span>
                           <span className="mo-card-hint-sub">Мастера могут откликнуться</span>
                         </>
                       ) : (

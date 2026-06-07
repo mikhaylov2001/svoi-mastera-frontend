@@ -10,6 +10,8 @@ import {
 } from '../../api';
 import { fetchStatsMap } from '../../utils/fetchStatsMap';
 import { formatCatalogCountShort } from '../../utils/formatCatalogCountShort';
+import { formatListingsCount } from '../../utils/formatCountRu';
+import CatalogSearchCount from '../../components/CatalogSearchCount';
 import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import { PAGE_HERO_DEFAULT_PHOTO, heroPhotoHiRes } from '../../constants/pageHeroAssets';
@@ -57,14 +59,6 @@ function listingFeedLooksUrgent(s) {
 }
 
 const HERO_PHOTO = PAGE_HERO_DEFAULT_PHOTO;
-
-
-function pluralActiveListings(n) {
-  const x = Number(n) || 0;
-  if (x % 10 === 1 && x % 100 !== 11) return `${x} объявление`;
-  if ([2, 3, 4].includes(x % 10) && ![12, 13, 14].includes(x % 100)) return `${x} объявления`;
-  return `${x} объявлений`;
-}
 
 function CheckItem({ checked, onChange, children }) {
   return (
@@ -412,10 +406,7 @@ export default function FindMasterPage() {
                     Результаты: <span className="fmp-global-search-query">«{urlQ}»</span>
                   </h2>
                   {!loading && (
-                    <span className="fmp-global-search-count">
-                      {globalMatches.length}{' '}
-                      {globalMatches.length === 1 ? 'объявление' : globalMatches.length < 5 ? 'объявления' : 'объявлений'}
-                    </span>
+                    <CatalogSearchCount count={globalMatches.length} type="listings" />
                   )}
                 </div>
                 <button type="button" className="fmp-global-search-clear" onClick={() => setSearchParams({}, { replace: true })}>
@@ -551,7 +542,7 @@ export default function FindMasterPage() {
                         : <div className="fmp-cat-img-ph">{meta.emoji || '🛠️'}</div>
                       }
                       {count > 0 && (
-                        <span className="fmp-cat-badge fmp-cat-badge--num" aria-label={pluralActiveListings(count)}>
+                        <span className="fmp-cat-badge fmp-cat-badge--num" aria-label={formatListingsCount(count)}>
                           {count}
                         </span>
                       )}
@@ -693,7 +684,7 @@ export default function FindMasterPage() {
           <>
             <span className="sep">·</span>
             <span>
-              {visible.length} {visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}
+              {formatListingsCount(visible.length)}
             </span>
           </>
         )}
@@ -784,7 +775,7 @@ export default function FindMasterPage() {
                 </button>
               ))}
               <span className="jl-toolbar-count">
-                {loading ? '…' : `${visible.length} ${visible.length === 1 ? 'объявление' : visible.length < 5 ? 'объявления' : 'объявлений'}`}
+                {loading ? '…' : formatListingsCount(visible.length)}
               </span>
             </div>
 

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { timeAgo } from './OrderCard';
+import { formatOffersCount } from '../../utils/formatCountRu';
 
 export default function OffersSheet({ order, onClose, onAccept }) {
   const offers = order.offers || [];
@@ -27,7 +28,7 @@ export default function OffersSheet({ order, onClose, onAccept }) {
         </div>
 
         <div className="mo-sheet-badge">
-          {offers.length} {offers.length === 1 ? 'отклик' : offers.length < 5 ? 'отклика' : 'откликов'}
+          {formatOffersCount(offers.length)}
         </div>
 
         <div className="mo-sheet-list">
