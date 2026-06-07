@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DEFAULT_API_V1_BASE } from '../constants/backend';
 
-const API_BASE = process.env.NODE_ENV === 'development'
+const API_BASE = import.meta.env.DEV
   ? 'http://localhost:8080/api/v1'
   : DEFAULT_API_V1_BASE;
 

@@ -37,24 +37,21 @@
           regs.forEach(function (reg) { reg.unregister(); });
         });
       }
-      if (window.caches) {
-        caches.keys().then(function (keys) {
-          keys.forEach(function (key) { caches.delete(key); });
-        });
-      }
-      var root = document.getElementById('root');
-      if (root && !root.childElementCount) {
-        root.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100dvh;font-family:Manrope,system-ui,sans-serif;color:#6b7280;font-weight:600">Загрузка…</div>';
-      }
       window.__svoiShowBootError = function (message) {
         var el = document.getElementById('root');
         if (!el) return;
-        el.innerHTML = '<div style="padding:24px;font-family:Manrope,system-ui,sans-serif;background:#f6f6f4;min-height:100dvh;box-sizing:border-box"><div style="max-width:360px;margin:40px auto;background:#fff;border-radius:16px;padding:24px 20px;text-align:center;box-shadow:0 8px 32px rgba(15,23,42,.08)"><p style="margin:0 0 8px;font-size:18px;font-weight:800;color:#111">Не удалось загрузить приложение</p><p style="margin:0 0 20px;font-size:14px;line-height:1.5;color:#6b7280">' + message + '</p><button type="button" onclick="location.reload()" style="width:100%;min-height:48px;border:none;border-radius:12px;background:#e8410a;color:#fff;font-size:15px;font-weight:800">Обновить</button></div></div>';
+        el.innerHTML = '<div style="padding:24px;font-family:Manrope,system-ui,sans-serif;background:#f6f6f4;min-height:100vh;box-sizing:border-box"><div style="max-width:360px;margin:40px auto;background:#fff;border-radius:16px;padding:24px 20px;text-align:center;box-shadow:0 8px 32px rgba(15,23,42,.08)"><p style="margin:0 0 8px;font-size:18px;font-weight:800;color:#111">Не удалось загрузить приложение</p><p style="margin:0 0 20px;font-size:14px;line-height:1.5;color:#6b7280">' + message + '</p><button type="button" onclick="location.reload()" style="width:100%;min-height:48px;border:none;border-radius:12px;background:#e8410a;color:#fff;font-size:15px;font-weight:800">Обновить</button></div></div>';
       };
+      document.addEventListener('DOMContentLoaded', function () {
+        var root = document.getElementById('root');
+        if (root && !root.childElementCount) {
+          root.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:60vh;font-family:Manrope,system-ui,sans-serif;color:#6b7280;font-weight:600">Загрузка…</div>';
+        }
+      });
       window.addEventListener('error', function (event) {
         var target = event.target;
-        if (target && target.tagName === 'SCRIPT' && target.type === 'module') {
-          window.__svoiShowBootError('Ошибка загрузки скриптов. Обновите страницу или откройте в Safari.');
+        if (target && target.tagName === 'SCRIPT' && target.type === 'module' && !event.error) {
+          window.__svoiShowBootError('Не удалось скачать скрипты. Обновите страницу или откройте в Safari.');
         }
       }, true);
     })();
