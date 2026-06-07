@@ -121,6 +121,11 @@ export default function FindMasterPage() {
   const feedListRef = useRef(null);
   const isMobileCat = useIsMobileCatalog();
 
+  const closeCategorySearch = useCallback(() => {
+    setFmpSearchFocused(false);
+    fmpSearchDdRef.current?.querySelector('input')?.blur();
+  }, []);
+
   // Строим pendingDeals из реальных сделок бэкенда (listingId → dealId)
   const buildPendingFromDeals = useCallback((deals) => {
     const map = {};
@@ -182,30 +187,30 @@ export default function FindMasterPage() {
     if (!fmpSearchFocused || isMobileCat) return;
     const onDoc = (e) => {
       if (fmpSearchDdRef.current && !fmpSearchDdRef.current.contains(e.target)) {
-        setFmpSearchFocused(false);
+        closeCategorySearch();
       }
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
-  }, [fmpSearchFocused, isMobileCat]);
+  }, [fmpSearchFocused, isMobileCat, closeCategorySearch]);
 
   useEffect(() => {
     if (!fmpSearchFocused) return;
     const onKey = (e) => {
-      if (e.key === 'Escape') setFmpSearchFocused(false);
+      if (e.key === 'Escape') closeCategorySearch();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [fmpSearchFocused]);
+  }, [fmpSearchFocused, closeCategorySearch]);
 
   useEffect(() => {
-    if (!fmpSearchFocused) return undefined;
+    if (!isMobileCat || !fmpSearchFocused) return undefined;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = prevOverflow;
     };
-  }, [fmpSearchFocused]);
+  }, [fmpSearchFocused, isMobileCat]);
 
   const reloadCatalog = useCallback(async () => {
     setLoading(true);
@@ -275,12 +280,12 @@ export default function FindMasterPage() {
   const showFmpSearchDd = fmpSearchFocused && debouncedSearchInput.length >= 2;
 
   const applyCategorySearch = useCallback(() => {
-    setFmpSearchFocused(false);
     setSearchTerm(searchInput);
+    closeCategorySearch();
     requestAnimationFrame(() => {
       feedListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-  }, [searchInput]);
+  }, [searchInput, closeCategorySearch]);
 
   const renderFmpSearchDropdown = () => {
     if (debouncedSearchInput.length < 2) {
@@ -308,7 +313,7 @@ export default function FindMasterPage() {
               key={s.id}
               to={listingPublicUrl(s.id)}
               className="fmp-search-hit"
-              onClick={() => setFmpSearchFocused(false)}
+              onClick={closeCategorySearch}
             >
               <div className="fmp-search-hit-ph">
                 <img src={mainPhoto} alt="" />
@@ -646,7 +651,7 @@ export default function FindMasterPage() {
           type="button"
           className="cat-feed-search-backdrop"
           aria-label="Закрыть поиск"
-          onClick={() => setFmpSearchFocused(false)}
+          onClick={closeCategorySearch}
         />
       ) : null}
 
@@ -691,7 +696,7 @@ export default function FindMasterPage() {
 
       <CatalogSearchSheet
         open={isMobileCat && fmpSearchFocused}
-        onClose={() => setFmpSearchFocused(false)}
+        onClose={closeCategorySearch}
         ariaLabel="Подсказки поиска"
       >
         <div id="fmp-search-dropdown-list" className="fmp-search-dropdown fmp-search-dropdown--sheet" role="listbox" aria-label="Подсказки поиска">

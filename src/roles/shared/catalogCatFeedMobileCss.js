@@ -161,11 +161,6 @@ export const catalogCatFeedMobileCss = `
     background: #e5e7eb;
   }
 
-  .jl-page.fw-jl-cat-feed.cat-feed-search-active .jl-crumbs,
-  .jl-page.fw-jl-cat-feed.cat-feed-search-active .jl-wrap {
-    display: none !important;
-  }
-
   .jl-page.fw-jl-cat-feed.cat-feed-search-active .fmp-topbar,
   .jl-page.fw-jl-cat-feed.cat-feed-search-active .fw2-topbar {
     position: sticky;

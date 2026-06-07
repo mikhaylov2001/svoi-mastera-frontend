@@ -220,6 +220,11 @@ export default function FindWorkPage() {
   const feedListRef = useRef(null);
   const isMobileCat = useIsMobileCatalog();
 
+  const closeCategorySearch = useCallback(() => {
+    setFwSearchFocused(false);
+    fwSearchDdRef.current?.querySelector('input')?.blur();
+  }, []);
+
   useEffect(() => {
     const t = setTimeout(() => setDebouncedFwSearch(searchInput.trim()), 220);
     return () => clearTimeout(t);
@@ -237,30 +242,30 @@ export default function FindWorkPage() {
     if (!fwSearchFocused || isMobileCat) return;
     const onDoc = (e) => {
       if (fwSearchDdRef.current && !fwSearchDdRef.current.contains(e.target)) {
-        setFwSearchFocused(false);
+        closeCategorySearch();
       }
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
-  }, [fwSearchFocused, isMobileCat]);
+  }, [fwSearchFocused, isMobileCat, closeCategorySearch]);
 
   useEffect(() => {
     if (!fwSearchFocused) return;
     const onKey = (e) => {
-      if (e.key === 'Escape') setFwSearchFocused(false);
+      if (e.key === 'Escape') closeCategorySearch();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [fwSearchFocused]);
+  }, [fwSearchFocused, closeCategorySearch]);
 
   useEffect(() => {
-    if (!fwSearchFocused) return undefined;
+    if (!isMobileCat || !fwSearchFocused) return undefined;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = prevOverflow;
     };
-  }, [fwSearchFocused]);
+  }, [fwSearchFocused, isMobileCat]);
 
   const fwDdMatches = useMemo(() => {
     if (!selectedCategory || !debouncedFwSearch || debouncedFwSearch.length < 2) return [];
@@ -271,12 +276,12 @@ export default function FindWorkPage() {
   const showFwSearchDd = fwSearchFocused && debouncedFwSearch.length >= 2;
 
   const applyCategorySearch = useCallback(() => {
-    setFwSearchFocused(false);
     setSearchTerm(searchInput);
+    closeCategorySearch();
     requestAnimationFrame(() => {
       feedListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-  }, [searchInput]);
+  }, [searchInput, closeCategorySearch]);
 
   const renderFwSearchDropdown = () => {
     if (debouncedFwSearch.length < 2) {
@@ -311,7 +316,7 @@ export default function FindWorkPage() {
               type="button"
               className="fmp-search-hit"
               onClick={() => {
-                setFwSearchFocused(false);
+                closeCategorySearch();
                 openRequestDetail(req);
               }}
             >
@@ -875,7 +880,7 @@ export default function FindWorkPage() {
             type="button"
             className="cat-feed-search-backdrop"
             aria-label="Закрыть поиск"
-            onClick={() => setFwSearchFocused(false)}
+            onClick={closeCategorySearch}
           />
         ) : null}
 
@@ -920,7 +925,7 @@ export default function FindWorkPage() {
 
         <CatalogSearchSheet
           open={isMobileCat && fwSearchFocused}
-          onClose={() => setFwSearchFocused(false)}
+          onClose={closeCategorySearch}
           ariaLabel="Подсказки поиска"
         >
           <div id="fmp-search-dropdown-list" className="fmp-search-dropdown fmp-search-dropdown--sheet" role="listbox" aria-label="Подсказки поиска">
