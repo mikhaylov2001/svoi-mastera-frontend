@@ -1331,7 +1331,7 @@ export default function FindWorkPage() {
                 </h2>
                 {!loading && (
                   <span className="fmp-global-search-count">
-                    {globalMatches.length} {pluralRequests(globalMatches.length)}
+                    {pluralRequests(globalMatches.length)}
                   </span>
                 )}
               </div>
