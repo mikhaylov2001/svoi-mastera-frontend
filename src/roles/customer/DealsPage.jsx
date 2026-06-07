@@ -8,6 +8,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
+import { dealCategoryLabel } from '../../utils/categoryLabel';
+import { asPhotoArray } from '../../utils/photoArray';
+import { normalizeDealForView } from '../../utils/normalizeDeal';
 import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
 import { stripSearchParams } from '../../utils/navigationHelpers';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
@@ -66,13 +69,14 @@ function workerFullName(deal) {
 }
 
 function workerAvatarUrl(deal) {
-  return resolvePhoto(deal.workerAvatarUrl);
+  return resolvePhoto(deal.workerAvatar || deal.workerAvatarUrl);
 }
 
 function dealPhotoList(deal) {
-  const photos = (deal.photos || []).map(resolvePhoto).filter(Boolean);
+  const categoryLabel = dealCategoryLabel(deal);
+  const photos = asPhotoArray(deal.photos).map(resolvePhoto).filter(Boolean);
   if (photos.length) return photos;
-  const placeholder = getCategoryPlaceholderPhotoUrlOrDefault(deal.category, null);
+  const placeholder = getCategoryPlaceholderPhotoUrlOrDefault({ categoryName: categoryLabel }, null);
   return [placeholder || FALLBACK_PHOTO];
 }
 
@@ -93,7 +97,7 @@ function dealToCard(d) {
     status: statusMap[d.status] || d.status,
     _dealStatus: d.status,
     budget: d.agreedPrice ? Number(d.agreedPrice) : null,
-    category: d.category || '',
+    category: dealCategoryLabel(d) || '',
     photos,
     offers: [{ name: workerName, initial: workerInitial, avatarUrl: workerAvatar }],
     offersCount: 0,
@@ -127,6 +131,7 @@ function DealDetail({
   const [photoIdx, setPhotoIdx] = useState(0);
   const [lightbox, setLightbox] = useState(null);
   const st = ST[deal.status] || ST.NEW;
+  const categoryLabel = dealCategoryLabel(deal);
   const photoList = dealPhotoList(deal);
   const hasPhoto = photoList.length > 0;
   const customerOk = deal.customerConfirmed;
@@ -190,7 +195,7 @@ function DealDetail({
                   <img src={photoList[photoIdx]} alt={deal.title || ''} />
                 ) : (
                   <div className="ed-main-placeholder" aria-hidden>
-                    {dealCategoryEmoji(deal.category)}
+                    {dealCategoryEmoji(categoryLabel)}
                   </div>
                 )}
                 <div className="ed-floats">
@@ -198,10 +203,10 @@ function DealDetail({
                     <span className="pulse" style={{ background: st.dot, boxShadow: pulseShadow }} />
                     <span className="ed-chip-text">{st.label}</span>
                   </div>
-                  {deal.category ? (
+                  {categoryLabel ? (
                     <div className="ed-chip">
                       <span className="ed-chip-text">
-                        {dealCategoryEmoji(deal.category)} {deal.category}
+                        {dealCategoryEmoji(categoryLabel)} {categoryLabel}
                       </span>
                     </div>
                   ) : null}
@@ -269,7 +274,7 @@ function DealDetail({
               <div className="ed-eyebrow">Условия</div>
               <dl className="ed-rows">
                 {[
-                  deal.category && ['Категория', deal.category],
+                  categoryLabel && ['Категория', categoryLabel],
                   deal.agreedPrice && ['Стоимость', `${Number(deal.agreedPrice).toLocaleString('ru-RU')} ₽`],
                   deal.createdAt && ['Создана', timeAgo(deal.createdAt)],
                 ].filter(Boolean).map(([label, value]) => (
@@ -505,7 +510,9 @@ export default function DealsPage() {
     try {
       const data = await getMyDeals(userId);
       const uid = String(userId || '');
-      setDeals((data || []).filter(d => String(d.customerId || '') === uid));
+      setDeals((data || [])
+        .filter(d => String(d.customerId || '') === uid)
+        .map(normalizeDealForView));
     } catch {
       setDeals([]);
     }
@@ -643,7 +650,7 @@ export default function DealsPage() {
   /* ── Filter / sort ── */
   const shown = deals
     .filter(d => statusTab === 'ALL' || d.status === statusTab)
-    .filter(d => !search || `${d.title || ''} ${d.category || ''} ${d.workerName || ''}`.toLowerCase().includes(search.toLowerCase()))
+    .filter(d => !search || `${d.title || ''} ${dealCategoryLabel(d)} ${d.workerName || ''}`.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => sort === 'newest'
       ? new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
       : new Date(a.createdAt || 0) - new Date(b.createdAt || 0));

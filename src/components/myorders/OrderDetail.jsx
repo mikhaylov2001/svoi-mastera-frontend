@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { STATUS_CONFIG, timeAgo } from './OrderCard';
 import { formatOffersCount } from '../../utils/formatCountRu';
+import { categoryLabelFromFields } from '../../utils/categoryLabel';
 
 const STEPS = ['Создана', 'Принята', 'В работе', 'Подтверждение', 'Завершена'];
 const STEP_TIMES = ['', '—', 'сейчас', '—', '—'];
@@ -44,6 +45,7 @@ export default function OrderDetail({ order, onBack, onOpenOffers, onEdit, onCan
   const price = order.budget ? `${Number(order.budget).toLocaleString('ru-RU')} ₽` : 'Договорная';
   const master = order.offers?.[0];
   const progressColor = isCompleted ? '#22c55e' : '#e8410a';
+  const categoryLabel = categoryLabelFromFields(order);
 
   const handleConfirm = () => {
     setConfirmed(true);
@@ -83,9 +85,11 @@ export default function OrderDetail({ order, onBack, onOpenOffers, onEdit, onCan
               {/* Chips */}
               <div style={{ position: 'absolute', top: 16, left: 16, display: 'flex', gap: 8, zIndex: 2 }}>
                 <span style={{ padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 800, background: st.dot, color: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,.2)' }}>{st.label}</span>
-                <span style={{ padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 800, background: 'rgba(0,0,0,.5)', color: '#fff', backdropFilter: 'blur(10px)' }}>
-                  {catEmoji(order.category)} {order.category}
-                </span>
+                {categoryLabel ? (
+                  <span style={{ padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 800, background: 'rgba(0,0,0,.5)', color: '#fff', backdropFilter: 'blur(10px)' }}>
+                    {catEmoji(categoryLabel)} {categoryLabel}
+                  </span>
+                ) : null}
               </div>
 
               {photos.length > 1 && (

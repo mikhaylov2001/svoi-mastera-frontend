@@ -26,6 +26,9 @@ import { stripSearchParams } from '../../utils/navigationHelpers';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
+import { dealCategoryLabel } from '../../utils/categoryLabel';
+import { asPhotoArray } from '../../utils/photoArray';
+import { normalizeDealForView } from '../../utils/normalizeDeal';
 
 const MY_DEALS_HERO_PHOTO =
   'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=max&w=2400&q=86';
@@ -74,7 +77,7 @@ function dealToCardWorker(d) {
     status: d.status,
     _dealStatus: d.status,
     budget: d.agreedPrice ? Number(d.agreedPrice) : null,
-    category: d.category || '',
+    category: dealCategoryLabel(d) || '',
     photos,
     offers: [{ name: custName, initial: custInitial, avatarUrl: custAvatar }],
   };
@@ -106,9 +109,10 @@ function resolvePhoto(u) {
 }
 
 function dealPhotoList(deal) {
-  const photos = (deal.photos || []).map(resolvePhoto).filter(Boolean);
+  const categoryLabel = dealCategoryLabel(deal);
+  const photos = asPhotoArray(deal.photos).map(resolvePhoto).filter(Boolean);
   if (photos.length) return photos;
-  const placeholder = getCategoryPlaceholderPhotoUrlOrDefault(deal.category, null);
+  const placeholder = getCategoryPlaceholderPhotoUrlOrDefault({ categoryName: categoryLabel }, null);
   return [placeholder || FALLBACK_PHOTO];
 }
 
@@ -196,7 +200,9 @@ export default function WorkerDealsPage() {
     try {
       const data = await getMyDeals(userId);
       const uid = String(userId || '');
-      setDeals((data || []).filter(d => String(d.workerId || '') === uid));
+      setDeals((data || [])
+        .filter(d => String(d.workerId || '') === uid)
+        .map(normalizeDealForView));
     } catch {
       setDeals([]);
     }
@@ -329,6 +335,7 @@ export default function WorkerDealsPage() {
   /* ══ DETAIL ══ */
   if (detail) {
     const st = ST[detail.status] || ST.NEW;
+    const categoryLabel = dealCategoryLabel(detail);
     const photoList = dealPhotoList(detail);
     const hasPhoto = photoList.length > 0;
     const workerOk = detail.workerConfirmed;
@@ -386,7 +393,7 @@ export default function WorkerDealsPage() {
                     <img src={photoList[photoIdx]} alt={detail.title || ''} />
                   ) : (
                     <div className="ed-main-placeholder" aria-hidden>
-                      {dealCategoryEmoji(detail.category)}
+                      {dealCategoryEmoji(categoryLabel)}
                     </div>
                   )}
                   <div className="ed-floats">
@@ -394,10 +401,10 @@ export default function WorkerDealsPage() {
                       <span className="pulse" style={{ background: st.dot, boxShadow: pulseShadow }} />
                       <span className="ed-chip-text">{st.label}</span>
                     </div>
-                    {detail.category ? (
+                    {categoryLabel ? (
                       <div className="ed-chip">
                         <span className="ed-chip-text">
-                          {dealCategoryEmoji(detail.category)} {detail.category}
+                          {dealCategoryEmoji(categoryLabel)} {categoryLabel}
                         </span>
                       </div>
                     ) : null}
@@ -465,7 +472,7 @@ export default function WorkerDealsPage() {
                 <div className="ed-eyebrow">Условия</div>
                 <dl className="ed-rows">
                   {[
-                    detail.category && ['Категория', detail.category],
+                    categoryLabel && ['Категория', categoryLabel],
                     detail.agreedPrice && ['Стоимость', `${Number(detail.agreedPrice).toLocaleString('ru-RU')} ₽`],
                     detail.createdAt && ['Создана', timeAgo(detail.createdAt)],
                   ].filter(Boolean).map(([label, value]) => (

@@ -1,5 +1,4 @@
-import React from 'react';
-import DealCardActions from './DealCardActions';
+import { categoryLabelFromFields } from '../../utils/categoryLabel';
 
 export const STATUS_CONFIG = {
   NEW:            { label: 'Новый заказ', dot: '#f59e0b', bg: '#fffbeb', color: '#d97706' },
@@ -62,6 +61,7 @@ export default function OrderCard({
   const partner = order.offers?.[0];
   const progressPct = stepIdx < 0 ? 0 : Math.round((stepIdx / (STEPS.length - 1)) * 100);
   const progressColor = progressPct === 100 ? '#22c55e' : '#e8410a';
+  const categoryLabel = categoryLabelFromFields(order);
 
   return (
     <article className="mo-card" onClick={onOpen} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && onOpen()}>
@@ -103,7 +103,9 @@ export default function OrderCard({
       <div className="mo-card-body">
         <div>
           <h3 className="mo-card-title">{order.title}</h3>
-          <span className="mo-card-cat-chip">{catEmoji(order.category)} {order.category}</span>
+          {categoryLabel ? (
+            <span className="mo-card-cat-chip">{catEmoji(categoryLabel)} {categoryLabel}</span>
+          ) : null}
         </div>
 
         {/* Progress */}

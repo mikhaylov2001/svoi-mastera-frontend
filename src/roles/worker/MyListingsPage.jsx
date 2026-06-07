@@ -13,6 +13,8 @@ import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILT
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { LISTING_ARCHIVED_AFTER_DEAL } from '../../utils/listingArchiveEvents';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
+import { categoryLabelFromFields } from '../../utils/categoryLabel';
+import { asPhotoArray } from '../../utils/photoArray';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../utils/listingPublishedPrice';
 import { getListingViewsCount } from '../../utils/jobRequestViews';
@@ -1544,9 +1546,9 @@ export default function MyListingsPage() {
   if (detail) {
     const lockedDeal = listingLockedAfterDeal(detail);
     const statusPill = listingOwnerDetailStatusPill(detail, lockedDeal);
-    const catLabel = detail.category || '';
-    const detailPlaceholder = getCategoryPlaceholderPhotoUrlOrDefault({ category: detail.category });
-    const jdPhotosRaw = (detail.photos || []).map((p) => mlDetailPhotoUrl(p, BACKEND)).filter(Boolean);
+    const catLabel = categoryLabelFromFields(detail);
+    const detailPlaceholder = getCategoryPlaceholderPhotoUrlOrDefault({ categoryName: catLabel });
+    const jdPhotosRaw = asPhotoArray(detail.photos).map((p) => mlDetailPhotoUrl(p, BACKEND)).filter(Boolean);
     const jdPhotos = jdPhotosRaw.length ? jdPhotosRaw : [detailPlaceholder];
     const mainSrc = jdPhotos[photoIdx] || jdPhotos[0];
     const pubPrice = getListingPublishedPriceNumber(detail);

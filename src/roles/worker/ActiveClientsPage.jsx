@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getMyDeals } from '../../api';
+import { dealCategoryLabel } from '../../utils/categoryLabel';
+import { normalizeDealForView } from '../../utils/normalizeDeal';
 import './ActiveClientsPage.css';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
 
@@ -28,6 +30,7 @@ function DealCard({ deal, navigate }) {
   const st = STATUS_MAP[deal.status] || { label: deal.status, emoji: '📋', color: '#9ca3af', bg: '#f3f4f6' };
   const isInProgress = deal.status === 'IN_PROGRESS';
   const isCompleted  = deal.status === 'COMPLETED';
+  const categoryLabel = dealCategoryLabel(deal);
 
   return (
     <div className={`ac-card ${expanded ? 'ac-card-expanded' : ''}`}>
@@ -61,9 +64,9 @@ function DealCard({ deal, navigate }) {
 
         {/* ── Мета ── */}
         <div className="ac-deal-meta">
-          {deal.category && (
-            <span className={`ac-meta-chip ac-meta-chip-cat ${categoryChipToneClass(deal.category)}`}>
-              {CATEGORY_STYLES[deal.category]?.emoji || '📂'} {deal.category}
+          {categoryLabel && (
+            <span className={`ac-meta-chip ac-meta-chip-cat ${categoryChipToneClass(categoryLabel)}`}>
+              {CATEGORY_STYLES[categoryLabel]?.emoji || '📂'} {categoryLabel}
             </span>
           )}
           {deal.createdAt && (
@@ -179,7 +182,7 @@ export default function ActiveClientsPage() {
     setLoading(true);
     try {
       const data = await getMyDeals(userId);
-      setDeals(data.filter(d => d.workerId === userId));
+      setDeals(data.filter(d => d.workerId === userId).map(normalizeDealForView));
     } catch (err) {
       console.error('Failed to load deals:', err);
     } finally {
