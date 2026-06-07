@@ -27,7 +27,6 @@ import {
 } from '../../utils/categoryPlaceholderPhoto';
 import { jobRequestMatchesCatalogCategory, mergeApiCategoriesWithCatalog } from '../../utils/mergeApiCategoriesWithCatalog';
 import CardFavoriteSlot from '../../components/CardFavoriteSlot';
-import CatalogSearchSheet from '../../components/CatalogSearchSheet';
 import { edListingDetailMergedCss, dealCategoryEmoji } from '../shared/dealsWdStyles';
 import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
 import { useIsMobileCatalog } from '../../hooks/useIsMobileCatalog';
@@ -239,7 +238,7 @@ export default function FindWorkPage() {
   }, [debouncedFwSearch, selectedCategory]);
 
   useEffect(() => {
-    if (!fwSearchFocused || isMobileCat) return;
+    if (!fwSearchFocused) return;
     const onDoc = (e) => {
       if (fwSearchDdRef.current && !fwSearchDdRef.current.contains(e.target)) {
         closeCategorySearch();
@@ -247,7 +246,7 @@ export default function FindWorkPage() {
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
-  }, [fwSearchFocused, isMobileCat, closeCategorySearch]);
+  }, [fwSearchFocused, closeCategorySearch]);
 
   useEffect(() => {
     if (!fwSearchFocused) return;
@@ -258,15 +257,6 @@ export default function FindWorkPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [fwSearchFocused, closeCategorySearch]);
 
-  useEffect(() => {
-    if (!isMobileCat || !fwSearchFocused) return undefined;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [fwSearchFocused, isMobileCat]);
-
   const fwDdMatches = useMemo(() => {
     if (!selectedCategory || !debouncedFwSearch || debouncedFwSearch.length < 2) return [];
     const pool = requests.filter((r) => jobRequestMatchesCatalogCategory(r, selectedCategory));
@@ -274,6 +264,7 @@ export default function FindWorkPage() {
   }, [requests, selectedCategory, debouncedFwSearch]);
 
   const showFwSearchDd = fwSearchFocused && debouncedFwSearch.length >= 2;
+  const showFwSearchPanel = isMobileCat ? fwSearchFocused : showFwSearchDd;
 
   const applyCategorySearch = useCallback(() => {
     setSearchTerm(searchInput);
@@ -875,7 +866,7 @@ export default function FindWorkPage() {
         <style>{findCatalogPageCss}</style>
         <style>{catalogCatFeedMobileCss}</style>
 
-        {!isMobileCat && fwSearchFocused ? (
+        {fwSearchFocused ? (
           <button
             type="button"
             className="cat-feed-search-backdrop"
@@ -913,7 +904,7 @@ export default function FindWorkPage() {
                   </button>
                 )}
               </div>
-              {!isMobileCat && showFwSearchDd ? (
+              {showFwSearchPanel ? (
                 <div id="fmp-search-dropdown-list" className="fmp-search-dropdown" role="listbox" aria-label="Подсказки поиска">
                   {renderFwSearchDropdown()}
                 </div>
@@ -922,16 +913,6 @@ export default function FindWorkPage() {
             <button type="button" className="fmp-topbar-btn" onClick={applyCategorySearch}>Найти</button>
           </div>
         </div>
-
-        <CatalogSearchSheet
-          open={isMobileCat && fwSearchFocused}
-          onClose={closeCategorySearch}
-          ariaLabel="Подсказки поиска"
-        >
-          <div id="fmp-search-dropdown-list" className="fmp-search-dropdown fmp-search-dropdown--sheet" role="listbox" aria-label="Подсказки поиска">
-            {renderFwSearchDropdown()}
-          </div>
-        </CatalogSearchSheet>
 
         <nav className="jl-crumbs jl-crumbs--full" aria-label="Навигация по категориям">
           <button type="button" className="jl-crumbs-link" onClick={() => { setSelectedCategory(null); resetCategoryFilters(); }}>Все категории</button>

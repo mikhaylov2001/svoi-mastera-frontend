@@ -25,7 +25,6 @@ import {
   mergeApiCategoriesWithCatalog,
 } from '../../utils/mergeApiCategoriesWithCatalog';
 import CardFavoriteSlot from '../../components/CardFavoriteSlot';
-import CatalogSearchSheet from '../../components/CatalogSearchSheet';
 import { catalogCatFeedMobileCss } from '../shared/catalogCatFeedMobileCss';
 import { useIsMobileCatalog } from '../../hooks/useIsMobileCatalog';
 import '../worker/jobListings.css';
@@ -184,7 +183,7 @@ export default function FindMasterPage() {
   }, [searchInput]);
 
   useEffect(() => {
-    if (!fmpSearchFocused || isMobileCat) return;
+    if (!fmpSearchFocused) return;
     const onDoc = (e) => {
       if (fmpSearchDdRef.current && !fmpSearchDdRef.current.contains(e.target)) {
         closeCategorySearch();
@@ -192,7 +191,7 @@ export default function FindMasterPage() {
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
-  }, [fmpSearchFocused, isMobileCat, closeCategorySearch]);
+  }, [fmpSearchFocused, closeCategorySearch]);
 
   useEffect(() => {
     if (!fmpSearchFocused) return;
@@ -202,15 +201,6 @@ export default function FindMasterPage() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [fmpSearchFocused, closeCategorySearch]);
-
-  useEffect(() => {
-    if (!isMobileCat || !fmpSearchFocused) return undefined;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [fmpSearchFocused, isMobileCat]);
 
   const reloadCatalog = useCallback(async () => {
     setLoading(true);
@@ -278,6 +268,7 @@ export default function FindMasterPage() {
   }, [services, selectedCategory, debouncedSearchInput]);
 
   const showFmpSearchDd = fmpSearchFocused && debouncedSearchInput.length >= 2;
+  const showFmpSearchPanel = isMobileCat ? fmpSearchFocused : showFmpSearchDd;
 
   const applyCategorySearch = useCallback(() => {
     setSearchTerm(searchInput);
@@ -646,7 +637,7 @@ export default function FindMasterPage() {
       <style>{findCatalogPageCss}</style>
       <style>{catalogCatFeedMobileCss}</style>
 
-      {!isMobileCat && fmpSearchFocused ? (
+      {fmpSearchFocused ? (
         <button
           type="button"
           className="cat-feed-search-backdrop"
@@ -684,7 +675,7 @@ export default function FindMasterPage() {
                 </button>
               )}
             </div>
-            {!isMobileCat && showFmpSearchDd ? (
+            {showFmpSearchPanel ? (
               <div id="fmp-search-dropdown-list" className="fmp-search-dropdown" role="listbox" aria-label="Подсказки поиска">
                 {renderFmpSearchDropdown()}
               </div>
@@ -693,16 +684,6 @@ export default function FindMasterPage() {
           <button type="button" className="fmp-topbar-btn" onClick={applyCategorySearch}>Найти</button>
         </div>
       </div>
-
-      <CatalogSearchSheet
-        open={isMobileCat && fmpSearchFocused}
-        onClose={closeCategorySearch}
-        ariaLabel="Подсказки поиска"
-      >
-        <div id="fmp-search-dropdown-list" className="fmp-search-dropdown fmp-search-dropdown--sheet" role="listbox" aria-label="Подсказки поиска">
-          {renderFmpSearchDropdown()}
-        </div>
-      </CatalogSearchSheet>
 
       <nav className="jl-crumbs jl-crumbs--full" aria-label="Навигация по категориям">
         <Link to="/find-master" className="jl-crumbs-link">Все категории</Link>

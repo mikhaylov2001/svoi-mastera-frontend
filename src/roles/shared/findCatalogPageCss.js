@@ -1394,30 +1394,22 @@ export const findCatalogPageCss = `
     }
     .jl-page.fw-jl-cat-feed .fmp-search-dropdown,
     .jl-page.fw-jl-cat-feed .fw2-search-dropdown {
-      position: fixed !important;
+      position: absolute !important;
+      top: calc(100% + 8px) !important;
+      bottom: auto !important;
       left: 0 !important;
       right: 0 !important;
-      top: auto !important;
-      bottom: 0 !important;
-      max-height: min(70vh, calc(100dvh - 96px)) !important;
-      border-radius: 20px 20px 0 0 !important;
-      border-left: none !important;
-      border-right: none !important;
-      border-bottom: none !important;
-      z-index: 1700 !important;
-      box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.18) !important;
-      padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+      max-height: min(340px, 48vh) !important;
+      border-radius: 14px !important;
+      border: 1px solid #e8e8e8 !important;
+      box-shadow: 0 12px 36px rgba(15, 23, 42, 0.14) !important;
+      z-index: 1802 !important;
+      padding-bottom: 0;
       -webkit-overflow-scrolling: touch;
     }
     .jl-page.fw-jl-cat-feed .fmp-search-dropdown::before,
     .jl-page.fw-jl-cat-feed .fw2-search-dropdown::before {
-      content: '';
-      display: block;
-      width: 36px;
-      height: 4px;
-      margin: 10px auto 6px;
-      border-radius: 999px;
-      background: #e5e7eb;
+      display: none;
     }
     .jl-page.fw-jl-cat-feed.cat-feed-search-active .fmp-topbar,
     .jl-page.fw-jl-cat-feed.cat-feed-search-active .fw2-topbar {
