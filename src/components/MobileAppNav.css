@@ -1,6 +1,10 @@
 /* ══════════════════════════════════════
    MOBILE BOTTOM TAB BAR — Lovable v13
 ══════════════════════════════════════ */
+:root {
+  --mobile-tab-bar-height: 54px;
+}
+
 .mobile-tab-bar {
   display: none;
   position: fixed;
@@ -113,10 +117,15 @@
   }
 
   body.has-mobile-tab-bar .app-main {
-    padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--mobile-tab-bar-height) + env(safe-area-inset-bottom, 0px));
   }
 
   body.has-mobile-tab-bar .mo-page.fav-page {
-    padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--mobile-tab-bar-height) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Чат fixed на весь экран — поднимаем над нижним tab-bar, иначе поле ввода скрыто */
+  body.has-mobile-tab-bar .cr2 {
+    bottom: calc(var(--mobile-tab-bar-height) + env(safe-area-inset-bottom, 0px));
   }
 }
