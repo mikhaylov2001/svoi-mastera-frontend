@@ -650,6 +650,9 @@ export function CustomerHomePage({ userId }) {
                 const rating = workerRatingForListing(l, workerStats);
                 const locCity = (l.city && String(l.city).trim()) || city;
                 const detail = `/listings/${l.id}?from=home`;
+                const chatTo = l.workerId
+                  ? (userId ? `/chat/${l.workerId}` : '/login')
+                  : null;
                   return (
                   <article className="chpv-card" key={l.id}>
                     <div className="chpv-card-img">
@@ -659,7 +662,11 @@ export function CustomerHomePage({ userId }) {
                       {l.category ? <div className="chpv-card-tag">{l.category}</div> : null}
                       <CardFavoriteSlot kind="listing" id={l.id} className="chpv-card-fav-slot card-fav-slot" />
                       <div className="chpv-card-quick">
-                        <Link to={detail} className="chpv-quick-btn primary" onClick={(e) => e.stopPropagation()}>
+                        <Link
+                          to={chatTo || detail}
+                          className="chpv-quick-btn primary"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           Написать
                         </Link>
                         <Link to={detail} className="chpv-quick-btn" onClick={(e) => e.stopPropagation()}>
@@ -1100,6 +1107,9 @@ export function WorkerHomePage({ userId, userName }) {
                 const custName =
                   [item.customerName, item.customerLastName].filter(Boolean).join(' ') || 'Заказчик';
                 const detail = `/find-work?request=${encodeURIComponent(item.id)}&from=home`;
+                const chatTo = item.customerId
+                  ? `/chat/${item.customerId}?jobRequestId=${encodeURIComponent(item.id)}`
+                  : null;
                 return (
                   <article className="chpv-card" key={item.id}>
                     <div className="chpv-card-img">
@@ -1109,7 +1119,11 @@ export function WorkerHomePage({ userId, userName }) {
                       {catLabel ? <div className="chpv-card-tag">{catLabel}</div> : null}
                       <CardFavoriteSlot kind="jobRequest" id={item.id} className="chpv-card-fav-slot card-fav-slot" />
                       <div className="chpv-card-quick">
-                        <Link to={detail} className="chpv-quick-btn primary" onClick={(e) => e.stopPropagation()}>
+                        <Link
+                          to={chatTo || detail}
+                          className="chpv-quick-btn primary"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           Написать
               </Link>
                         <Link to={detail} className="chpv-quick-btn" onClick={(e) => e.stopPropagation()}>

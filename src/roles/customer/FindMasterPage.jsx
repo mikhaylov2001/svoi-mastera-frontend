@@ -1067,9 +1067,11 @@ export default function FindMasterPage() {
                             <button
                               type="button"
                               className="jl-bigcard-btn ghost"
+                              disabled={!wid}
                               onClick={e => {
                                 e.stopPropagation();
-                                navigate(`/chat/${wid}`);
+                                if (!wid) return;
+                                navigate(userId ? `/chat/${wid}` : '/login');
                               }}
                             >
                               Написать

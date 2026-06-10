@@ -267,6 +267,22 @@ export default function FavoritesPage() {
     navigate(to);
   };
 
+  const openChat = (i) => {
+    if (i.missing) return;
+    if (i.kind === 'master') {
+      const l = listingById.get(i.rawId);
+      const wid = l?.workerId;
+      if (!wid) return;
+      navigate(userId ? `/chat/${wid}` : '/login');
+      return;
+    }
+    const req = requestById.get(i.rawId);
+    const cid = req?.customerId;
+    if (!cid) return;
+    const chatPath = `/chat/${cid}?jobRequestId=${encodeURIComponent(i.rawId)}`;
+    navigate(userId ? chatPath : '/login');
+  };
+
   const renderCard = (i) => {
     if (i.missing) {
       return (
@@ -360,7 +376,8 @@ export default function FavoritesPage() {
             className="mo-btn mo-btn-primary"
             onClick={(e) => {
               e.stopPropagation();
-              openItem(i);
+              if (i.kind === 'master') openChat(i);
+              else openItem(i);
             }}
           >
             {writeLabel}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   getConversations, getConversation, sendMessage,
   updateMessage, deleteMessage, deleteConversation,
@@ -63,9 +63,14 @@ function ForwardDialog({ convos, currentPid, onForward, onClose, busy }) {
 export default function ChatPage() {
   const { partnerId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { userId, isWorker } = useAuth();
 
   const pid = partnerId ? String(partnerId) : null;
+  const jobRequestId = useMemo(() => {
+    const v = new URLSearchParams(location.search || '').get('jobRequestId');
+    return v ? String(v) : null;
+  }, [location.search]);
 
   const [convos, setConvos] = useState([]);
   const [msgs, setMsgs] = useState([]);
@@ -180,12 +185,12 @@ export default function ChatPage() {
     try {
       const replyPrefix = rt ? `> ${rt.name}: ${rt.text}\n` : '';
       const finalText = replyPrefix + (text || '');
-      await sendMessage(userId, pid, finalText, null, attachmentUrl || null, attachmentType || null);
+      await sendMessage(userId, pid, finalText, jobRequestId, attachmentUrl || null, attachmentType || null);
       await loadMsgs();
       await loadConvos();
     } catch { /* ignore */ }
         setBusy(false);
-  }, [userId, pid, loadMsgs, loadConvos]);
+  }, [userId, pid, jobRequestId, loadMsgs, loadConvos]);
 
   const handleDeleteMessage = useCallback(async msgId => {
     if (!window.confirm('Удалить сообщение?')) return;
