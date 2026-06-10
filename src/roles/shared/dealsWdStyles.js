@@ -748,16 +748,6 @@ export const dealsDetailEdCss = `
 .ed-conf-row.ok .ed-conf-status { color: #18181b; }
 
 .ed-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
-.ed-take-form { display: flex; flex-direction: column; gap: 0; }
-.ed-take-label { display: block; font-size: 12px; font-weight: 700; color: #71717a; margin: 12px 0 6px; }
-.ed-take-label:first-of-type { margin-top: 0; }
-.ed-take-input {
-  width: 100%; box-sizing: border-box; border: 1.5px solid #e4e4e7; border-radius: 12px;
-  padding: 11px 14px; font-family: Manrope, Inter, sans-serif; font-size: 15px; font-weight: 600;
-  color: #18181b; background: #fff; outline: none;
-}
-.ed-take-input:focus { border-color: #f45b31; box-shadow: 0 0 0 3px rgba(244,91,49,.12); }
-.ed-take-textarea { resize: vertical; min-height: 72px; font-weight: 500; }
 .ed-btn {
   width: 100%;
   border: none;
