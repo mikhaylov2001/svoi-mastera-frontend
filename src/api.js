@@ -194,6 +194,19 @@ export async function createJobOffer(workerId, requestId, data) {
     body: JSON.stringify({ message: data.comment || 'Готов выполнить', price: data.price, estimatedDays: data.estimatedDays || null }),
   });
 }
+
+/** Мастер берёт заявку по итоговой цене — сразу создаётся сделка (без этапа отклика). */
+export async function takeJobRequest(workerId, requestId, data) {
+  return apiCall(`/worker/job-requests/${requestId}/take`, {
+    method: 'POST',
+    headers: { 'X-User-Id': workerId },
+    body: JSON.stringify({
+      message: data.message || data.comment || 'Готов выполнить работу',
+      price: data.price,
+      estimatedDays: data.estimatedDays || null,
+    }),
+  });
+}
 export async function acceptOffer(userId, jobRequestId, offerId) {
   return apiCall(`/deals/accept?jobRequestId=${jobRequestId}&offerId=${offerId}`, {
     method: 'POST', headers: { 'X-User-Id': userId },

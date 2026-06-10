@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { getOpenJobRequestsForWorker, createJobOffer, getCategories, getCustomerStats, recordJobRequestView } from '../../api';
+import { getOpenJobRequestsForWorker, takeJobRequest, getCategories, getCustomerStats, recordJobRequestView } from '../../api';
 import {
   formatJobRequestBudgetLabel,
   getJobRequestPublishedBudgetNumber,
@@ -108,66 +108,6 @@ function jobRequestListPrice(req) {
   return getJobRequestPublishedBudgetNumber(req);
 }
 
-function OfferModal({ request, offerForm, setOfferForm, onClose, onSubmit, submitting }) {
-  if (!request) return null;
-  return (
-    <div className="fw-modal-overlay" onClick={onClose}>
-      <div className="fw-modal" onClick={e => e.stopPropagation()}>
-        <div className="fw-modal-header">
-          <h3 className="fw-modal-title">📩 Отклик на заявку</h3>
-          <p className="fw-modal-subtitle">{request.title}</p>
-        </div>
-        <form onSubmit={onSubmit}>
-          <div className="fw-modal-body">
-            <div className="fw-modal-field">
-              <label className="fw-modal-label">Ваша цена за работу, ₽ *</label>
-              <input
-                type="number"
-                className="fw-modal-input"
-                placeholder="Например, 5000"
-                value={offerForm.price}
-                onChange={e => setOfferForm(prev => ({ ...prev, price: e.target.value }))}
-                required
-                min="1"
-                autoFocus
-              />
-              <p style={{ margin: '8px 0 0', fontSize: 12, color: '#64748b', lineHeight: 1.45 }}>
-                Оплата — наличными или переводом напрямую заказчику после работы. Условия уточняйте в личных сообщениях.
-              </p>
-            </div>
-            <div className="fw-modal-field">
-              <label className="fw-modal-label">Срок выполнения (дней)</label>
-              <input
-                type="number"
-                className="fw-modal-input"
-                placeholder="Например, 3"
-                value={offerForm.estimatedDays}
-                onChange={e => setOfferForm(prev => ({ ...prev, estimatedDays: e.target.value }))}
-                min="1"
-              />
-            </div>
-            <div className="fw-modal-field">
-              <label className="fw-modal-label">Комментарий</label>
-              <textarea
-                className="fw-modal-input fw-modal-textarea"
-                placeholder="Опишите как вы выполните работу, ваш опыт..."
-                value={offerForm.comment}
-                onChange={e => setOfferForm(prev => ({ ...prev, comment: e.target.value }))}
-              />
-            </div>
-          </div>
-          <div className="fw-modal-footer">
-            <button type="button" className="fw-modal-cancel" onClick={onClose}>Отмена</button>
-            <button type="submit" className="fw-modal-submit" disabled={submitting || !offerForm.price}>
-              {submitting ? 'Отправка...' : '📩 Отправить отклик'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
 export default function FindWorkPage() {
   const { userId } = useAuth();
   const { showToast } = useToast();
@@ -182,7 +122,6 @@ export default function FindWorkPage() {
   /** Откуда открыли деталь заявки: главная / избранное / раздел «Найти работу» */
   const [jobDetailFrom, setJobDetailFrom] = useState('find-work');
   const [activePhotoIdx,   setActivePhotoIdx]   = useState(0);
-  const [showOfferModal,   setShowOfferModal]   = useState(null);
   const [offerForm,        setOfferForm]        = useState({ price: '', comment: '', estimatedDays: '' });
   const [submitting,       setSubmitting]       = useState(false);
   const [lightbox,         setLightbox]         = useState(null);
@@ -435,40 +374,34 @@ export default function FindWorkPage() {
     setJobDetailFrom('find-work');
     setSelectedRequest(req);
     setActivePhotoIdx(0);
-  }, [bumpJobRequestView]);
-
-  const handleOpenOfferModal = (request) => {
-    bumpJobRequestView(request?.id);
-    setShowOfferModal(request);
-    const p = jobRequestListPrice(request);
+    const p = jobRequestListPrice(req);
     setOfferForm({
       price: p != null && !Number.isNaN(p) ? String(p) : '',
       comment: '',
       estimatedDays: '',
     });
-  };
+  }, [bumpJobRequestView]);
 
-  const handleCloseOfferModal = () => {
-    setShowOfferModal(null);
-    setOfferForm({ price: '', comment: '', estimatedDays: '' });
-  };
-
-  const handleSubmitOffer = async (e) => {
+  const handleTakeJob = async (e) => {
     e.preventDefault();
-    if (!offerForm.price) { showToast('Укажите цену', 'error'); return; }
+    if (!selectedRequest?.id) return;
+    if (!offerForm.price) {
+      showToast('Укажите итоговую цену', 'error');
+      return;
+    }
     setSubmitting(true);
     try {
-      await createJobOffer(userId, showOfferModal.id, {
-        price:         Number(offerForm.price),
-        message:       offerForm.comment || 'Готов выполнить работу',
+      await takeJobRequest(userId, selectedRequest.id, {
+        price: Number(offerForm.price),
+        message: offerForm.comment || 'Готов выполнить работу',
         estimatedDays: offerForm.estimatedDays ? Number(offerForm.estimatedDays) : null,
       });
-      showToast('Отклик отправлен!', 'success');
-      handleCloseOfferModal();
-      loadData();
+      showToast('Заказ взят — сделка создана', 'success');
+      setSelectedRequest(null);
+      navigate('/deals');
     } catch (err) {
-      console.error('Failed to create offer:', err);
-      showToast('Не удалось отправить отклик', 'error');
+      console.error('Failed to take job:', err);
+      showToast(err?.message || 'Не удалось взять заказ', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -492,7 +425,6 @@ export default function FindWorkPage() {
     const jdPhotos = jdPhotosRaw.length ? jdPhotosRaw : [jdPlaceholder];
     const mainSrc = jdPhotos[activePhotoIdx] || null;
     const budget = formatJobRequestBudgetLabel(req);
-    const priceIsNegotiable = !hasJobRequestPublishedPrice(req);
     const addressLine = (req.addressText || req.address || req.cityName || '').trim();
     const jobCity =
       (req.cityName && String(req.cityName).trim()) ||
@@ -701,32 +633,66 @@ export default function FindWorkPage() {
 
               <aside className="ed-side">
                 <div className="ed-card">
-                  <div className="ed-eyebrow">Стоимость</div>
+                  <div className="ed-eyebrow">Итоговая цена</div>
                   {priceNum != null ? (
-                    <div className="ed-price-num">
+                    <div className="ed-price-num" style={{ marginBottom: 8 }}>
                       {priceNum.toLocaleString('ru-RU')}
                       <small> ₽</small>
                     </div>
-                  ) : (
-                    <div className="ed-price-num" style={{ fontSize: 22, fontWeight: 700 }}>
-                      {JOB_REQUEST_PRICE_MISSING_LABEL}
-                    </div>
-                  )}
-                  <p className="ed-price-sub">
-                    {priceIsNegotiable
-                      ? 'Заказчик не указал сумму — уточните в чате'
-                      : 'Окончательная цена согласовывается в чате с заказчиком'}
+                  ) : null}
+                  <p className="ed-price-sub" style={{ marginBottom: 16 }}>
+                    {priceNum != null
+                      ? 'Цена заказчика — вы можете взять заказ по этой сумме или указать свою итоговую'
+                      : 'Укажите итоговую сумму — это окончательная цена сделки'}
                   </p>
-                  <div className="ed-actions">
-                    <button type="button" className="ed-btn ed-btn-confirm" onClick={() => handleOpenOfferModal(req)}>
-                      Откликнуться
-                    </button>
-                    {req.customerId ? (
-                      <Link to={`/chat/${req.customerId}?jobRequestId=${req.id}`} className="ed-btn ed-btn-ghost">
-                        Написать в чат
-                      </Link>
-                    ) : null}
-                  </div>
+                  <form className="ed-take-form" onSubmit={handleTakeJob}>
+                    <label className="ed-take-label" htmlFor="fw-take-price">
+                      {priceNum != null ? 'Ваша итоговая цена, ₽' : 'Итоговая цена, ₽ *'}
+                    </label>
+                    <input
+                      id="fw-take-price"
+                      type="number"
+                      className="ed-take-input"
+                      placeholder="Например, 5000"
+                      value={offerForm.price}
+                      onChange={(e) => setOfferForm((prev) => ({ ...prev, price: e.target.value }))}
+                      required
+                      min="1"
+                    />
+                    <label className="ed-take-label" htmlFor="fw-take-days">Срок (дней, необязательно)</label>
+                    <input
+                      id="fw-take-days"
+                      type="number"
+                      className="ed-take-input"
+                      placeholder="3"
+                      value={offerForm.estimatedDays}
+                      onChange={(e) => setOfferForm((prev) => ({ ...prev, estimatedDays: e.target.value }))}
+                      min="1"
+                    />
+                    <label className="ed-take-label" htmlFor="fw-take-comment">Комментарий (необязательно)</label>
+                    <textarea
+                      id="fw-take-comment"
+                      className="ed-take-input ed-take-textarea"
+                      placeholder="Кратко опишите, как выполните работу"
+                      value={offerForm.comment}
+                      onChange={(e) => setOfferForm((prev) => ({ ...prev, comment: e.target.value }))}
+                      rows={3}
+                    />
+                    <div className="ed-actions">
+                      <button
+                        type="submit"
+                        className="ed-btn ed-btn-confirm"
+                        disabled={submitting || !offerForm.price}
+                      >
+                        {submitting ? 'Оформляем…' : 'Взять заказ'}
+                      </button>
+                      {req.customerId ? (
+                        <Link to={`/chat/${req.customerId}?jobRequestId=${req.id}`} className="ed-btn ed-btn-ghost">
+                          Написать в чат
+                        </Link>
+                      ) : null}
+                    </div>
+                  </form>
                 </div>
 
                 {(req.customerName || req.customerId) && (
@@ -781,15 +747,6 @@ export default function FindWorkPage() {
             </div>
           </div>
         </div>
-
-        <OfferModal
-          request={showOfferModal}
-          offerForm={offerForm}
-          setOfferForm={setOfferForm}
-          onClose={handleCloseOfferModal}
-          onSubmit={handleSubmitOffer}
-          submitting={submitting}
-        />
       </>
     );
   }
@@ -1235,9 +1192,9 @@ export default function FindWorkPage() {
                           <button
                             type="button"
                             className="jl-bigcard-btn primary"
-                            onClick={e => { e.stopPropagation(); handleOpenOfferModal(req); }}
+                            onClick={e => { e.stopPropagation(); openRequestDetail(req); }}
                           >
-                            Откликнуться
+                            Взять заказ
                           </button>
                           <button
                             type="button"
@@ -1264,15 +1221,6 @@ export default function FindWorkPage() {
           </main>
         </div>
         </div>
-
-        <OfferModal
-          request={showOfferModal}
-          offerForm={offerForm}
-          setOfferForm={setOfferForm}
-          onClose={handleCloseOfferModal}
-          onSubmit={handleSubmitOffer}
-          submitting={submitting}
-        />
       </div>
     );
   }
@@ -1290,7 +1238,7 @@ export default function FindWorkPage() {
         <div className="fmp-hero-overlay" />
         <div className="fmp-hero-body">
           <h1>Найти работу<br/>в Йошкар-Оле</h1>
-          <p className="fmp-hero-sub">Откликайтесь на заявки заказчиков — первый отклик получает заказ чаще</p>
+          <p className="fmp-hero-sub">Берите заказы по указанной цене — сделка создаётся сразу</p>
           {!loading && (
             <div className="fmp-hero-stats">
               {[
