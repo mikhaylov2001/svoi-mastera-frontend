@@ -324,9 +324,7 @@ export default function ListingDetailPage() {
   const priceMainLine = priceHasAmount
     ? `${priceNum.toLocaleString('ru-RU')}`
     : listing.priceUnit || 'Договорная';
-  const priceSubLine = priceHasAmount
-    ? 'Окончательная цена согласовывается в чате с мастером'
-    : listing.priceUnit || null;
+  const priceSubLine = priceHasAmount ? null : (listing.priceUnit || null);
   const pubStr = listing.createdAt
     ? new Date(listing.createdAt).toLocaleDateString('ru-RU', {
         day: 'numeric',
@@ -619,7 +617,7 @@ export default function ListingDetailPage() {
                       )}
                       {customerListingDeal.status === 'IN_PROGRESS' && (
                         <div className="ed-callout ed-callout-warn" style={{ marginTop: 12 }}>
-                          Сделка в работе. Обсуждайте детали в чате.
+                          Сделка в работе.
                         </div>
                       )}
                       {customerListingDeal.status === 'COMPLETED' && (

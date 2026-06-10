@@ -1453,7 +1453,7 @@ export default function MyOrdersPage() {
                   <div className="nl-card-head">
                     <div>
                       <h2 className="nl-card-title">Цена за работу</h2>
-                      <p className="nl-card-sub">Сумма в заявке — ориентир для мастеров; детали можно уточнить в чате</p>
+                      <p className="nl-card-sub">Укажите сумму — мастер сможет сразу взять заказ по этой цене</p>
                     </div>
                   </div>
                   <label className="nl-label nl-label--tight">
@@ -1478,12 +1478,12 @@ export default function MyOrdersPage() {
                       <strong>В заявке:</strong>{' '}
                       {Number(form.budget).toLocaleString('ru-RU')} ₽
                       <div style={{ fontSize: 12, marginTop: 4, opacity: 0.95 }}>
-                        Детали и оплату согласуете в чате с мастером (наличные или перевод напрямую).
+                        Мастер может сразу взять заказ по этой сумме.
                       </div>
                     </div>
                   ) : (
                     <div className="nl-price-hint nl-price-hint--muted">
-                      Укажите цену за работу — мастера увидят её в заявке и напишут вам в чат
+                      Укажите цену за работу — мастера увидят её в карточке заявки
                     </div>
                   )}
 
@@ -1572,8 +1572,8 @@ export default function MyOrdersPage() {
                 <ol className="nl-steps">
                   {[
                     ['Разместите заявку', 'Опишите задачу и укажите цену за работу — мастера увидят заявку'],
-                    ['Пишите в чате', 'Мастера откликаются и обсуждают детали в личных сообщениях'],
-                    ['Договоритесь напрямую', 'Сроки и нюансы — в переписке с выбранным мастером'],
+                    ['Мастер берёт заказ', 'По указанной цене сразу оформляется сделка'],
+                    ['Выполнение работы', 'Статус сделки и переписка — в разделе «Мои сделки»'],
                     ['Оплата мастеру', 'Наличными или переводом на карту напрямую после выполнения работы'],
                   ].map(([title, desc], i) => (
                     <li key={i}>
@@ -1967,11 +1967,6 @@ export default function MyOrdersPage() {
                     {JOB_REQUEST_PRICE_MISSING_LABEL}
                   </div>
                 )}
-                <p className="ed-price-sub">
-                  {priceIsNegotiable
-                    ? 'укажите сумму при редактировании или договоритесь в чате с мастером'
-                    : 'окончательная цена в заявке; детали — в чате'}
-                </p>
               </div>
 
               {(requestIsEditable(detail) || requestCanRemove(detail) || detail.status === 'OPEN') && (
@@ -2143,7 +2138,7 @@ export default function MyOrdersPage() {
             <div className="mo-empty-emoji">{tab === 'active' ? '📋' : '📦'}</div>
             <div className="mo-empty-title">{tab === 'active' ? 'Нет активных заявок' : 'Архив пуст'}</div>
             <div className="mo-empty-sub">
-              {tab === 'active' ? 'Разместите заявку, чтобы мастера откликнулись' : 'Завершённые и закрытые заявки появятся здесь'}
+              {tab === 'active' ? 'Разместите заявку — мастер сможет сразу взять её по цене' : 'Завершённые и закрытые заявки появятся здесь'}
             </div>
             {tab === 'active' && (
               <div className="mo-empty-actions">
@@ -2237,10 +2232,10 @@ export default function MyOrdersPage() {
                       {hasOffers ? (
                         <>
                           <span className="mo-card-hint-main">{formatOffersCount(offers)}</span>
-                          <span className="mo-card-hint-sub">Мастера могут откликнуться</span>
+                          <span className="mo-card-hint-sub">Мастер может взять заказ</span>
                         </>
                       ) : (
-                        <span className="mo-card-hint-sub">Ждём первый отклик</span>
+                        <span className="mo-card-hint-sub">Ждём мастера</span>
                       )}
                     </p>
                   </div>

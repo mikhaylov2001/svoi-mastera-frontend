@@ -1047,7 +1047,7 @@ export default function FindMasterPage() {
                             ) : (
                               <>
                                 <div className="jl-bigcard-price-muted">Договорная</div>
-                                <div className="jl-bigcard-price-hint">уточните у мастера</div>
+                                <div className="jl-bigcard-price-hint">{s.priceUnit || 'за работу'}</div>
                               </>
                             )}
                           </div>
