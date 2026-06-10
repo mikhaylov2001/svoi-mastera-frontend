@@ -339,6 +339,51 @@ export default function WorkerDealsPage() {
     ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND + userAvatar)
     : null;
 
+  const dealCardMenuItems = useCallback((deal) => {
+    const items = [];
+    if (
+      deal.status === 'COMPLETED'
+      && !deal.hasWorkerReview
+      && deal.customerId
+      && dealEligibleForReviews(deal)
+    ) {
+      items.push({
+        label: '★ Оставить отзыв',
+        onClick: () => {
+          setReviewForm({ rating: 5, text: '' });
+          setReviewStatus('idle');
+          setReviewDeal(deal);
+        },
+      });
+    }
+    if (deal.status === 'NEW') {
+      items.push({
+        label: 'Отказаться от заказа',
+        danger: true,
+        disabled: declId === deal.id,
+        onClick: async () => {
+          if (!window.confirm('Отказаться от заказа? Заказчик сможет выбрать другого мастера.')) return;
+          setDeclId(deal.id);
+          try {
+            await cancelPendingDeal(userId, deal.id, '');
+            await load();
+          } catch (err) {
+            window.alert(err?.message || 'Не удалось');
+          } finally {
+            setDeclId(null);
+          }
+        },
+      });
+    }
+    if (deal.customerId) {
+      items.push({
+        label: 'Профиль заказчика',
+        onClick: () => navigate(`/customers/${deal.customerId}`),
+      });
+    }
+    return items;
+  }, [userId, declId, load, navigate]);
+
   /* ══ DETAIL ══ */
   if (detail) {
     const st = ST[detail.status] || ST.NEW;
@@ -716,51 +761,6 @@ export default function WorkerDealsPage() {
       </div>
     );
   }
-
-  const dealCardMenuItems = useCallback((deal) => {
-    const items = [];
-    if (
-      deal.status === 'COMPLETED'
-      && !deal.hasWorkerReview
-      && deal.customerId
-      && dealEligibleForReviews(deal)
-    ) {
-      items.push({
-        label: '★ Оставить отзыв',
-        onClick: () => {
-          setReviewForm({ rating: 5, text: '' });
-          setReviewStatus('idle');
-          setReviewDeal(deal);
-        },
-      });
-    }
-    if (deal.status === 'NEW') {
-      items.push({
-        label: 'Отказаться от заказа',
-        danger: true,
-        disabled: declId === deal.id,
-        onClick: async () => {
-          if (!window.confirm('Отказаться от заказа? Заказчик сможет выбрать другого мастера.')) return;
-          setDeclId(deal.id);
-          try {
-            await cancelPendingDeal(userId, deal.id, '');
-            await load();
-          } catch (err) {
-            window.alert(err?.message || 'Не удалось');
-          } finally {
-            setDeclId(null);
-          }
-        },
-      });
-    }
-    if (deal.customerId) {
-      items.push({
-        label: 'Профиль заказчика',
-        onClick: () => navigate(`/customers/${deal.customerId}`),
-      });
-    }
-    return items;
-  }, [userId, declId, load, navigate]);
 
   /* ══ LIST ══ */
   return (
