@@ -442,5 +442,31 @@ export const listingDetailMobileCss = `
   .ed.ed--listing-detail .ed-card.ed-prog {
     border-radius: 20px !important;
   }
+
+  .ed.ed--listing-detail .ed-grid--listing {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .ed.ed--listing-detail .ed-grid--listing > .ed-col,
+  .ed.ed--listing-detail .ed-grid--listing > .ed-side {
+    display: contents !important;
+  }
+  .ed.ed--listing-detail .ed-block--gallery { order: 1 !important; }
+  .ed.ed--listing-detail .ed-block--pricing { order: 2 !important; }
+  .ed.ed--listing-detail .ed-block--progress { order: 3 !important; }
+  .ed.ed--listing-detail .ed-block--desc { order: 4 !important; }
+  .ed.ed--listing-detail .ed-block--conditions { order: 5 !important; }
+  .ed.ed--listing-detail .ed-block--master { order: 6 !important; }
+  .ed.ed--listing-detail .ed-block--similar { order: 7 !important; }
+
+  .ed.ed--listing-detail .ed-card--pricing .ed-actions {
+    margin-top: 14px !important;
+    padding-top: 14px !important;
+  }
+
+  .ed.ed--listing-detail .ed-deal-status {
+    margin-bottom: 12px !important;
+    padding: 12px 14px !important;
+  }
 }
 `;

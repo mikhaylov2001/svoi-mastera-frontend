@@ -147,6 +147,117 @@
   color: var(--surface-accent);
 }
 
+/* ── Статус сделки в карточке стоимости ── */
+.ed.ed--listing-detail .ed-deal-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+.ed.ed--listing-detail .ed-deal-status-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+}
+.ed.ed--listing-detail .ed-deal-status-body {
+  min-width: 0;
+  flex: 1;
+}
+.ed.ed--listing-detail .ed-deal-status-body strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+.ed.ed--listing-detail .ed-deal-status-body p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #6b7280;
+  font-weight: 500;
+}
+.ed.ed--listing-detail .ed-deal-status--wait {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef9c3 100%);
+  border: 1px solid #fde68a;
+}
+.ed.ed--listing-detail .ed-deal-status--wait .ed-deal-status-icon {
+  background: #fef3c7;
+  color: #b45309;
+}
+.ed.ed--listing-detail .ed-deal-status--active {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid #a7f3d0;
+}
+.ed.ed--listing-detail .ed-deal-status--active .ed-deal-status-icon {
+  background: #d1fae5;
+  color: #059669;
+}
+.ed.ed--listing-detail .ed-deal-status--done {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #bbf7d0;
+}
+.ed.ed--listing-detail .ed-deal-status--done .ed-deal-status-icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.ed.ed--listing-detail .ed-card--pricing .ed-actions {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.ed.ed--listing-detail .ed-btn-soft {
+  background: #fff7f3 !important;
+  color: #c2410c !important;
+  border: 1px solid #ffd9c8 !important;
+  box-shadow: none !important;
+}
+.ed.ed--listing-detail .ed-btn-soft:hover {
+  background: #ffede5 !important;
+  border-color: #ffc4a8 !important;
+}
+
+.ed.ed--listing-detail .ed-btn--compact {
+  margin-top: 4px;
+  min-height: 44px !important;
+  font-size: 14px !important;
+}
+
+.ed.ed--listing-detail .ed-profile-link {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 0 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--surface-accent);
+  text-align: center;
+  cursor: pointer;
+}
+.ed.ed--listing-detail .ed-profile-link:hover {
+  text-decoration: underline;
+}
+
+.ed.ed--listing-detail .ed-block--master .ed-cust-row {
+  padding-bottom: 0;
+}
+
 /* ── Мастер / заказчик ── */
 .ed.ed--listing-detail .ed-cust-row {
   display: flex;
@@ -552,5 +663,30 @@
     top: 24px;
   }
   .ed.ed--listing-detail .ed-col { gap: 14px; }
+}
+
+/* Мобилка: цена и действия сразу после фото */
+@media (max-width: 768px) {
+  .ed.ed--listing-detail .ed-grid--listing {
+    display: flex;
+    flex-direction: column;
+  }
+  .ed.ed--listing-detail .ed-grid--listing > .ed-col,
+  .ed.ed--listing-detail .ed-grid--listing > .ed-side {
+    display: contents;
+  }
+  .ed.ed--listing-detail .ed-block--gallery { order: 1; }
+  .ed.ed--listing-detail .ed-block--pricing { order: 2; }
+  .ed.ed--listing-detail .ed-block--progress { order: 3; }
+  .ed.ed--listing-detail .ed-block--desc { order: 4; }
+  .ed.ed--listing-detail .ed-block--conditions { order: 5; }
+  .ed.ed--listing-detail .ed-block--master { order: 6; }
+  .ed.ed--listing-detail .ed-block--similar { order: 7; }
+  .ed.ed--listing-detail .ed-card--pricing {
+    margin-bottom: 4px;
+  }
+  .ed.ed--listing-detail .ed-deal-status {
+    margin-bottom: 14px;
+  }
 }
 

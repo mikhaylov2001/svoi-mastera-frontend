@@ -53,6 +53,20 @@ function timeAgo(d) {
 
 const TERMINAL_DEAL_STATUSES = ['CANCELLED', 'REFUNDED'];
 
+function customerDealStatusInfo(deal) {
+  const status = String(deal?.status || '');
+  if (status === 'NEW') {
+    return { tone: 'wait', title: 'Ждёт подтверждения', text: 'Мастер получил заявку и скоро ответит.' };
+  }
+  if (status === 'IN_PROGRESS') {
+    return { tone: 'active', title: 'Сделка в работе', text: 'Мастер принял заказ.' };
+  }
+  if (status === 'COMPLETED') {
+    return { tone: 'done', title: 'Завершена', text: 'Сделка по объявлению завершена.' };
+  }
+  return null;
+}
+
 export default function ListingDetailPage() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
@@ -394,6 +408,13 @@ export default function ListingDetailPage() {
         ? { deal: listingDeal, role: 'worker' }
         : null;
 
+  const activeCustomerDeal =
+    customerListingDeal && !TERMINAL_DEAL_STATUSES.includes(String(customerListingDeal.status || ''))
+      ? customerListingDeal
+      : null;
+  const customerDealStatus = activeCustomerDeal ? customerDealStatusInfo(activeCustomerDeal) : null;
+  const chatHref = userId ? `/chat/${listing.workerId}` : '/login';
+
   const lightboxPhotos = hasUploadedPhotos ? photoList : [fallbackPhoto];
   const lbIdx = hasUploadedPhotos ? activePhoto : 0;
 
@@ -438,9 +459,9 @@ export default function ListingDetailPage() {
           </div>
         </div>
 
-        <div className="ed-grid">
+        <div className="ed-grid ed-grid--listing">
           <div className="ed-col">
-            <div className="ed-gallery">
+            <div className="ed-gallery ed-block ed-block--gallery">
               <div
                 className={`ed-main ${gallerySwipe.className}`}
                 onClick={() =>
@@ -532,11 +553,13 @@ export default function ListingDetailPage() {
             </div>
 
             {progressDeal ? (
-              <DealDetailEdProgress {...getDealEdProgress(progressDeal.deal, progressDeal.role, timeAgo)} />
+              <div className="ed-block ed-block--progress">
+                <DealDetailEdProgress {...getDealEdProgress(progressDeal.deal, progressDeal.role, timeAgo)} />
+              </div>
             ) : null}
 
             {bodyText ? (
-              <section className="ed-card">
+              <section className="ed-card ed-block ed-block--desc">
                 <h3 className="ed-section-title">Описание</h3>
                 <p className="ed-desc">{visibleBody}</p>
                 {showDescToggle && (
@@ -556,7 +579,7 @@ export default function ListingDetailPage() {
                 ) : null}
               </section>
             ) : (
-              <section className="ed-card">
+              <section className="ed-card ed-block ed-block--desc">
                 <h3 className="ed-section-title">Описание</h3>
                 <p className="ed-desc" style={{ color: '#a1a1aa', fontStyle: 'italic' }}>
                   Описание не добавлено
@@ -564,7 +587,7 @@ export default function ListingDetailPage() {
               </section>
             )}
 
-            <section className="ed-card">
+            <section className="ed-card ed-block ed-block--conditions">
               <h3 className="ed-section-title">Условия</h3>
               <dl className="ed-rows">
                 {[
@@ -584,7 +607,19 @@ export default function ListingDetailPage() {
           </div>
 
           <aside className="ed-side">
-            <div className="ed-card">
+            <div className="ed-card ed-card--pricing ed-block ed-block--pricing">
+              {!isOwnListing && customerDealStatus ? (
+                <div className={`ed-deal-status ed-deal-status--${customerDealStatus.tone}`}>
+                  <div className="ed-deal-status-icon" aria-hidden>
+                    {customerDealStatus.tone === 'done' ? '✓' : customerDealStatus.tone === 'active' ? '●' : '◷'}
+                  </div>
+                  <div className="ed-deal-status-body">
+                    <strong>{customerDealStatus.title}</strong>
+                    <p>{customerDealStatus.text}</p>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="ed-eyebrow">Стоимость</div>
               {priceHasAmount ? (
                 <div className="ed-price-num">
@@ -607,29 +642,13 @@ export default function ListingDetailPage() {
 
               {!isOwnListing && (
                 <div className="ed-actions">
-                  {customerListingDeal &&
-                  !TERMINAL_DEAL_STATUSES.includes(String(customerListingDeal.status || '')) ? (
+                  {activeCustomerDeal ? (
                     <>
-                      {customerListingDeal.status === 'NEW' && (
-                        <div className="ed-callout ed-callout-warn" style={{ marginTop: 12 }}>
-                          Заявка отправлена мастеру. Сделка ждёт подтверждения.
-                        </div>
-                      )}
-                      {customerListingDeal.status === 'IN_PROGRESS' && (
-                        <div className="ed-callout ed-callout-warn" style={{ marginTop: 12 }}>
-                          Сделка в работе.
-                        </div>
-                      )}
-                      {customerListingDeal.status === 'COMPLETED' && (
-                        <div className="ed-inline-wait" style={{ marginTop: 12 }}>
-                          ✓ Сделка по объявлению завершена
-                        </div>
-                      )}
-                      <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-msg-btn">
+                      <Link to={chatHref} className="ed-btn ed-btn-confirm">
                         Написать в чат
                       </Link>
-                      <button type="button" className="ed-link-deals" onClick={() => navigate('/deals')}>
-                        Перейти к сделкам →
+                      <button type="button" className="ed-btn ed-btn-soft" onClick={() => navigate('/deals')}>
+                        Перейти к сделкам
                       </button>
                     </>
                   ) : (
@@ -642,7 +661,7 @@ export default function ListingDetailPage() {
                       >
                         {accepting ? 'Отправляем…' : 'Принять мастера'}
                       </button>
-                      <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-btn ed-btn-ghost">
+                      <Link to={chatHref} className="ed-btn ed-btn-ghost">
                         Написать в чат
                       </Link>
                     </>
@@ -736,12 +755,12 @@ export default function ListingDetailPage() {
                 </div>
               </div>
             ) : (
-              <div className="ed-card">
+              <div className="ed-card ed-block ed-block--master">
                 <div className="ed-eyebrow ed-eyebrow--block">
                   Мастер
                 </div>
                 <div
-                  className="ed-cust-row"
+                  className="ed-cust-row ed-cust-row--link"
                   onClick={() => navigate(`/workers/${listing.workerId}`)}
                   role="presentation"
                 >
@@ -762,14 +781,24 @@ export default function ListingDetailPage() {
                     </svg>
                   </div>
                 </div>
-                <Link to={userId ? `/chat/${listing.workerId}` : '/login'} className="ed-msg-btn">
-                  Написать в чат
-                </Link>
+                {!activeCustomerDeal ? (
+                  <Link to={chatHref} className="ed-btn ed-btn-ghost ed-btn--compact">
+                    Написать в чат
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    className="ed-profile-link"
+                    onClick={() => navigate(`/workers/${listing.workerId}`)}
+                  >
+                    Открыть профиль мастера
+                  </button>
+                )}
               </div>
             )}
 
             {similar.length > 0 ? (
-              <div className="ed-card ed-similar-card">
+              <div className="ed-card ed-similar-card ed-block ed-block--similar">
                 <div className="ed-similar-head">
                   <strong>Похожие объявления</strong>
                   <Link to={catSlug ? `/find-master/${catSlug}` : '/find-master'}>Все →</Link>
