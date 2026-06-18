@@ -43,7 +43,7 @@ const JOB_REQUEST_DETAIL_STYLES = edListingDetailMergedCss;
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 
-const JD_BACKEND = 'https://svoi-mastera-backend-n9om.onrender.com';
+const JD_BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 const jdPhotoUrl = (u) =>
   !u ? null : u.startsWith('http') || u.startsWith('data:') ? u : JD_BACKEND + u;
 

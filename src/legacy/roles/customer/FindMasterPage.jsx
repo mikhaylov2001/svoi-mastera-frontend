@@ -6,7 +6,7 @@ import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 
-const API = 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
+const API = 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1';
 
 /* Плоский словарь slug → данные категории (фото, описание, цена, …) */
 const CAT_ALL = {};

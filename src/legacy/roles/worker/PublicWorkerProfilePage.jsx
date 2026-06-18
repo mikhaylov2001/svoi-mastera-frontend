@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-const API = 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
+const API = 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1';
 
 function timeAgo(d) {
   if (!d) return '';

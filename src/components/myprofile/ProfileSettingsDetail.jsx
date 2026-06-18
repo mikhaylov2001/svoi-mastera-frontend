@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const API = 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
+const API = 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1';
 
 /* ── Personal settings form ── */
 function PersonalForm({ userId, profile, onSaved }) {

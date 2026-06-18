@@ -15,7 +15,7 @@ import ProfileSettingsDetail from '../../components/myprofile/ProfileSettingsDet
 import '../../styles/myProfile.css';
 
 const COVER_DEFAULT = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2400&q=85';
-const BACKEND = 'https://svoi-mastera-backend-n9om.onrender.com';
+const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 
 const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND + u);
 

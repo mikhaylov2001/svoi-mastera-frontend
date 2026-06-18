@@ -32,7 +32,7 @@ import PhotoLightbox from '../../components/PhotoLightbox';
 import '../../styles/moCabinetStyle.css';
 
 const HERO = 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=2400&q=86';
-const BACKEND = 'https://svoi-mastera-backend-n9om.onrender.com';
+const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 
 const STATUS_TABS = [
   { key: 'ALL',         label: 'Все' },

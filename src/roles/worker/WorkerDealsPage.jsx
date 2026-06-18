@@ -33,7 +33,7 @@ import { initialChar } from '../../utils/safeText';
 
 const MY_DEALS_HERO_PHOTO =
   'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=max&w=2400&q=86';
-const BACKEND    = 'https://svoi-mastera-backend-n9om.onrender.com';
+const BACKEND    = 'https://svoi-mastera-backend-ntp0.onrender.com';
 
 const ST = {
   NEW:         { label: 'Новый заказ',  color: '#d97706', bg: 'rgba(245,158,11,.12)',  dot: '#f59e0b' },

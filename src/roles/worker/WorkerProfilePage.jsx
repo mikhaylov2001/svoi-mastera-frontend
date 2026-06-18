@@ -12,7 +12,7 @@ import ProfileSettingsDetail from '../../components/myprofile/ProfileSettingsDet
 import { PROFILE_MASTER_HERO_PHOTO } from '../../constants/pageHeroAssets';
 import '../../styles/myProfile.css';
 
-const BACKEND = 'https://svoi-mastera-backend-n9om.onrender.com';
+const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 
 const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND + u);
 

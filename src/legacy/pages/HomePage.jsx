@@ -6,8 +6,8 @@ import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
 
-const API = 'https://svoi-mastera-backend-n9om.onrender.com/api/v1';
-const BACKEND_ORIGIN = 'https://svoi-mastera-backend-n9om.onrender.com';
+const API = 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1';
+const BACKEND_ORIGIN = 'https://svoi-mastera-backend-ntp0.onrender.com';
 const ALL_CATS = Object.values(CATEGORIES_BY_SECTION).flat();
 
 function workerListingPhotoUrl(url) {

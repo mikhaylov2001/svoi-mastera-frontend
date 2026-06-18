@@ -22,7 +22,7 @@ import { moOrdersListShellCss } from '../styles/moOrdersListShellCss.js';
 import '../styles/moCabinetStyle.css';
 import './favorites.css';
 
-const BACKEND_ORIGIN = 'https://svoi-mastera-backend-n9om.onrender.com';
+const BACKEND_ORIGIN = 'https://svoi-mastera-backend-ntp0.onrender.com';
 const HERO_IMG = 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=2400&q=86';
 
 function mediaUrl(u) {

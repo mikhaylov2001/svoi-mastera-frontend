@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-const BACKEND = 'https://svoi-mastera-backend-n9om.onrender.com';
+const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 function resolveUrl(u) {
   if (!u) return null;
   if (u.startsWith('http') || u.startsWith('data:')) return u;
