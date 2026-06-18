@@ -38,14 +38,14 @@ import {
   formatCatalogSearchHitPrice,
 } from '../shared/catalogCategorySearchDropdown';
 import { useIsMobileCatalog } from '../../hooks/useIsMobileCatalog';
+import { BACKEND_ORIGIN } from '../../constants/backend';
 
 const JOB_REQUEST_DETAIL_STYLES = edListingDetailMergedCss;
 
 const FW_DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
 
-const JD_BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 const jdPhotoUrl = (u) =>
-  !u ? null : u.startsWith('http') || u.startsWith('data:') ? u : JD_BACKEND + u;
+  !u ? null : u.startsWith('http') || u.startsWith('data:') ? u : BACKEND_ORIGIN + u;
 
 const jdFmtDateLong = (d) =>
   !d ? '' : new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -66,7 +66,6 @@ const CAT_ALL = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats =>
   cats.forEach(cat => { CAT_ALL[cat.slug] = { ...cat, photo: heroPhotoHiRes(cat.photo) }; })
 );
-
 
 /** Бейдж на карточке заявки в ленте: свежие — «НОВОЕ», остальные — «АКТИВНО». */
 function jobRequestFeedStatusLabel(req) {
@@ -102,7 +101,6 @@ const CATEGORY_STYLES = {
   'repetitorstvo':        { emoji: '📚', color: '#e3f2fd' },
   'kompyuternaya-pomosh': { emoji: '💻', color: '#e8f5e9' },
 };
-
 
 function jobRequestListPrice(req) {
   return getJobRequestPublishedBudgetNumber(req);

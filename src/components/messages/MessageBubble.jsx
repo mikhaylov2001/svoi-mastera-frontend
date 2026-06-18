@@ -4,14 +4,14 @@ import {
   Check, CheckCheck, Pencil, Trash2, X, MapPin, FileText,
   Copy, Reply, Forward, Play, Pause,
 } from 'lucide-react';
+import { BACKEND_ORIGIN } from '../../constants/backend';
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉', '😍'];
 
-const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 function fullUrl(u) {
   if (!u) return '';
   if (u.startsWith('http') || u.startsWith('data:')) return u;
-  return BACKEND + u;
+  return BACKEND_ORIGIN + u;
 }
 
 // ─── Small message avatar ─────────────────────────────────────

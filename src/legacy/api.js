@@ -1,8 +1,9 @@
 import { humanizeServerErrorMessage } from './utils/humanizeServerError';
+import { DEFAULT_API_V1_BASE } from '../constants/backend';
 
 export const API_BASE = import.meta.env.DEV
   ? 'http://localhost:8080/api/v1'
-  : 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1';
+  : DEFAULT_API_V1_BASE;
 
 function getFriendlyMessage(status, endpoint, serverMessage) {
   const msg = (serverMessage || '').toLowerCase();
@@ -183,7 +184,6 @@ export async function getMyDeals(userId) {
 export async function completeDeal(userId, dealId) {
   return apiCall(`/deals/${dealId}/complete`, { method: 'POST', headers: { 'X-User-Id': userId }, body: JSON.stringify({}) });
 }
-
 
 // ── PROFILE ──
 /** См. src/api.js — /customer-profiles/me нестабилен на бэке. */

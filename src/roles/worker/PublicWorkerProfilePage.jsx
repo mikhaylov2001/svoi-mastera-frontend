@@ -7,16 +7,15 @@ import { publicTimeAgo, publicMemberSince } from '../../utils/publicProfileUtils
 import PhotoLightbox from '../../components/PhotoLightbox';
 import ProfileShowcase from '../../components/profiles/ProfileShowcase';
 import { goBackOr } from '../../utils/navigationHelpers';
+import { BACKEND_ORIGIN, DEFAULT_API_V1_BASE } from '../../constants/backend';
 
-const API = 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1';
-const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 const COVER_WORKER = 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=1600&q=85';
 
 function resolveImg(item, category) {
   const raw = item.photos?.[0] || null;
   if (raw) {
     if (raw.startsWith('http') || raw.startsWith('data:')) return raw;
-    return BACKEND + raw;
+    return BACKEND_ORIGIN + raw;
   }
   return getCategoryPlaceholderPhotoUrlOrDefault({
     category: category || item.category,
@@ -60,10 +59,10 @@ export default function PublicWorkerProfilePage() {
     if (!workerId) return;
     setLoading(true);
     Promise.all([
-      fetch(`${API}/workers/${workerId}/listings`).then(r => r.ok ? r.json() : []).catch(() => []),
-      fetch(`${API}/workers/${workerId}/stats`).then(r => r.ok ? r.json() : {}).catch(() => ({})),
-      fetch(`${API}/workers/${workerId}/reviews`).then(r => r.ok ? r.json() : []).catch(() => []),
-      fetch(`${API}/workers/${workerId}/completed-works`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${DEFAULT_API_V1_BASE}/workers/${workerId}/listings`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${DEFAULT_API_V1_BASE}/workers/${workerId}/stats`).then(r => r.ok ? r.json() : {}).catch(() => ({})),
+      fetch(`${DEFAULT_API_V1_BASE}/workers/${workerId}/reviews`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${DEFAULT_API_V1_BASE}/workers/${workerId}/completed-works`).then(r => r.ok ? r.json() : []).catch(() => []),
     ]).then(([svc, stats, rev, works]) => {
       setServices(Array.isArray(svc) ? svc : []);
       setReviews(Array.isArray(rev) ? rev.filter(r => r.status === 'APPROVED') : []);

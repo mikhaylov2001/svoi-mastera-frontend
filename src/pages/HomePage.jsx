@@ -1228,7 +1228,6 @@ export function WorkerHomePage({ userId, userName }) {
   );
 }
 
-
 /** Главная мастера: только для роли WORKER (отдельный URL `/worker-home`). */
 export function WorkerHomeGate() {
   const { userId, userRole, userName } = useAuth();

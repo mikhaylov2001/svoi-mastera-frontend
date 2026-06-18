@@ -24,6 +24,7 @@ import {
 } from '../utils/notifications';
 import './Header.css';
 import BrandLogo from './BrandLogo';
+import { BACKEND_ORIGIN } from '../constants/backend';
 
 function SearchIcon() {
   return (
@@ -313,11 +314,11 @@ function HeaderUserMenu({
 
 function Header() {
   const { userId, userRole, userName, userLastName, userAvatar, logout } = useAuth();
-  const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
+  
   const fullAvatarUrl = userAvatar
     ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http')
         ? userAvatar
-        : BACKEND + userAvatar)
+        : BACKEND_ORIGIN + userAvatar)
     : '';
   const navigate = useNavigate();
   const location = useLocation();
@@ -516,7 +517,7 @@ function Header() {
     if (!url) return null;
     if (url.startsWith('data:') || url.startsWith('http')) return url;
     const path = url.startsWith('/') ? url : `/${url}`;
-    return `${BACKEND}${path}`;
+    return `${BACKEND_ORIGIN}${path}`;
   };
 
   useEffect(() => {

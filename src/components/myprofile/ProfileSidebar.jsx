@@ -1,10 +1,10 @@
 import React, { useRef } from 'react';
+import { BACKEND_ORIGIN } from '../../constants/backend';
 
-const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 function resolveUrl(u) {
   if (!u) return null;
   if (u.startsWith('http') || u.startsWith('data:')) return u;
-  return BACKEND + u;
+  return BACKEND_ORIGIN + u;
 }
 
 export default function ProfileSidebar({

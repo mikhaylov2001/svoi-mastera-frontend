@@ -8,6 +8,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
 import './ChatPage.css';
+import { BACKEND_ORIGIN } from '../../constants/backend';
 
 // ─── Фоны ───────────────────────────────────────────────────
 const BG_LIST = [
@@ -52,13 +53,12 @@ const IcForward = () => <svg width="15" height="15" fill="none" stroke="currentC
 const IcClose = () => <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>;
 
 // ─── Avatar ──────────────────────────────────────────────────
-const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 
 function fullUrl(url) {
   if (!url) return '';
   if (url.startsWith('http')) return url;
   if (url.startsWith('data:')) return url;
-  return BACKEND + url;
+  return BACKEND_ORIGIN + url;
 }
 
 function Ava({ name, url, size = 40, online = false }) {

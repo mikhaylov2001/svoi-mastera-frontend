@@ -13,11 +13,11 @@ import ProfileWorkspace from '../../components/myprofile/ProfileWorkspace';
 import ProfileShowcaseGrid from '../../components/myprofile/ProfileShowcaseGrid';
 import ProfileSettingsDetail from '../../components/myprofile/ProfileSettingsDetail';
 import '../../styles/myProfile.css';
+import { BACKEND_ORIGIN } from '../../constants/backend';
 
 const COVER_DEFAULT = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2400&q=85';
-const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 
-const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND + u);
+const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND_ORIGIN + u);
 
 const pick = (...values) => {
   for (const v of values) {

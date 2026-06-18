@@ -30,10 +30,10 @@ import { dealCategoryLabel } from '../../utils/categoryLabel';
 import { asPhotoArray } from '../../utils/photoArray';
 import { normalizeDealForView } from '../../utils/normalizeDeal';
 import { initialChar } from '../../utils/safeText';
+import { BACKEND_ORIGIN } from '../../constants/backend';
 
 const MY_DEALS_HERO_PHOTO =
   'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=max&w=2400&q=86';
-const BACKEND    = 'https://svoi-mastera-backend-ntp0.onrender.com';
 
 const ST = {
   NEW:         { label: 'Новый заказ',  color: '#d97706', bg: 'rgba(245,158,11,.12)',  dot: '#f59e0b' },
@@ -106,7 +106,7 @@ const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1581578731548-c64695cc
 function resolvePhoto(u) {
   if (!u) return null;
   if (String(u).startsWith('http') || String(u).startsWith('data:')) return u;
-  return BACKEND + u;
+  return BACKEND_ORIGIN + u;
 }
 
 function dealPhotoList(deal) {
@@ -159,7 +159,7 @@ function dealCustomerAvatarUrl(detail) {
   if (!a || String(a).length <= 10 || a === 'null') return null;
   const s = String(a);
   if (s.startsWith('http') || s.startsWith('data:')) return s;
-  return BACKEND + s;
+  return BACKEND_ORIGIN + s;
 }
 
 export default function WorkerDealsPage() {
@@ -336,7 +336,7 @@ export default function WorkerDealsPage() {
 
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
   const ava = userAvatar
-    ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND + userAvatar)
+    ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND_ORIGIN + userAvatar)
     : null;
 
   const dealCardMenuItems = useCallback((deal) => {
@@ -887,7 +887,7 @@ export default function WorkerDealsPage() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: '#f9fafb', borderRadius: 10, marginBottom: 18 }}>
                   {reviewDeal.customerAvatar && reviewDeal.customerAvatar.length > 10
-                    ? <img src={reviewDeal.customerAvatar.startsWith('http') ? reviewDeal.customerAvatar : BACKEND + reviewDeal.customerAvatar} alt="" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }} />
+                    ? <img src={reviewDeal.customerAvatar.startsWith('http') ? reviewDeal.customerAvatar : BACKEND_ORIGIN + reviewDeal.customerAvatar} alt="" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }} />
                     : <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#e8410a,#ff7043)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 16 }}>{(customerFullName(reviewDeal)[0] || 'З').toUpperCase()}</div>}
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{customerFullName(reviewDeal)}</div>

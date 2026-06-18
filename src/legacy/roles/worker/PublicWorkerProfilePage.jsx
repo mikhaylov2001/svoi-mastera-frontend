@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-const API = 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1';
+import { DEFAULT_API_V1_BASE } from '../../../constants/backend';
 
 function timeAgo(d) {
   if (!d) return '';
@@ -383,10 +383,10 @@ export default function PublicWorkerProfilePage() {
     if (!workerId) return;
     setLoading(true);
     Promise.all([
-      fetch(`${API}/workers/${workerId}/listings`).then(r => r.ok ? r.json() : []),
-      fetch(`${API}/workers/${workerId}/stats`).then(r => r.ok ? r.json() : {}),
-      fetch(`${API}/workers/${workerId}/reviews`).then(r => r.ok ? r.json() : []),
-      fetch(`${API}/workers/${workerId}/completed-works`).then(r => r.ok ? r.json() : []),
+      fetch(`${DEFAULT_API_V1_BASE}/workers/${workerId}/listings`).then(r => r.ok ? r.json() : []),
+      fetch(`${DEFAULT_API_V1_BASE}/workers/${workerId}/stats`).then(r => r.ok ? r.json() : {}),
+      fetch(`${DEFAULT_API_V1_BASE}/workers/${workerId}/reviews`).then(r => r.ok ? r.json() : []),
+      fetch(`${DEFAULT_API_V1_BASE}/workers/${workerId}/completed-works`).then(r => r.ok ? r.json() : []),
     ]).then(([svc, stats, rev, works]) => {
       setServices(Array.isArray(svc) ? svc : []);
       setReviews(Array.isArray(rev) ? rev.filter(r => r.status === 'APPROVED') : []);

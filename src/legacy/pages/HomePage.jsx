@@ -5,9 +5,8 @@ import { CUSTOMER_HOME_PATH } from '../../constants/homePaths';
 import { CATEGORIES_BY_SECTION } from './CategoriesPage';
 import { HOME_MARKET_CSS } from './homeMarketCss';
 import { useSameRouteRefetch } from '../hooks/useSameRouteRefetch';
+import { BACKEND_ORIGIN, DEFAULT_API_V1_BASE } from '../../constants/backend';
 
-const API = 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1';
-const BACKEND_ORIGIN = 'https://svoi-mastera-backend-ntp0.onrender.com';
 const ALL_CATS = Object.values(CATEGORIES_BY_SECTION).flat();
 
 function workerListingPhotoUrl(url) {
@@ -28,14 +27,13 @@ const CAT_PHOTOS = {
   'kompyuternaya-pomosh': 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=600&q=80',
 };
 
-
 export function CustomerHomePage({ userId, userName }) {
   const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [shown, setShown] = useState(8);
 
   const reloadListings = useCallback(() => {
-    fetch(`${API}/listings`).then(r => r.ok ? r.json() : [])
+    fetch(`${DEFAULT_API_V1_BASE}/listings`).then(r => r.ok ? r.json() : [])
       .then(d => setListings(Array.isArray(d) ? d.filter(l => l.active) : [])).catch(() => {});
   }, []);
 

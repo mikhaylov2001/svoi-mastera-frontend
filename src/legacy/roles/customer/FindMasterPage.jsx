@@ -5,8 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES_BY_SECTION } from '../../pages/CategoriesPage';
 import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_IMG_FILTER, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_OBJECT_POSITION, PAGE_HERO_OBJECT_FIT } from '../../constants/pageHeroAssets';
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
-
-const API = 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1';
+import { DEFAULT_API_V1_BASE } from '../../../constants/backend';
 
 /* Плоский словарь slug → данные категории (фото, описание, цена, …) */
 const CAT_ALL = {};
@@ -959,7 +958,7 @@ export default function FindMasterPage() {
       const ids = [...new Set(processed.map(s => s.workerId))];
       ids.forEach(async (wid) => {
         try {
-          const r = await fetch(`${API}/workers/${wid}/stats`);
+          const r = await fetch(`${DEFAULT_API_V1_BASE}/workers/${wid}/stats`);
           if (r.ok) {
             const st = await r.json();
             setWorkerStats(prev => ({ ...prev, [wid]: st }));

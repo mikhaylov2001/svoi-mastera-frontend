@@ -7,13 +7,12 @@ import DashboardReviewsSection from '../../components/DashboardReviewsSection';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
 import '../../styles/profileDashboard.css';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
-
-const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
+import { BACKEND_ORIGIN } from '../../../constants/backend';
 
 function resolveUrl(url) {
   if (!url) return null;
   if (url.startsWith('data:') || url.startsWith('http')) return url;
-  return BACKEND + url;
+  return BACKEND_ORIGIN + url;
 }
 function fmtSince(d) {
   if (!d) return '';

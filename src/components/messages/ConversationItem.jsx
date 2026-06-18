@@ -1,11 +1,11 @@
 import React from 'react';
 import { format, isToday, isYesterday, differenceInMinutes } from 'date-fns';
+import { BACKEND_ORIGIN } from '../../constants/backend';
 
-const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 function fullUrl(u) {
   if (!u) return '';
   if (u.startsWith('http') || u.startsWith('data:')) return u;
-  return BACKEND + u;
+  return BACKEND_ORIGIN + u;
 }
 
 const COLORS = ['#7c3aed','#2563eb','#059669','#d97706','#e8410a','#0891b2','#db2777'];

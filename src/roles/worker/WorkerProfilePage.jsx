@@ -11,10 +11,9 @@ import ProfileShowcaseGrid from '../../components/myprofile/ProfileShowcaseGrid'
 import ProfileSettingsDetail from '../../components/myprofile/ProfileSettingsDetail';
 import { PROFILE_MASTER_HERO_PHOTO } from '../../constants/pageHeroAssets';
 import '../../styles/myProfile.css';
+import { BACKEND_ORIGIN } from '../../constants/backend';
 
-const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
-
-const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND + u);
+const resolveUrl = (u) => !u ? null : (u.startsWith('data:') || u.startsWith('http') ? u : BACKEND_ORIGIN + u);
 
 const pick = (...values) => {
   for (const v of values) {

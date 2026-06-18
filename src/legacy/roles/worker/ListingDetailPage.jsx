@@ -10,8 +10,7 @@ import {
 } from '../../../utils/categoryPlaceholderPhoto';
 import { getListingPublishedPriceNumber } from '../../../utils/listingPublishedPrice';
 import FavoriteHeartButton from '../../../components/FavoriteHeartButton';
-
-const API = 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1';
+import { DEFAULT_API_V1_BASE } from '../../../constants/backend';
 
 /** Одна отправка просмотра на id за сессию (React StrictMode и повторные fetch) */
 const listingViewPostedIds = new Set();
@@ -65,7 +64,7 @@ export default function ListingDetailPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API}/listings/${id}`)
+    fetch(`${DEFAULT_API_V1_BASE}/listings/${id}`)
       .then(r => (r.ok ? r.json() : null))
       .then(data => {
         if (!data) return;
@@ -81,12 +80,12 @@ export default function ListingDetailPage() {
           recordListingView(data.id).catch(() => {});
         }
         if (data.workerId) {
-          fetch(`${API}/workers/${data.workerId}/stats`)
+          fetch(`${DEFAULT_API_V1_BASE}/workers/${data.workerId}/stats`)
             .then(r => (r.ok ? r.json() : null))
             .then(s => setStats(s))
             .catch(() => {});
         }
-        fetch(`${API}/listings`)
+        fetch(`${DEFAULT_API_V1_BASE}/listings`)
           .then(r => (r.ok ? r.json() : []))
           .then(all => {
             setSimilar(
@@ -296,7 +295,7 @@ export default function ListingDetailPage() {
   const ownerAva = userAvatar
     ? userAvatar.startsWith('data:') || userAvatar.startsWith('http')
       ? userAvatar
-      : `${API.replace(/\/api\/v1$/, '')}${userAvatar.startsWith('/') ? '' : '/'}${userAvatar}`
+      : `${DEFAULT_API_V1_BASE.replace(/\/api\/v1$/, '')}${userAvatar.startsWith('/') ? '' : '/'}${userAvatar}`
     : null;
 
   const priceNum = getListingPublishedPriceNumber(listing);

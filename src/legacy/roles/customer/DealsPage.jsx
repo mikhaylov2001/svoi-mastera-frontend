@@ -12,9 +12,9 @@ import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { dispatchListingArchivedAfterDeal } from '../../utils/listingArchiveEvents';
 import { formatListingOriginDescription } from '../../utils/listingOriginDescription';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
+import { BACKEND_ORIGIN } from '../../../constants/backend';
 
 const DEFAULT_BG = PAGE_HERO_DEFAULT_PHOTO;
-const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 
 const ST = {
   NEW:         { label: 'Новый заказ',  color: '#d97706', bg: 'rgba(245,158,11,.12)',  dot: '#f59e0b' },
@@ -162,7 +162,7 @@ export default function DealsPage() {
 
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Заказчик';
   const ava = userAvatar
-    ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND + userAvatar)
+    ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND_ORIGIN + userAvatar)
     : null;
 
   /* ══ DETAIL ══ */

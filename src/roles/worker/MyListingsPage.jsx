@@ -21,6 +21,7 @@ import { getListingViewsCount } from '../../utils/jobRequestViews';
 import PhotoLightbox from '../../components/PhotoLightbox';
 import { moOrdersListShellCss } from '../../styles/moOrdersListShellCss.js';
 import './listings-new.css';
+import { BACKEND_ORIGIN } from '../../constants/backend';
 
 const API = API_BASE;
 
@@ -146,7 +147,7 @@ function mlDetailTimeAgo(d) {
 }
 
 function mlDetailPhotoUrl(u, backend) {
-  const b = backend || 'https://svoi-mastera-backend-ntp0.onrender.com';
+  const b = backend || BACKEND_ORIGIN;
   if (!u) return null;
   if (String(u).startsWith('http') || String(u).startsWith('data:')) return u;
   return b + u;
@@ -1033,8 +1034,8 @@ export default function MyListingsPage() {
   };
 
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
-  const BACKEND  = 'https://svoi-mastera-backend-ntp0.onrender.com';
-  const ava      = userAvatar ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND + userAvatar) : null;
+
+  const ava      = userAvatar ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND_ORIGIN + userAvatar) : null;
 
   const tips = CAT_TIPS[form.category] || [
     'Выберите понятное название — заказчики ищут по ключевым словам',
@@ -1548,7 +1549,7 @@ export default function MyListingsPage() {
     const statusPill = listingOwnerDetailStatusPill(detail, lockedDeal);
     const catLabel = categoryLabelFromFields(detail);
     const detailPlaceholder = getCategoryPlaceholderPhotoUrlOrDefault({ categoryName: catLabel });
-    const jdPhotosRaw = asPhotoArray(detail.photos).map((p) => mlDetailPhotoUrl(p, BACKEND)).filter(Boolean);
+    const jdPhotosRaw = asPhotoArray(detail.photos).map((p) => mlDetailPhotoUrl(p, BACKEND_ORIGIN)).filter(Boolean);
     const jdPhotos = jdPhotosRaw.length ? jdPhotosRaw : [detailPlaceholder];
     const mainSrc = jdPhotos[photoIdx] || jdPhotos[0];
     const pubPrice = getListingPublishedPriceNumber(detail);

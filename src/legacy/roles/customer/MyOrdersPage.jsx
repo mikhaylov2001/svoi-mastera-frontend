@@ -19,6 +19,7 @@ import {
   getJobRequestPublishedBudgetNumber,
   JOB_REQUEST_PRICE_MISSING_LABEL,
 } from '../../utils/jobRequestBudget';
+import { BACKEND_ORIGIN } from '../../../constants/backend';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -743,8 +744,8 @@ export default function MyOrdersPage() {
   };
 
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Заказчик';
-  const BACKEND  = 'https://svoi-mastera-backend-ntp0.onrender.com';
-  const ava      = userAvatar ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND + userAvatar) : null;
+
+  const ava      = userAvatar ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND_ORIGIN + userAvatar) : null;
 
   // ══ ФОРМА СОЗДАНИЯ / РЕДАКТИРОВАНИЯ ══
   if (view !== null) {
@@ -1300,7 +1301,7 @@ export default function MyOrdersPage() {
                 )}
                 {!detailOffersLoading && detailOffers.map((offer, oi) => {
                   const workerHref = workerOfferPublicPath(offer);
-                  const workerAv = workerOfferAvatarSrc(offer, BACKEND);
+                  const workerAv = workerOfferAvatarSrc(offer, BACKEND_ORIGIN);
                   const workerLabel = workerOfferFullName(offer);
                   const workerInitial = (workerLabel || 'М')[0].toUpperCase();
                   const profileRow = (

@@ -22,6 +22,13 @@ export function normalizeBackendOrigin(raw) {
   return value.replace(/\/api\/v1\/?$/, '');
 }
 
+export function backendMediaUrl(path) {
+  if (path == null || path === '') return '';
+  const raw = String(path);
+  if (raw.startsWith('http') || raw.startsWith('data:')) return raw;
+  return `${BACKEND_ORIGIN}${raw.startsWith('/') ? raw : `/${raw}`}`;
+}
+
 export function toApiV1Base(raw) {
   const origin = normalizeBackendOrigin(raw) || BACKEND_ORIGIN;
   return origin.endsWith('/api/v1') ? origin : `${origin}/api/v1`;

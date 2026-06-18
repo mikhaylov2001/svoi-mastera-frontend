@@ -33,6 +33,7 @@ import {
 import '../worker/listings-new.css';
 import { moOrdersListShellCss } from '../../styles/moOrdersListShellCss.js';
 import PhotoLightbox from '../../components/PhotoLightbox';
+import { BACKEND_ORIGIN } from '../../constants/backend';
 
 const CATEGORY_PHOTO_BY_NAME = {};
 Object.values(CATEGORIES_BY_SECTION).forEach(cats => {
@@ -450,7 +451,7 @@ function moDetailTimeAgo(d) {
 }
 
 function moDetailPhotoUrl(u, backend) {
-  const b = backend || 'https://svoi-mastera-backend-ntp0.onrender.com';
+  const b = backend || BACKEND_ORIGIN;
   if (!u) return null;
   if (String(u).startsWith('http') || String(u).startsWith('data:')) return u;
   return b + u;
@@ -1083,8 +1084,8 @@ export default function MyOrdersPage() {
   };
 
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Заказчик';
-  const BACKEND  = 'https://svoi-mastera-backend-ntp0.onrender.com';
-  const ava      = userAvatar ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND + userAvatar) : null;
+
+  const ava      = userAvatar ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND_ORIGIN + userAvatar) : null;
 
   // ══ ФОРМА СОЗДАНИЯ / РЕДАКТИРОВАНИЯ ══
   if (view !== null) {
@@ -1622,7 +1623,7 @@ export default function MyOrdersPage() {
       },
       categories,
     );
-    const jdPhotosRaw = (detail.photos || []).map((p) => moDetailPhotoUrl(p, BACKEND)).filter(Boolean);
+    const jdPhotosRaw = (detail.photos || []).map((p) => moDetailPhotoUrl(p, BACKEND_ORIGIN)).filter(Boolean);
     const jdPhotos = jdPhotosRaw.length ? jdPhotosRaw : [detailPlaceholder];
     const mainSrc = jdPhotos[photoIdx] || jdPhotos[0];
     const budget = getJobRequestPublishedBudgetNumber(detail);
@@ -1701,7 +1702,7 @@ export default function MyOrdersPage() {
                   const stats = workerId ? offerWorkerStats[String(workerId)] : null;
                   const rating = Number(stats?.averageRating) || 0;
                   const reviewsN = Number(stats?.reviewsCount) || 0;
-                  const workerAv = workerOfferAvatarSrc(offer, BACKEND);
+                  const workerAv = workerOfferAvatarSrc(offer, BACKEND_ORIGIN);
                   const workerInitial = (workerOfferShortName(offer) || 'М')[0].toUpperCase();
                   const timeLabel = offer.createdAt
                     ? formatJobRequestRelativeRu(offer.createdAt)
@@ -2016,7 +2017,7 @@ export default function MyOrdersPage() {
                   )}
                   {!detailOffersLoading && detailOffers.map((offer, oi) => {
                     const workerHref = workerOfferPublicPath(offer);
-                    const workerAv = workerOfferAvatarSrc(offer, BACKEND);
+                    const workerAv = workerOfferAvatarSrc(offer, BACKEND_ORIGIN);
                     const workerLabel = workerOfferFullName(offer);
                     const workerInitial = (workerLabel || 'М')[0].toUpperCase();
                     return (

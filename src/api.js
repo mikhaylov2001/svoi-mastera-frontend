@@ -254,7 +254,6 @@ export async function completeDeal(userId, dealId) {
   return apiCall(`/deals/${dealId}/complete`, { method: 'POST', headers: { 'X-User-Id': userId }, body: JSON.stringify({}) });
 }
 
-
 // ── PROFILE ──
 /** Данные заказчика для «своего» профиля. /customer-profiles/me на бэке падает (LazyInitialization). */
 export async function getCustomerProfile(userId) {

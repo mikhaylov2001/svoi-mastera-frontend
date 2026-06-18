@@ -12,6 +12,7 @@ import { PAGE_HERO_DEFAULT_PHOTO, PAGE_HERO_OVERLAY_GRADIENT, PAGE_HERO_IMG_FILT
 import { useSameRouteRefetch } from '../../hooks/useSameRouteRefetch';
 import { LISTING_ARCHIVED_AFTER_DEAL } from '../../utils/listingArchiveEvents';
 import { categoryChipToneClass } from '../../utils/categoryChipTone';
+import { BACKEND_ORIGIN } from '../../../constants/backend';
 
 const API = API_BASE;
 
@@ -784,8 +785,8 @@ export default function MyListingsPage() {
   };
 
   const fullName = [userName, userLastName].filter(Boolean).join(' ') || 'Мастер';
-  const BACKEND  = 'https://svoi-mastera-backend-ntp0.onrender.com';
-  const ava      = userAvatar ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND + userAvatar) : null;
+
+  const ava      = userAvatar ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http') ? userAvatar : BACKEND_ORIGIN + userAvatar) : null;
 
   const tips = CAT_TIPS[form.category] || [
     'Выберите понятное название — заказчики ищут по ключевым словам',

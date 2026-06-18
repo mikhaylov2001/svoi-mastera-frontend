@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
-const API = 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1';
+import { DEFAULT_API_V1_BASE } from '../../constants/backend';
 
 /* ── Personal settings form ── */
 function PersonalForm({ userId, profile, onSaved }) {
@@ -32,7 +31,7 @@ function PersonalForm({ userId, profile, onSaved }) {
   const save = async () => {
     setSaving(true);
     try {
-      await fetch(`${API}/users/${userId}/profile`, {
+      await fetch(`${DEFAULT_API_V1_BASE}/users/${userId}/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

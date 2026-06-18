@@ -5,8 +5,9 @@ import { getUnreadCount } from '../api';
 import { CUSTOMER_HOME_PATH, WORKER_HOME_PATH } from '../../constants/homePaths';
 import { dispatchSameRouteRefetch, isSameNavDest } from '../utils/sameRouteRefetch';
 import './Header.css';
+import { BACKEND_ORIGIN, DEFAULT_API_V1_BASE } from '../../constants/backend';
 
-const NOTIF_API = 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1/notifications';
+const NOTIF_API = `${DEFAULT_API_V1_BASE}/notifications`;
 
 function SearchIcon() {
   return (
@@ -23,11 +24,11 @@ function LogoIcon() {
 
 function Header() {
   const { userId, userRole, userName, userLastName, userAvatar, logout } = useAuth();
-  const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
+  
   const fullAvatarUrl = userAvatar
     ? (userAvatar.startsWith('data:') || userAvatar.startsWith('http')
         ? userAvatar
-        : BACKEND + userAvatar)
+        : BACKEND_ORIGIN + userAvatar)
     : '';
   const navigate = useNavigate();
   const location = useLocation();

@@ -1,12 +1,12 @@
 import React from 'react';
 import '../../styles/publicProfilePage.css';
 import CardFavoriteSlot from '../CardFavoriteSlot';
+import { BACKEND_ORIGIN } from '../../constants/backend';
 
-const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
 function resolveUrl(u) {
   if (!u) return '';
   if (u.startsWith('http') || u.startsWith('data:')) return u;
-  return BACKEND + u;
+  return BACKEND_ORIGIN + u;
 }
 
 export default function ProfileShowcase({

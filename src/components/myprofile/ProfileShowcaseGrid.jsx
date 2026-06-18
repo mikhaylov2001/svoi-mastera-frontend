@@ -1,12 +1,11 @@
 import React from 'react';
 import { getCategoryPlaceholderPhotoUrlOrDefault } from '../../utils/categoryPlaceholderPhoto';
-
-const BACKEND = 'https://svoi-mastera-backend-ntp0.onrender.com';
+import { BACKEND_ORIGIN } from '../../constants/backend';
 
 function resolveImg(u, item) {
   if (!u) return getCategoryPlaceholderPhotoUrlOrDefault({ category: item?.category, categoryName: item?.categoryName });
   if (u.startsWith('http') || u.startsWith('data:')) return u;
-  return BACKEND + u;
+  return BACKEND_ORIGIN + u;
 }
 
 /**

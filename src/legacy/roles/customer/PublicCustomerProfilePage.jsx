@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { dealEligibleForReviews } from '../../utils/dealReviewEligibility';
-const API = 'https://svoi-mastera-backend-ntp0.onrender.com/api/v1';
+import { DEFAULT_API_V1_BASE } from '../../../constants/backend';
 
 function timeAgo(d) {
   if (!d) return '';
@@ -197,10 +197,10 @@ export default function PublicCustomerProfilePage() {
     if (!customerId) return;
     setLoading(true);
     Promise.all([
-      fetch(`${API}/customers/${customerId}/profile`).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch(`${API}/customers/${customerId}/requests`).then(r => r.ok ? r.json() : []).catch(() => []),
-      fetch(`${API}/customers/${customerId}/reviews`).then(r => r.ok ? r.json() : []).catch(() => []),
-      fetch(`${API}/deals`, { headers: { 'X-User-Id': customerId } }).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${DEFAULT_API_V1_BASE}/customers/${customerId}/profile`).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(`${DEFAULT_API_V1_BASE}/customers/${customerId}/requests`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${DEFAULT_API_V1_BASE}/customers/${customerId}/reviews`).then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch(`${DEFAULT_API_V1_BASE}/deals`, { headers: { 'X-User-Id': customerId } }).then(r => r.ok ? r.json() : []).catch(() => []),
     ]).then(([p, r, rev, d]) => {
       setCustomer(p || { displayName: nameFromQuery || 'Заказчик', city: 'Йошкар-Ола' });
       setRequests(Array.isArray(r) ? r : []);
@@ -223,15 +223,15 @@ export default function PublicCustomerProfilePage() {
     setReviewSending(true);
     try {
       const endpoint = reviewDeal._reviewByWorker
-        ? `${API}/deals/${reviewDeal.id}/reviews/worker`
-        : `${API}/deals/${reviewDeal.id}/reviews`;
+        ? `${DEFAULT_API_V1_BASE}/deals/${reviewDeal.id}/reviews/worker`
+        : `${DEFAULT_API_V1_BASE}/deals/${reviewDeal.id}/reviews`;
       await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
         body: JSON.stringify({ rating: reviewForm.rating, text: reviewForm.text }),
       });
       setReviewDone(true);
-      const rev = await fetch(`${API}/customers/${customerId}/reviews`);
+      const rev = await fetch(`${DEFAULT_API_V1_BASE}/customers/${customerId}/reviews`);
       if (rev.ok) {
         const list = await rev.json();
         setReviews(Array.isArray(list) ? list : []);
